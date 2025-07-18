@@ -6,7 +6,7 @@ package com.squareup.workflow1.traceviewer.model
  *
  * If it's the first node in the frame, [previous] will be null and there is no difference to show.
  */
-internal class NodeDiff(
+internal class NodeUpdate(
   val current: Node,
   val previous: Node?,
 )

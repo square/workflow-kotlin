@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.model.NodeDiff
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import kotlin.reflect.full.memberProperties
 
 /**
@@ -44,7 +44,7 @@ import kotlin.reflect.full.memberProperties
  */
 @Composable
 internal fun RightInfoPanel(
-  selectedNode: NodeDiff?,
+  selectedNode: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -80,7 +80,7 @@ internal fun RightInfoPanel(
  */
 @Composable
 private fun NodePanelDetails(
-  node: NodeDiff?,
+  node: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
   LazyColumn(

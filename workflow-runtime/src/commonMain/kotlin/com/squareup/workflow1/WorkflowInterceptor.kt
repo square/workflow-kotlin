@@ -34,9 +34,7 @@ import kotlin.reflect.KType
  *
  *  1. [onSessionStarted] - called when a new [WorkflowSession] is created the first time a
  *     workflow is rendered with the [CoroutineScope] for that session.
- *  1. [onRuntimeLoopTick] - Called to report the [RuntimeLoopOutcome] of each tick of the runtime
- *     loop. In the simplest case this is the application of one action and one render pass, but
- *     optimizations can change that. See [onRenderingUpdated] for more.
+ *  1. [onRuntimeUpdate] - Called to report [RuntimeUpdate]s from the event loop.
  *
  * ## On Profiling
  *
@@ -140,43 +138,56 @@ public interface WorkflowInterceptor {
   ): Snapshot? = proceed(state)
 
   /**
-   * Called to report the [outcome] of each tick of the runtime loop. In the simplest case
-   * this is the application of one action and one render pass, but optimizations can
-   * change that:
+   * Called to report the [update]s from the runtime as it executes its loop.
    *
-   *  - With the `RENDER_ONLY_WHEN_STATE_CHANGES` optimization, there may not be a render pass
-   *    at all, in which case [RenderPassSkipped] is the outcome.
-   *  - With the `CONFLATE_STALE_RENDERINGS` optimization, there could be multiple render passes.
-   *  - If there is at least one render pass, then [RenderPassesComplete] is passed as the outcome,
-   *    which includes the actual [RenderingAndSnapshot] returned from the runtime.
+   * There will be at least one [update] for every application of an action, as this is how the
+   * runtime is advancing the state machine.
    *
-   * @param outcome The [RuntimeLoopOutcome] of the tick of the runtime loop.
+   * The possible [update]s are:
+   *
+   * 1. [RenderingProduced]: The runtime produced a new rendering for the view code.
+   * 1. [RenderPassSkipped]: Optimizations were able to apply multiple actions and skip a render
+   * pass
+   * 1. [RenderingConflated]: The runtime detected that the rendering was stale, so it conflates
+   * this rendering with the next before producing it for the view code.
+   *
+   * In the simplest case, the [update] for an action may be just *one* [RenderingProduced] - in
+   * which case we know there was one action applied, and one render pass.
+   *
+   * If there are optimizations applied, then they will try to greedily apply actions. In this case,
+   * for each action that is applied without a corresponding render pass, the [RenderPassSkipped]
+   * [update] will be reported here, and for each rendering that was conflated before producing it
+   * for the view code, the [RenderingConflated] [update] is reported.
+   *
+   * @param update A [RuntimeUpdate] from the event loop.
    */
-  public fun onRuntimeLoopTick(
-    outcome: RuntimeLoopOutcome
+  public fun onRuntimeUpdate(
+    update: RuntimeUpdate
   ): Unit = Unit
 
-  public sealed interface RuntimeLoopOutcome
+  public sealed interface RuntimeUpdate
 
   /**
-   * @param endOfTick This is true if this skip was the end of the loop iteration (i.e. no update
-   *        was passed to the UI. It is false otherwise. An example of when it can be false is if
-   *        we have an action that causes a state change, but then we can process more while the
-   *        `CONFLATE_STALE_RENDERINGS` optimization is enabled. We may skip rendering based on
-   *        the subsequent action not changing state, but we will need to finish the loop and update
-   *        the UI from the previous action that changed state.
+   * A render pass has been skipped by an optimization, multiple actions are applied before
+   * the runtime produces a rendering.
    */
-  public class RenderPassSkipped(
-    public val endOfTick: Boolean = true
-  ) : RuntimeLoopOutcome
+  public data object RenderPassSkipped : RuntimeUpdate
 
   /**
+   * The runtime skipped producing a rendering, conflating it to the next rendering after the next
+   * render pass.
+   */
+  public data object RenderingConflated : RuntimeUpdate
+
+  /**
+   * This runtime has produced a new rendering after at least one render pass.
+   *
    * @param renderingAndSnapshot This is the rendering and snapshot that was passed out of the
    *        Workflow runtime.
    */
-  public class RenderPassesComplete<R>(
+  public data class RenderingProduced<R>(
     public val renderingAndSnapshot: RenderingAndSnapshot<R>
-  ) : RuntimeLoopOutcome
+  ) : RuntimeUpdate
 
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method

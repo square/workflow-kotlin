@@ -12,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,9 +45,9 @@ internal fun RenderDiagram(
 ) {
   var isLoading by remember(traceFile) { mutableStateOf(true) }
   var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
-  var frames by remember { mutableStateOf<List<Node>>(emptyList()) }
-  var fullTree by remember { mutableStateOf<List<Node>>(emptyList()) }
-  var affectedNodes by remember { mutableStateOf<List<Set<Node>>>(emptyList()) }
+  var frames = remember { mutableStateListOf<Node>() }
+  var fullTree = remember { mutableStateListOf<Node>() }
+  var affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
   LaunchedEffect(traceFile) {
     val parseResult = parseTrace(traceFile)
@@ -57,9 +58,9 @@ internal fun RenderDiagram(
       }
       is ParseResult.Success -> {
         val parsedFrames = parseResult.trace ?: emptyList()
-        frames = parsedFrames
-        fullTree = parseResult.trees
-        affectedNodes = parseResult.affectedNodes
+        frames.addAll(parsedFrames)
+        fullTree.addAll(parseResult.trees)
+        affectedNodes.addAll(parseResult.affectedNodes)
         onFileParse(parsedFrames)
         isLoading = false
       }
@@ -133,8 +134,8 @@ private fun DrawTree(
         In the edge case that the current frame has additional children compared to the previous
         frame, we replace with null and will check before next recursive call.
          */
-        node.children.forEachIndexed { index, childNode ->
-          val prevChildNode = previousNode?.children?.getOrNull(index)
+        node.children.forEach { (index, childNode) ->
+          val prevChildNode = previousNode?.children?.get(index)
           DrawTree(
             node = childNode,
             previousNode = prevChildNode,

@@ -1,7 +1,7 @@
 package com.squareup.workflow1.traceviewer.util
 
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.util.ROOT_ID
+import java.util.LinkedHashMap
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,8 +24,8 @@ class JsonParserTest {
 
     // Verify results
     assertEquals(2, mergedTree.children.size)
-    assertTrue(mergedTree.children.any { it.id == "1" })
-    assertTrue(mergedTree.children.any { it.id == "2" })
+    assertTrue(mergedTree.children.containsKey("1"))
+    assertTrue(mergedTree.children.containsKey("2"))
   }
 
   @Test
@@ -46,10 +46,10 @@ class JsonParserTest {
 
     // Verify results
     assertEquals(1, mergedTree.children.size)
-    val updatedChild = mergedTree.children.first()
+    val updatedChild = mergedTree.children["1"]!!
     assertEquals(2, updatedChild.children.size)
-    assertTrue(updatedChild.children.any { it.id == "2" })
-    assertTrue(updatedChild.children.any { it.id == "3" })
+    assertTrue(updatedChild.children.containsKey("2"))
+    assertTrue(updatedChild.children.containsKey("3"))
   }
 
   @Test
@@ -66,7 +66,7 @@ class JsonParserTest {
 
     // Verify results
     assertEquals(1, mergedTree.children.size)
-    assertEquals("child1", mergedTree.children.first().name)
+    assertEquals("child1", mergedTree.children["1"]?.name)
   }
 
   @Test
@@ -83,7 +83,7 @@ class JsonParserTest {
 
     // Verify results
     assertEquals(1, mainTree.children.size)
-    assertEquals("child1", mainTree.children.first().name)
+    assertEquals("child1", mainTree.children["1"]?.name)
   }
 
   private fun createNode(
@@ -101,7 +101,9 @@ class JsonParserTest {
       props = "",
       state = "",
       rendering = "",
-      children = children,
+      children = LinkedHashMap<String, Node>().apply {
+        children.forEach { put(it.id, it) }
+      }
     )
   }
 }

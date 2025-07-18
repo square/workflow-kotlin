@@ -15,7 +15,7 @@ internal data class Node(
   val props: String,
   val state: String,
   val rendering: String = "",
-  val children: List<Node>,
+  @Transient val children: LinkedHashMap<String, Node> = LinkedHashMap()
 ) {
 
   override fun toString(): String {
@@ -34,9 +34,9 @@ internal data class Node(
 }
 
 internal fun Node.addChild(child: Node): Node {
-  return copy(children = this.children + child)
+  return copy(children = LinkedHashMap(this.children.plus(child.id to child)))
 }
 
 internal fun Node.replaceChild(child: Node): Node {
-  return copy(children = this.children.map { if (it.id == child.id) child else it })
+  return addChild(child)
 }

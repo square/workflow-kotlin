@@ -9,11 +9,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.model.NodeDiff
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
@@ -29,13 +30,15 @@ public fun App(
   modifier: Modifier = Modifier
 ) {
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
-  var selectedNode by remember { mutableStateOf<NodeDiff?>(null) }
+  var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
 
-  LaunchedEffect(frameIndex) {
-    sandboxState.reset()
+  LaunchedEffect(sandboxState) {
+    snapshotFlow { frameIndex }.collect {
+      sandboxState.reset()
+    }
   }
 
   Box(
@@ -51,7 +54,7 @@ public fun App(
           frameInd = frameIndex,
           onFileParse = { workflowFrames = it },
           onNodeSelect = { node, prevNode ->
-            selectedNode = NodeDiff(node, prevNode)
+            selectedNode = NodeUpdate(node, prevNode)
           }
         )
       }

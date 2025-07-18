@@ -17,6 +17,10 @@ kotlin {
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }
   }
+
+  // Needed for expect class Lock, which is not public API, so this doesn't add any binary compat
+  // risk.
+  compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }
 
 dependencies {

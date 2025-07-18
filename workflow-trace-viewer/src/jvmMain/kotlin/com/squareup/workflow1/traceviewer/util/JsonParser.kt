@@ -9,6 +9,7 @@ import com.squareup.workflow1.traceviewer.model.addChild
 import com.squareup.workflow1.traceviewer.model.replaceChild
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
+import java.util.LinkedHashMap
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
@@ -77,6 +78,7 @@ private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
  */
 private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
   val children = (childrenByParent[node.id] ?: emptyList())
+    .map { buildTree(it, childrenByParent) }
   return Node(
     name = node.name,
     id = node.id,
@@ -84,7 +86,7 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
     parentId = node.parentId,
     props = node.props,
     state = node.state,
-    children = children.map { buildTree(it, childrenByParent) },
+    children = LinkedHashMap(children.associateBy { it.id }),
   )
 }
 
@@ -99,14 +101,12 @@ internal fun mergeFrameIntoMainTree(
   frame: Node,
   main: Node
 ): Node {
-  if (frame.id != main.id) {
-    throw IllegalArgumentException("Frame root ID does not match main tree root ID.")
-  }
+  require(frame.id == main.id)
 
   val updatedNode = frame.copy(children = main.children)
 
-  return frame.children.fold(updatedNode) { mergedTree, frameChild ->
-    val mainTreeChild = mergedTree.children.singleOrNull { it.id == frameChild.id }
+  return frame.children.values.fold(updatedNode) { mergedTree, frameChild ->
+    val mainTreeChild = mergedTree.children[frameChild.id]
     if (mainTreeChild != null) {
       mergedTree.replaceChild(mergeFrameIntoMainTree(frameChild, mainTreeChild))
     } else {
