@@ -22,7 +22,7 @@ import com.squareup.workflow1.traceviewer.TraceMode
 internal fun TraceModeToggleSwitch(
   onToggle: () -> Unit,
   traceMode: TraceMode,
-  modifier: Modifier
+  modifier: Modifier = Modifier
 ) {
   // File mode is unchecked by default, and live mode is checked.
   var checked by remember {

@@ -10,9 +10,9 @@ It can be run via Gradle using:
 ./gradlew :workflow-trace-viewer:run
 ```
 
-By Default, the app will be in file parsing mode, where you are able to select a previously recorded workflow trace file for it to visualize the data. 
+By Default, the app will be in file parsing mode, where you are able to select a previously recorded workflow trace file for it to visualize the data.
 
-By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly pulled from the emulator into the visualizer. 
+By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly pulled from the emulator into the visualizer.
 
 It is ***important*** to run the emulator first before toggling to live mode.
 

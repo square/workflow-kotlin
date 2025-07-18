@@ -26,7 +26,7 @@ internal fun FrameSelectTab(
   modifier: Modifier = Modifier
 ) {
   val state = rememberLazyListState()
-  LaunchedEffect(currentIndex){
+  LaunchedEffect(currentIndex) {
     if (currentIndex < 0) return@LaunchedEffect
     state.animateScrollToItem(currentIndex)
   }

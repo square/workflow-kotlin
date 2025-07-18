@@ -42,9 +42,11 @@ internal fun App(
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   val socket = remember { SocketClient() }
 
-  Runtime.getRuntime().addShutdownHook(Thread {
-    socket.close()
-  })
+  Runtime.getRuntime().addShutdownHook(
+    Thread {
+      socket.close()
+    }
+  )
 
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
@@ -77,7 +79,7 @@ internal fun App(
           onNodeSelect = { node, prevNode ->
             selectedNode = NodeUpdate(node, prevNode)
           },
-          onNewFrame = { frameIndex += 1}
+          onNewFrame = { frameIndex += 1 }
         )
       }
     }
@@ -103,6 +105,10 @@ internal fun App(
           TraceMode.File(null)
         } else {
           // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
+          /*
+          We set the frame to -1 here since we always increment it during Live mode as the list of
+          frames get populated, so we avoid off by one when indexing into the frames.
+           */
           frameIndex = -1
           socket.start()
           TraceMode.Live(socket)
@@ -140,4 +146,3 @@ internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
   data class Live(val socket: SocketClient = SocketClient()) : TraceMode
 }
-

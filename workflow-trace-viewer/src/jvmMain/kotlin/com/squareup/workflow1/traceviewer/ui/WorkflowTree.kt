@@ -39,7 +39,6 @@ import kotlinx.coroutines.withContext
  * This handles either File or Live trace modes, and will parse equally
  */
 @Composable
-@Suppress("UNCHECKED_CAST")
 internal fun RenderTrace(
   traceSource: TraceMode,
   frameInd: Int,
@@ -54,7 +53,7 @@ internal fun RenderTrace(
   val fullTree = remember { mutableStateListOf<Node>() }
   val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
-  fun addToStates(frame: List<Node>, tree: List<Node>, affected:List<Set<Node>>) {
+  fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
     frames.addAll(frame)
     fullTree.addAll(tree)
     affectedNodes.addAll(affected)
@@ -109,7 +108,7 @@ internal fun RenderTrace(
               mergeFrameIntoMainTree(parsedFrame, fullTree.last())
             }
 
-            withContext(Dispatchers.Default){
+            withContext(Dispatchers.Default) {
               addToStates(
                 frame = listOf(parsedFrame),
                 tree = listOf(mergedTree),
@@ -122,7 +121,6 @@ internal fun RenderTrace(
       }
     }
   }
-
 
   if (error != null) {
     Text("Error parsing file: ${error?.message}")
