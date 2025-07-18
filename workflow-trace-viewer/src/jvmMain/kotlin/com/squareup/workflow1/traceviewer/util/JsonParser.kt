@@ -135,12 +135,11 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
  *
  * @return Node the newly formed tree with the frame merged into it.
  */
-private fun mergeFrameIntoMainTree(
+internal fun mergeFrameIntoMainTree(
   frame: Node,
   main: Node
 ): Node {
   require(frame.id == main.id)
-
   val updatedNode = frame.copy(children = main.children)
 
   return frame.children.values.fold(updatedNode) { mergedTree, frameChild ->
