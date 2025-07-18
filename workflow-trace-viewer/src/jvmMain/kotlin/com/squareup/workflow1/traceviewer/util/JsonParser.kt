@@ -5,8 +5,11 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.addChild
+import com.squareup.workflow1.traceviewer.model.replaceChild
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
+import java.util.LinkedHashMap
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
@@ -21,24 +24,27 @@ const val ROOT_ID: String = "-1"
  * @return A [ParseResult] representing result of parsing, either an error related to the
  * format of the JSON, or a success and a parsed trace.
  */
-public suspend fun parseTrace(
+internal suspend fun parseTrace(
   file: PlatformFile,
 ): ParseResult {
-  return try {
-    val jsonString = file.readString()
-    val workflowAdapter = createMoshiAdapter()
-    val parsedRenderPasses = workflowAdapter.fromJson(jsonString)
-
-    val parsedFrames = mutableListOf<Node>()
-    parsedRenderPasses?.forEach { renderPass ->
-      val parsed = getFrameFromRenderPass(renderPass)
-      parsedFrames.add(parsed)
-    }
-
-    ParseResult.Success(parsedFrames)
+  val jsonString = file.readString()
+  val workflowAdapter = createMoshiAdapter()
+  val parsedRenderPasses = try {
+    workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
+      IllegalArgumentException("Provided trace file is empty or malformed.")
+    )
   } catch (e: Exception) {
-    ParseResult.Failure(e)
+    return ParseResult.Failure(e)
   }
+
+  val parsedFrames = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
+  val frameTrees = mutableListOf<Node>()
+  parsedFrames.fold(parsedFrames[0]) { tree, frame ->
+    val mergedTree = mergeFrameIntoMainTree(frame, tree)
+    frameTrees.add(mergedTree)
+    mergedTree
+  }
+  return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
 }
 
 /**
@@ -72,6 +78,7 @@ private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
  */
 private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
   val children = (childrenByParent[node.id] ?: emptyList())
+    .map { buildTree(it, childrenByParent) }
   return Node(
     name = node.name,
     id = node.id,
@@ -79,11 +86,38 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
     parentId = node.parentId,
     props = node.props,
     state = node.state,
-    children = children.map { buildTree(it, childrenByParent) },
+    children = LinkedHashMap(children.associateBy { it.id }),
   )
 }
 
-sealed interface ParseResult {
-  class Success(val trace: List<Node>?) : ParseResult
+/**
+ * Every new frame starts with the same roots as the main tree, so we can fold each frame into the
+ * current tree, add all the missing children or replace any new ones, and then store the newly
+ * merged tree.
+ *
+ * @return Node the newly formed tree with the frame merged into it.
+ */
+internal fun mergeFrameIntoMainTree(
+  frame: Node,
+  main: Node
+): Node {
+  require(frame.id == main.id)
+
+  val updatedNode = frame.copy(children = main.children)
+
+  return frame.children.values.fold(updatedNode) { mergedTree, frameChild ->
+    val mainTreeChild = mergedTree.children[frameChild.id]
+    if (mainTreeChild != null) {
+      mergedTree.replaceChild(mergeFrameIntoMainTree(frameChild, mainTreeChild))
+    } else {
+      mergedTree.addChild(frameChild)
+    }
+  }
+}
+
+internal sealed interface ParseResult {
+  class Success(val trace: List<Node>?, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
+    val affectedNodes = affectedNodes.map { it.toSet() }
+  }
   class Failure(val error: Throwable) : ParseResult
 }

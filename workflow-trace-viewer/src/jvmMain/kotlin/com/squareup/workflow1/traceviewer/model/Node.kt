@@ -7,18 +7,19 @@ package com.squareup.workflow1.traceviewer.model
  *
  * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
  */
-public class Node(
+internal data class Node(
   val name: String,
   val id: String,
   val parent: String,
   val parentId: String,
-  val props: Any? = null,
-  val state: Any? = null,
-  val renderings: Any? = null,
-  val children: List<Node>,
+  val props: String,
+  val state: String,
+  val rendering: String = "",
+  @Transient val children: LinkedHashMap<String, Node> = LinkedHashMap()
 ) {
+
   override fun toString(): String {
-    return "Node(name='$name', parent='$parent', children=${children.size})"
+    return "Node(name='$name', parent='$parent', children=$children)"
   }
 
   override fun equals(other: Any?): Boolean {
@@ -26,7 +27,32 @@ public class Node(
     if (other !is Node) return false
     return this.id == other.id
   }
+
   override fun hashCode(): Int {
     return id.hashCode()
   }
+
+  companion object {
+    fun getNodeField(node: Node, field: String): String {
+      return when (field.lowercase()) {
+        "name" -> node.name
+        "id" -> node.id
+        "parent" -> node.parent
+        "parentid" -> node.parentId
+        "props" -> node.props
+        "state" -> node.state
+        "rendering" -> node.rendering
+        "children" -> node.children.toString()
+        else -> throw IllegalArgumentException("Unknown field: $field")
+      }
+    }
+  }
+}
+
+internal fun Node.addChild(child: Node): Node {
+  return copy(children = LinkedHashMap(this.children.plus(child.id to child)))
+}
+
+internal fun Node.replaceChild(child: Node): Node {
+  return addChild(child)
 }

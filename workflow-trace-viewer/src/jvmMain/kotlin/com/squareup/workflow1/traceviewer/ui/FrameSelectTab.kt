@@ -18,7 +18,7 @@ import com.squareup.workflow1.traceviewer.model.Node
  * A trace tab selector that allows devs to switch between different states within the provided trace.
  */
 @Composable
-public fun FrameSelectTab(
+internal fun FrameSelectTab(
   frames: List<Node>,
   currentIndex: Int,
   onIndexChange: (Int) -> Unit,

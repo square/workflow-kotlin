@@ -27,6 +27,12 @@ kotlin {
         implementation(libs.filekit.dialogs.compose)
       }
     }
+    jvmTest {
+      dependencies {
+        implementation(kotlin("test"))
+        implementation(kotlin("test-junit5"))
+      }
+    }
   }
 }
 
@@ -49,4 +55,8 @@ compose {
       }
     }
   }
+}
+
+tasks.named<Test>("jvmTest") {
+  useJUnitPlatform()
 }

@@ -1,15 +1,22 @@
 package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons.AutoMirrored.Filled
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -23,10 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -35,21 +43,20 @@ import com.squareup.workflow1.traceviewer.model.Node
  * @param selectedNode The currently selected workflow node, or null if no node is selected.
  */
 @Composable
-public fun RightInfoPanel(
-  selectedNode: Node?,
+internal fun RightInfoPanel(
+  selectedNode: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
-  // This row is aligned to the right of the screen.
-  Row {
-    Spacer(modifier = Modifier.weight(1f))
-
+  Row(
+    modifier = modifier
+  ) {
     var panelOpen by remember { mutableStateOf(false) }
 
     IconButton(
       onClick = { panelOpen = !panelOpen },
       modifier = Modifier
         .padding(8.dp)
-        .size(30.dp)
+        .size(40.dp)
         .align(Alignment.Top)
     ) {
       Icon(
@@ -62,45 +69,122 @@ public fun RightInfoPanel(
     if (panelOpen) {
       NodePanelDetails(
         selectedNode,
-        Modifier.fillMaxWidth(.35f)
+        Modifier.fillMaxWidth(.30f)
       )
     }
   }
 }
 
+/**
+ * Displays specific details about the opened workflow node.
+ */
 @Composable
 private fun NodePanelDetails(
-  node: Node?,
+  node: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
-  Column(
+  LazyColumn(
     modifier = modifier
       .fillMaxHeight()
-      .background(Color.LightGray)
+      .background(Color.White)
       .padding(8.dp),
-    horizontalAlignment = Alignment.CenterHorizontally
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
     if (node == null) {
-      Text("No node selected")
-      return@Column
+      item {
+        Text("Select a node to view details")
+      }
+      return@LazyColumn
     }
-
-    val textModifier = Modifier.padding(8.dp)
-    val textStyle = TextStyle(fontSize = 16.sp, textAlign = TextAlign.Center)
-    val fields = mapOf(
-      "Name" to node.name,
-      "ID" to node.id,
-      "Props" to node.props.toString(),
-      "State" to node.state.toString(),
-      "Renderings" to node.renderings.toString()
-    )
-
-    fields.forEach { (label, value) ->
+    item {
       Text(
-        text = "$label: $value",
-        modifier = textModifier,
-        style = textStyle
+        text = "Workflow Details",
+        style = MaterialTheme.typography.h6,
+        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
       )
+    }
+    val fields = listOf("Name", "Id", "Props", "State", "Rendering")
+
+    items(fields) { field ->
+      DetailCard(
+        label = field,
+        currValue = Node.getNodeField(node.current, field),
+        pastValue = if (node.previous != null) Node.getNodeField(node.previous, field) else null
+      )
+    }
+  }
+}
+
+/**
+ * Card component that represents each item for the nodes.
+ *
+ * Can be open/closed to show/hide details.
+ */
+@Composable
+private fun DetailCard(
+  label: String,
+  currValue: String,
+  pastValue: String?
+) {
+  var open by remember { mutableStateOf(true) }
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(8.dp)
+      .clickable {
+        open = !open
+      },
+    elevation = 3.dp,
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+    ) {
+      Text(
+        text = label,
+        style = MaterialTheme.typography.h6,
+        color = Color.Black,
+        fontWeight = FontWeight.Medium
+      )
+      if (!open) {
+        return@Card
+      }
+
+      Spacer(modifier = Modifier.height(4.dp))
+      if (pastValue != null) {
+        Column {
+          Text(
+            text = "Before:",
+            style = TextStyle(fontStyle = FontStyle.Italic),
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = pastValue,
+            style = MaterialTheme.typography.body2,
+            color = Color.Black
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+            text = "After:",
+            style = TextStyle(fontStyle = FontStyle.Italic),
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = currValue,
+            style = MaterialTheme.typography.body2,
+            color = Color.Black
+          )
+        }
+      } else {
+        Text(
+          text = currValue,
+          style = MaterialTheme.typography.body1,
+          color = Color.Black
+        )
+      }
     }
   }
 }

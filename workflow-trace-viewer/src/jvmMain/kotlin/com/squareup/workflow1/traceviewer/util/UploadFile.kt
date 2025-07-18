@@ -20,14 +20,14 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
  */
 @Composable
 public fun UploadFile(
-  onFileSelect: (PlatformFile?) -> Unit,
+  resetOnFileSelect: (PlatformFile?) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val launcher = rememberFilePickerLauncher(
     type = FileKitType.File(listOf("json", "txt")),
     title = "Select Workflow Trace File"
   ) {
-    onFileSelect(it)
+    resetOnFileSelect(it)
   }
 
   Button(
