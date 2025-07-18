@@ -2,9 +2,11 @@ package com.squareup.workflow1.traceviewer.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.net.Socket
+import java.net.SocketException
 
 /**
  * This is a client that connects to the `ActionLogger` Unix Domain Socket and listens for any new
@@ -43,7 +45,6 @@ internal class SocketClient {
       return
     }
     socket.close()
-    initialized = false
   }
 
   /**
@@ -56,10 +57,13 @@ internal class SocketClient {
   fun beginListen(scope: CoroutineScope) {
     scope.launch(Dispatchers.IO) {
       val reader = socket.getInputStream().bufferedReader()
-      while (true) {
-        val input = reader.readLine()
-        println(input)
-        renderPassChannel.trySend(input)
+      try {
+        while (true) {
+          val input = reader.readLine()
+          renderPassChannel.trySend(input)
+        }
+      } catch (e: SocketException) {
+        println("Exiting socket listener due to: ${e.message}")
       }
     }
   }

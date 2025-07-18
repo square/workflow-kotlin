@@ -132,7 +132,7 @@ internal class SandboxState {
 
   fun reset() {
     offset = Offset.Zero
-    scale = 1f
+    // scale = 1f
   }
 }
 
