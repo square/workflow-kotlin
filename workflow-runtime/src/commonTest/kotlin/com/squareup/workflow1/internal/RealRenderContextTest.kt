@@ -220,8 +220,10 @@ internal class RealRenderContextTest {
 
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
     assertFailsWith<IllegalStateException> { context.renderChild(child) }
-    assertFailsWith<IllegalStateException> { context.freeze() }
     assertFailsWith<IllegalStateException> { context.remember("key", typeOf<String>()) {} }
+
+    // Freeze is the exception, it's idempotent and can be called again.
+    context.freeze()
   }
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
@@ -234,7 +236,9 @@ internal class RealRenderContextTest {
       eventActionsChannel,
       workflowTracer = null,
       runtimeConfig = emptySet(),
-    )
+    ).apply {
+      unfreeze()
+    }
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
@@ -247,6 +251,8 @@ internal class RealRenderContextTest {
       eventActionsChannel,
       workflowTracer = null,
       runtimeConfig = emptySet(),
-    )
+    ).apply {
+      unfreeze()
+    }
   }
 }

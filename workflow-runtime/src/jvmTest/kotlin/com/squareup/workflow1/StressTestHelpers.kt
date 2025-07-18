@@ -3,7 +3,7 @@ package com.squareup.workflow1
 import java.util.concurrent.CountDownLatch
 
 /**
- * Returns the maximum number of threads that can be ran in parallel on the host system, rounded
+ * Returns the maximum number of threads that can be run in parallel on the host system, rounded
  * down to the nearest even number, and at least 2.
  */
 internal fun calculateSaturatingTestThreadCount(minThreads: Int) =
