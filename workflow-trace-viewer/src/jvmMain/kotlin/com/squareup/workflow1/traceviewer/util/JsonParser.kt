@@ -48,7 +48,8 @@ internal suspend fun parseFileTrace(
   return ParseResult.Success(
     trace = parsedFrames,
     trees = frameTrees,
-    affectedNodes = parsedRenderPasses)
+    affectedNodes = parsedRenderPasses
+  )
 }
 
 /**

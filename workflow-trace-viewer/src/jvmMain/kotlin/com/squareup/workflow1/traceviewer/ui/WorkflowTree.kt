@@ -28,7 +28,6 @@ import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
 import com.squareup.workflow1.traceviewer.util.parseLiveTrace
-import io.github.vinceglb.filekit.dialogs.FileKitMode.Single.parseResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -175,7 +174,6 @@ private fun DrawNode(
     modifier = Modifier
       .background(if (isAffected) Color.Green else Color.Transparent)
       .clickable {
-        // Selecting a node will bubble back up to the main view to handle the selection
         onNodeSelect(node, previousNode)
       }
       .padding(10.dp)

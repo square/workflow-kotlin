@@ -71,7 +71,9 @@ internal fun App(
     ) {
       // if there is not a file selected and trace mode is live, then don't render anything.
       val readyForFileTrace = traceMode is TraceMode.File && selectedTraceFile != null
-      if (readyForFileTrace || traceMode is TraceMode.Live) {
+      val readyForLiveTrace = traceMode is TraceMode.Live
+
+      if (readyForFileTrace || readyForLiveTrace) {
         RenderTrace(
           traceSource = traceMode,
           frameInd = frameIndex,
