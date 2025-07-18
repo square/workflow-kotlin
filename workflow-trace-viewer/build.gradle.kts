@@ -59,7 +59,4 @@ compose {
 
 tasks.named<Test>("jvmTest") {
   useJUnitPlatform()
-  testLogging {
-    events("passed", "skipped", "failed")
-  }
 }

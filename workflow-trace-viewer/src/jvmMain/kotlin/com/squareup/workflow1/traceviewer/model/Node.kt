@@ -54,5 +54,5 @@ internal fun Node.addChild(child: Node): Node {
 }
 
 internal fun Node.replaceChild(child: Node): Node {
-  return copy(children = LinkedHashMap(this.children.plus(child.id to child)))
+  return addChild(child)
 }
