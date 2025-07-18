@@ -51,8 +51,12 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    * Used to:
    *  - prevent modifications to this object after [freeze] is called.
    *  - prevent sending to sinks before render returns.
+   *
+   * This is a [ThreadLocal] since we only care about preventing calls during rendering from the
+   * thread that is actually doing the rendering. If a background thread happens to send something
+   * into the sink, for example, while the main thread is rendering, it's not a violation.
    */
-  private var frozen = false
+  private var frozen by threadLocalOf { true }
 
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
@@ -100,7 +104,6 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    checkNotFrozen("freeze") { "freeze" }
     frozen = true
   }
 
@@ -117,8 +120,10 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    *
    * @see checkWithKey
    */
-  private inline fun checkNotFrozen(stackTraceKey: Any, lazyMessage: () -> Any) =
-    checkWithKey(!frozen, stackTraceKey) {
-      "RenderContext cannot be used after render method returns: ${lazyMessage()}"
-    }
+  private inline fun checkNotFrozen(
+    stackTraceKey: Any,
+    lazyMessage: () -> Any
+  ) = checkWithKey(!frozen, stackTraceKey) {
+    "RenderContext cannot be used after render method returns: ${lazyMessage()}"
+  }
 }
