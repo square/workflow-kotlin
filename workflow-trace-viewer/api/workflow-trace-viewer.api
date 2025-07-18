@@ -1,7 +1,3 @@
-public final class com/squareup/workflow1/traceviewer/AppKt {
-	public static final fun App (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-}
-
 public final class com/squareup/workflow1/traceviewer/ComposableSingletons$MainKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ComposableSingletons$MainKt;
 	public static field lambda-1 Lkotlin/jvm/functions/Function3;
