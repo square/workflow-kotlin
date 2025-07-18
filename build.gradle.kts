@@ -1,4 +1,5 @@
 import com.squareup.workflow1.buildsrc.shardConnectedCheckTasks
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import java.net.URL
 
@@ -99,6 +100,15 @@ subprojects {
 subprojects {
   tasks.withType(AbstractPublishToMaven::class.java)
     .configureEach { mustRunAfter(tasks.matching { it is Sign }) }
+
+  tasks.withType(Test::class.java)
+    .configureEach {
+      testLogging {
+        // This prints exception messages and stack traces to the log when tests fail. Makes it a
+        // lot easier to see what failed in CI. If this gets too noisy, just remove it.
+        exceptionFormat = FULL
+      }
+    }
 }
 
 // This task is invoked by the documentation site generator script in the main workflow project (not

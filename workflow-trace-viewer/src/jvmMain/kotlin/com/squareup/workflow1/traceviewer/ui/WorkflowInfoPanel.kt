@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
+import kotlin.reflect.full.memberProperties
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -103,14 +103,18 @@ private fun NodePanelDetails(
         modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
       )
     }
-    val fields = listOf("Name", "Id", "Props", "State", "Rendering")
 
-    items(fields) { field ->
-      DetailCard(
-        label = field,
-        currValue = Node.getNodeField(node.current, field),
-        pastValue = if (node.previous != null) Node.getNodeField(node.previous, field) else null
-      )
+    val fields = Node::class.memberProperties
+    for (field in fields) {
+      val currVal = field.get(node.current).toString()
+      val pastVal = if (node.previous != null) field.get(node.previous).toString() else null
+      item {
+        DetailCard(
+          label = field.name,
+          currValue = currVal,
+          pastValue = pastVal
+        )
+      }
     }
   }
 }
