@@ -38,7 +38,7 @@ import kotlin.coroutines.resume
  * delegate scheduling behavior to. This can either be a confined or unconfined dispatcher, and its
  * behavior will be preserved transparently.
  */
-internal open class WorkStealingDispatcher protected constructor(
+public open class WorkStealingDispatcher protected constructor(
   private val delegateInterceptor: ContinuationInterceptor,
   lock: Lock?,
   queue: LinkedHashSet<DelegateDispatchedContinuation>?
