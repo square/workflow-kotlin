@@ -26,49 +26,96 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
+import com.squareup.moshi.JsonAdapter
+import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
-import com.squareup.workflow1.traceviewer.util.parseTrace
-import io.github.vinceglb.filekit.PlatformFile
+import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
+import com.squareup.workflow1.traceviewer.util.parseFileTrace
+import com.squareup.workflow1.traceviewer.util.parseLiveTrace
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Access point for drawing the main content of the app. It will load the trace for given files and
  * tabs. This will also all errors related to errors parsing a given trace JSON file.
+ *
+ * This handles either File or Live trace modes, and will parse equally
  */
 @Composable
-internal fun RenderDiagram(
-  traceFile: PlatformFile,
+internal fun RenderTrace(
+  traceSource: TraceMode,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
   onNodeSelect: (Node, Node?) -> Unit,
+  onNewFrame: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var isLoading by remember(traceFile) { mutableStateOf(true) }
-  var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
-  var frames = remember { mutableStateListOf<Node>() }
-  var fullTree = remember { mutableStateListOf<Node>() }
-  var affectedNodes = remember { mutableStateListOf<Set<Node>>() }
+  var isLoading by remember(traceSource) { mutableStateOf(true) }
+  var error by remember(traceSource) { mutableStateOf<Throwable?>(null) }
+  val frames = remember { mutableStateListOf<Node>() }
+  val fullTree = remember { mutableStateListOf<Node>() }
+  val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
-  LaunchedEffect(traceFile) {
-    val parseResult = parseTrace(traceFile)
+  // Updates current state with the new data from trace source.
+  fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
+    frames.addAll(frame)
+    fullTree.addAll(tree)
+    affectedNodes.addAll(affected)
+    isLoading = false
+    onFileParse(frame)
+  }
 
-    when (parseResult) {
+  // Handles the result of parsing a trace, either from file or live. Live mode includes callback
+  // for when a new frame is received.
+  fun handleParseResult(
+    parseResult: ParseResult,
+    onNewFrame: (() -> Unit)? = null
+  ): Boolean {
+    return when (parseResult) {
       is ParseResult.Failure -> {
         error = parseResult.error
+        false
       }
       is ParseResult.Success -> {
-        val parsedFrames = parseResult.trace ?: emptyList()
-        frames.addAll(parsedFrames)
-        fullTree.addAll(parseResult.trees)
-        affectedNodes.addAll(parseResult.affectedNodes)
-        onFileParse(parsedFrames)
-        isLoading = false
+        addToStates(
+          frame = parseResult.trace,
+          tree = parseResult.trees,
+          affected = parseResult.affectedNodes
+        )
+        onNewFrame?.invoke()
+        true
+      }
+    }
+  }
+
+  LaunchedEffect(traceSource) {
+    when (traceSource) {
+      is TraceMode.File -> {
+        // We guarantee the file is null since this composable can only be called when a file is selected.
+        val parseResult = parseFileTrace(traceSource.file!!)
+        handleParseResult(parseResult)
+      }
+
+      is TraceMode.Live -> {
+        val socket = traceSource.socket
+        socket.beginListen(this)
+        val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
+
+        withContext(Dispatchers.IO) {
+          // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
+          for (renderPass in socket.renderPassChannel) {
+            val currentTree = if (fullTree.isEmpty()) null else fullTree.last()
+            val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
+            handleParseResult(parseResult, onNewFrame)
+          }
+        }
       }
     }
   }
 
   if (error != null) {
-    Text("Error parsing file: ${error?.message}")
+    Text("Error parsing: ${error?.message}")
     return
   }
 
