@@ -26,9 +26,9 @@ import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
-import com.squareup.workflow1.traceviewer.util.getFrameFromRenderPass
-import com.squareup.workflow1.traceviewer.util.mergeFrameIntoMainTree
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
+import com.squareup.workflow1.traceviewer.util.parseLiveTrace
+import io.github.vinceglb.filekit.dialogs.FileKitMode.Single.parseResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -53,6 +53,7 @@ internal fun RenderTrace(
   val fullTree = remember { mutableStateListOf<Node>() }
   val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
+  // Updates current state with the new data from trace source.
   fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
     frames.addAll(frame)
     fullTree.addAll(tree)
@@ -61,25 +62,35 @@ internal fun RenderTrace(
     onFileParse(frame)
   }
 
+  // Handles the result of parsing a trace, either from file or live. Live mode includes callback
+  // for when a new frame is received.
+  fun handleParseResult(
+    parseResult: ParseResult,
+    onNewFrame: (() -> Unit)? = null
+  ): Boolean {
+    return when (parseResult) {
+      is ParseResult.Failure -> {
+        error = parseResult.error
+        false
+      }
+      is ParseResult.Success -> {
+        addToStates(
+          frame = parseResult.trace,
+          tree = parseResult.trees,
+          affected = parseResult.affectedNodes
+        )
+        onNewFrame?.invoke()
+        true
+      }
+    }
+  }
+
   LaunchedEffect(traceSource) {
     when (traceSource) {
       is TraceMode.File -> {
-        // We guarantee the file is null since this composable can only be called when a file is selected
+        // We guarantee the file is null since this composable can only be called when a file is selected.
         val parseResult = parseFileTrace(traceSource.file!!)
-
-        when (parseResult) {
-          is ParseResult.Failure -> {
-            error = parseResult.error
-          }
-
-          is ParseResult.Success -> {
-            addToStates(
-              frame = parseResult.trace,
-              tree = parseResult.trees,
-              affected = parseResult.affectedNodes
-            )
-          }
-        }
+        handleParseResult(parseResult)
       }
 
       is TraceMode.Live -> {
@@ -87,35 +98,12 @@ internal fun RenderTrace(
         socket.beginListen(this)
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
 
-        // Since channel implements ChannelIterator, we can for-loop through on the receiver end
         withContext(Dispatchers.IO) {
+          // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
           for (renderPass in socket.renderPassChannel) {
-            // get the parsedRenderPass
-            val parsedRenderPass = try {
-              adapter.fromJson(renderPass) ?: emptyList()
-            } catch (e: Exception) {
-              error = e
-              continue
-            }
-
-            // build the Frame
-            val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
-
-            // merge Frame into full tree
-            val mergedTree = if (fullTree.isEmpty()) {
-              parsedFrame
-            } else {
-              mergeFrameIntoMainTree(parsedFrame, fullTree.last())
-            }
-
-            withContext(Dispatchers.Default) {
-              addToStates(
-                frame = listOf(parsedFrame),
-                tree = listOf(mergedTree),
-                affected = listOf(parsedRenderPass.toSet())
-              )
-              onNewFrame()
-            }
+            val currentTree = if (fullTree.isEmpty()) null else fullTree.last()
+            val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
+            handleParseResult(parseResult, onNewFrame)
           }
         }
       }
@@ -123,7 +111,7 @@ internal fun RenderTrace(
   }
 
   if (error != null) {
-    Text("Error parsing file: ${error?.message}")
+    Text("Error parsing: ${error?.message}")
     return
   }
 

@@ -45,21 +45,47 @@ internal suspend fun parseFileTrace(
     frameTrees.add(mergedTree)
     mergedTree
   }
-  return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
+  return ParseResult.Success(
+    trace = parsedFrames,
+    trees = frameTrees,
+    affectedNodes = parsedRenderPasses)
 }
 
-// internal fun parseLiveTrace(
-//   adapter: JsonAdapter<List<Node>>,
-//   renderPass: String,
-// ): ParseResult {
-//   val parsedRenderPasses = try {
-//     adapter.fromJson(renderPass) ?: return ParseResult.Failure(
-//       IllegalArgumentException("Provided trace file is empty or malformed.")
-//     )
-//   } catch (e: Exception) {
-//     return ParseResult.Failure(e)
-//   }
-// }
+/**
+ * Parses a single render pass from a live trace stream.
+ * Similar to parseFileTrace but handles one render pass at a time.
+ *
+ * @return ParseResult containing the new frame, merged tree, and current render pass nodes.
+ */
+internal fun parseLiveTrace(
+  renderPass: String,
+  adapter: JsonAdapter<List<Node>>,
+  currentTree: Node? = null
+): ParseResult {
+  val parsedRenderPass = try {
+    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
+      IllegalArgumentException("Provided trace data is empty or malformed.")
+    )
+  } catch (e: Exception) {
+    return ParseResult.Failure(e)
+  }
+
+  val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
+
+  // Merge Frame into full tree if we have an existing tree
+  val mergedTree = if (currentTree == null) {
+    parsedFrame
+  } else {
+    mergeFrameIntoMainTree(parsedFrame, currentTree)
+  }
+
+  // Since live tracing handles one frame at a time, we generalize and return listOf for each.
+  return ParseResult.Success(
+    trace = listOf(parsedFrame),
+    trees = listOf(mergedTree),
+    affectedNodes = listOf(parsedRenderPass)
+  )
+}
 
 /**
  * Creates a Moshi adapter for parsing the JSON trace file.
@@ -78,7 +104,7 @@ internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
  *
  * @return Node the root node of the tree for that specific frame.
  */
-internal fun getFrameFromRenderPass(renderPass: List<Node>): Node {
+private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
   val childrenByParent: Map<String, List<Node>> = renderPass.groupBy { it.parentId }
   val root = childrenByParent[ROOT_ID]?.single()
   return buildTree(root!!, childrenByParent)
@@ -87,7 +113,7 @@ internal fun getFrameFromRenderPass(renderPass: List<Node>): Node {
 /**
  * Recursively builds a tree using each node's children.
  */
-internal fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
+private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
   val children = (childrenByParent[node.id] ?: emptyList())
     .map { buildTree(it, childrenByParent) }
   return Node(
@@ -108,7 +134,7 @@ internal fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): N
  *
  * @return Node the newly formed tree with the frame merged into it.
  */
-internal fun mergeFrameIntoMainTree(
+private fun mergeFrameIntoMainTree(
   frame: Node,
   main: Node
 ): Node {
