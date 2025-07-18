@@ -45,6 +45,7 @@ internal fun RenderTrace(
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
   onNodeSelect: (Node, Node?) -> Unit,
+  onNewFrame: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
@@ -109,12 +110,12 @@ internal fun RenderTrace(
             }
 
             withContext(Dispatchers.Default){
-              println("SAVING")
               addToStates(
                 frame = listOf(parsedFrame),
                 tree = listOf(mergedTree),
                 affected = listOf(parsedRenderPass.toSet())
               )
+              onNewFrame()
             }
           }
         }
@@ -128,7 +129,6 @@ internal fun RenderTrace(
     return
   }
 
-  println("RENDERING")
   if (!isLoading) {
     val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
     DrawTree(fullTree[frameInd], previousFrame, affectedNodes[frameInd], onNodeSelect)

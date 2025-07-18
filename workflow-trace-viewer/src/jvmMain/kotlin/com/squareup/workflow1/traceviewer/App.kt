@@ -76,7 +76,8 @@ internal fun App(
           onFileParse = { workflowFrames.addAll(it) },
           onNodeSelect = { node, prevNode ->
             selectedNode = NodeUpdate(node, prevNode)
-          }
+          },
+          onNewFrame = { frameIndex += 1}
         )
       }
     }
@@ -98,9 +99,11 @@ internal fun App(
       onToggle = {
         resetStates()
         traceMode = if (traceMode is TraceMode.Live) {
+          frameIndex = 0
           TraceMode.File(null)
         } else {
           // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
+          frameIndex = -1
           socket.start()
           TraceMode.Live(socket)
         }
