@@ -1,6 +1,10 @@
 package com.squareup.workflow1.traceviewer.util
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.Socket
 
 /**
@@ -32,9 +36,7 @@ internal class SocketClient {
       process.inputStream.bufferedReader().readText()
         .trim().toInt()
     }
-    // println(port)
     socket = Socket("localhost", port)
-    // println("Connected to workflow trace server on port: $port")
   }
 
   fun close() {
@@ -52,11 +54,14 @@ internal class SocketClient {
    * To better separate the responsibility of reading from the socket, we use a channel for the caller
    * to handle parsing and amalgamating the render passes.
    */
-  fun beginListen() {
-    val reader = socket.getInputStream().bufferedReader()
-    while (true) {
-      val input = reader.readLine()
-      renderPassChannel.trySend(input)
+  fun beginListen(scope: CoroutineScope) {
+    scope.launch(Dispatchers.IO) {
+      val reader = socket.getInputStream().bufferedReader()
+      while (true) {
+        val input = reader.readLine()
+        println(input)
+        renderPassChannel.trySend(input)
+      }
     }
   }
 }

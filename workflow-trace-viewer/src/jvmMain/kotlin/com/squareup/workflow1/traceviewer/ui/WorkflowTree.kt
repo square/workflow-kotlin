@@ -27,7 +27,11 @@ import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
+import com.squareup.workflow1.traceviewer.util.getFrameFromRenderPass
+import com.squareup.workflow1.traceviewer.util.mergeFrameIntoMainTree
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Access point for drawing the main content of the app. It will load the trace for given files and
@@ -50,6 +54,14 @@ internal fun RenderTrace(
   val fullTree = remember { mutableStateListOf<Node>() }
   val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
+  fun addToStates(frame: List<Node>, tree: List<Node>, affected:List<Set<Node>>) {
+    frames.addAll(frame)
+    fullTree.addAll(tree)
+    affectedNodes.addAll(affected)
+    isLoading = false
+    onFileParse(frame)
+  }
+
   LaunchedEffect(traceSource) {
     when (traceSource) {
       is TraceMode.File -> {
@@ -62,28 +74,52 @@ internal fun RenderTrace(
           }
 
           is ParseResult.Success -> {
-            val parsedFrames = parseResult.trace ?: emptyList()
-            frames.addAll(parsedFrames)
-            fullTree.addAll(parseResult.trees)
-            affectedNodes.addAll(parseResult.affectedNodes)
-            onFileParse(parsedFrames)
-            isLoading = false
+            addToStates(
+              frame = parseResult.trace,
+              tree = parseResult.trees,
+              affected = parseResult.affectedNodes
+            )
           }
         }
       }
 
       is TraceMode.Live -> {
         val socket = traceSource.socket
-        socket.beginListen()
+        socket.beginListen(this)
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter(
-          Types.newParameterizedType(Node::class.java)
+          Node::class.java
         ) as JsonAdapter<List<Node>>
 
         // Since channel implements ChannelIterator, we can for-loop through on the receiver end
-        for (renderPass in socket.renderPassChannel) {
-          // get the parsedRenderPass
-          // build the Frame
-          // merge Frame into full tree
+        withContext(Dispatchers.IO) {
+          for (renderPass in socket.renderPassChannel) {
+            // get the parsedRenderPass
+            val parsedRenderPass = try {
+              adapter.fromJson(renderPass) ?: emptyList()
+            } catch (e: Exception) {
+              error = e
+              continue
+            }
+
+            // build the Frame
+            val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
+
+            // merge Frame into full tree
+            val mergedTree = if (fullTree.isEmpty()) {
+              parsedFrame
+            } else {
+              mergeFrameIntoMainTree(parsedFrame, fullTree.last())
+            }
+
+            withContext(Dispatchers.Default){
+              println("SAVING")
+              addToStates(
+                frame = listOf(parsedFrame),
+                tree = listOf(mergedTree),
+                affected = listOf(parsedRenderPass.toSet())
+              )
+            }
+          }
         }
       }
     }
@@ -95,6 +131,7 @@ internal fun RenderTrace(
     return
   }
 
+  println("RENDERING")
   if (!isLoading) {
     val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
     DrawTree(fullTree[frameInd], previousFrame, affectedNodes[frameInd], onNodeSelect)

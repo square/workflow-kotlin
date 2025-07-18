@@ -144,7 +144,7 @@ internal fun mergeFrameIntoMainTree(
 }
 
 internal sealed interface ParseResult {
-  class Success(val trace: List<Node>?, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
+  class Success(val trace: List<Node>, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
     val affectedNodes = affectedNodes.map { it.toSet() }
   }
   class Failure(val error: Throwable) : ParseResult

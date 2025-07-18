@@ -42,6 +42,10 @@ internal fun App(
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   val socket = remember { SocketClient() }
 
+  Runtime.getRuntime().addShutdownHook(Thread {
+    socket.close()
+  })
+
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
       sandboxState.reset()
@@ -97,6 +101,7 @@ internal fun App(
           TraceMode.File(null)
         } else {
           // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
+          socket.start()
           TraceMode.Live(socket)
         }
       },
