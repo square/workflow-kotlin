@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Types
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
@@ -86,9 +85,7 @@ internal fun RenderTrace(
       is TraceMode.Live -> {
         val socket = traceSource.socket
         socket.beginListen(this)
-        val adapter: JsonAdapter<List<Node>> = createMoshiAdapter(
-          Node::class.java
-        ) as JsonAdapter<List<Node>>
+        val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
 
         // Since channel implements ChannelIterator, we can for-loop through on the receiver end
         withContext(Dispatchers.IO) {
