@@ -5,7 +5,7 @@ This module hosts the workflow-ui compose integration, and this file describes i
 It was originally published as a [blog post](https://developer.squareup.com/blog/jetpack-compose-support-in-workflow).
 Since then, our approach has been overhauled.
 With that overhaul this document has been updated to reflect how the new system works, but it's still very design doc like.
-To skip past all the big picture and implementation verbiage and get right to how to use this stuff, jump down to [API Design][#api-design] below.
+To skip past all the big picture and implementation verbiage and get right to how to use this stuff, jump down to [API Design](#api-design) below.
 
 ## Goals and Non-Goals
 
