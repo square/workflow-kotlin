@@ -53,9 +53,10 @@ internal fun RenderTrace(
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
   var error by remember(traceSource) { mutableStateOf<Throwable?>(null) }
-  val frames = remember { mutableStateListOf<Node>() }
-  val fullTree = remember { mutableStateListOf<Node>() }
-  val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
+
+  val frames = remember(traceSource) { mutableStateListOf<Node>() }
+  val fullTree = remember(traceSource) { mutableStateListOf<Node>() }
+  val affectedNodes = remember(traceSource) { mutableStateListOf<Set<Node>>() }
 
   // Updates current state with the new data from trace source.
   fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
