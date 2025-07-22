@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
@@ -47,7 +48,7 @@ internal fun RenderTrace(
   traceSource: TraceMode,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
-  onNodeSelect: (Node, Node?) -> Unit,
+  onNodeSelect: (NodeUpdate) -> Unit,
   onNewFrame: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -145,7 +146,7 @@ private fun DrawTree(
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
-  onNodeSelect: (Node, Node?) -> Unit,
+  onNodeSelect: (NodeUpdate) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -207,15 +208,21 @@ private fun DrawNode(
   nodePast: Node?,
   isAffected: Boolean,
   isExpanded: Boolean,
-  onNodeSelect: (Node, Node?) -> Unit,
+  onNodeSelect: (NodeUpdate) -> Unit,
   onExpandToggle: (Node) -> Unit,
 ) {
+  val nodeUpdate = NodeUpdate.create(
+    current = node,
+    past = nodePast,
+    isAffected = isAffected
+  )
+
   Box(
     modifier = Modifier
-      .background(if (isAffected) Color.Green else Color.Transparent)
+      .background(nodeUpdate.state.color)
       .onPointerEvent(PointerEventType.Press) {
         if (it.buttons.isPrimaryPressed) {
-          onNodeSelect(node, nodePast)
+          onNodeSelect(nodeUpdate)
         } else if (it.buttons.isSecondaryPressed) {
           onExpandToggle(node)
         }

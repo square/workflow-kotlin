@@ -78,9 +78,7 @@ internal fun App(
           traceSource = traceMode,
           frameInd = frameIndex,
           onFileParse = { workflowFrames.addAll(it) },
-          onNodeSelect = { node, prevNode ->
-            selectedNode = NodeUpdate(node, prevNode)
-          },
+          onNodeSelect = { selectedNode = it },
           onNewFrame = { frameIndex += 1 }
         )
       }

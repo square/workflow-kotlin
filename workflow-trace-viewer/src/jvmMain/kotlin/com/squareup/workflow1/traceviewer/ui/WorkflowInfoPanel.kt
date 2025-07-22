@@ -107,7 +107,7 @@ private fun NodePanelDetails(
     val fields = Node::class.memberProperties
     for (field in fields) {
       val currVal = field.get(node.current).toString()
-      val pastVal = if (node.previous != null) field.get(node.previous).toString() else null
+      val pastVal = if (node.past != null) field.get(node.past).toString() else null
       item {
         DetailCard(
           label = field.name,
