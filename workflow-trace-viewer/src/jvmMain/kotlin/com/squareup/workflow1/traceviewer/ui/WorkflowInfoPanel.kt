@@ -31,10 +31,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
-import kotlin.reflect.full.memberProperties
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -98,19 +98,20 @@ private fun NodePanelDetails(
     }
     item {
       Text(
-        text = "Workflow Details",
+        text = node.current.name,
         style = MaterialTheme.typography.h6,
-        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+        textAlign = TextAlign.Center
       )
     }
 
-    val fields = Node::class.memberProperties
+    val fields = Node.getNodeFields()
     for (field in fields) {
-      val currVal = field.get(node.current).toString()
-      val pastVal = if (node.past != null) field.get(node.past).toString() else null
+      val currVal = Node.getNodeData(node.current, field)
+      val pastVal = if (node.past != null) Node.getNodeData(node.past, field) else null
       item {
         DetailCard(
-          label = field.name,
+          label = field,
           currValue = currVal,
           pastValue = pastVal
         )

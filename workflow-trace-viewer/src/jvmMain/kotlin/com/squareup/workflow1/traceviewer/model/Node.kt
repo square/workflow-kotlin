@@ -31,6 +31,24 @@ internal data class Node(
   override fun hashCode(): Int {
     return id.hashCode()
   }
+
+  companion object {
+    fun getNodeFields(): List<String> {
+      return listOf("id", "parent", "parentId", "props", "state", "rendering")
+    }
+
+    fun getNodeData(node: Node, field: String): String {
+      return when (field.lowercase()) {
+        "id" -> node.id
+        "parent" -> node.parent
+        "parentid" -> node.parentId
+        "props" -> node.props
+        "state" -> node.state
+        "rendering" -> node.rendering
+        else -> throw IllegalArgumentException("Unknown field: $field")
+      }
+    }
+  }
 }
 
 internal fun Node.addChild(child: Node): Node {
