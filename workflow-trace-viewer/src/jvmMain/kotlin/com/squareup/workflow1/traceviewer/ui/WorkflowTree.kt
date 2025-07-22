@@ -47,7 +47,7 @@ import kotlinx.coroutines.withContext
 internal fun RenderTrace(
   traceSource: TraceMode,
   frameInd: Int,
-  onFileParse: (List<Node>) -> Unit,
+  onFileParse: (Int) -> Unit,
   onNodeSelect: (NodeUpdate) -> Unit,
   onNewFrame: () -> Unit,
   modifier: Modifier = Modifier
@@ -65,7 +65,7 @@ internal fun RenderTrace(
     fullTree.addAll(tree)
     affectedNodes.addAll(affected)
     isLoading = false
-    onFileParse(frame)
+    onFileParse(frame.size)
   }
 
   // Handles the result of parsing a trace, either from file or live. Live mode includes callback

@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun FrameSelectTab(
-  frames: List<Node>,
+  size: Int,
   currentIndex: Int,
   onIndexChange: (Int) -> Unit,
   modifier: Modifier = Modifier
@@ -36,7 +36,7 @@ internal fun FrameSelectTab(
     if (currentIndex < 0) return@LaunchedEffect
     lazyListState.animateScrollToItem(currentIndex)
   }
-  
+
   Surface(
     modifier = modifier,
     color = Color.White,
@@ -61,7 +61,7 @@ internal fun FrameSelectTab(
           }
         },
     ) {
-      items(frames.size) { index ->
+      items(size) { index ->
         Text(
           text = "Frame ${index + 1}",
           color = if (index == currentIndex) Color.Black else Color.LightGray,

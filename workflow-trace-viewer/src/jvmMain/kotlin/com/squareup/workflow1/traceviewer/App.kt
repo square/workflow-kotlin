@@ -33,7 +33,7 @@ internal fun App(
   modifier: Modifier = Modifier
 ) {
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
-  val workflowFrames = remember { mutableStateListOf<Node>() }
+  var frameSize by remember { mutableIntStateOf(0) }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
 
@@ -62,7 +62,7 @@ internal fun App(
       selectedTraceFile = null
       selectedNode = null
       frameIndex = 0
-      workflowFrames.clear()
+      frameSize = 0
     }
 
     // Main content
@@ -77,7 +77,7 @@ internal fun App(
         RenderTrace(
           traceSource = traceMode,
           frameInd = frameIndex,
-          onFileParse = { workflowFrames.addAll(it) },
+          onFileParse = { frameSize += it },
           onNodeSelect = { selectedNode = it },
           onNewFrame = { frameIndex += 1 }
         )
@@ -85,7 +85,7 @@ internal fun App(
     }
 
     FrameSelectTab(
-      frames = workflowFrames,
+      size = frameSize,
       currentIndex = frameIndex,
       onIndexChange = { frameIndex = it },
       modifier = Modifier.align(Alignment.TopCenter)
