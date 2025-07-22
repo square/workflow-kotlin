@@ -74,15 +74,6 @@
   {
     "gradlePath": ":workflow-runtime",
     "group": "com.squareup.workflow1",
-    "artifactId": "workflow-runtime-android",
-    "description": "Workflow Runtime",
-    "packaging": "aar",
-    "javaVersion": 8,
-    "publicationName": "android"
-  },
-  {
-    "gradlePath": ":workflow-runtime",
-    "group": "com.squareup.workflow1",
     "artifactId": "workflow-runtime-iosarm64",
     "description": "Workflow Runtime",
     "packaging": "klib",
@@ -133,6 +124,15 @@
     "packaging": "jar",
     "javaVersion": 8,
     "publicationName": "kotlinMultiplatform"
+  },
+  {
+    "gradlePath": ":workflow-runtime-android",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-runtime-android",
+    "description": "Workflow Runtime Android",
+    "packaging": "aar",
+    "javaVersion": 8,
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-rx2",
