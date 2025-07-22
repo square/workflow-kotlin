@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.squareup.workflow1.traceviewer.model.Node
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 

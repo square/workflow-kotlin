@@ -6,7 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -14,8 +13,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
+import com.squareup.workflow1.traceviewer.ui.ColorLegend
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
@@ -40,6 +39,7 @@ internal fun App(
   // Default to File mode, and can be toggled to be in Live mode.
   var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
+  var active by remember(traceMode) { mutableStateOf(false) }
   val socket = remember { SocketClient() }
 
   Runtime.getRuntime().addShutdownHook(
@@ -74,6 +74,7 @@ internal fun App(
       val readyForLiveTrace = traceMode is TraceMode.Live
 
       if (readyForFileTrace || readyForLiveTrace) {
+        active = true
         RenderTrace(
           traceSource = traceMode,
           frameInd = frameIndex,
@@ -89,12 +90,6 @@ internal fun App(
       currentIndex = frameIndex,
       onIndexChange = { frameIndex = it },
       modifier = Modifier.align(Alignment.TopCenter)
-    )
-
-    RightInfoPanel(
-      selectedNode = selectedNode,
-      modifier = Modifier
-        .align(Alignment.TopEnd)
     )
 
     TraceModeToggleSwitch(
@@ -129,6 +124,18 @@ internal fun App(
         modifier = Modifier.align(Alignment.BottomStart)
       )
     }
+
+    if (active) {
+      ColorLegend(
+        modifier = Modifier.align(Alignment.BottomEnd)
+      )
+    }
+
+    RightInfoPanel(
+      selectedNode = selectedNode,
+      modifier = Modifier
+        .align(Alignment.TopEnd)
+    )
   }
 }
 
