@@ -23,6 +23,7 @@ dependencies {
 
   // Needs to be API for the WorkflowInterceptor argument to WorkflowRunner.Config.
   api(project(":workflow-runtime"))
+  api(project(":workflow-runtime-android"))
   api(project(":workflow-ui:core-common"))
 
   compileOnly(libs.androidx.viewbinding)
