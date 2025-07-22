@@ -124,7 +124,7 @@ internal fun RenderTrace(
     val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
     DrawTree(
       node = fullTree[frameInd],
-      previousNode = previousFrame,
+      previousFrameNode = previousFrame,
       affectedNodes = affectedNodes[frameInd],
       expandedNodes = remember(frameInd) { mutableStateMapOf() },
       onNodeSelect = onNodeSelect,
@@ -142,7 +142,7 @@ internal fun RenderTrace(
 @Composable
 private fun DrawTree(
   node: Node,
-  previousNode: Node?,
+  previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
   onNodeSelect: (Node, Node?) -> Unit,
@@ -163,11 +163,11 @@ private fun DrawTree(
     val isExpanded = expandedNodes[node.id] == true
 
     DrawNode(
-      node,
-      previousNode,
-      isAffected,
-      isExpanded,
-      onNodeSelect,
+      node = node,
+      nodePast = previousFrameNode,
+      isAffected = isAffected,
+      isExpanded = isExpanded,
+      onNodeSelect = onNodeSelect,
       onExpandToggle = { expandedNodes[node.id] = !expandedNodes[node.id]!! }
     )
 
@@ -182,11 +182,11 @@ private fun DrawTree(
         In the edge case that the current frame has additional children compared to the previous
         frame, we replace with null and will check before next recursive call.
          */
-        node.children.forEach { (index, childNode) ->
-          val prevChildNode = previousNode?.children?.get(index)
+        node.children.forEach { (id, childNode) ->
+          val prevFrameChildNode = previousFrameNode?.children?.get(id)
           DrawTree(
             node = childNode,
-            previousNode = prevChildNode,
+            previousFrameNode = prevFrameChildNode,
             affectedNodes = affectedNodes,
             expandedNodes = expandedNodes,
             onNodeSelect = onNodeSelect
@@ -204,7 +204,7 @@ private fun DrawTree(
 @Composable
 private fun DrawNode(
   node: Node,
-  previousNode: Node?,
+  nodePast: Node?,
   isAffected: Boolean,
   isExpanded: Boolean,
   onNodeSelect: (Node, Node?) -> Unit,
@@ -215,7 +215,7 @@ private fun DrawNode(
       .background(if (isAffected) Color.Green else Color.Transparent)
       .onPointerEvent(PointerEventType.Press) {
         if (it.buttons.isPrimaryPressed) {
-          onNodeSelect(node, previousNode)
+          onNodeSelect(node, nodePast)
         } else if (it.buttons.isSecondaryPressed) {
           onExpandToggle(node)
         }
