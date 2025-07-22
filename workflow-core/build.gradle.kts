@@ -24,7 +24,7 @@ kotlin {
   // structure where `jvm` is the shared parent of both `android` and `desktop`.
   if (targets == "kmp" || targets == "android") {
     androidLibrary {
-      namespace = "com.squareup.workflow1.android"
+      namespace = "com.squareup.workflow1"
       testNamespace = "$namespace.test"
 
       compileSdk = libs.versions.compileSdk.get().toInt()

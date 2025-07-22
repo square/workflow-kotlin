@@ -321,7 +321,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * different Workflow runtimes in an app. Most apps will not use this function.
  */
 public fun SavedStateHandle.removeWorkflowState() {
-  remove<Any>(com.squareup.workflow1.android.KEY)
+  remove<Any>(KEY)
 }
 
 @VisibleForTesting
