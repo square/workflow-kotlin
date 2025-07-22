@@ -7,8 +7,8 @@ import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Baker
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Charlie
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.toParcelable
-import com.squareup.workflow1.toSnapshot
+import com.squareup.workflow1.ui.toParcelable
+import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.parcelize.Parcelize
 
 object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBackButtonScreen>() {
