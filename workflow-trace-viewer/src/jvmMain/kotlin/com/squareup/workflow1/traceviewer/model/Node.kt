@@ -34,14 +34,11 @@ internal data class Node(
 
   companion object {
     fun getNodeFields(): List<String> {
-      return listOf("id", "parent", "parentId", "props", "state", "rendering")
+      return listOf("props", "state", "rendering")
     }
 
     fun getNodeData(node: Node, field: String): String {
       return when (field.lowercase()) {
-        "id" -> node.id
-        "parent" -> node.parent
-        "parentid" -> node.parentId
         "props" -> node.props
         "state" -> node.state
         "rendering" -> node.rendering

@@ -98,9 +98,22 @@ private fun NodePanelDetails(
     }
     item {
       Text(
-        text = node.current.name,
-        style = MaterialTheme.typography.h6,
-        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+        text = "${node.current.parent} (ID: ${node.current.parentId})",
+        style = MaterialTheme.typography.subtitle2,
+        color = Color.Gray,
+        modifier = Modifier.padding(top = 8.dp)
+      )
+      Text(
+        text = "↳",
+        style = MaterialTheme.typography.subtitle1,
+        color = Color.Gray,
+        modifier = Modifier.padding(start = 8.dp)
+      )
+      Text(
+        text = "${node.current.name} (ID: ${node.current.id})",
+        style = MaterialTheme.typography.h5,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(8.dp),
         textAlign = TextAlign.Center
       )
     }
