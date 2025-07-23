@@ -34,7 +34,9 @@ import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
 import com.squareup.workflow1.traceviewer.util.parseLiveTrace
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.SocketException
 
 /**
  * Access point for drawing the main content of the app. It will load the trace for given files and
@@ -71,11 +73,10 @@ internal fun RenderTrace(
   fun handleParseResult(
     parseResult: ParseResult,
     onNewFrame: (() -> Unit)? = null
-  ): Boolean {
-    return when (parseResult) {
+  ) {
+    when (parseResult) {
       is ParseResult.Failure -> {
         error = parseResult.error
-        false
       }
       is ParseResult.Success -> {
         addToStates(
@@ -84,7 +85,6 @@ internal fun RenderTrace(
           affected = parseResult.affectedNodes
         )
         onNewFrame?.invoke()
-        true
       }
     }
   }
@@ -92,20 +92,32 @@ internal fun RenderTrace(
   LaunchedEffect(traceSource) {
     when (traceSource) {
       is TraceMode.File -> {
-        // We guarantee the file is null since this composable can only be called when a file is selected.
-        val parseResult = parseFileTrace(traceSource.file!!)
+        checkNotNull(traceSource.file){
+          "TraceMode.File should have a non-null file to parse."
+        }
+        val parseResult = parseFileTrace(traceSource.file)
         handleParseResult(parseResult)
       }
 
       is TraceMode.Live -> {
         val socket = traceSource.socket
-        socket.beginListen(this)
+        launch {
+          try {
+            socket.pollSocket()
+          } catch (e: SocketException) {
+            error = SocketException("Socket has already been closed or is not available: ${e.message}")
+            return@launch
+          }
+        }
+        if (error != null) {
+          return@LaunchedEffect
+        }
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
 
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
           // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
           for (renderPass in socket.renderPassChannel) {
-            val currentTree = if (fullTree.isEmpty()) null else fullTree.last()
+            val currentTree = fullTree.lastOrNull()
             val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
             handleParseResult(parseResult, onNewFrame)
           }

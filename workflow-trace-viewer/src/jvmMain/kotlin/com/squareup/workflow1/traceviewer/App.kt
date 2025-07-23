@@ -42,12 +42,6 @@ internal fun App(
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   val socket = remember { SocketClient() }
 
-  Runtime.getRuntime().addShutdownHook(
-    Thread {
-      socket.close()
-    }
-  )
-
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
       sandboxState.reset()
@@ -57,7 +51,7 @@ internal fun App(
   Box(
     modifier = modifier
   ) {
-    fun resetStates() = run {
+    fun resetStates() {
       socket.close()
       selectedTraceFile = null
       selectedNode = null
@@ -112,7 +106,7 @@ internal fun App(
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          socket.start()
+          socket.open()
           TraceMode.Live(socket)
         }
       },
@@ -140,11 +134,10 @@ internal class SandboxState {
 
   fun reset() {
     offset = Offset.Zero
-    // scale = 1f
   }
 }
 
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
-  data class Live(val socket: SocketClient = SocketClient()) : TraceMode
+  data class Live(val socket: SocketClient) : TraceMode
 }

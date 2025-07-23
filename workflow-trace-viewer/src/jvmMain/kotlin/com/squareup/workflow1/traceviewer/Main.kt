@@ -14,7 +14,7 @@ fun main() {
         .start().waitFor()
     }
   )
-  singleWindowApplication(title = "Workflow Trace Viewer") {
+  singleWindowApplication(title = "Workflow Trace Viewer", exitProcessOnExit = false) {
     App(Modifier.fillMaxSize())
   }
 }

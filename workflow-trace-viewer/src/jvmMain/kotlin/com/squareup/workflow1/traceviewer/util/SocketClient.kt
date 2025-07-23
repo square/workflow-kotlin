@@ -2,20 +2,28 @@ package com.squareup.workflow1.traceviewer.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
+
 import java.net.Socket
 import java.net.SocketException
 
 /**
- * This is a client that connects to the `ActionLogger` Unix Domain Socket and listens for any new
- * render passes. Since this app is on JVM and the server is on Android, we use ADB to forward the
- * port onto the socket.
+ * This is a client that can connect to any server socket that sends render pass data while using
+ * the Workflow framework.
+ *
+ * [start] and [close] are idempotent commands, so this socket can only be started and closed once.
+ *
+ * Since this app is on JVM and the server is on Android, we use ADB to forward the port onto the socket.
  */
 internal class SocketClient {
   private lateinit var socket: Socket
   private var initialized = false
-  val renderPassChannel: Channel<String> = Channel(Channel.UNLIMITED)
+  val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
 
   /**
    * We use any available ports on the host machine to connect to the emulator.
@@ -24,18 +32,20 @@ internal class SocketClient {
    * `LocalServerSocket` -- which creates a unix socket on the linux abstract namespace -- we use
    * `localabstract:` to connect to it.
    */
-  fun start() {
+  fun open() {
+    if (initialized){
+      return
+    }
     initialized = true
     val process = ProcessBuilder(
       "adb", "forward", "tcp:0", "localabstract:workflow-trace"
     ).start()
 
     // The adb forward command will output the port number it picks to connect.
-    val port = run {
-      process.waitFor()
-      process.inputStream.bufferedReader().readText()
+    process.waitFor()
+    val port = process.inputStream.bufferedReader().readText()
         .trim().toInt()
-    }
+
     socket = Socket("localhost", port)
   }
 
@@ -47,22 +57,25 @@ internal class SocketClient {
   }
 
   /**
-   * This will always be called within an asynchronous call, so we do not need to block/launch a
-   * new coroutine here.
+   * Polls the socket's input stream and sends the data into [renderPassChannel].
+   * The caller should handle the scope of the coroutine that this function is called in.
    *
    * To better separate the responsibility of reading from the socket, we use a channel for the caller
    * to handle parsing and amalgamating the render passes.
    */
-  fun beginListen(scope: CoroutineScope) {
-    scope.launch(Dispatchers.IO) {
+  suspend fun pollSocket() {
+    withContext(Dispatchers.IO) {
       val reader = socket.getInputStream().bufferedReader()
-      try {
-        while (true) {
-          val input = reader.readLine()
-          renderPassChannel.trySend(input)
+      reader.use {
+        try {
+          while (true) {
+            val input = reader.readLine()
+            renderPassChannel.trySend(input)
+            println(input)
+          }
+        } catch (e: SocketException) {
+          e.printStackTrace()
         }
-      } catch (e: SocketException) {
-        println("Exiting socket listener due to: ${e.message}")
       }
     }
   }

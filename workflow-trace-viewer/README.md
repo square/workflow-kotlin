@@ -12,7 +12,7 @@ It can be run via Gradle using:
 
 By Default, the app will be in file parsing mode, where you are able to select a previously recorded workflow trace file for it to visualize the data.
 
-By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly pulled from the emulator into the visualizer.
+By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly pulled from the emulator into the visualizer. A connection can only happen once. If there needs to be rerecording of the trace, the emulator must first be restarted, and then the app must be restarted as well. This is due to the fact that any open socket will consume all render pass data, meaning there is nothing to read from the emulator.
 
 It is ***important*** to run the emulator first before toggling to live mode.
 
