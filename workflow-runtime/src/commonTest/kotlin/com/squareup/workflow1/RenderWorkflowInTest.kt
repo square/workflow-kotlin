@@ -3,7 +3,7 @@ package com.squareup.workflow1
 import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
@@ -54,7 +54,7 @@ import kotlin.test.assertTrue
 class RenderWorkflowInTest(
   useTracer: Boolean = false,
   private val useUnconfined: Boolean = true,
-  private val runtime: RuntimeOptions = DEFAULT
+  private val runtime: RuntimeOptions = NONE
 ) {
 
   private val runtimeConfig = runtime.runtimeConfig
@@ -290,7 +290,7 @@ class RenderWorkflowInTest(
   }
 
   @Test fun saves_to_and_restores_from_snapshot(
-    runtime2: RuntimeOptions = DEFAULT
+    runtime2: RuntimeOptions = NONE
   ) = runTest(dispatcherUsed) {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
       initialState = { _, snapshot ->
@@ -564,7 +564,7 @@ class RenderWorkflowInTest(
   }
 
   @Test fun tracer_includes_expected_sections() {
-    if (runtime == DEFAULT && testTracer != null) {
+    if (runtime == NONE && testTracer != null) {
       runTest(UnconfinedTestDispatcher()) {
         // Only test default so we only have one 'golden value' to assert against.
         // We are only testing the tracer correctness here, which should be agnostic of runtime.
