@@ -1,14 +1,8 @@
 package com.squareup.workflow1.traceviewer.util
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
-
 import java.net.Socket
 import java.net.SocketException
 
@@ -33,7 +27,7 @@ internal class SocketClient {
    * `localabstract:` to connect to it.
    */
   fun open() {
-    if (initialized){
+    if (initialized) {
       return
     }
     initialized = true
@@ -44,7 +38,7 @@ internal class SocketClient {
     // The adb forward command will output the port number it picks to connect.
     process.waitFor()
     val port = process.inputStream.bufferedReader().readText()
-        .trim().toInt()
+      .trim().toInt()
 
     socket = Socket("localhost", port)
   }
@@ -71,7 +65,6 @@ internal class SocketClient {
           while (true) {
             val input = reader.readLine()
             renderPassChannel.trySend(input)
-            println(input)
           }
         } catch (e: SocketException) {
           e.printStackTrace()

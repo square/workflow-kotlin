@@ -17,7 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
-import com.squareup.workflow1.traceviewer.ui.RenderTrace
+import com.squareup.workflow1.traceviewer.util.RenderTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
 import com.squareup.workflow1.traceviewer.util.SandboxBackground

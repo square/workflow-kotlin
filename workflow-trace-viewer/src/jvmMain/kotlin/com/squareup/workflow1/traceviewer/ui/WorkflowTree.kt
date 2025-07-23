@@ -11,12 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -26,122 +20,7 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
-import com.squareup.moshi.JsonAdapter
-import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.util.ParseResult
-import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
-import com.squareup.workflow1.traceviewer.util.parseFileTrace
-import com.squareup.workflow1.traceviewer.util.parseLiveTrace
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.SocketException
-
-/**
- * Access point for drawing the main content of the app. It will load the trace for given files and
- * tabs. This will also all errors related to errors parsing a given trace JSON file.
- *
- * This handles either File or Live trace modes, and will parse equally
- */
-@Composable
-internal fun RenderTrace(
-  traceSource: TraceMode,
-  frameInd: Int,
-  onFileParse: (List<Node>) -> Unit,
-  onNodeSelect: (Node, Node?) -> Unit,
-  onNewFrame: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  var isLoading by remember(traceSource) { mutableStateOf(true) }
-  var error by remember(traceSource) { mutableStateOf<Throwable?>(null) }
-  val frames = remember { mutableStateListOf<Node>() }
-  val fullTree = remember { mutableStateListOf<Node>() }
-  val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
-
-  // Updates current state with the new data from trace source.
-  fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
-    frames.addAll(frame)
-    fullTree.addAll(tree)
-    affectedNodes.addAll(affected)
-    isLoading = false
-    onFileParse(frame)
-  }
-
-  // Handles the result of parsing a trace, either from file or live. Live mode includes callback
-  // for when a new frame is received.
-  fun handleParseResult(
-    parseResult: ParseResult,
-    onNewFrame: (() -> Unit)? = null
-  ) {
-    when (parseResult) {
-      is ParseResult.Failure -> {
-        error = parseResult.error
-      }
-      is ParseResult.Success -> {
-        addToStates(
-          frame = parseResult.trace,
-          tree = parseResult.trees,
-          affected = parseResult.affectedNodes
-        )
-        onNewFrame?.invoke()
-      }
-    }
-  }
-
-  LaunchedEffect(traceSource) {
-    when (traceSource) {
-      is TraceMode.File -> {
-        checkNotNull(traceSource.file){
-          "TraceMode.File should have a non-null file to parse."
-        }
-        val parseResult = parseFileTrace(traceSource.file)
-        handleParseResult(parseResult)
-      }
-
-      is TraceMode.Live -> {
-        val socket = traceSource.socket
-        launch {
-          try {
-            socket.pollSocket()
-          } catch (e: SocketException) {
-            error = SocketException("Socket has already been closed or is not available: ${e.message}")
-            return@launch
-          }
-        }
-        if (error != null) {
-          return@LaunchedEffect
-        }
-        val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
-
-        withContext(Dispatchers.Default) {
-          // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
-          for (renderPass in socket.renderPassChannel) {
-            val currentTree = fullTree.lastOrNull()
-            val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
-            handleParseResult(parseResult, onNewFrame)
-          }
-        }
-      }
-    }
-  }
-
-  if (error != null) {
-    Text("Error parsing: ${error?.message}")
-    return
-  }
-
-  if (!isLoading) {
-    val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
-    DrawTree(
-      node = fullTree[frameInd],
-      previousNode = previousFrame,
-      affectedNodes = affectedNodes[frameInd],
-      expandedNodes = remember(frameInd) { mutableStateMapOf() },
-      onNodeSelect = onNodeSelect,
-    )
-  }
-}
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
@@ -151,7 +30,7 @@ internal fun RenderTrace(
  * closed from user clicks.
  */
 @Composable
-private fun DrawTree(
+internal fun DrawTree(
   node: Node,
   previousNode: Node?,
   affectedNodes: Set<Node>,
