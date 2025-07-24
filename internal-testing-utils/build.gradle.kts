@@ -1,6 +1,5 @@
 plugins {
   id("kotlin-jvm")
-  id("published")
 }
 
 dependencies {

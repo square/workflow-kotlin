@@ -1,14 +1,5 @@
 [
   {
-    "gradlePath": ":internal-testing-utils",
-    "group": "com.squareup.workflow1",
-    "artifactId": "workflow-internal-testing-utils",
-    "description": "Workflow internal testing utilities",
-    "packaging": "jar",
-    "javaVersion": 8,
-    "publicationName": "maven"
-  },
-  {
     "gradlePath": ":trace-encoder",
     "group": "com.squareup.workflow1",
     "artifactId": "trace-encoder",
