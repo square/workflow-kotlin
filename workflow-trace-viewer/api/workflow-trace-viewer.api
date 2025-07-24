@@ -30,6 +30,10 @@ public final class com/squareup/workflow1/traceviewer/util/JsonParserKt {
 	public static final field ROOT_ID Ljava/lang/String;
 }
 
+public final class com/squareup/workflow1/traceviewer/util/SocketClientKt {
+	public static final fun pollSocket (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/traceviewer/util/UploadFileKt {
 	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
