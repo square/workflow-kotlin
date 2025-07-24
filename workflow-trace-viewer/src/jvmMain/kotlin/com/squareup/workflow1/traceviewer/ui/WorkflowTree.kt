@@ -63,7 +63,11 @@ internal fun RenderTrace(
   val affectedNodes = remember(traceSource) { mutableStateListOf<Set<Node>>() }
 
   // Updates current state with the new data from trace source.
-  fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
+  fun addToStates(
+    frame: List<Node>,
+    tree: List<Node>,
+    affected: List<Set<Node>>
+  ) {
     frames.addAll(frame)
     fullTree.addAll(tree)
     affectedNodes.addAll(affected)
@@ -82,6 +86,7 @@ internal fun RenderTrace(
         error = parseResult.error
         false
       }
+
       is ParseResult.Success -> {
         addToStates(
           frame = parseResult.trace,
@@ -160,15 +165,12 @@ private fun DrawTree(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    val groupKey = "${node.id}-unaffected"
     val isAffected = affectedNodes.contains(node)
     // By default, nodes that relevant to this specific frame are expanded. All others are closed.
     LaunchedEffect(expandedNodes) {
       expandedNodes[node.id] = isAffected
-      expandedNodes[groupKey] = false
     }
     val isExpanded = expandedNodes[node.id] == true
-    val unaffectedChildrenExpanded = expandedNodes[groupKey] == true
 
     DrawNode(
       node = node,
@@ -179,49 +181,88 @@ private fun DrawTree(
       onExpandToggle = { expandedNodes[node.id] = !expandedNodes[node.id]!! }
     )
 
-    // Draws the node's children recursively.
     if (isExpanded) {
-      // Draw the affected children, and only draw the unaffected children it is clicked annd expanded.
       val (affectedChildren, unaffectedChildren) = node.children.values
         .partition { affectedNodes.contains(it) }
 
+      UnaffectedChildrenGroup(
+        node = node,
+        children = unaffectedChildren,
+        previousFrameNode = previousFrameNode,
+        affectedNodes = affectedNodes,
+        expandedNodes = expandedNodes,
+        onNodeSelect = onNodeSelect
+      )
 
-      if (unaffectedChildren.isNotEmpty()) {
-        Box (
-          modifier = Modifier
-            .onPointerEvent(PointerEventType.Press) {
-            if (it.buttons.isSecondaryPressed) {
-              // The open/close state for this group is always set when this node is first composed.
-              expandedNodes[groupKey] = !expandedNodes[groupKey]!!
-            }
-          }
-        ) {
-          if (!unaffectedChildrenExpanded) {
-            Column(
-              modifier = Modifier
-                .background(Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
-                .border(1.dp, Color.Gray)
-                .padding(8.dp),
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-              Text(text = "${node.name}'s", color = Color.DarkGray)
-              Text(text = "${unaffectedChildren.size} unaffected children", color = Color.DarkGray, fontSize = 12.sp)
-            }
-          } else {
-            DrawChildren(
-              children = unaffectedChildren,
-              previousFrameNode = previousFrameNode,
-              affectedNodes = affectedNodes,
-              expandedNodes = expandedNodes,
-              onNodeSelect = onNodeSelect
-            )
-          }
+      AffectedChildrenGroup(
+        children = affectedChildren,
+        previousFrameNode = previousFrameNode,
+        affectedNodes = affectedNodes,
+        expandedNodes = expandedNodes,
+        onNodeSelect = onNodeSelect
+      )
+    }
+  }
+}
+
+/**
+ * Draws the group of unaffected children, which can be open and closed to expand/collapse them.
+ *
+ * If an unaffected children also has other children, it cannot be opened, since the this group
+ * treats all nodes as one entity, so the onClick for the whole group overrides the onClick for the
+ * individual nodes.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun UnaffectedChildrenGroup(
+  node: Node,
+  children: List<Node>,
+  previousFrameNode: Node?,
+  affectedNodes: Set<Node>,
+  expandedNodes: MutableMap<String, Boolean>,
+  onNodeSelect: (NodeUpdate) -> Unit
+) {
+  if (children.isEmpty()) return
+
+  val groupKey = "${node.id}_unaffected_group"
+  LaunchedEffect(Unit) {
+    expandedNodes[groupKey] = false
+  }
+  val isGroupExpanded = expandedNodes[groupKey] == true
+
+  Box(
+    modifier = Modifier
+      .onPointerEvent(PointerEventType.Press) {
+        if (it.buttons.isSecondaryPressed) {
+          expandedNodes[groupKey] = !isGroupExpanded
         }
       }
-
-      if (affectedChildren.isNotEmpty()) {
-        DrawChildren(
-          children = affectedChildren,
+  ) {
+    if (!isGroupExpanded) {
+      Column(
+        modifier = Modifier
+          .background(Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
+          .border(1.dp, Color.Gray)
+          .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        Text(text = "${node.name}'s", color = Color.DarkGray)
+        Text(
+          text = "${children.size} unaffected children",
+          color = Color.DarkGray,
+          fontSize = 12.sp
+        )
+      }
+    } else {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(6.dp)
+          .border(3.dp, Color.Black),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        DrawChildrenInGroups(
+          children = children,
           previousFrameNode = previousFrameNode,
           affectedNodes = affectedNodes,
           expandedNodes = expandedNodes,
@@ -232,29 +273,92 @@ private fun DrawTree(
   }
 }
 
+/**
+ * Draws the group of affected children
+ */
 @Composable
-private fun DrawChildren(
+private fun AffectedChildrenGroup(
   children: List<Node>,
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
-  onNodeSelect: (NodeUpdate) -> Unit,
+  onNodeSelect: (NodeUpdate) -> Unit
 ) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(8.dp),
-    horizontalArrangement = Arrangement.SpaceEvenly,
-    verticalAlignment = Alignment.Top
+  if (children.isEmpty()) return
+
+  DrawChildrenInGroups(
+    children = children,
+    previousFrameNode = previousFrameNode,
+    affectedNodes = affectedNodes,
+    expandedNodes = expandedNodes,
+    onNodeSelect = onNodeSelect
+  )
+}
+
+/**
+ * Draws the children in a grid manner, to avoid horizontal clutter and make better use of space.
+ */
+@Composable
+private fun DrawChildrenInGroups(
+  children: List<Node>,
+  previousFrameNode: Node?,
+  affectedNodes: Set<Node>,
+  expandedNodes: MutableMap<String, Boolean>,
+  onNodeSelect: (NodeUpdate) -> Unit
+) {
+  // Split children into those with children (nested) and those without
+  val (nestedChildren, simpleChildren) = children.partition { it.children.isNotEmpty() }
+
+  Column(
+    verticalArrangement = Arrangement.spacedBy(16.dp),  // Increased spacing between sections
   ) {
-    children.forEach { childNode ->
-      DrawTree(
-        node = childNode,
-        previousFrameNode = previousFrameNode?.children?.get(childNode.id),
-        affectedNodes = affectedNodes,
-        expandedNodes = expandedNodes,
-        onNodeSelect = onNodeSelect
-      )
+    // Draw simple children in a grid at the top
+    if (simpleChildren.isNotEmpty()) {
+      val groupedSimpleChildren = simpleChildren.chunked(5)
+
+      groupedSimpleChildren.forEach { group ->
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .align(Alignment.CenterHorizontally),
+          horizontalArrangement = Arrangement.SpaceEvenly,
+          verticalAlignment = Alignment.Top
+        ) {
+          group.forEach { childNode ->
+            DrawTree(
+              node = childNode,
+              previousFrameNode = previousFrameNode?.children?.get(childNode.id),
+              affectedNodes = affectedNodes,
+              expandedNodes = expandedNodes,
+              onNodeSelect = onNodeSelect
+            )
+          }
+        }
+
+      }
+    }
+
+    // Draw nested children in a single row at the bottom
+    if (nestedChildren.isNotEmpty()) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 8.dp)
+          .align(Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Top
+      ) {
+        nestedChildren.forEach { childNode ->
+          DrawTree(
+            node = childNode,
+            previousFrameNode = previousFrameNode?.children?.get(childNode.id),
+            affectedNodes = affectedNodes,
+            expandedNodes = expandedNodes,
+            onNodeSelect = onNodeSelect
+          )
+        }
+      }
     }
   }
 }
