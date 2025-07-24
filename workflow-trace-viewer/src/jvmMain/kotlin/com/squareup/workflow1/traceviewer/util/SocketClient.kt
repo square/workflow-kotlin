@@ -58,8 +58,7 @@ internal class SocketClient {
       val reader = socket.getInputStream().bufferedReader()
       try {
         while (true) {
-          val input = reader.readLine()
-          renderPassChannel.trySend(input)
+          reader.readLine()?.let(renderPassChannel::trySend)
         }
       } catch (e: SocketException) {
         println("Exiting socket listener due to: ${e.message}")
