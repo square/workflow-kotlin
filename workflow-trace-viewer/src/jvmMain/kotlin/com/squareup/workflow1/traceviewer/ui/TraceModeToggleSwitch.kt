@@ -6,10 +6,6 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,19 +20,13 @@ internal fun TraceModeToggleSwitch(
   traceMode: TraceMode,
   modifier: Modifier = Modifier
 ) {
-  // File mode is unchecked by default, and live mode is checked.
-  var checked by remember {
-    mutableStateOf(traceMode is TraceMode.Live)
-  }
-
   Column(
     modifier = modifier.padding(16.dp),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Switch(
-      checked = checked,
+      checked = traceMode is TraceMode.Live,
       onCheckedChange = {
-        checked = it
         onToggle()
       },
       colors = SwitchDefaults.colors(

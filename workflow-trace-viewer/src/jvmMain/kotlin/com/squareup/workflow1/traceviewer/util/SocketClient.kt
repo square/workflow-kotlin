@@ -1,6 +1,5 @@
 package com.squareup.workflow1.traceviewer.util
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
@@ -15,16 +14,18 @@ import java.net.Socket
 internal suspend fun streamRenderPassesFromDevice(parseOnNewRenderPass: (String) -> Unit) {
   val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
   coroutineScope {
-    try {
-      pollSocket(onNewRenderPass = renderPassChannel::send)
-    } finally {
-      renderPassChannel.close()
+    launch {
+      try {
+        pollSocket(onNewRenderPass = renderPassChannel::send)
+      } finally {
+        renderPassChannel.close()
+      }
     }
-  }
 
-  // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
-  for (renderPass in renderPassChannel) {
-    parseOnNewRenderPass(renderPass)
+    // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
+    for (renderPass in renderPassChannel) {
+      parseOnNewRenderPass(renderPass)
+    }
   }
 }
 

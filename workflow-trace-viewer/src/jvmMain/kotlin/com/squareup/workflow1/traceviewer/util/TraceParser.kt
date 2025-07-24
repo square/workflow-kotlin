@@ -90,7 +90,7 @@ internal fun RenderTrace(
   }
 
   if (error != null) {
-    Text("Error parsing: ${error}")
+    Text("Error parsing: $error")
     return
   }
 
