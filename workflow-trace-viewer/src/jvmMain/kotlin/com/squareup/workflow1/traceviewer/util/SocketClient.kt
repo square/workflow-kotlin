@@ -1,7 +1,9 @@
 package com.squareup.workflow1.traceviewer.util
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -9,6 +11,22 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import okio.IOException
 import java.net.Socket
+
+internal suspend fun streamRenderPassesFromDevice(parseOnNewRenderPass: (String) -> Unit) {
+  val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
+  coroutineScope {
+    try {
+      pollSocket(onNewRenderPass = renderPassChannel::send)
+    } finally {
+      renderPassChannel.close()
+    }
+  }
+
+  // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
+  for (renderPass in renderPassChannel) {
+    parseOnNewRenderPass(renderPass)
+  }
+}
 
 /**
  * Collects data from a server socket and serves them back to the caller via callback.
@@ -20,7 +38,7 @@ import java.net.Socket
  * @param onNewRenderPass is called from an arbitrary thread, so it is important to ensure that the
  *        caller is thread safe
  */
-suspend fun pollSocket(onNewRenderPass: suspend (String) -> Unit) {
+private suspend fun pollSocket(onNewRenderPass: suspend (String) -> Unit) {
   withContext(Dispatchers.IO) {
     try {
       runForwardingPortThroughAdb { port ->

@@ -14,9 +14,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.ui.DrawTree
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import java.net.SocketException
 
 /**
  * Handles parsing the trace's after JsonParser has turned all render passes into frames. Also calls
@@ -58,6 +55,7 @@ internal fun RenderTrace(
       is ParseResult.Failure -> {
         error = parseResult.error.toString()
       }
+
       is ParseResult.Success -> {
         addToStates(
           frame = parseResult.trace,
@@ -80,23 +78,13 @@ internal fun RenderTrace(
       }
 
       is TraceMode.Live -> {
-        val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
-        launch {
-          try {
-            pollSocket(onNewRenderPass = renderPassChannel::send)
-            error = "Socket has already been closed or is not available."
-          } finally {
-            renderPassChannel.close()
-          }
-        }
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
-
-        // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
-        for (renderPass in renderPassChannel) {
+        streamRenderPassesFromDevice { renderPass ->
           val currentTree = fullTree.lastOrNull()
           val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
           handleParseResult(parseResult, onNewFrame)
         }
+        error = "Socket has already been closed or is not available."
       }
     }
   }
