@@ -8,12 +8,6 @@ import androidx.compose.ui.window.singleWindowApplication
  * Main entry point for the desktop application, see [README.md] for more details.
  */
 fun main() {
-  Runtime.getRuntime().addShutdownHook(
-    Thread {
-      ProcessBuilder("adb", "forward", "--remove-all")
-        .start().waitFor()
-    }
-  )
   singleWindowApplication(title = "Workflow Trace Viewer", exitProcessOnExit = false) {
     App(Modifier.fillMaxSize())
   }

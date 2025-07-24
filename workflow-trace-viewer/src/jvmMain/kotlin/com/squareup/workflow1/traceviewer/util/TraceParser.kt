@@ -14,9 +14,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.ui.DrawTree
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.SocketException
 
 /**
@@ -35,7 +34,7 @@ internal fun RenderTrace(
   modifier: Modifier = Modifier
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
-  var error by remember(traceSource) { mutableStateOf<Throwable?>(null) }
+  var error by remember(traceSource) { mutableStateOf<String?>(null) }
   val frames = remember { mutableStateListOf<Node>() }
   val fullTree = remember { mutableStateListOf<Node>() }
   val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
@@ -57,7 +56,7 @@ internal fun RenderTrace(
   ) {
     when (parseResult) {
       is ParseResult.Failure -> {
-        error = parseResult.error
+        error = parseResult.error.toString()
       }
       is ParseResult.Success -> {
         addToStates(
@@ -81,34 +80,29 @@ internal fun RenderTrace(
       }
 
       is TraceMode.Live -> {
-        val socket = traceSource.socket
+        val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
         launch {
           try {
-            socket.pollSocket()
-          } catch (e: SocketException) {
-            error = SocketException("Socket has already been closed or is not available: ${e.message}")
-            return@launch
+            pollSocket(onNewRenderPass = renderPassChannel::send)
+            error = "Socket has already been closed or is not available."
+          } finally {
+            renderPassChannel.close()
           }
-        }
-        if (error != null) {
-          return@LaunchedEffect
         }
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
 
-        withContext(Dispatchers.Default) {
-          // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
-          for (renderPass in socket.renderPassChannel) {
-            val currentTree = fullTree.lastOrNull()
-            val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
-            handleParseResult(parseResult, onNewFrame)
-          }
+        // Since channel implements ChannelIterator, we can for-loop through on the receiver end.
+        for (renderPass in renderPassChannel) {
+          val currentTree = fullTree.lastOrNull()
+          val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
+          handleParseResult(parseResult, onNewFrame)
         }
       }
     }
   }
 
   if (error != null) {
-    Text("Error parsing: ${error?.message}")
+    Text("Error parsing: ${error}")
     return
   }
 

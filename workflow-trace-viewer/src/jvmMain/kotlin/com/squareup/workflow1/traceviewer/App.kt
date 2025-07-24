@@ -17,11 +17,10 @@ import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
-import com.squareup.workflow1.traceviewer.util.RenderTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
+import com.squareup.workflow1.traceviewer.util.RenderTrace
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
-import com.squareup.workflow1.traceviewer.util.SocketClient
 import com.squareup.workflow1.traceviewer.util.UploadFile
 import io.github.vinceglb.filekit.PlatformFile
 
@@ -40,7 +39,6 @@ internal fun App(
   // Default to File mode, and can be toggled to be in Live mode.
   var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
-  val socket = remember { SocketClient() }
 
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
@@ -52,7 +50,6 @@ internal fun App(
     modifier = modifier
   ) {
     fun resetStates() {
-      socket.close()
       selectedTraceFile = null
       selectedNode = null
       frameIndex = 0
@@ -66,7 +63,6 @@ internal fun App(
       // if there is not a file selected and trace mode is live, then don't render anything.
       val readyForFileTrace = traceMode is TraceMode.File && selectedTraceFile != null
       val readyForLiveTrace = traceMode is TraceMode.Live
-
       if (readyForFileTrace || readyForLiveTrace) {
         RenderTrace(
           traceSource = traceMode,
@@ -106,8 +102,7 @@ internal fun App(
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          socket.open()
-          TraceMode.Live(socket)
+          TraceMode.Live
         }
       },
       traceMode = traceMode,
@@ -139,5 +134,5 @@ internal class SandboxState {
 
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
-  data class Live(val socket: SocketClient) : TraceMode
+  data object Live : TraceMode
 }
