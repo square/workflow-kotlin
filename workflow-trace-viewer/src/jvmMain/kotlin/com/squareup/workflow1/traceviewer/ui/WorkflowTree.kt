@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +28,7 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
@@ -140,6 +143,7 @@ internal fun RenderTrace(
  * A mutable map is used to persist the expansion state of the nodes, allowing them to be open and
  * closed from user clicks.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun DrawTree(
   node: Node,
@@ -151,17 +155,20 @@ private fun DrawTree(
 ) {
   Column(
     modifier
-      .padding(5.dp)
-      .border(1.dp, Color.Black)
+      .padding(6.dp)
+      .border(3.dp, Color.Black)
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
+    val groupKey = "${node.id}-unaffected"
     val isAffected = affectedNodes.contains(node)
     // By default, nodes that relevant to this specific frame are expanded. All others are closed.
     LaunchedEffect(expandedNodes) {
       expandedNodes[node.id] = isAffected
+      expandedNodes[groupKey] = false
     }
     val isExpanded = expandedNodes[node.id] == true
+    val unaffectedChildrenExpanded = expandedNodes[groupKey] == true
 
     DrawNode(
       node = node,
@@ -174,26 +181,80 @@ private fun DrawTree(
 
     // Draws the node's children recursively.
     if (isExpanded) {
-      Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.Top
-      ) {
-        /*
-        We pair up the current node's children with previous frame's children.
-        In the edge case that the current frame has additional children compared to the previous
-        frame, we replace with null and will check before next recursive call.
-         */
-        node.children.forEach { (id, childNode) ->
-          val prevFrameChildNode = previousFrameNode?.children?.get(id)
-          DrawTree(
-            node = childNode,
-            previousFrameNode = prevFrameChildNode,
-            affectedNodes = affectedNodes,
-            expandedNodes = expandedNodes,
-            onNodeSelect = onNodeSelect
-          )
+      // Draw the affected children, and only draw the unaffected children it is clicked annd expanded.
+      val (affectedChildren, unaffectedChildren) = node.children.values
+        .partition { affectedNodes.contains(it) }
+
+
+      if (unaffectedChildren.isNotEmpty()) {
+        Box (
+          modifier = Modifier
+            .onPointerEvent(PointerEventType.Press) {
+            if (it.buttons.isSecondaryPressed) {
+              // The open/close state for this group is always set when this node is first composed.
+              expandedNodes[groupKey] = !expandedNodes[groupKey]!!
+            }
+          }
+        ) {
+          if (!unaffectedChildrenExpanded) {
+            Column(
+              modifier = Modifier
+                .background(Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
+                .border(1.dp, Color.Gray)
+                .padding(8.dp),
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+              Text(text = "${node.name}'s", color = Color.DarkGray)
+              Text(text = "${unaffectedChildren.size} unaffected children", color = Color.DarkGray, fontSize = 12.sp)
+            }
+          } else {
+            DrawChildren(
+              children = unaffectedChildren,
+              previousFrameNode = previousFrameNode,
+              affectedNodes = affectedNodes,
+              expandedNodes = expandedNodes,
+              onNodeSelect = onNodeSelect
+            )
+          }
         }
       }
+
+      if (affectedChildren.isNotEmpty()) {
+        DrawChildren(
+          children = affectedChildren,
+          previousFrameNode = previousFrameNode,
+          affectedNodes = affectedNodes,
+          expandedNodes = expandedNodes,
+          onNodeSelect = onNodeSelect
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun DrawChildren(
+  children: List<Node>,
+  previousFrameNode: Node?,
+  affectedNodes: Set<Node>,
+  expandedNodes: MutableMap<String, Boolean>,
+  onNodeSelect: (NodeUpdate) -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(8.dp),
+    horizontalArrangement = Arrangement.SpaceEvenly,
+    verticalAlignment = Alignment.Top
+  ) {
+    children.forEach { childNode ->
+      DrawTree(
+        node = childNode,
+        previousFrameNode = previousFrameNode?.children?.get(childNode.id),
+        affectedNodes = affectedNodes,
+        expandedNodes = expandedNodes,
+        onNodeSelect = onNodeSelect
+      )
     }
   }
 }
@@ -227,7 +288,7 @@ private fun DrawNode(
           onExpandToggle(node)
         }
       }
-      .padding(10.dp)
+      .padding(16.dp)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Row(
