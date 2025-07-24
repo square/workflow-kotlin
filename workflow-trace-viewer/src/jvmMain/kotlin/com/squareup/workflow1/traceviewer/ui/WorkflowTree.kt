@@ -208,8 +208,8 @@ private fun DrawTree(
 /**
  * Draws the group of unaffected children, which can be open and closed to expand/collapse them.
  *
- * If an unaffected children also has other children, it cannot be opened, since the this group
- * treats all nodes as one entity, so the onClick for the whole group overrides the onClick for the
+ * If an unaffected children also has other children, it cannot be opened since the this group
+ * treats all nodes as one entity. The onClick for the whole group overrides the onClick for the
  * individual nodes.
  */
 @OptIn(ExperimentalComposeUiApi::class)
@@ -266,6 +266,7 @@ private fun UnaffectedChildrenGroup(
           previousFrameNode = previousFrameNode,
           affectedNodes = affectedNodes,
           expandedNodes = expandedNodes,
+          unaffected = true,
           onNodeSelect = onNodeSelect
         )
       }
@@ -297,6 +298,9 @@ private fun AffectedChildrenGroup(
 
 /**
  * Draws the children in a grid manner, to avoid horizontal clutter and make better use of space.
+ *
+ * Unaffected children group would call this with `unaffected = true`, which means that simple/nested
+ * nodes don't matter since we can't open nested ones, so we just simply group in 5's
  */
 @Composable
 private fun DrawChildrenInGroups(
@@ -304,10 +308,17 @@ private fun DrawChildrenInGroups(
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
+  unaffected: Boolean = false,
   onNodeSelect: (NodeUpdate) -> Unit
 ) {
   // Split children into those with children (nested) and those without
-  val (nestedChildren, simpleChildren) = children.partition { it.children.isNotEmpty() }
+  var (nestedChildren, simpleChildren) = children.partition { it.children.isNotEmpty() }
+
+  // Just reset the lists so we chunk everything in the unaffected group
+  if (unaffected) {
+    nestedChildren = emptyList()
+    simpleChildren = children
+  }
 
   Column(
     verticalArrangement = Arrangement.spacedBy(16.dp),  // Increased spacing between sections
