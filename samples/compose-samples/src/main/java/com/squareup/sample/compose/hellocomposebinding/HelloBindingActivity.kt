@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,6 +22,7 @@ import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.withEnvironment
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.plus
 
 private val viewEnvironment =
   (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding))
@@ -47,7 +49,7 @@ class HelloBindingActivity : AppCompatActivity() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = HelloWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
-        scope = viewModelScope,
+        scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
         runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )

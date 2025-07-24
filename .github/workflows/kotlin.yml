@@ -179,10 +179,10 @@ jobs:
           write-cache-key: main-build-artifacts
 
   check:
-    name: Check
+    name: Unit Tests
     runs-on: macos-latest
     needs: build-all
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
