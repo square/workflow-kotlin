@@ -14,36 +14,32 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
-import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
 
-object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() {
+@OptIn(WorkflowExperimentalApi::class)
+object InlineRenderingWorkflow : ComposeWorkflow<Unit, Nothing, Screen>() {
 
-  override fun initialState(
+  @Composable
+  override fun produceRendering(
     props: Unit,
-    snapshot: Snapshot?
-  ): Int = snapshot?.bytes?.parse { it.readInt() } ?: 0
-
-  override fun render(
-    renderProps: Unit,
-    renderState: Int,
-    context: RenderContext<Unit, Int, Nothing>
-  ): ComposeScreen {
-    val onClick = context.eventHandler("increment") { state += 1 }
+    emitOutput: (Nothing) -> Unit
+  ): Screen {
+    var state by rememberSaveable { mutableIntStateOf(0) }
     return ComposeScreen {
-      Content(renderState, onClick)
+      Content(state, onClick = { state++ })
     }
   }
-
-  override fun snapshotState(state: Int): Snapshot = Snapshot.of(state)
 }
 
 @Composable

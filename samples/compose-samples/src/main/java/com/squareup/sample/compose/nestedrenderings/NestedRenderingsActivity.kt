@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
@@ -47,7 +48,8 @@ class NestedRenderingsActivity : AppCompatActivity() {
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
         scope = viewModelScope,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+        interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

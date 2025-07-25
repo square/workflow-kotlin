@@ -1,5 +1,6 @@
 package com.squareup.sample.mainworkflow
 
+import androidx.compose.runtime.saveable.SaverScope
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
@@ -12,9 +13,9 @@ import okio.ByteString
  */
 sealed class MainState {
 
-  internal object Authenticating : MainState()
+  internal data object Authenticating : MainState()
 
-  internal object RunningGame : MainState()
+  internal data object RunningGame : MainState()
 
   fun toSnapshot(): Snapshot {
     return Snapshot.write { sink -> sink.writeUtf8WithLength(this::class.java.name) }
@@ -28,5 +29,10 @@ sealed class MainState {
         else -> throw IllegalArgumentException("Unrecognized state: $mainStateName")
       }
     }
+  }
+
+  object Saver : androidx.compose.runtime.saveable.Saver<MainState, ByteString> {
+    override fun SaverScope.save(value: MainState) = value.toSnapshot().bytes
+    override fun restore(value: ByteString) = fromSnapshot(value)
   }
 }

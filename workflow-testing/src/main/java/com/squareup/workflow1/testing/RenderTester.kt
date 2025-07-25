@@ -11,10 +11,12 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.Companion
+import com.squareup.workflow1.testing.compose.ComposeRenderTesterWrapper
 import com.squareup.workflow1.workflowIdentifier
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
@@ -34,6 +36,11 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
   props: PropsT,
   runtimeConfig: RuntimeConfig? = null,
 ): RenderTester<PropsT, *, OutputT, RenderingT> {
+  if (this is ComposeWorkflow<PropsT, OutputT, RenderingT>) {
+    // TODO
+    return ComposeRenderTesterWrapper(workflow = this)
+  }
+
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
   return statefulWorkflow.testRender(
     props = props,
