@@ -23,7 +23,7 @@ inline fun <reified RenderingT : Screen> LoadingScreenViewFactory(
 
 @PublishedApi
 internal class LoadingLayoutRunner<RenderingT : Screen>(
-  @StringRes private val labelRes: Int,
+  @param:StringRes private val labelRes: Int,
   view: View
 ) : ScreenViewRunner<RenderingT> {
 

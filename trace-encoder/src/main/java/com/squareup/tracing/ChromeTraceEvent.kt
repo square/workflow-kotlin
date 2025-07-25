@@ -19,20 +19,20 @@ import okio.BufferedSink
  */
 @JsonClass(generateAdapter = true)
 internal data class ChromeTraceEvent(
-  @Json(name = "name") val name: String,
-  @Json(name = "cat") val category: String? = null,
-  @Json(name = "ph") val phase: Phase,
-  @Json(name = "ts") val timestampMicros: Long,
-  @Json(name = "pid") val processId: Int = 0,
-  @Json(name = "tid") val threadId: Int = 0,
+  @param:Json(name = "name") val name: String,
+  @param:Json(name = "cat") val category: String? = null,
+  @param:Json(name = "ph") val phase: Phase,
+  @param:Json(name = "ts") val timestampMicros: Long,
+  @param:Json(name = "pid") val processId: Int = 0,
+  @param:Json(name = "tid") val threadId: Int = 0,
   /** Only used for ASYNC events. */
-  @Json(name = "id") val id: Any? = null,
+  @param:Json(name = "id") val id: Any? = null,
   /**
    * Only used for [Phase.INSTANT] events.
    * See [INSTANT_SCOPE_THREAD], etc.
    */
-  @Json(name = "s") val scope: Char? = null,
-  @Json(name = "args") val args: Map<String, Any?>? = null
+  @param:Json(name = "s") val scope: Char? = null,
+  @param:Json(name = "args") val args: Map<String, Any?>? = null
 ) {
 
   @Suppress("unused")

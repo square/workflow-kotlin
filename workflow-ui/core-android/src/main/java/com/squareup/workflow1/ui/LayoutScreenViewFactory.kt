@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 @PublishedApi
 internal class LayoutScreenViewFactory<RenderingT : Screen>(
   override val type: KClass<RenderingT>,
-  @LayoutRes private val layoutId: Int,
+  @param:LayoutRes private val layoutId: Int,
   private val runnerConstructor: (View) -> ScreenViewRunner<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
