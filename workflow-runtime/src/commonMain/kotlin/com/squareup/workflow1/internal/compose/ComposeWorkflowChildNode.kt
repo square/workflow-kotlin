@@ -163,14 +163,15 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       LocalSaveableStateRegistry provides saveableStateRegistry,
       LocalWorkflowComposableRenderer provides this
     ) {
-      interceptor.onRenderComposeWorkflow(
-        renderProps = props,
-        emitOutput = onEmitOutput,
-        session = this,
-        proceed = { innerProps, innerEmitOutput ->
-          _DO_NOT_USE_invokeComposeWorkflowProduceRendering(workflow, innerProps, innerEmitOutput)
-        }
-      )
+      workflow.produceRendering(props, onEmitOutput)
+      // interceptor.onRenderComposeWorkflow(
+      //   renderProps = props,
+      //   emitOutput = onEmitOutput,
+      //   session = this,
+      //   proceed = { innerProps, innerEmitOutput ->
+      //     _DO_NOT_USE_invokeComposeWorkflowProduceRendering(workflow, innerProps, innerEmitOutput)
+      //   }
+      // )
     }
   }
 

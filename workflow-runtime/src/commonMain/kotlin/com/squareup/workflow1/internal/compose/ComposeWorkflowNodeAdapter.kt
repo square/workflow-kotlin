@@ -23,7 +23,7 @@ import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
 internal fun log(message: String) = message.lines().forEach {
-  println("WorkflowComposableNode $it")
+  // println("WorkflowComposableNode $it")
 }
 
 /**

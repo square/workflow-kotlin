@@ -206,8 +206,8 @@ private class RealSynchronizedMolecule(
 
   @OptIn(ExperimentalStdlibApi::class)
   override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R): R {
-    println("compose workflow withFrameNanos (dispatcher=${currentCoroutineContext()[CoroutineDispatcher]})")
-    println(RuntimeException().stackTraceToString())
+    // println("compose workflow withFrameNanos (dispatcher=${currentCoroutineContext()[CoroutineDispatcher]})")
+    // println(RuntimeException().stackTraceToString())
 
     return suspendCancellableCoroutine { continuation ->
       lock.withLock {

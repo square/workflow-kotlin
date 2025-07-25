@@ -92,7 +92,7 @@ public abstract class ComposeWorkflow<PropsT, OutputT, out RenderingT> :
    */
   @WorkflowComposable
   @Composable
-  protected abstract fun produceRendering(
+  public abstract fun produceRendering(
     props: PropsT,
     emitOutput: (OutputT) -> Unit
   ): RenderingT
