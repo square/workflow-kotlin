@@ -2,6 +2,7 @@ import com.rickbusarow.kgx.libsCatalog
 import com.rickbusarow.kgx.version
 import com.squareup.workflow1.buildsrc.internal.javaTarget
 import com.squareup.workflow1.buildsrc.internal.javaTargetVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   id("com.android.test")
@@ -17,11 +18,6 @@ android {
   compileOptions {
     sourceCompatibility = javaTargetVersion
     targetCompatibility = javaTargetVersion
-  }
-
-  kotlinOptions {
-    jvmTarget = javaTarget
-    freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
   }
 
   defaultConfig {
@@ -42,6 +38,13 @@ android {
   targetProjectPath = ":samples:dungeon:app"
   namespace = "com.squareup.sample.dungeon.benchmark"
   experimentalProperties["android.experimental.self-instrumenting"] = true
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_1_8)
+    freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+  }
 }
 
 dependencies {

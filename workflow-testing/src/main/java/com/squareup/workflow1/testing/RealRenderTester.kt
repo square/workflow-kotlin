@@ -495,7 +495,6 @@ internal fun WorkflowIdentifierType.matchesClassExpectation(expectedKClass: KCla
     is Unsnapshottable -> (kType.classifier as? KClass<*>)?.let { actualKClass ->
       expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
     } == true
-    else -> false
   }
 }
 
