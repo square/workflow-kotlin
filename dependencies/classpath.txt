@@ -143,6 +143,7 @@ org.glassfish.jaxb:txw2:2.3.2
 org.jdom:jdom2:2.0.6
 org.jetbrains.dokka:dokka-core:2.0.0
 org.jetbrains.dokka:dokka-gradle-plugin:2.0.0
+org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin:2.0.0
 org.jetbrains.intellij.deps:trove4j:1.0.20200330
 org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.0.21
 org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.21

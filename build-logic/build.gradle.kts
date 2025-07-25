@@ -37,6 +37,10 @@ gradlePlugin {
       id = "dependency-guard"
       implementationClass = "com.squareup.workflow1.buildsrc.DependencyGuardConventionPlugin"
     }
+    create("dokka") {
+      id = "dokka"
+      implementationClass = "com.squareup.workflow1.buildsrc.DokkaConfigPlugin"
+    }
     create("kotlin-android") {
       id = "kotlin-android"
       implementationClass = "com.squareup.workflow1.buildsrc.KotlinAndroidConventionPlugin"

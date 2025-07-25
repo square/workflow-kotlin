@@ -2,7 +2,6 @@ plugins {
   id("com.android.library")
   id("kotlin-android")
   id("android-defaults")
-  id("org.jetbrains.dokka")
 }
 
 // This module is not published, since it's just internal testing utilities.

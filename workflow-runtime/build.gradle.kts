@@ -1,4 +1,5 @@
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
   id("kotlin-multiplatform")
@@ -20,6 +21,7 @@ kotlin {
 
   // Needed for expect class Lock, which is not public API, so this doesn't add any binary compat
   // risk.
+  @OptIn(ExperimentalKotlinGradlePluginApi::class)
   compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }
 
