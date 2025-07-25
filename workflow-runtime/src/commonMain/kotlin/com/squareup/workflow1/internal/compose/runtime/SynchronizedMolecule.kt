@@ -186,7 +186,15 @@ private class RealSynchronizedMolecule(
     } else {
       // Hard-code unchanging frame time since there's no actual frame time code shouldn't rely on
       // this value.
-      frameRequest.execute(0L)
+      val frameResult = frameRequest.execute(0L)
+
+      // If the composition threw an exception, re-throw it ourselves now instead of waiting for the
+      // scope to get it, since lastResult may have not been initialized in this case and we'd throw
+      // below and get supppressed.
+      frameResult.exceptionOrNull()?.let {
+        throw RuntimeException("ComposeWorkflow composition threw an exception", it)
+      }
+
       // If the composition threw an exception, we want it to cancel the coroutine scope before
       // getOrThrow below does so.
       dispatcher.advanceUntilIdle()
@@ -284,9 +292,10 @@ private class RealSynchronizedMolecule(
     private val onFrame: (frameTimeNanos: Long) -> R,
     private val continuation: CancellableContinuation<R>
   ) {
-    fun execute(frameTimeNanos: Long) {
+    fun execute(frameTimeNanos: Long): Result<R> {
       val frameResult = runCatching { onFrame(frameTimeNanos) }
       continuation.resumeWith(frameResult)
+      return frameResult
     }
   }
 }

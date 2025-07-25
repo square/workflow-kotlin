@@ -304,3 +304,17 @@ private fun <PropsT, OutputT, RenderingT> ChildWorkflowRecomposeIsolator(
 ) {
   renderingHolder.value = renderChild(workflow, props, onOutput)
 }
+
+@WorkflowExperimentalApi
+public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.composable(
+  crossinline produceRendering: @Composable (
+    props: PropsT,
+    emitOutput: (OutputT) -> Unit
+  ) -> RenderingT
+): Workflow<PropsT, OutputT, RenderingT> = object : ComposeWorkflow<PropsT, OutputT, RenderingT>() {
+  @Composable
+  override fun produceRendering(
+    props: PropsT,
+    emitOutput: (OutputT) -> Unit
+  ): RenderingT = produceRendering(props, emitOutput)
+}

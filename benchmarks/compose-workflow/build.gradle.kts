@@ -1,7 +1,8 @@
 plugins {
-  id("com.android.library")
+  id("com.android.application")
   id("kotlin-android")
   id("android-defaults")
+  alias(libs.plugins.compose.compiler)
 }
 
 // Note: We are not including our defaults from .buildscript as we do not need the base Workflow
@@ -15,8 +16,7 @@ android {
 
   buildTypes {
     debug {
-      // TODO why isn't this available?
-      // isDebuggable = false
+      isDebuggable = false
     }
   }
 
@@ -30,4 +30,6 @@ dependencies {
   androidTestImplementation(libs.androidx.test.espresso.core)
   androidTestImplementation(libs.androidx.test.junit)
   androidTestImplementation(libs.androidx.test.uiautomator)
+  androidTestImplementation(libs.kotlin.test.jdk)
+  androidTestImplementation(libs.kotlinx.coroutines.test)
 }
