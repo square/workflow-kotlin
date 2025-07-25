@@ -105,21 +105,21 @@ runs:
 
     - name: Upload Any Logs
       if: failure()
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: log-upload
         path: ${{github.workspace}}/**/*.log
 
     - name: Upload Any Heap Dumps
       if: failure()
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: hprof-upload
         path: ${{github.workspace}}/**/*.hprof
 
     - name: Upload Any Specified Files
       if: failure() && inputs.failure-path-upload != 'null'
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: specified-upload
         path: ${{github.workspace}}/${{inputs.failure-path-upload}}

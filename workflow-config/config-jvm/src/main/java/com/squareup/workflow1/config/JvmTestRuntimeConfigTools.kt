@@ -7,6 +7,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
+import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
 public class JvmTestRuntimeConfigTools {
@@ -40,6 +41,11 @@ public class JvmTestRuntimeConfigTools {
      * - `drainExclusive` Enables draining exclusive actions. If we have more actions to process
      *    that are queued on nodes not affected by the last action application, then we will
      *    continue to process those actions before another render pass.
+     *
+     * - `stealingDispatcher` Enables turning on the [WorkStealingDispatcher] to try and drain
+     *    available tasks.
+     *
+     * - `all` Enables all optimizations.
      */
     @OptIn(WorkflowExperimentalRuntime::class)
     public fun getTestRuntimeConfig(): RuntimeConfig {
@@ -56,6 +62,8 @@ public class JvmTestRuntimeConfigTools {
           "partial" -> config.addAll(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING))
           "stable" -> config.add(STABLE_EVENT_HANDLERS)
           "drainExclusive" -> config.add(DRAIN_EXCLUSIVE_ACTIONS)
+          "stealingDispatcher" -> config.add(WORK_STEALING_DISPATCHER)
+          "all" -> config.addAll(RuntimeConfigOptions.ALL)
           else -> throw IllegalArgumentException("Unrecognized runtime config option \"$it\"")
         }
       }

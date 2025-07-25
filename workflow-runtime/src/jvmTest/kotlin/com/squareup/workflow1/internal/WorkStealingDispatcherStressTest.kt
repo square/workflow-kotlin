@@ -1,5 +1,7 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.awaitUntilDone
+import com.squareup.workflow1.calculateSaturatingTestThreadCount
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -14,9 +16,7 @@ import kotlin.test.assertTrue
  * Returns the maximum number of threads that can be ran in parallel on the host system, rounded
  * down to the nearest even number, and at least 2.
  */
-private val saturatingTestThreadCount = Runtime.getRuntime().availableProcessors().let {
-  if (it.mod(2) != 0) it - 1 else it
-}.coerceAtLeast(2)
+private val saturatingTestThreadCount = calculateSaturatingTestThreadCount(minThreads = 2)
 
 /**
  * Tests that use multiple threads to hammer on [WorkStealingDispatcher] and verify its thread
@@ -252,20 +252,5 @@ class WorkStealingDispatcherStressTest {
 
     // Ensure that all tasks were ran exactly once.
     assertTrue(statuses.all { it.get() == 1 })
-  }
-
-  /**
-   * Calls [CountDownLatch.await] in a loop until count is zero, even if the thread gets
-   * interrupted.
-   */
-  @Suppress("CheckResult")
-  private fun CountDownLatch.awaitUntilDone() {
-    while (count > 0) {
-      try {
-        await()
-      } catch (e: InterruptedException) {
-        // Continue
-      }
-    }
   }
 }

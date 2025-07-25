@@ -6,7 +6,7 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
@@ -35,7 +35,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 @Burst
 internal class WorkflowRunnerTest(
-  runtime: RuntimeOptions = DEFAULT
+  runtime: RuntimeOptions = NONE
 ) {
 
   private lateinit var scope: TestScope

@@ -3,7 +3,6 @@
 package com.squareup.workflow1.android
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -11,7 +10,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.renderWorkflowIn
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.plus
 
 /**
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
@@ -58,10 +55,12 @@ import kotlinx.coroutines.plus
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
  * in this scope will _not_ be used to execute the very first render pass (which happens
- * synchronously).
- * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
- * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
- * for Workflow.
+ * synchronously). We recommend using a `CoroutineDispatcher` in this scope's `CoroutineContext`
+ * that will ensure that all dispatched coroutines are run before the next Choreographer frame.
+ * Compose UI's `AndroidUiDispatcher.Main` provides this behavior in a performant way!
+ * Another way to achieve that is to use an immediate (or Unconfined) dispatcher like
+ * Dispatchers.Main.immediate. However, that dispatcher cannot take advantage of some runtime
+ * optimizations. E.G., see [RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS].
  *
  * @param savedStateHandle
  * Used to restore workflow state in a new process. Typically this is the
@@ -141,10 +140,12 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
  * in this scope will _not_ be used to execute the very first render pass (which happens
- * synchronously).
- * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
- * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
- * for Workflow.
+ * synchronously). We recommend using a `CoroutineDispatcher` in this scope's `CoroutineContext`
+ * that will ensure that all dispatched coroutines are run before the next Choreographer frame.
+ * Compose UI's `AndroidUiDispatcher.Main` provides this behavior in a performant way!
+ * Another way to achieve that is to use an immediate (or Unconfined) dispatcher like
+ * Dispatchers.Main.immediate. However, that dispatcher cannot take advantage of some runtime
+ * optimizations. E.G., see [RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS].
  *
  * @param prop
  * Specifies the sole [PropsT] value to use to render the root workflow. To allow updates,
@@ -243,10 +244,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
  * in this scope will _not_ be used to execute the very first render pass (which happens
- * synchronously).
- * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
- * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
- * for Workflow.
+ * synchronously). We recommend using a `CoroutineDispatcher` in this scope's `CoroutineContext`
+ * that will ensure that all dispatched coroutines are run before the next Choreographer frame.
+ * Compose UI's `AndroidUiDispatcher.Main` provides this behavior in a performant way!
+ * Another way to achieve that is to use an immediate (or Unconfined) dispatcher like
+ * Dispatchers.Main.immediate. However, that dispatcher cannot take advantage of some runtime
+ * optimizations. E.G., see [RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS].
  *
  * @param props
  * Specifies the initial [PropsT] to use to render the root workflow, and will cause a re-render
@@ -278,7 +281,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -291,16 +293,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
 
-  // Add in Compose's AndroidUiDispatcher.Main by default if none is specified.
-  val updatedContext = if (scope.coroutineContext[CoroutineDispatcher.Key] == null) {
-    scope.coroutineContext + AndroidUiDispatcher.Main
-  } else {
-    scope.coroutineContext
-  }
-
   val renderingsAndSnapshots = renderWorkflowIn(
     workflow,
-    scope + updatedContext,
+    scope,
     props,
     restoredSnap,
     interceptors,

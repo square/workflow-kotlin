@@ -46,18 +46,24 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
   }
 
   /**
-   * False during the current render call, set to true once this node is finished rendering.
+   * False except while this [WorkflowNode] is running the workflow's `render` method.
    *
    * Used to:
-   *  - prevent modifications to this object after [freeze] is called.
-   *  - prevent sending to sinks before render returns.
+   *  - Prevent modifications to this object after [freeze] is called (e.g. [renderChild] calls).
+   *    Only allowed when this flag is true.
+   *  - Prevent sending to sinks before render returns. Only allowed when this flag is false.
+   *
+   * This is a [ThreadLocal] since we only care about preventing calls during rendering from the
+   * thread that is actually doing the rendering. If a background thread happens to send something
+   * into the sink, for example, while the main thread is rendering, it's not a violation.
    */
-  private var frozen = false
+  private var performingRender by threadLocalOf { false }
 
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
-    if (!frozen) {
+    // Can't send actions from render thread during render pass.
+    if (performingRender) {
       throw UnsupportedOperationException(
         "Expected sink to not be sent to until after the render pass. " +
           "Received action: ${value.debuggingName}"
@@ -72,7 +78,7 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    checkNotFrozen(child.identifier) {
+    checkPerformingRender(child.identifier) {
       "renderChild(${child.identifier})"
     }
     return renderer.render(child, props, key, handler)
@@ -82,7 +88,7 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
-    checkNotFrozen(key) { "runningSideEffect($key)" }
+    checkPerformingRender(key) { "runningSideEffect($key)" }
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
@@ -92,7 +98,7 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     vararg inputs: Any?,
     calculation: () -> ResultT
   ): ResultT {
-    checkNotFrozen(key) { "remember($key)" }
+    checkPerformingRender(key) { "remember($key)" }
     return rememberStore.remember(key, resultType, inputs = inputs, calculation)
   }
 
@@ -100,15 +106,14 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    checkNotFrozen("freeze") { "freeze" }
-    frozen = true
+    performingRender = false
   }
 
   /**
    * Unfreezes when the node is about to render() again.
    */
   fun unfreeze() {
-    frozen = false
+    performingRender = true
   }
 
   /**
@@ -117,8 +122,10 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    *
    * @see checkWithKey
    */
-  private inline fun checkNotFrozen(stackTraceKey: Any, lazyMessage: () -> Any) =
-    checkWithKey(!frozen, stackTraceKey) {
-      "RenderContext cannot be used after render method returns: ${lazyMessage()}"
-    }
+  private inline fun checkPerformingRender(
+    stackTraceKey: Any,
+    lazyMessage: () -> Any
+  ) = checkWithKey(performingRender, stackTraceKey) {
+    "RenderContext cannot be used after render method returns: ${lazyMessage()}"
+  }
 }

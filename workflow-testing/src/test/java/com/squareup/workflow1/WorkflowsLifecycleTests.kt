@@ -5,7 +5,7 @@ package com.squareup.workflow1
 import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.testing.headlessIntegrationTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,7 +22,7 @@ import kotlin.test.assertEquals
 @OptIn(WorkflowExperimentalRuntime::class, WorkflowExperimentalApi::class)
 @Burst
 class WorkflowsLifecycleTests(
-  private val runtime: RuntimeOptions = DEFAULT
+  private val runtime: RuntimeOptions = NONE
 ) {
 
   private val runtimeConfig = runtime.runtimeConfig

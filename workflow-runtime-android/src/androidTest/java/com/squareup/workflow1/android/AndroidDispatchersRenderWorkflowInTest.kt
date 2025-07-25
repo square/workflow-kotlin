@@ -8,7 +8,7 @@ import app.cash.burst.Burst
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.ALL
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -18,10 +18,13 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.action
+import com.squareup.workflow1.android.RuntimeDispatcher.COMPOSE_UI
+import com.squareup.workflow1.android.RuntimeDispatcher.IMMEDIATE
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,17 +42,28 @@ import kotlin.test.assertEquals
 @OptIn(WorkflowExperimentalRuntime::class)
 @Burst
 class AndroidDispatchersRenderWorkflowInTest(
-  private val runtime: RuntimeOptions = DEFAULT
+  private val runtime: RuntimeOptions = ALL,
+  // Note that we test with the Main.immediate dispatcher and with Composes's
+  // AndroidUiDispatcher.Main. Only the latter, which is not immediate, allows us to process
+  // multiple actions with CSR and with DEA. This is because an immediate dispatcher will never
+  // dispatch multiple coroutines to send actions before applying and handling the first one.
+  private val dispatcher: RuntimeDispatcher = COMPOSE_UI,
 ) {
+
+  private lateinit var runtimeContext: CoroutineContext
 
   @Before
   fun setup() {
+    runtimeContext = when (dispatcher) {
+      IMMEDIATE -> Dispatchers.Main.immediate
+      COMPOSE_UI -> AndroidUiDispatcher.Main
+    }
     resetCounters()
   }
 
   @Test
   fun optimizations_for_multiple_worker_actions_same_trigger() {
-    val childWorkflow = Workflow.stateful<String, String, String>(
+    val childWorkflow = Workflow.stateful(
       initialState = "unchanged state",
       render = { renderState ->
         runningWorker(
@@ -65,7 +79,7 @@ class AndroidDispatchersRenderWorkflowInTest(
         renderState
       }
     )
-    val workflow = Workflow.stateful<String, String, String>(
+    val workflow = Workflow.stateful(
       initialState = "unchanged state",
       render = { renderState ->
         renderChild(childWorkflow) { childOutput ->
@@ -113,17 +127,21 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 5,
-      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
-      // the coroutines to update state before the collector can consume a rendering.
-      expectedRenderingsConsumed = 2
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+        dispatcher == COMPOSE_UI
+      ) {
+        2
+      } else {
+        5
+      },
+      expectedRenderingsConsumed = if (dispatcher == COMPOSE_UI) 2 else 5
     )
   }
 
   @Test
   fun optimizations_for_multiple_side_effect_actions() {
 
-    val childWorkflow = Workflow.stateful<String, String, String>(
+    val childWorkflow = Workflow.stateful(
       initialState = "unchanged state",
       render = { renderState ->
         runningSideEffect("childSideEffect") {
@@ -172,17 +190,21 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 3,
-      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
-      // the coroutines to update state before the collector can consume a rendering.
-      expectedRenderingsConsumed = 2
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+        dispatcher == COMPOSE_UI
+      ) {
+        2
+      } else {
+        3
+      },
+      expectedRenderingsConsumed = if (dispatcher == COMPOSE_UI) 2 else 3
     )
   }
 
   @Test
   fun optimizations_for_exclusive_actions() {
 
-    val childWorkflow = Workflow.stateful<String, String, String>(
+    val childWorkflow = Workflow.stateful(
       initialState = "unchanged state",
       render = { renderState ->
         runningWorker(
@@ -216,19 +238,25 @@ class AndroidDispatchersRenderWorkflowInTest(
       workflow = workflow,
       targetRendering = "state change+u1",
       // 2 for DEA (initial synchronous + 1 for the update); 3 otherwise given the 2 child actions.
-      expectedRenderPasses = if (runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) 2 else 3,
-      // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
-      // update.) And otherwise there are *3* attempts to produce a new rendering.
-      expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
-        runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+      expectedRenderPasses = if (runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
+        dispatcher == COMPOSE_UI
       ) {
         2
       } else {
         3
       },
-      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
-      // the coroutines to update state before the collector can consume a rendering.
+      // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
+      // update.) And otherwise there are *3* attempts to produce a new rendering.
+      expectedRenderingsProduced =
+      if ((
+          runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
+            runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+          ) && dispatcher == COMPOSE_UI
+      ) {
+        2
+      } else {
+        3
+      },
       expectedRenderingsConsumed = 2
     )
   }
@@ -252,18 +280,17 @@ class AndroidDispatchersRenderWorkflowInTest(
         }
       )
 
-      // We are rendering using Compose's AndroidUiDispatcher.Main.
       val renderings = renderWorkflowIn(
         workflow = workflow,
         scope = backgroundScope +
-          ANDROID_WORKFLOW_RUNTIME_CONTEXT,
+          runtimeContext,
         props = MutableStateFlow(Unit).asStateFlow(),
         runtimeConfig = runtime.runtimeConfig,
         workflowTracer = null,
         interceptors = emptyList()
       ) {}
 
-      val collectionJob = launch(AndroidUiDispatcher.Main) {
+      val collectionJob = launch(runtimeContext) {
         renderings.collect {
           if (it == "changed state") {
             // The rendering we were looking for!
@@ -305,14 +332,14 @@ class AndroidDispatchersRenderWorkflowInTest(
     val renderings = renderWorkflowIn(
       workflow = workflow,
       scope = backgroundScope +
-        ANDROID_WORKFLOW_RUNTIME_CONTEXT,
+        runtimeContext,
       props = MutableStateFlow(Unit).asStateFlow(),
       runtimeConfig = runtime.runtimeConfig,
       workflowTracer = null,
       interceptors = emptyList()
     ) {}
 
-    val collectionJob = launch(AndroidUiDispatcher.Main) {
+    val collectionJob = launch(runtimeContext) {
       renderings.collect {
         if (it.name == "neverends+neverends") {
           // The rendering we were looking for after the event!
@@ -394,7 +421,7 @@ class AndroidDispatchersRenderWorkflowInTest(
     val renderings = renderWorkflowIn(
       workflow = workflow,
       scope = backgroundScope +
-        AndroidUiDispatcher.Main,
+        runtimeContext,
       props = props,
       runtimeConfig = runtime.runtimeConfig,
       workflowTracer = null,
@@ -404,7 +431,7 @@ class AndroidDispatchersRenderWorkflowInTest(
     val targetRenderingReceived = Mutex(locked = true)
     val frameCallbackComplete = Mutex(locked = true)
 
-    val collectionJob = launch(AndroidUiDispatcher.Main) {
+    val collectionJob = launch(runtimeContext) {
       renderings.collect {
         renderingsConsumed += it
         if (it == targetRendering) {
@@ -415,7 +442,7 @@ class AndroidDispatchersRenderWorkflowInTest(
       }
     }
 
-    launch(AndroidUiDispatcher.Main) {
+    launch(runtimeContext) {
       Choreographers.postOnFrameRendered {
         // We are expecting this to happen last, after we get the rendering!
         expectInOrder(1)
@@ -432,27 +459,30 @@ class AndroidDispatchersRenderWorkflowInTest(
     assertEquals(
       expected = expectedRenderPasses,
       actual = renderPasses,
-      message = "Expected $expectedRenderPasses render passes for config ${runtime.runtimeConfig}."
-    )
-    assertEquals(
-      expected = expectedRenderingsConsumed,
-      actual = renderingsConsumed.size,
-      message = "Expected $expectedRenderingsConsumed consumed renderings for config" +
-        " ${runtime.runtimeConfig}."
+      message = "Expected $expectedRenderPasses render passes for config ${runtime.runtimeConfig}" +
+        "; Dispatcher: ${dispatcher.name}."
     )
     assertEquals(
       expected = expectedRenderingsProduced,
       actual = renderingsProduced,
       message = "Expected $expectedRenderingsProduced renderings to be produced" +
-        " (passed signal to interceptor) for config ${runtime.runtimeConfig}."
+        " (passed signal to interceptor) for config ${runtime.runtimeConfig};" +
+        "Dispatcher: ${dispatcher.name}."
+    )
+    assertEquals(
+      expected = expectedRenderingsConsumed,
+      actual = renderingsConsumed.size,
+      message = "Expected $expectedRenderingsConsumed consumed renderings for config" +
+        " ${runtime.runtimeConfig}; Dispatcher: ${dispatcher.name}."
     )
     assertEquals(
       expected = targetRendering,
       actual = renderingsConsumed.last()
     )
   }
+}
 
-  companion object {
-    val ANDROID_WORKFLOW_RUNTIME_CONTEXT: CoroutineContext = AndroidUiDispatcher.Main
-  }
+enum class RuntimeDispatcher {
+  IMMEDIATE,
+  COMPOSE_UI
 }

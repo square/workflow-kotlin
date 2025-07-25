@@ -36,7 +36,7 @@ runs:
       run: ./gradlew tasks
 
     - name: Set up JDK
-      uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
       with:
         distribution: ${{inputs.distribution}}
         java-version: ${{inputs.java-version}}
@@ -46,7 +46,7 @@ runs:
       uses: ./.github/actions/gradle-args
 
     - name: Gradle build action
-      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+      uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3
       with:
         cache-read-only: false
         gradle-home-cache-cleanup: true
@@ -101,11 +101,11 @@ runs:
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
           ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses: gradle/wrapper-validation-action@699bb18358f12c5b78b37bb0111d3a0e2276e0e2 # v2
+    - uses: gradle/actions/wrapper-validation@94baf225fe0a508e581a564467443d0e2379123b # v4
 
     # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
     - name: Run ${{inputs.task}}
-      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+      uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3
       with:
         # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
@@ -133,21 +133,21 @@ runs:
 
     - name: Upload Any Logs
       if: failure()
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: log-upload
         path: ${{github.workspace}}/**/*.log
 
     - name: Upload Any Heap Dumps
       if: failure()
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: hprof-upload
         path: ${{github.workspace}}/**/*.hprof
 
     - name: Upload Any Specified Files
       if: failure() && inputs.failure-path-upload != 'null'
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: specified-upload
         path: ${{github.workspace}}/${{inputs.failure-path-upload}}
