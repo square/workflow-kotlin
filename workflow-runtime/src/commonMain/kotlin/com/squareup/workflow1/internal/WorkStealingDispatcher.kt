@@ -4,7 +4,6 @@ import com.squareup.workflow1.internal.WorkStealingDispatcher.Companion.wrapDisp
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Runnable
 import kotlin.concurrent.Volatile
@@ -126,8 +125,7 @@ internal open class WorkStealingDispatcher protected constructor(
    * This satisfies the limited parallelism requirements because [advanceUntilIdle] always runs
    * tasks with a parallelism of 1 (i.e. serially).
    */
-  @ExperimentalCoroutinesApi
-  final override fun limitedParallelism(parallelism: Int): CoroutineDispatcher {
+  final override fun limitedParallelism(parallelism: Int, name: String?): CoroutineDispatcher {
     if (delegateInterceptor !is CoroutineDispatcher) {
       throw UnsupportedOperationException(
         "limitedParallelism is not supported for WorkStealingDispatcher with " +
