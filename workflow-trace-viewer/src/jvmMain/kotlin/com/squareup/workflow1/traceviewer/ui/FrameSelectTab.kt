@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -31,7 +32,12 @@ internal fun FrameSelectTab(
   modifier: Modifier = Modifier
 ) {
   val lazyListState = rememberLazyListState()
-
+  if (currentIndex >= 0) {
+    LaunchedEffect(currentIndex) {
+      lazyListState.animateScrollToItem(currentIndex)
+    }
+  }
+  
   Surface(
     modifier = modifier,
     color = Color.White,

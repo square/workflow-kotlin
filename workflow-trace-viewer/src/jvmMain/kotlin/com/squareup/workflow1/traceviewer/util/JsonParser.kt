@@ -9,7 +9,8 @@ import com.squareup.workflow1.traceviewer.model.addChild
 import com.squareup.workflow1.traceviewer.model.replaceChild
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
-import java.util.LinkedHashMap
+import kotlin.reflect.jvm.javaType
+import kotlin.reflect.typeOf
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
@@ -24,11 +25,11 @@ const val ROOT_ID: String = "-1"
  * @return A [ParseResult] representing result of parsing, either an error related to the
  * format of the JSON, or a success and a parsed trace.
  */
-internal suspend fun parseTrace(
+internal suspend fun parseFileTrace(
   file: PlatformFile,
 ): ParseResult {
   val jsonString = file.readString()
-  val workflowAdapter = createMoshiAdapter()
+  val workflowAdapter = createMoshiAdapter<List<Node>>()
   val parsedRenderPasses = try {
     workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace file is empty or malformed.")
@@ -44,21 +45,58 @@ internal suspend fun parseTrace(
     frameTrees.add(mergedTree)
     mergedTree
   }
-  return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
+  return ParseResult.Success(
+    trace = parsedFrames,
+    trees = frameTrees,
+    affectedNodes = parsedRenderPasses
+  )
+}
+
+/**
+ * Parses a single render pass from a live trace stream.
+ * Similar to parseFileTrace but handles one render pass at a time.
+ *
+ * @return [ParseResult] containing the new frame, merged tree, and current render pass nodes.
+ */
+internal fun parseLiveTrace(
+  renderPass: String,
+  adapter: JsonAdapter<List<Node>>,
+  currentTree: Node? = null
+): ParseResult {
+  val parsedRenderPass = try {
+    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
+      IllegalArgumentException("Provided trace data is empty or malformed.")
+    )
+  } catch (e: Exception) {
+    return ParseResult.Failure(e)
+  }
+
+  val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
+
+  // Merge Frame into full tree if we have an existing tree
+  val mergedTree = if (currentTree == null) {
+    parsedFrame
+  } else {
+    mergeFrameIntoMainTree(parsedFrame, currentTree)
+  }
+
+  // Since live tracing handles one frame at a time, we generalize and return listOf for each.
+  return ParseResult.Success(
+    trace = listOf(parsedFrame),
+    trees = listOf(mergedTree),
+    affectedNodes = listOf(parsedRenderPass)
+  )
 }
 
 /**
  * Creates a Moshi adapter for parsing the JSON trace file.
  */
-private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
+internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
   val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
-  val workflowList = Types.newParameterizedType(
-    List::class.java,
-    Types.newParameterizedType(List::class.java, Node::class.java)
-  )
-  val adapter: JsonAdapter<List<List<Node>>> = moshi.adapter(workflowList)
+  val workflowList = Types.newParameterizedType(List::class.java, typeOf<T>().javaType)
+  val adapter: JsonAdapter<List<T>> = moshi.adapter(workflowList)
   return adapter
 }
 
@@ -102,7 +140,6 @@ internal fun mergeFrameIntoMainTree(
   main: Node
 ): Node {
   require(frame.id == main.id)
-
   val updatedNode = frame.copy(children = main.children)
 
   return frame.children.values.fold(updatedNode) { mergedTree, frameChild ->
@@ -116,7 +153,7 @@ internal fun mergeFrameIntoMainTree(
 }
 
 internal sealed interface ParseResult {
-  class Success(val trace: List<Node>?, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
+  class Success(val trace: List<Node>, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
     val affectedNodes = affectedNodes.map { it.toSet() }
   }
   class Failure(val error: Throwable) : ParseResult

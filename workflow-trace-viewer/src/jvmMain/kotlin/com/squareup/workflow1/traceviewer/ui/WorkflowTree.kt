@@ -11,12 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -27,62 +21,6 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.util.ParseResult
-import com.squareup.workflow1.traceviewer.util.parseTrace
-import io.github.vinceglb.filekit.PlatformFile
-
-/**
- * Access point for drawing the main content of the app. It will load the trace for given files and
- * tabs. This will also all errors related to errors parsing a given trace JSON file.
- */
-@Composable
-internal fun RenderDiagram(
-  traceFile: PlatformFile,
-  frameInd: Int,
-  onFileParse: (List<Node>) -> Unit,
-  onNodeSelect: (Node, Node?) -> Unit,
-  modifier: Modifier = Modifier
-) {
-  var isLoading by remember(traceFile) { mutableStateOf(true) }
-  var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
-  var frames = remember { mutableStateListOf<Node>() }
-  var fullTree = remember { mutableStateListOf<Node>() }
-  var affectedNodes = remember { mutableStateListOf<Set<Node>>() }
-
-  LaunchedEffect(traceFile) {
-    val parseResult = parseTrace(traceFile)
-
-    when (parseResult) {
-      is ParseResult.Failure -> {
-        error = parseResult.error
-      }
-      is ParseResult.Success -> {
-        val parsedFrames = parseResult.trace ?: emptyList()
-        frames.addAll(parsedFrames)
-        fullTree.addAll(parseResult.trees)
-        affectedNodes.addAll(parseResult.affectedNodes)
-        onFileParse(parsedFrames)
-        isLoading = false
-      }
-    }
-  }
-
-  if (error != null) {
-    Text("Error parsing file: ${error?.message}")
-    return
-  }
-
-  if (!isLoading) {
-    val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
-    DrawTree(
-      node = fullTree[frameInd],
-      previousNode = previousFrame,
-      affectedNodes = affectedNodes[frameInd],
-      expandedNodes = remember(frameInd) { mutableStateMapOf() },
-      onNodeSelect = onNodeSelect,
-    )
-  }
-}
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
@@ -92,7 +30,7 @@ internal fun RenderDiagram(
  * closed from user clicks.
  */
 @Composable
-private fun DrawTree(
+internal fun DrawTree(
   node: Node,
   previousNode: Node?,
   affectedNodes: Set<Node>,
