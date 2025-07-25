@@ -28,13 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
+import com.squareup.workflow1.traceviewer.util.computeAnnotatedDiff
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -163,7 +163,7 @@ private fun DetailCard(
         text = label,
         style = MaterialTheme.typography.h6,
         color = Color.Black,
-        fontWeight = FontWeight.Medium
+        fontWeight = FontWeight.Bold
       )
       if (!open) {
         return@Card
@@ -173,9 +173,27 @@ private fun DetailCard(
       if (pastValue != null) {
         Column {
           Text(
-            text = "Before:",
-            style = TextStyle(fontStyle = FontStyle.Italic),
-            color = Color.Black,
+            text = "Changes",
+            style = MaterialTheme.typography.subtitle1,
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = computeAnnotatedDiff(pastValue, currValue),
+            style = MaterialTheme.typography.body2
+          )
+
+          Spacer(modifier = Modifier.height(16.dp))
+          Text(
+            text = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            maxLines = 1,
+            overflow = TextOverflow.Clip
+          )
+
+          Text(
+            text = "Before",
+            style = MaterialTheme.typography.subtitle1,
+            color = Color.Gray,
             fontWeight = FontWeight.Medium
           )
           Text(
@@ -183,11 +201,13 @@ private fun DetailCard(
             style = MaterialTheme.typography.body2,
             color = Color.Black
           )
-          Spacer(modifier = Modifier.height(8.dp))
+
+          Spacer(modifier = Modifier.height(16.dp))
+
           Text(
-            text = "After:",
-            style = TextStyle(fontStyle = FontStyle.Italic),
-            color = Color.Black,
+            text = "After",
+            style = MaterialTheme.typography.subtitle1,
+            color = Color.Gray,
             fontWeight = FontWeight.Medium
           )
           Text(
