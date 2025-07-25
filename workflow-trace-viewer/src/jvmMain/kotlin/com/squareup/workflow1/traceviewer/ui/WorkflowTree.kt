@@ -53,6 +53,7 @@ internal fun RenderTrace(
   onFileParse: (Int) -> Unit,
   onNodeSelect: (NodeUpdate) -> Unit,
   onNewFrame: () -> Unit,
+  onNewData: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
@@ -79,6 +80,7 @@ internal fun RenderTrace(
   // for when a new frame is received.
   fun handleParseResult(
     parseResult: ParseResult,
+    rawRenderPass: String? = null,
     onNewFrame: (() -> Unit)? = null
   ): Boolean {
     return when (parseResult) {
@@ -94,6 +96,8 @@ internal fun RenderTrace(
           affected = parseResult.affectedNodes
         )
         onNewFrame?.invoke()
+        // Only for live tracing, we want to store raw render pass data to be able to file dump.
+        rawRenderPass?.let { onNewData(it) }
         true
       }
     }
@@ -117,7 +121,7 @@ internal fun RenderTrace(
           for (renderPass in socket.renderPassChannel) {
             val currentTree = if (fullTree.isEmpty()) null else fullTree.last()
             val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
-            handleParseResult(parseResult, onNewFrame)
+            handleParseResult(parseResult, renderPass, onNewFrame)
           }
         }
       }
@@ -148,7 +152,6 @@ internal fun RenderTrace(
  * A mutable map is used to persist the expansion state of the nodes, allowing them to be open and
  * closed from user clicks.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun DrawTree(
   node: Node,

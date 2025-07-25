@@ -19,6 +19,7 @@ import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
+import com.squareup.workflow1.traceviewer.util.FileDump
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.SocketClient
 import com.squareup.workflow1.traceviewer.util.UploadFile
@@ -33,6 +34,7 @@ internal fun App(
 ) {
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
+  var rawRenderPass by remember { mutableStateOf("")}
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
 
@@ -80,7 +82,8 @@ internal fun App(
           frameInd = frameIndex,
           onFileParse = { frameSize += it },
           onNodeSelect = { selectedNode = it },
-          onNewFrame = { frameIndex += 1 }
+          onNewFrame = { frameIndex += 1 },
+          onNewData = { rawRenderPass += "$it," },
         )
       }
     }
@@ -121,6 +124,13 @@ internal fun App(
           selectedTraceFile = it
           traceMode = TraceMode.File(it)
         },
+        modifier = Modifier.align(Alignment.BottomStart)
+      )
+    }
+
+    if (traceMode is TraceMode.Live) {
+      FileDump(
+        trace = rawRenderPass,
         modifier = Modifier.align(Alignment.BottomStart)
       )
     }
