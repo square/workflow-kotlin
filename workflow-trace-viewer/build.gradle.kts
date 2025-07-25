@@ -1,9 +1,11 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.reload.gradle.ComposeHotRun
 
 plugins {
   id("kotlin-multiplatform")
   alias(libs.plugins.jetbrains.compose)
   alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.compose.hot.reload)
 }
 
 kotlin {
@@ -35,7 +37,12 @@ kotlin {
     }
   }
 }
-
+tasks.withType<ComposeHotRun>().configureEach {
+  mainClass.set("com.squareup.workflow1.traceviewer.MainKt")
+  jvmArgs(
+    "-Dapple.awt.application.appearance=system"
+  )
+}
 compose {
   desktop {
     application {
