@@ -15,13 +15,13 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import android.widget.Button as ButtonView
 
 data class Button(
-  @StringRes val name: Int,
+  @param:StringRes val name: Int,
   val onClick: () -> Unit
 )
 
 class ButtonBar(
   vararg buttons: Button?,
-  @ColorRes val color: Int = -1,
+  @param:ColorRes val color: Int = -1,
   val showEditText: Boolean = false,
 ) : AndroidScreen<ButtonBar> {
   private val buttons: List<Button> = buttons.filterNotNull().toList()

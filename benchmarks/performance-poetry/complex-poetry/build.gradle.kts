@@ -1,7 +1,7 @@
 import com.rickbusarow.kgx.libsCatalog
 import com.rickbusarow.kgx.version
-import com.squareup.workflow1.buildsrc.internal.javaTarget
 import com.squareup.workflow1.buildsrc.internal.javaTargetVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   id("com.android.application")
@@ -14,10 +14,6 @@ android {
   compileOptions {
     sourceCompatibility = javaTargetVersion
     targetCompatibility = javaTargetVersion
-  }
-
-  kotlinOptions {
-    jvmTarget = javaTarget
   }
 
   defaultConfig {
@@ -49,6 +45,12 @@ android {
     resources.excludes.add("META-INF/LGPL2.1")
   }
   namespace = "com.squareup.benchmarks.performance.complex.poetry"
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_1_8)
+  }
 }
 
 dependencies {
