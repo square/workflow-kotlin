@@ -38,6 +38,7 @@ internal fun App(
   val sandboxState = remember { SandboxState() }
 
   // Default to File mode, and can be toggled to be in Live mode.
+  var active by remember { mutableStateOf(false) }
   var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
 

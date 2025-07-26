@@ -22,7 +22,9 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
