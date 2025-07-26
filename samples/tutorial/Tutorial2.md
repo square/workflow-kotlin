@@ -711,6 +711,6 @@ We'll show you how in the next tutorial, when we add our Todo Editing screen.
 >  - The `Overlay` marker interface, implemented by renderings that model things like Android `Dialog` windows
 >  - `ScreenOverlay`  for modeling an `Overlay` whose content comes from a `Screen`
 >  - `BodyAndOverlaysScreen`, a class that arranges `Overlay` instances in layers over a body `Screen`.
->  - And `the [AndroidOverlay](https://github.com/square/workflow-kotlin/blob/main/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/AndroidOverlay.kt)` interface that simplifies implementing `ScreenOverlay` with Android's `AppCompatDialog` class.
+>  - And the [`AndroidOverlay`](https://github.com/square/workflow-kotlin/blob/main/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/AndroidOverlay.kt) interface that simplifies implementing `ScreenOverlay` with Android's `AppCompatDialog` class.
 
 [Tutorial 3](Tutorial3.md)
