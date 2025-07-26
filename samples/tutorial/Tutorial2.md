@@ -254,10 +254,10 @@ At the same time, add a `reportNavigation()` call when creating the `renderings`
       workflow = RootNavigationWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState
-    )
-  }.reportNavigation {
-  Log.i("navigate", it.toString())
-}
+    ).reportNavigation {
+      Log.i("navigate", it.toString())
+    }
+  }
 ```
 
 Now when you run the app we'll see the welcome screen again.
@@ -486,8 +486,12 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, TodoListSc
     renderState: State,
     context: RenderContext
   ): TodoListScreen {
-    username = renderProps.username,
-    todoTitles = titles,
+    val titles = renderState.todos.map { it.title }
+
+    return TodoListScreen(
+      username = renderProps.username,
+      todoTitles = titles,
+    )
   }
 ```
 
