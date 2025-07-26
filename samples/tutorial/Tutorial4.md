@@ -109,7 +109,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Output, TodoListScr
     // …
   }
 
-  override fun snapshotState(state: Unit): Snapshot? = null
+  override fun snapshotState(state: State): Snapshot? = null
 
   // …
 }

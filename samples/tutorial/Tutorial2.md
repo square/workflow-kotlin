@@ -208,7 +208,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, Unit, Nothing, Screen>() 
     return welcomeScreen
   }
 
-  override fun snapshotState(state: State): Snapshot? = null
+  override fun snapshotState(state: Unit): Snapshot? = null
 }
 ```
 
@@ -349,9 +349,9 @@ Finally, map the output event from `WelcomeWorkflow` in `RootNavigationWorkflow`
 ```kotlin
   override fun render(
     renderProps: Unit,
-    renderState: Unit,
+    renderState: State,
     context: RenderContext
-  ): Screen {
+  ): WelcomeScreen {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
