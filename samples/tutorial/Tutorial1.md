@@ -373,7 +373,7 @@ You could also write:
     }
 ```
 
-And let's make an `onLogInTapped` event handler that enques one of those `updateName` actions.
+And let's make an `onLogInTapped` event handler that enqueues one of those `updateName` actions.
 
 ```kotlin
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
