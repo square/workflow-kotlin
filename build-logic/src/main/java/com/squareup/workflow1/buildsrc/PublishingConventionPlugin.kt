@@ -1,5 +1,7 @@
 package com.squareup.workflow1.buildsrc
 
+import com.rickbusarow.kgx.libsCatalog
+import com.rickbusarow.kgx.pluginId
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
@@ -14,7 +16,8 @@ import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 
 class PublishingConventionPlugin : Plugin<Project> {
   override fun apply(target: Project) {
-    target.plugins.apply("org.jetbrains.dokka")
+
+    target.plugins.apply("dokka")
     target.plugins.apply("com.vanniktech.maven.publish.base")
     // track all runtime classpath dependencies for anything we ship
     target.plugins.apply("dependency-guard")
@@ -64,7 +67,7 @@ class PublishingConventionPlugin : Plugin<Project> {
       target.pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         basePluginExtension.configure(
           KotlinJvm(
-            javadocJar = JavadocJar.Dokka(taskName = "dokkaGfm"),
+            javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"),
             sourcesJar = true
           )
         )
@@ -72,7 +75,7 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
       target.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         basePluginExtension.configure(
-          KotlinMultiplatform(javadocJar = JavadocJar.Dokka(taskName = "dokkaGfm"))
+          KotlinMultiplatform(javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"))
         )
         // don't set the artifactId for KMP, because this is handled by the KMP plugin itself
         target.setPublicationProperties(pomDescription, artifactIdOrNull = null)

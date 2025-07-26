@@ -16,12 +16,12 @@ dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
 
   api(project(":workflow-runtime"))
-  api(libs.androidx.compose.ui.android)
   api(libs.androidx.lifecycle.viewmodel.savedstate)
 
-  implementation(composeBom)
   implementation(project(":workflow-core"))
 
+  androidTestImplementation(libs.androidx.compose.ui.android)
+  androidTestImplementation(composeBom)
   androidTestImplementation(libs.androidx.activity.ktx)
   androidTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
   androidTestImplementation(libs.androidx.test.core)

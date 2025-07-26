@@ -3,26 +3,33 @@ package com.squareup.workflow1
 import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -46,8 +53,8 @@ import kotlin.test.assertTrue
 @Burst
 class RenderWorkflowInTest(
   useTracer: Boolean = false,
-  useUnconfined: Boolean = true,
-  private val runtime: RuntimeOptions = DEFAULT
+  private val useUnconfined: Boolean = true,
+  private val runtime: RuntimeOptions = NONE
 ) {
 
   private val runtimeConfig = runtime.runtimeConfig
@@ -283,7 +290,7 @@ class RenderWorkflowInTest(
   }
 
   @Test fun saves_to_and_restores_from_snapshot(
-    runtime2: RuntimeOptions = DEFAULT
+    runtime2: RuntimeOptions = NONE
   ) = runTest(dispatcherUsed) {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
       initialState = { _, snapshot ->
@@ -557,7 +564,7 @@ class RenderWorkflowInTest(
   }
 
   @Test fun tracer_includes_expected_sections() {
-    if (runtime == DEFAULT && testTracer != null) {
+    if (runtime == NONE && testTracer != null) {
       runTest(UnconfinedTestDispatcher()) {
         // Only test default so we only have one 'golden value' to assert against.
         // We are only testing the tracer correctness here, which should be agnostic of runtime.
@@ -1502,7 +1509,9 @@ class RenderWorkflowInTest(
 
   @Test
   fun for_conflate_we_do_not_conflate_stacked_actions_into_one_rendering_if_output() {
-    if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
+    if (CONFLATE_STALE_RENDERINGS in runtimeConfig &&
+      WORK_STEALING_DISPATCHER !in runtimeConfig
+    ) {
       runTest(dispatcherUsed) {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
 
@@ -1744,6 +1753,126 @@ class RenderWorkflowInTest(
         assertTrue(childHandlerActionExecuted)
       }
     }
+  }
+
+  /**
+   * When the [CONFLATE_STALE_RENDERINGS] flag is specified, the runtime will repeatedly run all
+   * enqueued WorkflowActions after a render pass, before emitting the rendering to the external
+   * flow. When the [WORK_STEALING_DISPATCHER] flag is specified at the same time, any coroutines
+   * launched (or even resumed) since the render pass will be allowed to run _before_ checking for
+   * actions. This means that any new side effects or workers started by the render pass will be
+   * allowed to run to their first suspension point before the rendering is emitted. And if they
+   * happen to emit more actions as part of that, then those actions will also be processed, etc.
+   * until no more actions are available – only then will the rendering actually be emitted.
+   */
+  @Test
+  fun new_effect_coroutines_dispatched_before_rendering_emitted_when_work_stealing_dispatcher() {
+    // This tests is specifically for standard dispatching behavior. It currently only works when
+    // CSR is enabled, although an additional test for DEA should be added.
+    if (WORK_STEALING_DISPATCHER !in runtimeConfig ||
+      CONFLATE_STALE_RENDERINGS !in runtimeConfig ||
+      useUnconfined
+    ) {
+      return
+    }
+
+    runTest(dispatcherUsed) {
+      val workflow = Workflow.stateful<Int, Nothing, Unit>(initialState = 0) { effectCount ->
+        // Because of the WSD, this effect will be allowed to run after the render pass but before
+        // emitting the rendering OR checking for new actions, in the CSR loop. Since it emits an
+        // action, that action will be processed and trigger a second render pass.
+        runningSideEffect("sender") {
+          actionSink.send(
+            action("0") {
+              expect(2)
+              this.state++
+            }
+          )
+        }
+
+        if (effectCount >= 1) {
+          // This effect will be started by the first action and cancelled only when the runtime
+          // is cancelled.
+          // It will also start in the CSR loop, and trigger a third render pass before emitting the
+          // rendering.
+          runningSideEffect("0") {
+            expect(3)
+            actionSink.send(
+              action("1") {
+                expect(4)
+                this.state++
+              }
+            )
+            awaitCancellation {
+              expect(9)
+            }
+          }
+        }
+
+        if (effectCount >= 2) {
+          // This effect will be started by the second action, and cancelled by its own action in
+          // the same run of the CSR loop again.
+          runningSideEffect("1") {
+            expect(5)
+            actionSink.send(
+              action("-1") {
+                expect(6)
+                this.state--
+              }
+            )
+            awaitCancellation {
+              expect(7)
+            }
+          }
+        }
+      }
+
+      // We collect the renderings flow to a channel to drive the runtime loop by receiving from the
+      // channel. We can't use testScheduler.advanceUntilIdle() et al because we only want the test
+      // scheduler to run tasks until a rendering is available, not indefinitely.
+      val renderings = renderWorkflowIn(
+        workflow = workflow,
+        // Run in this scope so it is advanced by advanceUntilIdle.
+        scope = backgroundScope,
+        props = MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+        onOutput = {}
+      ).produceIn(backgroundScope + Dispatchers.Unconfined)
+
+      expect(0)
+      // Receiving the first rendering allows the runtime coroutine to start. The first rendering
+      // is returned synchronously.
+      renderings.receive()
+      expect(1)
+      // Receiving the second rendering will allow the runtime to continue until the rendering is
+      // emitted. Since the CSR loop will start all our effects before emitting the next rendering,
+      // only one rendering will be emitted for all those render passes.
+      renderings.receive()
+      expect(8)
+
+      // No more renderings should be produced.
+      testScheduler.advanceUntilIdle()
+      assertTrue(renderings.isEmpty)
+
+      // Cancel the whole workflow runtime, including all effects.
+      backgroundScope.coroutineContext.job.cancelAndJoin()
+      expect(10)
+    }
+  }
+
+  private suspend fun awaitCancellation(onFinally: () -> Unit) {
+    try {
+      awaitCancellation()
+    } finally {
+      onFinally()
+    }
+  }
+
+  private var expectCounter = 0
+  private fun expect(expected: Int) {
+    assertEquals(expected, expectCounter)
+    expectCounter++
   }
 
   @Test

@@ -56,7 +56,7 @@ internal suspend fun parseFileTrace(
  * Parses a single render pass from a live trace stream.
  * Similar to parseFileTrace but handles one render pass at a time.
  *
- * @return ParseResult containing the new frame, merged tree, and current render pass nodes.
+ * @return [ParseResult] containing the new frame, merged tree, and current render pass nodes.
  */
 internal fun parseLiveTrace(
   renderPass: String,

@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,7 @@ import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.withEnvironment
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.plus
 
 private val viewRegistry = ViewRegistry(RecursiveComposableFactory)
 
@@ -45,7 +47,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
-        scope = viewModelScope,
+        scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
         runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )

@@ -6,6 +6,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGE
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -49,16 +51,22 @@ import kotlinx.coroutines.launch
  * available actions and do another render pass.
  * 1. Pass the updated rendering into the [StateFlow] returned from this method.
  *
- * Note that if this is run on the main thread we must `suspend` in order to release the thread and
- * let any actions that can be processed queue up. How that happens will depend on the
- * [CoroutineDispatcher] used in [scope].
+ * When there is UI involved, we recommend using a `CoroutineDispatcher` in [scope]'s
+ * `CoroutineContext` that runs the above runtime loop until it is stable before the next 'frame',
+ * whatever frame means on your platform. Specifically, ensure that all dispatched coroutines are
+ * run before the next 'frame', so that the Workflow runtime has done all the work it can.
  *
- * If an "immediate" dispatcher is used, then after 1 only 1 action will ever be available since
- * as soon as it is available it will resume and start processing the rest of the loop immediately.
+ * One way to achieve that guarantee is with an "immediate" dispatcher on the main thread - like,
+ * `Dispatchers.Main.immediate` - since it will continue to run until the runtime is stable before
+ * it lets any frame get updated by the main thread.
+ * However, if an "immediate" dispatcher is used, then only 1 action will ever be available
+ * since as soon as it is available it will resume (step #1 above) and start processing the rest of
+ * the loop immediately.
+ * This means that [DRAIN_EXCLUSIVE_ACTIONS] and [CONFLATE_STALE_RENDERINGS] will have no effect.
  *
- * There is no need to try the [DRAIN_EXCLUSIVE_ACTIONS] loop after each render pass in
- * [CONFLATE_STALE_RENDERINGS] because they all happen synchronously so no new exclusive actions
- * could have been queued.
+ * A preferred way to achieve that is to have your dispatcher drain coroutines for each frame
+ * explicitly. On Android, for example, that can be done with Compose UI's
+ * `AndroidUiDispatcher.Main`.
  *
  * ## Scoping
  *
@@ -142,6 +150,15 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
+  val dispatcher = if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
+    WorkStealingDispatcher.wrapDispatcherFrom(scope.coroutineContext)
+  } else {
+    null
+  }
+
+  @Suppress("NAME_SHADOWING")
+  val scope = dispatcher?.let { scope + dispatcher } ?: scope
+
   val runner = WorkflowRunner(
     scope,
     workflow,
@@ -201,6 +218,16 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       !actionResult.stateChanged
   }
 
+  /**
+   * We advance the dispatcher first to allow any coroutines that were launched by the last
+   * render pass to start up and potentially enqueue actions.
+   */
+  fun WorkStealingDispatcher.drainTasksIfPossible() {
+    workflowTracer.trace("AdvancingWorkflowDispatcher") {
+      advanceUntilIdle()
+    }
+  }
+
   scope.launch {
     outer@ while (isActive) {
       // It might look weird to start by waiting for an action before getting the rendering below,
@@ -227,6 +254,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || drainingActionResult.stateChanged
 
+          dispatcher?.drainTasksIfPossible()
           drainingActionResult = runner.applyNextAvailableTreeAction(skipDirtyNodes = true)
 
           // If no actions processed, then we can't apply any more actions.
@@ -249,6 +277,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
             actionDrainingHasChangedState || actionResult.stateChanged
           // We may have more actions we can process, this rendering could be stale.
           // This will check for any actions that are immediately available and apply them.
+
+          dispatcher?.drainTasksIfPossible()
           actionResult = runner.applyNextAvailableTreeAction()
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
