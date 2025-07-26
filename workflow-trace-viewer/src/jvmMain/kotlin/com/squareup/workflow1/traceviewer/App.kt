@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.ColorLegend
+import com.squareup.workflow1.traceviewer.ui.DisplayDevices
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
@@ -63,8 +64,9 @@ internal fun App(
       sandboxState = sandboxState,
     ) {
       // if there is not a file selected and trace mode is live, then don't render anything.
-      val readyForFileTrace = traceMode is TraceMode.File && selectedTraceFile != null
-      val readyForLiveTrace = traceMode is TraceMode.Live
+      val readyForFileTrace = validateFileMode(traceMode)
+      val readyForLiveTrace = validateLiveMode(traceMode)
+
       if (readyForFileTrace || readyForLiveTrace) {
         active = true
         RenderTrace(
@@ -92,13 +94,12 @@ internal fun App(
           frameIndex = 0
           TraceMode.File(null)
         } else {
-          // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
           /*
           We set the frame to -1 here since we always increment it during Live mode as the list of
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          TraceMode.Live
+          TraceMode.Live()
         }
       },
       traceMode = traceMode,
@@ -118,6 +119,16 @@ internal fun App(
     }
 
     if (traceMode is TraceMode.Live) {
+      if ((traceMode as TraceMode.Live).device == null) {
+        DisplayDevices(
+          onDeviceSelected = { selectedDevice ->
+            traceMode = TraceMode.Live(selectedDevice)
+          },
+          devices = listDevices(),
+          modifier = Modifier.align(Alignment.Center)
+        )
+      }
+
       FileDump(
         trace = rawRenderPass,
         modifier = Modifier.align(Alignment.BottomStart)
@@ -149,5 +160,23 @@ internal class SandboxState {
 
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
-  data object Live : TraceMode
+  data class Live(val device: String? = null) : TraceMode
+}
+
+/**
+ * Allows users to select from multiple devices that are currently running.
+ */
+internal fun listDevices(): List<String> {
+  val process = ProcessBuilder("adb", "devices", "-l").start()
+  process.waitFor()
+  // We drop the header "List of devices attached"
+  return process.inputStream.bufferedReader().readLines().drop(1).dropLast(1)
+}
+
+internal fun validateLiveMode(traceMode: TraceMode): Boolean {
+  return traceMode is TraceMode.Live && traceMode.device != null
+}
+
+internal fun validateFileMode(traceMode: TraceMode): Boolean {
+  return traceMode is TraceMode.File && traceMode.file != null
 }

@@ -34,9 +34,9 @@ internal fun RenderTrace(
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
   var error by remember(traceSource) { mutableStateOf<String?>(null) }
-  val frames = remember (traceSource){ mutableStateListOf<Node>() }
-  val fullTree = remember (traceSource){ mutableStateListOf<Node>() }
-  val affectedNodes = remember (traceSource){ mutableStateListOf<Set<Node>>() }
+  val frames = remember(traceSource) { mutableStateListOf<Node>() }
+  val fullTree = remember(traceSource) { mutableStateListOf<Node>() }
+  val affectedNodes = remember(traceSource) { mutableStateListOf<Set<Node>>() }
 
   // Updates current state with the new data from trace source.
   fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
@@ -83,8 +83,11 @@ internal fun RenderTrace(
       }
 
       is TraceMode.Live -> {
+        checkNotNull(traceSource.device) {
+          "TraceMode.Live requires a selected device"
+        }
         val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
-        streamRenderPassesFromDevice { renderPass ->
+        streamRenderPassesFromDevice(traceSource.device) { renderPass ->
           val currentTree = fullTree.lastOrNull()
           val parseResult = parseLiveTrace(renderPass, adapter, currentTree)
           handleParseResult(parseResult, renderPass, onNewFrame)
