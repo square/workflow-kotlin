@@ -142,7 +142,7 @@ private fun welcomeScreenRunner(
   viewBinding: WelcomeViewBinding
 ) = ScreenViewRunner { screen: WelcomeScreen, _ ->
   viewBinding.prompt.text = screen.promptText
-  viewBinding.login.setOnClickListener {
+  viewBinding.logIn.setOnClickListener {
     screen.onLogInTapped(viewBinding.username.text.toString())
   }
 }

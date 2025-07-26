@@ -138,7 +138,7 @@ private fun todoListScreenRunner(
   todoListBinding.todoList.adapter = adapter
 
   return ScreenViewRunner { screen: TodoListScreen, _ ->
-    adapter.todoList = rendering.todoTitles
+    adapter.todoList = screen.todoTitles
     adapter.notifyDataSetChanged()
  }
 }
@@ -396,7 +396,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
         // infrastructure will create a child workflow with state if one is not already running.
         val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
           // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-          login(output.username)
+          logIn(output.username)
         }
         return welcomeScreen
       }
@@ -571,8 +571,8 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStack
 
       is ShowingTodo -> {
         val todoBackStack = context.renderChild(
-          child = TodoNavigationWorkflow,
-          props = TodoProps(renderState.username),
+          child = TodoListWorkflow,
+          props = ListProps(renderState.username),
           handler = {
             // When TodoNavigationWorkflow emits Back, enqueue our log out action.
             logOut

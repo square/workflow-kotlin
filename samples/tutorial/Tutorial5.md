@@ -343,7 +343,7 @@ class TodoNavigationWorkflowTest {
 
     TodoNavigationWorkflow
       .testRender(
-        props = TodoProps(name = "Ada"),
+        props = TodoProps(username = "Ada"),
         // Start from the list step to validate selecting a todo.
         initialState = State(
           todos = todos,
@@ -385,7 +385,7 @@ class TodoNavigationWorkflowTest {
 
     TodoNavigationWorkflow
       .testRender(
-        props = TodoProps(name = "Ada"),
+        props = TodoProps(username = "Ada"),
         // Start from the edit step so we can simulate saving.
         initialState = State(
           todos = todos,

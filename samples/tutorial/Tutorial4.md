@@ -213,7 +213,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
@@ -294,7 +294,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
@@ -403,7 +403,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
