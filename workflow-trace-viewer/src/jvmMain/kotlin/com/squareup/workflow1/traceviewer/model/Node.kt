@@ -34,7 +34,7 @@ internal data class Node(
 
   companion object {
     fun getNodeFields(): List<String> {
-      return listOf("props", "state", "rendering")
+      return listOf("Props", "State", "Rendering")
     }
 
     fun getNodeData(node: Node, field: String): String {

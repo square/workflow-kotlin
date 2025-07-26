@@ -163,13 +163,12 @@ private fun DetailCard(
         text = label,
         style = MaterialTheme.typography.h6,
         color = Color.Black,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
       )
       if (!open) {
         return@Card
       }
 
-      Spacer(modifier = Modifier.height(4.dp))
       if (pastValue != null) {
         Column {
           Text(
@@ -180,7 +179,10 @@ private fun DetailCard(
           )
           Text(
             text = computeAnnotatedDiff(pastValue, currValue),
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.body2,
+            modifier = Modifier
+              .padding(top = 8.dp)
+              .align(Alignment.CenterHorizontally)
           )
 
           Spacer(modifier = Modifier.height(16.dp))
