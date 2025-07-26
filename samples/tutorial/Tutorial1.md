@@ -196,7 +196,8 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
 }
 ```
 
-> [!TIP] This tutorial doesn't cover persistence support.
+> [!TIP]
+> This tutorial doesn't cover persistence support.
 > If you feel the need for it,
 > the easiest way to get there is by using the [`@Parcelize` annotation](https://developer.android.com/kotlin/parcelize) on your state types.
 > They will be saved and restored via the `savedStateHandler` of the JetPack `ViewModel`

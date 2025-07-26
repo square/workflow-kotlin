@@ -591,7 +591,8 @@ Update `render()` to create an `eventHandler` function to post the new output ev
 
 At the same time, use workflow's handy `View.setBackHandler` function to respond to Android back press events.
 
-> [!NOTE] `View.setBackHandler` is implemented via
+> [!NOTE]
+> `View.setBackHandler` is implemented via
 > [OnBackPressedCallback](https://developer.android.com/reference/androidx/activity/OnBackPressedCallback)
 > and so plays nicely with the
 > [OnBackPressedDispatcher](https://developer.android.com/reference/androidx/activity/OnBackPressedDispatcher), Compose's [BackHandler](https://foso.github.io/Jetpack-Compose-Playground/activity/backhandler/)
@@ -653,7 +654,8 @@ navigate  TodoListScreen(username=David, todoTitles=[Take the cat for a walk], o
 navigate  WelcomeScreen(promptText=, onLogInTapped=Function1<E, kotlin.Unit>)
 ```
 
-> [!TIP] Note the logging above remains useful
+> [!TIP]
+> Note the logging above remains useful
 > even though we are now wrapping our leaf screens in a `BackStackScreen`.
 > The default `onNavigate` function used by `Flow<*>.reportNavigation()`
 > can drill through the stock `Unwrappable` interface implemented by `BackStackScreen`

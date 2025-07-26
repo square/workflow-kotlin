@@ -241,7 +241,8 @@ The child's rendering _must_ be specified when declaring an expected workflow
 since the parent's call to `renderChild` _must_ return a value of the appropriate rendering type,
 and the workflow library can't know how to create those instances of your own types.
 
-> [!NOTE] Under `testRender` all children are mocked
+> [!NOTE]
+> Under `testRender` all children are mocked
 >
 > We consider tests built around `testRender` to be unit tests (as opposed to integration tests)
 > because they do not actually run any child workflows or workers.
