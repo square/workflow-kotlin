@@ -10,7 +10,7 @@ The `tutorial-base` module will be our starting place to build from.
 
 Go ahead and launch `TutorialActivity`. You should see this welcome screen:
 
-![Welcome](im "An Android phone app with title text _Welcome!_, an EditText with prompt _Please enter your name_, and a Log In button")
+![Welcome](images/welcome.png "An Android phone app with title text _Welcome!_, an EditText with prompt _Please enter your name_, and a Log In button")
 
 You can enter a name, but the login button won't do anything.
 
