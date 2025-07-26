@@ -6,6 +6,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import com.github.difflib.text.DiffRow.Tag
 import com.github.difflib.text.DiffRowGenerator
+import com.squareup.workflow1.traceviewer.util.DiffStyles.buildStringWithStyle
 
 /**
  * Generates a field-level word-diff for each node's states.
@@ -32,9 +33,9 @@ fun computeAnnotatedDiff(
   var existsDiff = false
   return buildAnnotatedString {
     // A full change in the type means all internal data will be changed, so it's easier to just
-    //generalize and show the diff in the type's name
+    // generalize and show the diff in the type's name
     if (pastName != currentName) {
-      buildString(
+      buildStringWithStyle(
         style = DiffStyles.DELETE,
         text = "$pastName(...)",
         builder = this
@@ -43,7 +44,7 @@ fun computeAnnotatedDiff(
       // append("$pastName(...)")
       // pop()
       append(" → ")
-      buildString(
+      buildStringWithStyle(
         style = DiffStyles.INSERT,
         text = "$currentName(...)",
         builder = this
@@ -69,7 +70,7 @@ fun computeAnnotatedDiff(
         Tag.CHANGE -> {
           existsDiff = true
           parseChangedDiff(fullDiff).forEach { (style, text) ->
-            buildString(
+            buildStringWithStyle(
               style = style,
               text = text,
               builder = this
@@ -80,7 +81,7 @@ fun computeAnnotatedDiff(
 
         Tag.INSERT -> {
           existsDiff = true
-          buildString(
+          buildStringWithStyle(
             text = fullDiff.replace("++", ""),
             style = DiffStyles.INSERT,
             builder = this
@@ -90,7 +91,7 @@ fun computeAnnotatedDiff(
 
         Tag.DELETE -> {
           existsDiff = true
-          buildString(
+          buildStringWithStyle(
             text = fullDiff.replace("--", ""),
             style = DiffStyles.DELETE,
             builder = this
@@ -105,7 +106,7 @@ fun computeAnnotatedDiff(
     }
 
     if (!existsDiff) {
-      buildString(
+      buildStringWithStyle(
         style = DiffStyles.NO_CHANGE,
         text = "No Diff",
         builder = this
@@ -159,16 +160,16 @@ object DiffStyles {
   val INSERT = SpanStyle(background = Color.Green.copy(alpha = 0.3f))
   val NO_CHANGE = SpanStyle(background = Color.LightGray)
   val UNCHANGED = SpanStyle()
-}
 
-internal fun buildString(
-  style: SpanStyle,
-  text: String,
-  builder: AnnotatedString.Builder
-) {
-  builder.pushStyle(style)
-  builder.append(text)
-  builder.pop()
+  fun buildStringWithStyle(
+    style: SpanStyle,
+    text: String,
+    builder: AnnotatedString.Builder
+  ) {
+    builder.pushStyle(style)
+    builder.append(text)
+    builder.pop()
+  }
 }
 
 /**

@@ -324,7 +324,7 @@ private fun DrawChildrenInGroups(
   }
 
   Column(
-    verticalArrangement = Arrangement.spacedBy(16.dp),  // Increased spacing between sections
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
     // Draw simple children in a grid at the top
     if (simpleChildren.isNotEmpty()) {
@@ -349,7 +349,6 @@ private fun DrawChildrenInGroups(
             )
           }
         }
-
       }
     }
 

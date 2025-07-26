@@ -22,10 +22,10 @@ import java.time.format.DateTimeFormatter
 @Composable
 internal fun FileDump(
   trace: String,
-  modifier: Modifier
+  modifier: Modifier = Modifier
 ) {
   var clicked by remember { mutableStateOf(false) }
-  Button (
+  Button(
     modifier = modifier.padding(16.dp),
     shape = CircleShape,
     colors = buttonColors(Color.Black),
@@ -59,4 +59,3 @@ private fun writeToFile(trace: String) {
     }
   }
 }
-

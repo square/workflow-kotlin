@@ -34,7 +34,7 @@ internal fun App(
 ) {
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
-  var rawRenderPass by remember { mutableStateOf("")}
+  var rawRenderPass by remember { mutableStateOf("") }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
 
