@@ -138,7 +138,7 @@ private fun todoListScreenRunner(
   todoListBinding.todoList.adapter = adapter
 
   return ScreenViewRunner { screen: TodoListScreen, _ ->
-    adapter.todoList = rendering.todoTitles
+    adapter.todoList = screen.todoTitles
     adapter.notifyDataSetChanged()
  }
 }
@@ -208,7 +208,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, Unit, Nothing, Screen>() 
     return welcomeScreen
   }
 
-  override fun snapshotState(state: State): Snapshot? = null
+  override fun snapshotState(state: Unit): Snapshot? = null
 }
 ```
 
@@ -254,10 +254,10 @@ At the same time, add a `reportNavigation()` call when creating the `renderings`
       workflow = RootNavigationWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState
-    )
-  }.reportNavigation {
-  Log.i("navigate", it.toString())
-}
+    ).reportNavigation {
+      Log.i("navigate", it.toString())
+    }
+  }
 ```
 
 Now when you run the app we'll see the welcome screen again.
@@ -349,9 +349,9 @@ Finally, map the output event from `WelcomeWorkflow` in `RootNavigationWorkflow`
 ```kotlin
   override fun render(
     renderProps: Unit,
-    renderState: Unit,
+    renderState: State,
     context: RenderContext
-  ): Screen {
+  ): WelcomeScreen {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
@@ -396,7 +396,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
         // infrastructure will create a child workflow with state if one is not already running.
         val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
           // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-          login(output.username)
+          logIn(output.username)
         }
         return welcomeScreen
       }
@@ -486,8 +486,12 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, TodoListSc
     renderState: State,
     context: RenderContext
   ): TodoListScreen {
-    username = renderProps.username,
-    todoTitles = titles,
+    val titles = renderState.todos.map { it.title }
+
+    return TodoListScreen(
+      username = renderProps.username,
+      todoTitles = titles,
+    )
   }
 ```
 
@@ -571,8 +575,8 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStack
 
       is ShowingTodo -> {
         val todoBackStack = context.renderChild(
-          child = TodoNavigationWorkflow,
-          props = TodoProps(renderState.username),
+          child = TodoListWorkflow,
+          props = ListProps(renderState.username),
           handler = {
             // When TodoNavigationWorkflow emits Back, enqueue our log out action.
             logOut
@@ -591,7 +595,8 @@ Update `render()` to create an `eventHandler` function to post the new output ev
 
 At the same time, use workflow's handy `View.setBackHandler` function to respond to Android back press events.
 
-> [!NOTE] `View.setBackHandler` is implemented via
+> [!NOTE]
+> `View.setBackHandler` is implemented via
 > [OnBackPressedCallback](https://developer.android.com/reference/androidx/activity/OnBackPressedCallback)
 > and so plays nicely with the
 > [OnBackPressedDispatcher](https://developer.android.com/reference/androidx/activity/OnBackPressedDispatcher), Compose's [BackHandler](https://foso.github.io/Jetpack-Compose-Playground/activity/backhandler/)
@@ -653,7 +658,8 @@ navigate  TodoListScreen(username=David, todoTitles=[Take the cat for a walk], o
 navigate  WelcomeScreen(promptText=, onLogInTapped=Function1<E, kotlin.Unit>)
 ```
 
-> [!TIP] Note the logging above remains useful
+> [!TIP]
+> Note the logging above remains useful
 > even though we are now wrapping our leaf screens in a `BackStackScreen`.
 > The default `onNavigate` function used by `Flow<*>.reportNavigation()`
 > can drill through the stock `Unwrappable` interface implemented by `BackStackScreen`
@@ -709,6 +715,6 @@ We'll show you how in the next tutorial, when we add our Todo Editing screen.
 >  - The `Overlay` marker interface, implemented by renderings that model things like Android `Dialog` windows
 >  - `ScreenOverlay`  for modeling an `Overlay` whose content comes from a `Screen`
 >  - `BodyAndOverlaysScreen`, a class that arranges `Overlay` instances in layers over a body `Screen`.
->  - And `the [AndroidOverlay](https://github.com/square/workflow-kotlin/blob/main/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/AndroidOverlay.kt)` interface that simplifies implementing `ScreenOverlay` with Android's `AppCompatDialog` class.
+>  - And the [`AndroidOverlay`](https://github.com/square/workflow-kotlin/blob/main/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/AndroidOverlay.kt) interface that simplifies implementing `ScreenOverlay` with Android's `AppCompatDialog` class.
 
 [Tutorial 3](Tutorial3.md)
