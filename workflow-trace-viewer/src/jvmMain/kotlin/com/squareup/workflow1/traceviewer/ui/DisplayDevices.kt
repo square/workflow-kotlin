@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun DisplayDevices(
-  onDeviceSelected: (String) -> Unit,
+  onDeviceSelect: (String) -> Unit,
   devices: List<String>,
   modifier: Modifier = Modifier,
 ) {
@@ -29,7 +29,7 @@ internal fun DisplayDevices(
   ) {
     if (devices.isEmpty()) {
       Text(
-        text = "No device available",
+        text = "No device available. Boot up a new device and restart the visualizer",
         modifier = Modifier.align(Alignment.Center)
       )
       return@Box
@@ -40,8 +40,9 @@ internal fun DisplayDevices(
       devices.forEach { device ->
         Card(
           onClick = {
+            // Only give back the specific emulator device, i.e. "emulator-5554"
             emulatorRegex.find(device)?.value?.let { emulator ->
-              onDeviceSelected(emulator)
+              onDeviceSelect(emulator)
             }
           },
           shape = RoundedCornerShape(16.dp),

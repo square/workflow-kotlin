@@ -34,5 +34,5 @@ enum class NodeState(val color: Color) {
   STATE_CHANGED(Color(0xFFE57373)), // red
   PROPS_CHANGED(Color(0xFFFF8A65)), // orange
   CHILDREN_CHANGED(Color(0x802196F3)), // blue
-  UNCHANGED(Color.Transparent),
+  UNCHANGED(Color.LightGray.copy(alpha = 0.3f)),
 }

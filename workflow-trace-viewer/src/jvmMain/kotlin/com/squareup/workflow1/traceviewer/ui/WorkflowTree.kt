@@ -2,6 +2,7 @@ package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
@@ -45,8 +45,10 @@ internal fun DrawTree(
   Column(
     modifier
       .padding(6.dp)
-      .border(3.dp, Color.Black)
-      .fillMaxSize(),
+      .fillMaxSize()
+      .then(
+        if (node.children.isNotEmpty()) Modifier.border(3.dp, Color.Black) else Modifier
+      ),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     val isAffected = affectedNodes.contains(node)
@@ -93,8 +95,8 @@ internal fun DrawTree(
  * Draws the group of unaffected children, which can be open and closed to expand/collapse them.
  *
  * If an unaffected children also has other children, it cannot be opened since the this group
- * treats all nodes as one entity. The onClick for the whole group overrides the onClick for the
- * individual nodes.
+ * treats all nodes as one entity. The right click for the whole group overrides the right click for
+ * the individual nodes.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -141,8 +143,7 @@ private fun UnaffectedChildrenGroup(
       Column(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(6.dp)
-          .border(3.dp, Color.Black),
+          .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         DrawChildrenInGroups(
@@ -279,10 +280,11 @@ private fun DrawNode(
   Box(
     modifier = Modifier
       .background(nodeUpdate.state.color)
+      .clickable {
+        onNodeSelect(nodeUpdate)
+      }
       .onPointerEvent(PointerEventType.Press) {
-        if (it.buttons.isPrimaryPressed) {
-          onNodeSelect(nodeUpdate)
-        } else if (it.buttons.isSecondaryPressed) {
+        if (it.buttons.isSecondaryPressed) {
           onExpandToggle(node)
         }
       }

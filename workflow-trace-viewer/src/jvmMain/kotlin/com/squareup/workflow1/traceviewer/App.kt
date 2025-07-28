@@ -64,8 +64,8 @@ internal fun App(
       sandboxState = sandboxState,
     ) {
       // if there is not a file selected and trace mode is live, then don't render anything.
-      val readyForFileTrace = validateFileMode(traceMode)
-      val readyForLiveTrace = validateLiveMode(traceMode)
+      val readyForFileTrace = TraceMode.validateFileMode(traceMode)
+      val readyForLiveTrace = TraceMode.validateLiveMode(traceMode)
 
       if (readyForFileTrace || readyForLiveTrace) {
         active = true
@@ -121,7 +121,7 @@ internal fun App(
     if (traceMode is TraceMode.Live) {
       if ((traceMode as TraceMode.Live).device == null) {
         DisplayDevices(
-          onDeviceSelected = { selectedDevice ->
+          onDeviceSelect = { selectedDevice ->
             traceMode = TraceMode.Live(selectedDevice)
           },
           devices = listDevices(),
@@ -161,6 +161,16 @@ internal class SandboxState {
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
   data class Live(val device: String? = null) : TraceMode
+
+  companion object {
+    fun validateLiveMode(traceMode: TraceMode): Boolean {
+      return traceMode is Live && traceMode.device != null
+    }
+
+    fun validateFileMode(traceMode: TraceMode): Boolean {
+      return traceMode is File && traceMode.file != null
+    }
+  }
 }
 
 /**
@@ -171,12 +181,4 @@ internal fun listDevices(): List<String> {
   process.waitFor()
   // We drop the header "List of devices attached"
   return process.inputStream.bufferedReader().readLines().drop(1).dropLast(1)
-}
-
-internal fun validateLiveMode(traceMode: TraceMode): Boolean {
-  return traceMode is TraceMode.Live && traceMode.device != null
-}
-
-internal fun validateFileMode(traceMode: TraceMode): Boolean {
-  return traceMode is TraceMode.File && traceMode.file != null
 }
