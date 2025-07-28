@@ -1,6 +1,6 @@
 plugins {
   // Hardcoded as this is upstream of the version catalog. Keep this in sync with that.
-  kotlin("jvm") version "2.2.0" apply false
+  kotlin("jvm") version "2.0.21" apply false
 }
 
 dependencyResolutionManagement {
