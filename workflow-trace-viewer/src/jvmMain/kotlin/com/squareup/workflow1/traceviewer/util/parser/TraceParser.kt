@@ -1,5 +1,7 @@
 package com.squareup.workflow1.traceviewer.util.parser
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
@@ -46,7 +51,6 @@ internal fun RenderTrace(
     frames.addAll(frame)
     fullTree.addAll(tree)
     affectedNodes.addAll(affected)
-    isLoading = false
     onFileParse(frame.size)
   }
 
@@ -73,6 +77,7 @@ internal fun RenderTrace(
         rawRenderPass?.let { onNewData(it) }
       }
     }
+    isLoading = false
   }
 
   LaunchedEffect(traceSource) {
@@ -100,8 +105,18 @@ internal fun RenderTrace(
     }
   }
 
-  if (error != null) {
-    Text("Error parsing: $error")
+  // This will only happen in the initial switch to Live Mode, where a socket error bubbled up and
+  // the lambda call to parse the data was immediately cancelled, meaning handleParseResult was never
+  // called to set isLoading to false
+  if (isLoading && error != null) {
+    Text("Socket Error: $error")
+    return
+  }
+
+  // This meant that there was an exception, but it was stored in ParseResult and read in
+  // handleParseResult. Since there is no parsed data, this likely means there was a moshi parsing error
+  if (error != null && frames.isEmpty()) {
+    Text("Malformed File: $error")
     return
   }
 
@@ -115,5 +130,15 @@ internal fun RenderTrace(
       onNodeSelect = onNodeSelect,
       storeNodeLocation = storeNodeLocation
     )
+
+    // This error happens when there has already been previous data parsed, but some exception bubbled
+    // up again, meaning it has to be a socket closure in Live mode.
+    error?.let {
+      Text(
+        text = "Socket closed: $error",
+        fontSize = 20.sp,
+        modifier = modifier.background(Color.White).padding(20.dp)
+      )
+    }
   }
 }
