@@ -17,10 +17,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
@@ -40,6 +43,7 @@ internal fun DrawTree(
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
   onNodeSelect: (NodeUpdate) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -64,7 +68,8 @@ internal fun DrawTree(
       isAffected = isAffected,
       isExpanded = isExpanded,
       onNodeSelect = onNodeSelect,
-      onExpandToggle = { expandedNodes[node.id] = !expandedNodes[node.id]!! }
+      onExpandToggle = { expandedNodes[node.id] = !expandedNodes[node.id]!! },
+      storeNodeLocation = storeNodeLocation
     )
 
     if (isExpanded) {
@@ -77,7 +82,8 @@ internal fun DrawTree(
         previousFrameNode = previousFrameNode,
         affectedNodes = affectedNodes,
         expandedNodes = expandedNodes,
-        onNodeSelect = onNodeSelect
+        onNodeSelect = onNodeSelect,
+        storeNodeLocation = storeNodeLocation
       )
 
       AffectedChildrenGroup(
@@ -85,7 +91,8 @@ internal fun DrawTree(
         previousFrameNode = previousFrameNode,
         affectedNodes = affectedNodes,
         expandedNodes = expandedNodes,
-        onNodeSelect = onNodeSelect
+        onNodeSelect = onNodeSelect,
+        storeNodeLocation = storeNodeLocation
       )
     }
   }
@@ -106,7 +113,8 @@ private fun UnaffectedChildrenGroup(
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
-  onNodeSelect: (NodeUpdate) -> Unit
+  onNodeSelect: (NodeUpdate) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit
 ) {
   if (children.isEmpty()) return
 
@@ -152,7 +160,8 @@ private fun UnaffectedChildrenGroup(
           affectedNodes = affectedNodes,
           expandedNodes = expandedNodes,
           unaffected = true,
-          onNodeSelect = onNodeSelect
+          onNodeSelect = onNodeSelect,
+          storeNodeLocation = storeNodeLocation
         )
       }
     }
@@ -168,7 +177,8 @@ private fun AffectedChildrenGroup(
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
-  onNodeSelect: (NodeUpdate) -> Unit
+  onNodeSelect: (NodeUpdate) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit
 ) {
   if (children.isEmpty()) return
 
@@ -177,7 +187,8 @@ private fun AffectedChildrenGroup(
     previousFrameNode = previousFrameNode,
     affectedNodes = affectedNodes,
     expandedNodes = expandedNodes,
-    onNodeSelect = onNodeSelect
+    onNodeSelect = onNodeSelect,
+    storeNodeLocation = storeNodeLocation
   )
 }
 
@@ -193,8 +204,9 @@ private fun DrawChildrenInGroups(
   previousFrameNode: Node?,
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
+  onNodeSelect: (NodeUpdate) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit,
   unaffected: Boolean = false,
-  onNodeSelect: (NodeUpdate) -> Unit
 ) {
   // Split children into those with children (nested) and those without
   var (nestedChildren, simpleChildren) = children.partition { it.children.isNotEmpty() }
@@ -227,7 +239,8 @@ private fun DrawChildrenInGroups(
               previousFrameNode = previousFrameNode?.children?.get(childNode.id),
               affectedNodes = affectedNodes,
               expandedNodes = expandedNodes,
-              onNodeSelect = onNodeSelect
+              onNodeSelect = onNodeSelect,
+              storeNodeLocation = storeNodeLocation
             )
           }
         }
@@ -250,7 +263,8 @@ private fun DrawChildrenInGroups(
             previousFrameNode = previousFrameNode?.children?.get(childNode.id),
             affectedNodes = affectedNodes,
             expandedNodes = expandedNodes,
-            onNodeSelect = onNodeSelect
+            onNodeSelect = onNodeSelect,
+            storeNodeLocation = storeNodeLocation
           )
         }
       }
@@ -270,6 +284,7 @@ private fun DrawNode(
   isExpanded: Boolean,
   onNodeSelect: (NodeUpdate) -> Unit,
   onExpandToggle: (Node) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit
 ) {
   val nodeUpdate = NodeUpdate.create(
     current = node,
@@ -289,6 +304,10 @@ private fun DrawNode(
         }
       }
       .padding(16.dp)
+      .onGloballyPositioned { coords ->
+        val offset = coords.positionInParent()
+        storeNodeLocation(node, offset)
+      }
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Row(

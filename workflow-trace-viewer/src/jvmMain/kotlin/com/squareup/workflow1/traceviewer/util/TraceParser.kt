@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import com.squareup.moshi.JsonAdapter
 import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
@@ -30,6 +31,7 @@ internal fun RenderTrace(
   onNodeSelect: (NodeUpdate) -> Unit,
   onNewFrame: () -> Unit,
   onNewData: (String) -> Unit,
+  storeNodeLocation: (Node, Offset) -> Unit,
   modifier: Modifier = Modifier
 ) {
   var isLoading by remember(traceSource) { mutableStateOf(true) }
@@ -110,6 +112,7 @@ internal fun RenderTrace(
       affectedNodes = affectedNodes[frameInd],
       expandedNodes = remember(frameInd) { mutableStateMapOf() },
       onNodeSelect = onNodeSelect,
+      storeNodeLocation = storeNodeLocation
     )
   }
 }

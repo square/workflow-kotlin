@@ -1,23 +1,28 @@
 package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.ColorLegend
 import com.squareup.workflow1.traceviewer.ui.DisplayDevices
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
+import com.squareup.workflow1.traceviewer.ui.SearchBox
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
 import com.squareup.workflow1.traceviewer.util.FileDump
 import com.squareup.workflow1.traceviewer.util.RenderTrace
@@ -37,11 +42,14 @@ internal fun App(
   var rawRenderPass by remember { mutableStateOf("") }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
+  val nodeLocations = remember { mutableListOf<SnapshotStateMap<Node, Offset>>() }
 
   // Default to File mode, and can be toggled to be in Live mode.
   var active by remember { mutableStateOf(false) }
   var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
+  // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one errors
+  val frameInd = if (traceMode is TraceMode.Live) frameIndex + 1 else frameIndex
 
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
@@ -57,6 +65,8 @@ internal fun App(
       selectedNode = null
       frameIndex = 0
       frameSize = 0
+      active = false
+      nodeLocations.clear()
     }
 
     // Main content
@@ -76,16 +86,40 @@ internal fun App(
           onNodeSelect = { selectedNode = it },
           onNewFrame = { frameIndex += 1 },
           onNewData = { rawRenderPass += "$it," },
+          storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) }
         )
       }
     }
 
-    FrameSelectTab(
-      size = frameSize,
-      currentIndex = frameIndex,
-      onIndexChange = { frameIndex = it },
+    Column(
       modifier = Modifier.align(Alignment.TopCenter)
-    )
+    ) {
+      if (active) {
+        FrameSelectTab(
+          size = frameSize,
+          currentIndex = frameIndex,
+          onIndexChange = { frameIndex = it },
+        )
+
+        // Since we can jump from frame to frame, we fill in the map during each recomposition
+        if (nodeLocations.getOrNull(frameInd) == null) {
+          // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
+          // and it will append a new map
+          while (nodeLocations.size <= frameSize) {
+            nodeLocations.add(mutableStateMapOf())
+          }
+        }
+
+        SearchBox(
+          nodes = nodeLocations[frameInd].keys.toList(),
+          onSearch = { name ->
+            val node = nodeLocations[frameInd].keys.firstOrNull { it.name == name }
+            sandboxState.offset = nodeLocations[frameInd][node] ?: sandboxState.offset
+          },
+          modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+      }
+    }
 
     TraceModeToggleSwitch(
       onToggle = {
