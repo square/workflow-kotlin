@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
-import com.squareup.workflow1.traceviewer.util.computeAnnotatedDiff
+import com.squareup.workflow1.traceviewer.util.parser.computeAnnotatedDiff
 
 /**
  * A panel that displays information about the selected workflow node.

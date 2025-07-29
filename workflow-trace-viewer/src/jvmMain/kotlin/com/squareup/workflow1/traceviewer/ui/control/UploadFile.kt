@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.util
+package com.squareup.workflow1.traceviewer.ui.control
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape

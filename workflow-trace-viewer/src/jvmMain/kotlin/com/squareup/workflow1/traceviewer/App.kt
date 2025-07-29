@@ -16,18 +16,20 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import com.squareup.workflow1.traceviewer.TraceMode.File
+import com.squareup.workflow1.traceviewer.TraceMode.Live
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.ColorLegend
-import com.squareup.workflow1.traceviewer.ui.DisplayDevices
-import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
-import com.squareup.workflow1.traceviewer.ui.SearchBox
-import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
-import com.squareup.workflow1.traceviewer.util.FileDump
-import com.squareup.workflow1.traceviewer.util.RenderTrace
+import com.squareup.workflow1.traceviewer.ui.control.DisplayDevices
+import com.squareup.workflow1.traceviewer.ui.control.FileDump
+import com.squareup.workflow1.traceviewer.ui.control.FrameSelectTab
+import com.squareup.workflow1.traceviewer.ui.control.SearchBox
+import com.squareup.workflow1.traceviewer.ui.control.TraceModeToggleSwitch
+import com.squareup.workflow1.traceviewer.ui.control.UploadFile
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
-import com.squareup.workflow1.traceviewer.util.UploadFile
+import com.squareup.workflow1.traceviewer.util.parser.RenderTrace
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -124,16 +126,16 @@ internal fun App(
     TraceModeToggleSwitch(
       onToggle = {
         resetStates()
-        traceMode = if (traceMode is TraceMode.Live) {
+        traceMode = if (traceMode is Live) {
           frameIndex = 0
-          TraceMode.File(null)
+          File(null)
         } else {
           /*
           We set the frame to -1 here since we always increment it during Live mode as the list of
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          TraceMode.Live()
+          Live()
         }
       },
       traceMode = traceMode,
@@ -146,7 +148,7 @@ internal fun App(
         resetOnFileSelect = {
           resetStates()
           selectedTraceFile = it
-          traceMode = TraceMode.File(it)
+          traceMode = File(it)
         },
         modifier = Modifier.align(Alignment.BottomStart)
       )
@@ -156,7 +158,7 @@ internal fun App(
       if ((traceMode as TraceMode.Live).device == null) {
         DisplayDevices(
           onDeviceSelect = { selectedDevice ->
-            traceMode = TraceMode.Live(selectedDevice)
+            traceMode = Live(selectedDevice)
           },
           devices = listDevices(),
           modifier = Modifier.align(Alignment.Center)

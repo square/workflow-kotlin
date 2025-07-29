@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.ui
+package com.squareup.workflow1.traceviewer.ui.control
 
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable

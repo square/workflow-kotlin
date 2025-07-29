@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.util
+package com.squareup.workflow1.traceviewer.util.parser
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +16,7 @@ import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.DrawTree
+import com.squareup.workflow1.traceviewer.util.streamRenderPassesFromDevice
 
 /**
  * Handles parsing the trace's after JsonParser has turned all render passes into frames. Also calls

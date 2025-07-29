@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.util
+package com.squareup.workflow1.traceviewer.util.parser
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import com.github.difflib.text.DiffRow.Tag
 import com.github.difflib.text.DiffRowGenerator
-import com.squareup.workflow1.traceviewer.util.DiffStyles.buildStringWithStyle
+import com.squareup.workflow1.traceviewer.util.parser.DiffStyles.buildStringWithStyle
 
 /**
  * Generates a field-level word-diff for each node's states.

@@ -1,6 +1,7 @@
 package com.squareup.workflow1.traceviewer.util
 
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.util.parser.mergeFrameIntoMainTree
 import java.util.LinkedHashMap
 import kotlin.test.Test
 import kotlin.test.assertEquals

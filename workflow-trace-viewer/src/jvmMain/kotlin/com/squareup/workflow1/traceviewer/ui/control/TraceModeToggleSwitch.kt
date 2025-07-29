@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.ui
+package com.squareup.workflow1.traceviewer.ui.control
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
