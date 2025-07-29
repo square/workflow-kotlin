@@ -1,8 +1,8 @@
 [versions]
 
-agpVersion = "8.8.0"
+agpVersion = "8.11.1"
 
-compileSdk = "34"
+compileSdk = "36"
 minSdk = "24"
 targetSdk = "33"
 
@@ -36,7 +36,7 @@ androidx-tracing = "1.2.0"
 androidx-transition = "1.5.1"
 androidx-viewbinding = "8.1.2"
 
-burst = "2.1.0"
+burst = "2.5.0"
 
 detekt = "1.19.0"
 dokka = "2.0.0"
@@ -46,7 +46,7 @@ filekit-dialogs-compose = "0.10.0-beta03"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
-google-ksp = "2.0.21-1.0.26"
+google-ksp = "2.1.21-2.0.2"
 google-material = "1.4.0"
 
 groovy = "3.0.9"
@@ -58,11 +58,11 @@ kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
 # of loading the library versions from this file but should be the same.
-kotlin = "2.0.21"
+kotlin = "2.1.21"
 
-kotlinx-binary-compatibility = "0.17.0"
+kotlinx-binary-compatibility = "0.18.1"
 kotlinx-coroutines = "1.9.0"
-kotlinx-serialization-json = "1.6.3"
+kotlinx-serialization-json = "1.8.1"
 kotlinx-atomicfu = "0.22.0"
 
 ktlint = "0.49.1"
@@ -81,7 +81,7 @@ rxjava2-core = "2.2.21"
 squareup-curtains = "1.2.5"
 squareup-cycler = "0.1.9"
 squareup-leakcanary = "3.0-alpha-8"
-squareup-moshi = "1.15.0"
+squareup-moshi = "1.15.2"
 squareup-moshi-kotlin = "1.15.2"
 squareup-okhttp = "4.9.1"
 squareup-okio = "3.3.0"
