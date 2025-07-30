@@ -59,7 +59,6 @@ include(
   ":samples:tictactoe:app",
   ":samples:tictactoe:common",
   ":samples:todo-android:app",
-  ":trace-encoder",
   ":workflow-config:config-android",
   ":workflow-config:config-jvm",
   ":workflow-core",

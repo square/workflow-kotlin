@@ -1,14 +1,5 @@
 [
   {
-    "gradlePath": ":trace-encoder",
-    "group": "com.squareup.workflow1",
-    "artifactId": "trace-encoder",
-    "description": "Trace Encoder",
-    "packaging": "jar",
-    "javaVersion": 8,
-    "publicationName": "maven"
-  },
-  {
     "gradlePath": ":workflow-core",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-core-iosarm64",
