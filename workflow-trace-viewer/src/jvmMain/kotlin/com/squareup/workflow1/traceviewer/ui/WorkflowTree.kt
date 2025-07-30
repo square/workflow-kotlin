@@ -23,7 +23,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
@@ -305,8 +305,12 @@ private fun DrawNode(
       }
       .padding(16.dp)
       .onGloballyPositioned { coords ->
-        val offset = coords.positionInParent()
-        storeNodeLocation(node, offset)
+        val offsetToTopLeft = coords.positionInRoot()
+        val offsetToCenter = Offset(
+          x = offsetToTopLeft.x + coords.size.width / 2,
+          y = offsetToTopLeft.y + coords.size.height / 2
+        )
+        storeNodeLocation(node, offsetToCenter)
       }
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

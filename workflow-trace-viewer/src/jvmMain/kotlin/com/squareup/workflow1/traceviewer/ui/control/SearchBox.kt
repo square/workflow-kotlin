@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.runtime.Composable
@@ -70,7 +71,11 @@ internal fun SearchBox(
             .clickable {
               onSearch(node.name)
               expanded = false
-            }
+            },
+          colors = ListItemDefaults.colors(
+            containerColor = Color.White,
+            headlineColor = Color.Black
+          )
         )
       }
     }

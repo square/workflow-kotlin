@@ -16,8 +16,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import com.squareup.workflow1.traceviewer.TraceMode.File
-import com.squareup.workflow1.traceviewer.TraceMode.Live
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.ColorLegend
@@ -39,6 +39,7 @@ import io.github.vinceglb.filekit.PlatformFile
 internal fun App(
   modifier: Modifier = Modifier
 ) {
+  var appWindowSize by remember { mutableStateOf(IntSize(0,0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
   var rawRenderPass by remember { mutableStateOf("") }
@@ -60,7 +61,9 @@ internal fun App(
   }
 
   Box(
-    modifier = modifier
+    modifier = modifier.onGloballyPositioned {
+      appWindowSize = it.size
+    }
   ) {
     fun resetStates() {
       selectedTraceFile = null
@@ -115,8 +118,11 @@ internal fun App(
         SearchBox(
           nodes = nodeLocations[frameInd].keys.toList(),
           onSearch = { name ->
+            sandboxState.scale = 1f
             val node = nodeLocations[frameInd].keys.firstOrNull { it.name == name }
-            sandboxState.offset = nodeLocations[frameInd][node] ?: sandboxState.offset
+            val newX = sandboxState.offset.x - nodeLocations[frameInd][node]!!.x + appWindowSize.width / 2
+            val newY = sandboxState.offset.y - nodeLocations[frameInd][node]!!.y + appWindowSize.height / 2
+            sandboxState.offset = Offset(x = newX, y = newY)
           },
           modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -126,16 +132,16 @@ internal fun App(
     TraceModeToggleSwitch(
       onToggle = {
         resetStates()
-        traceMode = if (traceMode is Live) {
+        traceMode = if (traceMode is TraceMode.Live) {
           frameIndex = 0
-          File(null)
+          TraceMode.File(null)
         } else {
           /*
           We set the frame to -1 here since we always increment it during Live mode as the list of
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          Live()
+          TraceMode.Live()
         }
       },
       traceMode = traceMode,
@@ -148,7 +154,7 @@ internal fun App(
         resetOnFileSelect = {
           resetStates()
           selectedTraceFile = it
-          traceMode = File(it)
+          traceMode = TraceMode.File(it)
         },
         modifier = Modifier.align(Alignment.BottomStart)
       )
@@ -158,7 +164,7 @@ internal fun App(
       if ((traceMode as TraceMode.Live).device == null) {
         DisplayDevices(
           onDeviceSelect = { selectedDevice ->
-            traceMode = Live(selectedDevice)
+            traceMode = TraceMode.Live(selectedDevice)
           },
           devices = listDevices(),
           modifier = Modifier.align(Alignment.Center)
