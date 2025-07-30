@@ -76,6 +76,7 @@ internal fun App(
 
     // Main content
     SandboxBackground(
+      appWindowSize = appWindowSize,
       sandboxState = sandboxState,
     ) {
       // if there is not a file selected and trace mode is live, then don't render anything.
