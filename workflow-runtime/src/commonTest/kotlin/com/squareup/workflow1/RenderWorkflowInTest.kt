@@ -114,8 +114,7 @@ class RenderWorkflowInTest(
     val hasReportedRendering = Mutex(locked = true)
     val testInterceptor = object : WorkflowInterceptor {
       override fun onRuntimeUpdate(update: RuntimeUpdate) {
-        if (update is RenderingProduced<*>) {
-          assertEquals("props: foo", update.renderingAndSnapshot.rendering)
+        if (update is RenderingProduced) {
           hasReportedRendering.unlock()
         }
       }
@@ -129,35 +128,6 @@ class RenderWorkflowInTest(
       workflowTracer = testTracer,
     ) {}
     hasReportedRendering.lock()
-  }
-
-  @Test fun modified_rendering_is_returned() = runTest(dispatcherUsed) {
-    val props = MutableStateFlow("foo")
-    val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
-
-    val interceptedRenderings = mutableListOf<Any?>()
-    val testInterceptor = object : WorkflowInterceptor {
-      override fun onRuntimeUpdate(update: RuntimeUpdate) {
-        if (update is RenderingProduced<*>) {
-          interceptedRenderings.add(update.renderingAndSnapshot.rendering)
-        }
-      }
-    }
-
-    renderWorkflowIn(
-      workflow = workflow,
-      scope = backgroundScope,
-      props = props,
-      interceptors = listOf(testInterceptor),
-      runtimeConfig = runtimeConfig,
-      workflowTracer = testTracer,
-    ) {}
-    assertEquals(1, interceptedRenderings.size, "Should have intercepted 1 rendering.")
-    assertEquals(
-      "props: foo",
-      interceptedRenderings[0],
-      "Should intercept 'props: foo' as a rendering."
-    )
   }
 
   @Test fun initial_rendering_is_calculated_when_scope_cancelled_before_start() =
@@ -252,11 +222,11 @@ class RenderWorkflowInTest(
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
-    val interceptedRenderings = mutableListOf<Any?>()
+    var interceptedRenderingsCount = 0
     val testInterceptor = object : WorkflowInterceptor {
       override fun onRuntimeUpdate(update: RuntimeUpdate) {
-        if (update is RenderingProduced<*>) {
-          interceptedRenderings.add(update.renderingAndSnapshot.rendering)
+        if (update is RenderingProduced) {
+          interceptedRenderingsCount++
         }
       }
     }
@@ -271,22 +241,12 @@ class RenderWorkflowInTest(
     ) {}
     advanceIfStandard()
 
-    assertEquals(1, interceptedRenderings.size, "Should have intercepted 1 rendering.")
-    assertEquals(
-      "props: foo",
-      interceptedRenderings[0],
-      "Should intercept 'props: foo' as a rendering."
-    )
+    assertEquals(1, interceptedRenderingsCount, "Should have intercepted 1 rendering.")
 
     props.value = "bar"
     advanceIfStandard()
 
-    assertEquals(2, interceptedRenderings.size, "Should have intercepted 2 rendering.")
-    assertEquals(
-      "props: bar",
-      interceptedRenderings[1],
-      "Should intercept 'props: bar' as a rendering."
-    )
+    assertEquals(2, interceptedRenderingsCount, "Should have intercepted 2 rendering.")
   }
 
   @Test fun saves_to_and_restores_from_snapshot(
@@ -1121,12 +1081,12 @@ class RenderWorkflowInTest(
       runTest(dispatcherUsed) {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
-        val interceptedRenderings = mutableListOf<Any?>()
+        var interceptedRenderingsCount = 0
         var skippedRenderings = 0
         val testInterceptor = object : WorkflowInterceptor {
           override fun onRuntimeUpdate(update: RuntimeUpdate) {
-            if (update is RenderingProduced<*>) {
-              interceptedRenderings.add(update.renderingAndSnapshot.rendering)
+            if (update is RenderingProduced) {
+              interceptedRenderingsCount++
             } else if (update is RenderPassSkipped) {
               skippedRenderings++
             }
@@ -1160,7 +1120,7 @@ class RenderWorkflowInTest(
         collectionJob.cancel()
 
         assertEquals(1, emitted.size)
-        assertEquals(1, interceptedRenderings.size)
+        assertEquals(1, interceptedRenderingsCount)
         assertEquals(1, skippedRenderings)
       }
     }

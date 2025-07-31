@@ -139,7 +139,16 @@
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-tracing",
     "description": "Workflow Tracing",
-    "packaging": "jar",
+    "packaging": "aar",
+    "javaVersion": 8,
+    "publicationName": "maven"
+  },
+  {
+    "gradlePath": ":workflow-tracing-papa",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-tracing-papa",
+    "description": "Workflow Tracing Papa",
+    "packaging": "aar",
     "javaVersion": 8,
     "publicationName": "maven"
   },

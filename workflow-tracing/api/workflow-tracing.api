@@ -1,17 +1,167 @@
-public abstract interface class com/squareup/workflow1/diagnostic/tracing/MemoryStats {
-	public abstract fun freeMemory ()J
-	public abstract fun totalMemory ()J
+public final class com/squareup/workflow1/tracing/ActionAppliedLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public fun <init> (Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)V
+	public final fun getActionName ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNewState ()Ljava/lang/Object;
+	public final fun getOldState ()Ljava/lang/Object;
+	public final fun getOutputOrNull ()Lcom/squareup/workflow1/WorkflowOutput;
+	public final fun getOutputReceivedString ()Ljava/lang/String;
+	public final fun getPropsOrNull ()Ljava/lang/Object;
+	public final fun getType ()Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
+	public fun log (Ljava/lang/StringBuilder;)V
 }
 
-public final class com/squareup/workflow1/diagnostic/tracing/RuntimeMemoryStats : com/squareup/workflow1/diagnostic/tracing/MemoryStats {
-	public static final field INSTANCE Lcom/squareup/workflow1/diagnostic/tracing/RuntimeMemoryStats;
-	public fun freeMemory ()J
-	public fun totalMemory ()J
+public final class com/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType : java/lang/Enum {
+	public static final field CASCADE Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
+	public static final field RENDERING_CALLBACK Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
+	public static final field WORKER_OUTPUT Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
+	public static fun values ()[Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
 }
 
-public final class com/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
-	public fun <init> (Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun <init> (Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/squareup/workflow1/tracing/ChainedWorkflowRuntimeTracerKt {
+	public static final fun wrap (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;
+}
+
+public final class com/squareup/workflow1/tracing/ConfigSnapshot {
+	public fun <init> (Ljava/util/Set;)V
+	public final fun getConfigAsString ()Ljava/lang/String;
+	public final fun getCsrConfig ()Z
+	public final fun getDeaConfig ()Z
+	public final fun getPtrConfig ()Z
+	public final fun getSehConfig ()Z
+	public final fun getShortCircuitConfig ()Z
+	public final fun getWsdConfig ()Z
+}
+
+public abstract interface class com/squareup/workflow1/tracing/Loggable {
+	public abstract fun toLogString ()Ljava/lang/String;
+}
+
+public abstract interface class com/squareup/workflow1/tracing/RenderCause {
+}
+
+public final class com/squareup/workflow1/tracing/RenderCause$Action : com/squareup/workflow1/tracing/RenderCause {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getActionName ()Ljava/lang/String;
+	public final fun getWorkerIncomingName ()Ljava/lang/String;
+	public final fun getWorkflowName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderCause$Callback : com/squareup/workflow1/tracing/RenderCause {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getActionName ()Ljava/lang/String;
+	public final fun getWorkflowName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderCause$RootCreation : com/squareup/workflow1/tracing/RenderCause {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getRunnerName ()Ljava/lang/String;
+	public final fun getWorkflowName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderCause$RootPropsChanged : com/squareup/workflow1/tracing/RenderCause {
+	public static final field INSTANCE Lcom/squareup/workflow1/tracing/RenderCause$RootPropsChanged;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderCause$WaitingForOutput : com/squareup/workflow1/tracing/RenderCause {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getWorkflowName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public static final field INSTANCE Lcom/squareup/workflow1/tracing/RenderLogLine;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun log (Ljava/lang/StringBuilder;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RenderPassInfo {
+	public synthetic fun <init> (Ljava/lang/String;Lcom/squareup/workflow1/tracing/RenderCause;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDurationUptime-UwyO8pc ()J
+	public final fun getRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public final fun getRunnerName ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/RuntimeLoggingUtilsKt {
+	public static final fun getWfLogString (Ljava/lang/Object;)Ljava/lang/String;
+	public static final fun toLoggingShortName (Lcom/squareup/workflow1/WorkflowAction;)Ljava/lang/String;
+	public static final fun toWfLoggingName (Lcom/squareup/workflow1/WorkflowAction;)Ljava/lang/String;
+	public static final fun workerKey (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public abstract interface class com/squareup/workflow1/tracing/RuntimeTraceContext {
+	public abstract fun addRuntimeUpdate (Lcom/squareup/workflow1/tracing/RuntimeUpdateLogLine;)V
+	public abstract fun getConfigSnapshot ()Lcom/squareup/workflow1/tracing/ConfigSnapshot;
+	public abstract fun getCurrentRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public abstract fun getPreviousRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public abstract fun getRenderIncomingCauses ()Ljava/util/List;
+	public abstract fun getRuntimeName ()Ljava/lang/String;
+	public abstract fun getWorkflowSessionInfo ()Landroidx/collection/MutableLongObjectMap;
+	public abstract fun setConfigSnapshot (Lcom/squareup/workflow1/tracing/ConfigSnapshot;)V
+	public abstract fun setCurrentRenderCause (Lcom/squareup/workflow1/tracing/RenderCause;)V
+	public abstract fun setPreviousRenderCause (Lcom/squareup/workflow1/tracing/RenderCause;)V
+}
+
+public abstract interface class com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public abstract fun log (Ljava/lang/StringBuilder;)V
+}
+
+public final class com/squareup/workflow1/tracing/RuntimeUpdates {
+	public fun <init> ()V
+	public final fun readAndClear ()Ljava/util/List;
+}
+
+public abstract interface class com/squareup/workflow1/tracing/SafeTraceInterface {
+	public abstract fun beginAsyncSection (Ljava/lang/String;I)V
+	public abstract fun beginSection (Ljava/lang/String;)V
+	public abstract fun endAsyncSection (Ljava/lang/String;I)V
+	public abstract fun endSection ()V
+	public abstract fun isCurrentlyTracing ()Z
+	public abstract fun isTraceable ()Z
+	public abstract fun logSection (Ljava/lang/String;)V
+}
+
+public final class com/squareup/workflow1/tracing/SkipLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public static final field INSTANCE Lcom/squareup/workflow1/tracing/SkipLogLine;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun log (Ljava/lang/StringBuilder;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/UiUpdateLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getNote ()Ljava/lang/String;
+	public fun log (Ljava/lang/StringBuilder;)V
+}
+
+public abstract interface class com/squareup/workflow1/tracing/WorkflowRenderPassTracker {
+	public abstract fun recordRenderPass (Lcom/squareup/workflow1/tracing/RenderPassInfo;)V
+}
+
+public abstract interface class com/squareup/workflow1/tracing/WorkflowRuntimeLoopListener {
+	public abstract fun onRuntimeLoopTick (Lcom/squareup/workflow1/tracing/ConfigSnapshot;Lcom/squareup/workflow1/tracing/RuntimeUpdates;)V
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor : com/squareup/workflow1/WorkflowInterceptor, com/squareup/workflow1/tracing/RuntimeTraceContext {
+	public field configSnapshot Lcom/squareup/workflow1/tracing/ConfigSnapshot;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun addRuntimeUpdate (Lcom/squareup/workflow1/tracing/RuntimeUpdateLogLine;)V
+	public fun getConfigSnapshot ()Lcom/squareup/workflow1/tracing/ConfigSnapshot;
+	public fun getCurrentRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public fun getPreviousRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public fun getRenderIncomingCauses ()Ljava/util/List;
+	public fun getRuntimeName ()Ljava/lang/String;
+	public fun getWorkflowSessionInfo ()Landroidx/collection/MutableLongObjectMap;
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -20,12 +170,63 @@ public final class com/squareup/workflow1/diagnostic/tracing/TracingWorkflowInte
 	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 	public fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
+	public fun setConfigSnapshot (Lcom/squareup/workflow1/tracing/ConfigSnapshot;)V
+	public fun setCurrentRenderCause (Lcom/squareup/workflow1/tracing/RenderCause;)V
+	public fun setPreviousRenderCause (Lcom/squareup/workflow1/tracing/RenderCause;)V
 }
 
-public final class com/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptorKt {
-	public static final fun TracingWorkflowInterceptor (Ljava/io/File;Ljava/lang/String;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
-	public static final fun TracingWorkflowInterceptor (Ljava/lang/String;Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
-	public static synthetic fun TracingWorkflowInterceptor$default (Ljava/io/File;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
-	public static synthetic fun TracingWorkflowInterceptor$default (Ljava/lang/String;Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
+public abstract interface class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType {
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType$CascadeAction : com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getChildOutputString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType$QueuedAction : com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType {
+	public static final field INSTANCE Lcom/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionType$QueuedAction;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/squareup/workflow1/tracing/WorkflowRuntimeTracer : com/squareup/workflow1/WorkflowInterceptor {
+	protected field workflowRuntimeTraceContext Lcom/squareup/workflow1/tracing/RuntimeTraceContext;
+	public fun <init> ()V
+	public fun attachRuntimeContext (Lcom/squareup/workflow1/tracing/RuntimeTraceContext;)V
+	protected final fun getKey (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/String;
+	protected final fun getLogName (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/String;
+	protected final fun getName (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/String;
+	protected final fun getSessionInfo ()Landroidx/collection/LongObjectMap;
+	protected final fun getTraceName (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/String;
+	protected final fun getWorkflowRuntimeTraceContext ()Lcom/squareup/workflow1/tracing/RuntimeTraceContext;
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRenderAndSnapshot (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun onRootPropsChanged (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public final fun onRuntimeUpdate (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;)V
+	public fun onRuntimeUpdateEnhanced (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;ZLcom/squareup/workflow1/tracing/ConfigSnapshot;)V
+	public final fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
+	public fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
+	public fun onWorkflowSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onWorkflowSessionStopped (J)V
+	protected final fun setWorkflowRuntimeTraceContext (Lcom/squareup/workflow1/tracing/RuntimeTraceContext;)V
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowSessionInfo {
+	public static final field Companion Lcom/squareup/workflow1/tracing/WorkflowSessionInfo$Companion;
+	public static final field MAX_KEY_LENGTH I
+	public static final field MAX_TRACE_NAME_LENGTH I
+	public fun <init> (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getLogName ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getTraceName ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowSessionInfo$Companion {
 }
 

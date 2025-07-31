@@ -1,0 +1,30 @@
+public final class com/squareup/workflow1/tracing/papa/PapaSafeTrace : com/squareup/workflow1/tracing/SafeTraceInterface {
+	public fun <init> ()V
+	public fun beginAsyncSection (Ljava/lang/String;I)V
+	public fun beginSection (Ljava/lang/String;)V
+	public fun endAsyncSection (Ljava/lang/String;I)V
+	public fun endSection ()V
+	public fun isCurrentlyTracing ()Z
+	public fun isTraceable ()Z
+	public fun logSection (Ljava/lang/String;)V
+}
+
+public final class com/squareup/workflow1/tracing/papa/WorkflowPapaTracer : com/squareup/workflow1/tracing/WorkflowRuntimeTracer {
+	public static final field Companion Lcom/squareup/workflow1/tracing/papa/WorkflowPapaTracer$Companion;
+	public fun <init> ()V
+	public fun <init> (Lcom/squareup/workflow1/tracing/SafeTraceInterface;)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/tracing/SafeTraceInterface;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRenderAndSnapshot (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun onRootPropsChanged (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onRuntimeUpdateEnhanced (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;ZLcom/squareup/workflow1/tracing/ConfigSnapshot;)V
+	public fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
+	public fun onWorkflowSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onWorkflowSessionStopped (J)V
+}
+
+public final class com/squareup/workflow1/tracing/papa/WorkflowPapaTracer$Companion {
+}
+

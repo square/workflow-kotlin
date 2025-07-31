@@ -13,6 +13,7 @@ androidx-activity = "1.8.2"
 androidx-appcompat = "1.7.0"
 androidx-benchmark = "1.3.3"
 androidx-cardview = "1.0.0"
+androidx-collection = "1.5.0"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
 androidx-compose-bom = "2025.03.01"
 androidx-constraintlayout = "2.1.4"
@@ -126,6 +127,8 @@ androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "androidx-cardview" }
+
+androidx-collection = { module = "androidx.collection:collection", version.ref = "androidx-collection" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 

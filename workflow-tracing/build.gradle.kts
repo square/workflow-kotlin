@@ -1,9 +1,16 @@
 plugins {
-  id("kotlin-jvm")
+  id("com.android.library")
+  id("kotlin-android")
+  id("android-defaults")
   id("published")
 }
 
+android {
+  namespace = "com.squareup.workflow1.tracing"
+}
+
 dependencies {
+  api(libs.androidx.collection)
   api(libs.kotlin.jdk8)
   api(libs.kotlinx.coroutines.core)
 
@@ -13,6 +20,5 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.kotlin.test.core)
   testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.mockito.core)
-  testImplementation(libs.mockito.kotlin)
+  testImplementation(libs.kotlinx.coroutines.test)
 }

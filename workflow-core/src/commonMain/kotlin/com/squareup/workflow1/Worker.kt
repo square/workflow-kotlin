@@ -166,6 +166,8 @@ public interface Worker<out OutputT> {
 
   public companion object {
 
+    public const val WORKER_OUTPUT_ACTION_NAME: String = "EmitWorkerOutputAction"
+
     /**
      * Shorthand for `flow { block() }.asWorker()`.
      *

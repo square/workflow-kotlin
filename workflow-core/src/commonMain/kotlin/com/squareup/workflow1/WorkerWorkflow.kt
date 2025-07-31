@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.Worker.Companion.WORKER_OUTPUT_ACTION_NAME
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -95,7 +96,7 @@ private class EmitWorkerOutputAction<P, S, O>(
   private val output: O,
 ) : WorkflowAction<P, S, O>() {
   override val debuggingName: String =
-    "EmitWorkerOutputAction(worker=$worker, key=$renderKey)"
+    "$WORKER_OUTPUT_ACTION_NAME(worker=$worker, key=$renderKey)"
 
   override fun Updater.apply() {
     setOutput(output)
