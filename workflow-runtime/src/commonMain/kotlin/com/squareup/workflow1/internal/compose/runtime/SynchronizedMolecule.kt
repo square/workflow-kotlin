@@ -167,9 +167,9 @@ private class RealSynchronizedMolecule(
 
   override fun <R> recomposeWithContent(content: @Composable () -> R): R {
     // Update content in a snapshot to ensure it is applied before we ask for a frame.
-    Snapshot.withMutableSnapshot {
-      this.content = content
-    }
+    // Snapshot.withMutableSnapshot {
+    this.content = content
+    // }
     Snapshot.sendApplyNotifications()
 
     if (!lastResult.isInitialized) {

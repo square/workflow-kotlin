@@ -1,9 +1,10 @@
 package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.RememberObserver
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collection.MutableVector
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
@@ -32,12 +33,12 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.LocalWorkflowComposableRenderer
 import com.squareup.workflow1.compose.WorkflowComposableRenderer
-import com.squareup.workflow1.compose.internal._DO_NOT_USE_invokeComposeWorkflowProduceRendering
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.createId
 import com.squareup.workflow1.internal.requireSend
+import com.squareup.workflow1.trace
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -51,12 +52,14 @@ private const val OUTPUT_QUEUE_LIMIT = 1_000
  * Representation and implementation of a single [ComposeWorkflow] inside a
  * [ComposeWorkflowNodeAdapter].
  */
+@Stable
 @OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   override val id: WorkflowNodeId,
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
+  private val parentNode: ComposeWorkflowChildNode<*, *, *>?,
   override val parent: WorkflowSession?,
   override val workflowTracer: WorkflowTracer?,
   override val runtimeConfig: RuntimeConfig,
@@ -67,7 +70,8 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   ComposeChildNode<PropsT, OutputT, RenderingT>,
   WorkflowSession,
   WorkflowComposableRenderer,
-  CoroutineScope {
+  CoroutineScope,
+  RememberObserver {
 
   // We don't need to create our own job because unlike for WorkflowNode, the baseContext already
   // has a dedicated job: either from the adapter (for root compose workflow), or from
@@ -157,13 +161,18 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     log("rendering workflow: props=$props")
     workflow as ComposeWorkflow
 
+    workflowTracer?.beginSection("ComposeChildNotifyInterceptorWhenPropsChange")
     notifyInterceptorWhenPropsChanged(props)
+    workflowTracer?.endSection()
 
+    workflowTracer?.beginSection("ComposeChildWithCompositionLocals")
     return withCompositionLocals(
       LocalSaveableStateRegistry provides saveableStateRegistry,
       LocalWorkflowComposableRenderer provides this
     ) {
+      workflowTracer?.beginSection("ComposeChildProduceSelfRendering")
       workflow.produceRendering(props, onEmitOutput)
+        .also { workflowTracer?.endSection() }
       // interceptor.onRenderComposeWorkflow(
       //   renderProps = props,
       //   emitOutput = onEmitOutput,
@@ -172,7 +181,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       //     _DO_NOT_USE_invokeComposeWorkflowProduceRendering(workflow, innerProps, innerEmitOutput)
       //   }
       // )
-    }
+    }.also { workflowTracer?.endSection() }
   }
 
   @ReadOnlyComposable
@@ -205,25 +214,18 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     // the same identifier.
     val childIdentifier = childWorkflow.identifier
     return key(childIdentifier) {
+      workflowTracer?.beginSection("ComposeChildRememberChildNode")
       val childNode = rememberComposeChildNode(
         childWorkflow = childWorkflow,
         childIdentifier = childIdentifier,
         initialProps = props,
         onOutput = onOutput
       )
+      workflowTracer?.endSection()
 
-      // Track child nodes for snapshotting.
-      // NOTE: While the effect will run after composition, it will run as part of the compose
-      // frame, so the child will be registered before ComposeWorkflowNodeAdapter's render method
-      // returns.
-      DisposableEffect(Unit) {
-        addChildNode(childNode)
-        onDispose {
-          removeChildNode(childNode)
-        }
-      }
-
+      workflowTracer?.beginSection("ComposeChildProduceChildRendering")
       return@key childNode.produceRendering(childWorkflow, props)
+        .also { workflowTracer?.endSection() }
     }
   }
 
@@ -250,6 +252,22 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       }
     )
   }
+
+  /**
+   * Track child nodes for snapshotting.
+   * NOTE: While the effect will run after composition, it will run as part of the compose
+   * frame, so the child will be registered before ComposeWorkflowNodeAdapter's render method
+   * returns.
+   */
+  override fun onRemembered() {
+    parentNode?.addChildNode(this)
+  }
+
+  override fun onForgotten() {
+    parentNode?.removeChildNode(this)
+  }
+
+  override fun onAbandoned() = Unit
 
   override fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
     childNodes?.forEach { child ->
@@ -281,15 +299,13 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   }
 
   @Composable
-  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> rememberComposeChildNode(
+  private inline fun <ChildPropsT, ChildOutputT, ChildRenderingT> rememberComposeChildNode(
     childWorkflow: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     childIdentifier: WorkflowIdentifier,
     initialProps: ChildPropsT,
-    onOutput: ((ChildOutputT) -> Unit)?
+    noinline onOutput: ((ChildOutputT) -> Unit)?
   ): ComposeChildNode<ChildPropsT, ChildOutputT, ChildRenderingT> {
     val childRenderKey = rememberChildRenderKey()
-    val childId = WorkflowNodeId(childIdentifier, name = childRenderKey)
-    val childSnapshot = snapshotCache?.get(childId)
     val childCoroutineScope = rememberCoroutineScope()
     val updatedOnOutput by rememberUpdatedState(onOutput)
 
@@ -297,20 +313,25 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     // also implies the workflow's type.
     return if (childWorkflow is ComposeWorkflow) {
       remember {
-        ComposeWorkflowChildNode(
-          id = childId,
-          initialProps = initialProps,
-          snapshot = childSnapshot,
-          baseContext = childCoroutineScope.coroutineContext,
-          parent = this,
-          workflowTracer = workflowTracer,
-          runtimeConfig = runtimeConfig,
-          interceptor = interceptor,
-          idCounter = idCounter,
-          emitAppliedActionToParent = { actionApplied ->
-            handleChildOutput(actionApplied, updatedOnOutput)
-          }
-        )
+        val childId = WorkflowNodeId(childIdentifier, name = childRenderKey)
+        val childSnapshot = snapshotCache?.get(childId)
+        workflowTracer.trace("ComposeChildInstantiateComposeChildNode") {
+          ComposeWorkflowChildNode(
+            id = childId,
+            initialProps = initialProps,
+            snapshot = childSnapshot,
+            baseContext = childCoroutineScope.coroutineContext,
+            parentNode = this,
+            parent = this,
+            workflowTracer = workflowTracer,
+            runtimeConfig = runtimeConfig,
+            interceptor = interceptor,
+            idCounter = idCounter,
+            emitAppliedActionToParent = { actionApplied ->
+              handleChildOutput(actionApplied, updatedOnOutput)
+            }
+          )
+        }
       }
     } else {
       // We need to be able to explicitly request recomposition of this composable when an action
@@ -318,38 +339,43 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       // about Compose. See comment in acceptChildActionResult for more info.
       val recomposeScope = currentRecomposeScope
       remember {
-        TraditionalWorkflowAdapterChildNode(
-          id = childId,
-          workflow = childWorkflow,
-          initialProps = initialProps,
-          contextForChildren = childCoroutineScope.coroutineContext,
-          parent = this,
-          snapshot = childSnapshot,
-          workflowTracer = workflowTracer,
-          runtimeConfig = runtimeConfig,
-          interceptor = interceptor,
-          idCounter = idCounter,
-          acceptChildActionResult = { actionApplied ->
-            // If this child needs to be re-rendered on the next render pass and there are no other
-            // state changes in the compose runtime during this action cascade, if we don't
-            // explicitly invalidate the recompose scope then the recomposer will think it doesn't
-            // have anything to do and not recompose us, which means we wouldn't have a chance to
-            // re-render the traditional workflow.
-            if (actionApplied.stateChanged) {
-              recomposeScope.invalidate()
+        val childId = WorkflowNodeId(childIdentifier, name = childRenderKey)
+        val childSnapshot = snapshotCache?.get(childId)
+        workflowTracer.trace("ComposeChildInstantiateTraditionalChildNode") {
+          TraditionalWorkflowAdapterChildNode(
+            id = childId,
+            workflow = childWorkflow,
+            initialProps = initialProps,
+            contextForChildren = childCoroutineScope.coroutineContext,
+            parentNode = this,
+            parent = this,
+            snapshot = childSnapshot,
+            workflowTracer = workflowTracer,
+            runtimeConfig = runtimeConfig,
+            interceptor = interceptor,
+            idCounter = idCounter,
+            acceptChildActionResult = { actionApplied ->
+              // If this child needs to be re-rendered on the next render pass and there are no other
+              // state changes in the compose runtime during this action cascade, if we don't
+              // explicitly invalidate the recompose scope then the recomposer will think it doesn't
+              // have anything to do and not recompose us, which means we wouldn't have a chance to
+              // re-render the traditional workflow.
+              if (actionApplied.stateChanged) {
+                recomposeScope.invalidate()
+              }
+              handleChildOutput(actionApplied, updatedOnOutput)
             }
-            handleChildOutput(actionApplied, updatedOnOutput)
-          }
-        )
+          )
+        }
       }
     }
   }
 
-  private fun addChildNode(childNode: ComposeChildNode<*, *, *>) {
+  fun addChildNode(childNode: ComposeChildNode<*, *, *>) {
     (childNodes ?: MutableVector<ComposeChildNode<*, *, *>>().also { childNodes = it }) += childNode
   }
 
-  private fun removeChildNode(childNode: ComposeChildNode<*, *, *>) {
+  fun removeChildNode(childNode: ComposeChildNode<*, *, *>) {
     val childNodes = childNodes
       ?: throw AssertionError("removeChildNode called before addChildNode")
     childNodes.remove(childNode)
@@ -381,42 +407,44 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     appliedActionFromChild: ActionApplied<ChildOutputT>,
     onOutput: ((ChildOutputT) -> Unit)?
   ): ActionProcessingResult {
-    log("handling child output: $appliedActionFromChild")
-    val outputFromChild = appliedActionFromChild.output
-    // The child emitted an output, so we need to call our handler, which will zero or
-    // more of two things: (1) change our state, (2) emit an output.
+    workflowTracer.trace("ComposeChildHandleChildOutput") {
+      log("handling child output: $appliedActionFromChild")
+      val outputFromChild = appliedActionFromChild.output
+      // The child emitted an output, so we need to call our handler, which will zero or
+      // more of two things: (1) change our state, (2) emit an output.
 
-    // If this workflow calls emitOutput while running child output handler, we don't want
-    // to send it to the channel, but rather capture it and propagate to our parent
-    // directly. But only for the first call to emitOutput – subsequent calls will need to
-    // be handled as usual.
-    var maybeParentResult: ActionProcessingResult? = null
+      // If this workflow calls emitOutput while running child output handler, we don't want
+      // to send it to the channel, but rather capture it and propagate to our parent
+      // directly. But only for the first call to emitOutput – subsequent calls will need to
+      // be handled as usual.
+      var maybeParentResult: ActionProcessingResult? = null
 
-    if (outputFromChild != null && onOutput != null) {
-      onEmitOutputOverride = { output ->
-        // We can't know if our own state changed, so just propagate from the child.
-        val applied = appliedActionFromChild.withOutput(WorkflowOutput(output))
-        log("handler emitted output, propagating to parent…")
-        maybeParentResult = emitAppliedActionToParent(applied)
+      if (outputFromChild != null && onOutput != null) {
+        onEmitOutputOverride = { output ->
+          // We can't know if our own state changed, so just propagate from the child.
+          val applied = appliedActionFromChild.withOutput(WorkflowOutput(output))
+          log("handler emitted output, propagating to parent…")
+          maybeParentResult = emitAppliedActionToParent(applied)
 
-        // Immediately allow any future emissions in the same onOutput call to pass through.
+          // Immediately allow any future emissions in the same onOutput call to pass through.
+          onEmitOutputOverride = null
+        }
+        // Ask this workflow to handle the child's output. It may write snapshot state or call
+        // emitOutput.
+        onOutput(outputFromChild.value)
         onEmitOutputOverride = null
       }
-      // Ask this workflow to handle the child's output. It may write snapshot state or call
-      // emitOutput.
-      onOutput(outputFromChild.value)
-      onEmitOutputOverride = null
-    }
 
-    if (maybeParentResult == null) {
-      // onOutput did not call emitOutput, but we need to propagate the action cascade anyway to
-      // check if state changed.
-      log("handler did not emitOutput, propagating to parent anyway…")
-      maybeParentResult = emitAppliedActionToParent(appliedActionFromChild.withOutput(null))
-    }
+      if (maybeParentResult == null) {
+        // onOutput did not call emitOutput, but we need to propagate the action cascade anyway to
+        // check if state changed.
+        log("handler did not emitOutput, propagating to parent anyway…")
+        maybeParentResult = emitAppliedActionToParent(appliedActionFromChild.withOutput(null))
+      }
 
-    // If maybeParentResult is not null then onOutput called emitOutput.
-    return maybeParentResult ?: appliedActionFromChild.withOutput(null)
+      // If maybeParentResult is not null then onOutput called emitOutput.
+      return maybeParentResult ?: appliedActionFromChild.withOutput(null)
+    }
   }
 
   private fun ActionApplied<*>.withOutput(output: WorkflowOutput<OutputT>?) =

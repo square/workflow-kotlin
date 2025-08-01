@@ -18,6 +18,7 @@ import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
+import com.squareup.workflow1.trace
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
@@ -42,7 +43,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  workflowTracer: WorkflowTracer? = null,
+  private val workflowTracer: WorkflowTracer? = null,
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
@@ -57,54 +58,59 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
 ) {
 
   private val recomposeChannel = Channel<Unit>(capacity = 1)
-  private val molecule = scope.launchSynchronizedMolecule(
-    onNeedsRecomposition = { recomposeChannel.trySend(Unit) }
-  )
+  private val molecule = workflowTracer.trace("ComposeWorkflowAdapterInstantiateCompose") {
+    scope.launchSynchronizedMolecule(
+      onNeedsRecomposition = { recomposeChannel.trySend(Unit) }
+    )
+  }
 
-  private val childNode = ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
-    id = id,
-    initialProps = initialProps,
-    snapshot = snapshot,
-    baseContext = scope.coroutineContext,
-    parent = parent,
-    workflowTracer = workflowTracer,
-    runtimeConfig = runtimeConfig,
-    interceptor = interceptor,
-    idCounter = idCounter,
-    emitAppliedActionToParent = { actionApplied ->
-      // Ensure any state updates performed by the output sender gets to invalidate any
-      // compositions that read them, so we can check needsRecompose below.
-      Snapshot.sendApplyNotifications()
-      log(
-        "adapter node sent apply notifications from action cascade (" +
-          "actionApplied=$actionApplied, needsRecompose=${molecule.needsRecomposition})"
-      )
-
-      // ComposeWorkflowChildNode can't tell if its own state changed since that information about
-      // specific composables/recompose scopes is only visible inside the compose runtime, so
-      // individual ComposeWorkflow nodes always report no state changes (unless they have a
-      // traditional child that reported a state change).
-      // However, we *can* check if any state changed that was read by anything in the
-      // composition, so when an action bubbles up to here, the top of the composition, we use
-      // that information to set the state changed flag if necessary.
-      val aggregateAction = if (molecule.needsRecomposition && !actionApplied.stateChanged) {
-        actionApplied.copy(stateChanged = true)
-      } else {
-        actionApplied
-      }
-
-      // Don't bubble up if no state changed and there was no output.
-      if (aggregateAction.stateChanged || aggregateAction.output != null) {
-        log("adapter node propagating action cascade up (aggregateAction=$aggregateAction)")
-        emitAppliedActionToParent(aggregateAction)
-      } else {
+  private val childNode = workflowTracer.trace("ComposeWorkflowAdapterInstantiateChildNode") {
+    ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
+      id = id,
+      initialProps = initialProps,
+      snapshot = snapshot,
+      baseContext = scope.coroutineContext,
+      parentNode = null,
+      parent = parent,
+      workflowTracer = workflowTracer,
+      runtimeConfig = runtimeConfig,
+      interceptor = interceptor,
+      idCounter = idCounter,
+      emitAppliedActionToParent = { actionApplied ->
+        // Ensure any state updates performed by the output sender gets to invalidate any
+        // compositions that read them, so we can check needsRecompose below.
+        Snapshot.sendApplyNotifications()
         log(
-          "adapter node not propagating action cascade since nothing happened (aggregateAction=$aggregateAction)"
+          "adapter node sent apply notifications from action cascade (" +
+            "actionApplied=$actionApplied, needsRecompose=${molecule.needsRecomposition})"
         )
-        aggregateAction
+
+        // ComposeWorkflowChildNode can't tell if its own state changed since that information about
+        // specific composables/recompose scopes is only visible inside the compose runtime, so
+        // individual ComposeWorkflow nodes always report no state changes (unless they have a
+        // traditional child that reported a state change).
+        // However, we *can* check if any state changed that was read by anything in the
+        // composition, so when an action bubbles up to here, the top of the composition, we use
+        // that information to set the state changed flag if necessary.
+        val aggregateAction = if (molecule.needsRecomposition && !actionApplied.stateChanged) {
+          actionApplied.copy(stateChanged = true)
+        } else {
+          actionApplied
+        }
+
+        // Don't bubble up if no state changed and there was no output.
+        if (aggregateAction.stateChanged || aggregateAction.output != null) {
+          log("adapter node propagating action cascade up (aggregateAction=$aggregateAction)")
+          emitAppliedActionToParent(aggregateAction)
+        } else {
+          log(
+            "adapter node not propagating action cascade since nothing happened (aggregateAction=$aggregateAction)"
+          )
+          aggregateAction
+        }
       }
-    }
-  )
+    )
+  }
 
   /**
    * Function invoked when [onNextAction] receives a recompose request.
@@ -150,11 +156,16 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
 
     // It is very likely that this will be a noop: any time the workflow runtime is doing a
     // render pass and no state read by our composition changed, there shouldn't be a frame request.
-    return molecule.recomposeWithContent {
-      childNode.produceRendering(
-        workflow = workflow,
-        props = input
-      )
+    workflowTracer.trace("ComposeWorkflowAdapterRecomposeWithContent") {
+      return molecule.recomposeWithContent {
+        workflowTracer?.beginSection("ComposeWorkflowAdapterProduceRendering")
+        childNode.produceRendering(
+          workflow = workflow,
+          props = input
+        ).also {
+          workflowTracer?.endSection()
+        }
+      }
     }
   }
 

@@ -5,10 +5,12 @@ package com.squareup.benchmark.composeworkflow.benchmark
 import androidx.benchmark.junit4.BenchmarkRule
 import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.tracing.Trace
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.composable
 import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.renderChild
@@ -132,6 +134,7 @@ class ComposeWorkflowMicroBenchmark {
       props = props,
       scope = this + workflowJob,
       runtimeConfig = RuntimeConfigOptions.ALL,
+      workflowTracer = Tracer,
       onOutput = {}
     )
 
@@ -166,6 +169,7 @@ class ComposeWorkflowMicroBenchmark {
       props = props,
       scope = this + workflowJob,
       runtimeConfig = RuntimeConfigOptions.ALL,
+      workflowTracer = Tracer,
       onOutput = {}
     )
 
@@ -205,6 +209,7 @@ class ComposeWorkflowMicroBenchmark {
       props = props,
       scope = this + workflowJob,
       runtimeConfig = RuntimeConfigOptions.ALL,
+      workflowTracer = Tracer,
       onOutput = {}
     )
 
@@ -230,6 +235,16 @@ class ComposeWorkflowMicroBenchmark {
     }
 
     workflowJob.cancel()
+  }
+}
+
+private object Tracer : WorkflowTracer {
+  override fun beginSection(label: String) {
+    Trace.beginSection(label)
+  }
+
+  override fun endSection() {
+    Trace.endSection()
   }
 }
 

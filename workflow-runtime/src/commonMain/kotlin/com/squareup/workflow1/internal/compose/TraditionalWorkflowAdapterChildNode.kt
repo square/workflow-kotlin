@@ -1,6 +1,7 @@
 package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.RememberObserver
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -26,6 +27,7 @@ internal class TraditionalWorkflowAdapterChildNode<PropsT, OutputT, RenderingT>(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
   contextForChildren: CoroutineContext,
+  private val parentNode: ComposeWorkflowChildNode<*, *, *>?,
   parent: WorkflowSession?,
   snapshot: TreeSnapshot?,
   workflowTracer: WorkflowTracer?,
@@ -33,7 +35,8 @@ internal class TraditionalWorkflowAdapterChildNode<PropsT, OutputT, RenderingT>(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter?,
   acceptChildActionResult: (ActionApplied<OutputT>) -> ActionProcessingResult,
-) : ComposeChildNode<PropsT, OutputT, RenderingT> {
+) : ComposeChildNode<PropsT, OutputT, RenderingT>,
+  RememberObserver {
 
   private val workflowNode: WorkflowNode<PropsT, OutputT, RenderingT> = createWorkflowNode(
     id = id,
@@ -69,4 +72,20 @@ internal class TraditionalWorkflowAdapterChildNode<PropsT, OutputT, RenderingT>(
 
   override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult =
     workflowNode.applyNextAvailableTreeAction(skipDirtyNodes)
+
+  /**
+   * Track child nodes for snapshotting.
+   * NOTE: While the effect will run after composition, it will run as part of the compose
+   * frame, so the child will be registered before ComposeWorkflowNodeAdapter's render method
+   * returns.
+   */
+  override fun onRemembered() {
+    parentNode?.addChildNode(this)
+  }
+
+  override fun onForgotten() {
+    parentNode?.removeChildNode(this)
+  }
+
+  override fun onAbandoned() = Unit
 }
