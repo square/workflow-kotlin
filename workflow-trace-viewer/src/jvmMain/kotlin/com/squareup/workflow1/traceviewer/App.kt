@@ -20,7 +20,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
-import com.squareup.workflow1.traceviewer.ui.ColorLegend
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.control.DisplayDevices
 import com.squareup.workflow1.traceviewer.ui.control.FileDump
@@ -39,7 +38,7 @@ import io.github.vinceglb.filekit.PlatformFile
 internal fun App(
   modifier: Modifier = Modifier
 ) {
-  var appWindowSize by remember { mutableStateOf(IntSize(0,0)) }
+  var appWindowSize by remember { mutableStateOf(IntSize(0, 0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
   var rawRenderPass by remember { mutableStateOf("") }
@@ -175,12 +174,6 @@ internal fun App(
       FileDump(
         trace = rawRenderPass,
         modifier = Modifier.align(Alignment.BottomStart)
-      )
-    }
-
-    if (active) {
-      ColorLegend(
-        modifier = Modifier.align(Alignment.BottomEnd)
       )
     }
 

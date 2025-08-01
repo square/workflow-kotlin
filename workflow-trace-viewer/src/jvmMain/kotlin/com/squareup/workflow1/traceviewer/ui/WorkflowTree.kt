@@ -3,6 +3,9 @@ package com.squareup.workflow1.traceviewer.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -27,6 +33,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeState
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 
 /**
@@ -286,44 +293,81 @@ private fun DrawNode(
   onExpandToggle: (Node) -> Unit,
   storeNodeLocation: (Node, Offset) -> Unit
 ) {
+  val interactionSource = remember { MutableInteractionSource() }
+  val isHovered by interactionSource.collectIsHoveredAsState()
+
   val nodeUpdate = NodeUpdate.create(
     current = node,
     past = nodePast,
     isAffected = isAffected
   )
 
-  Box(
-    modifier = Modifier
-      .background(nodeUpdate.state.color)
-      .clickable {
-        onNodeSelect(nodeUpdate)
-      }
-      .onPointerEvent(PointerEventType.Press) {
-        if (it.buttons.isSecondaryPressed) {
-          onExpandToggle(node)
+  Box {
+    Box(
+      modifier = Modifier
+        .hoverable(interactionSource)
+        .background(nodeUpdate.state.color)
+        .clickable {
+          onNodeSelect(nodeUpdate)
         }
-      }
-      .padding(16.dp)
-      .onGloballyPositioned { coords ->
-        val offsetToTopLeft = coords.positionInRoot()
-        val offsetToCenter = Offset(
-          x = offsetToTopLeft.x + coords.size.width / 2,
-          y = offsetToTopLeft.y + coords.size.height / 2
-        )
-        storeNodeLocation(node, offsetToCenter)
-      }
-  ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-      ) {
-        if (node.children.isNotEmpty()) {
-          Text(text = if (isExpanded) "▼" else "▶")
+        .onPointerEvent(PointerEventType.Press) {
+          if (it.buttons.isSecondaryPressed) {
+            onExpandToggle(node)
+          }
         }
-        Text(text = node.name)
+        .padding(16.dp)
+        .onGloballyPositioned { coords ->
+          val offsetToTopLeft = coords.positionInRoot()
+          val offsetToCenter = Offset(
+            x = offsetToTopLeft.x + coords.size.width / 2,
+            y = offsetToTopLeft.y + coords.size.height / 2
+          )
+          storeNodeLocation(node, offsetToCenter)
+        }
+    ) {
+      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          if (node.children.isNotEmpty()) {
+            Text(text = if (isExpanded) "▼" else "▶")
+          }
+          Text(text = node.name)
+        }
+        Text(text = "ID: ${node.id}")
       }
-      Text(text = "ID: ${node.id}")
     }
+
+    if (isHovered) {
+      NodeTooltip(
+        nodeState = nodeUpdate.state,
+        modifier = Modifier
+          .align(Alignment.TopEnd)
+          .background(nodeUpdate.state.color)
+      )
+    }
+  }
+}
+
+/**
+ * A tooltip that appears on hover showing the node state type
+ */
+@Composable
+private fun NodeTooltip(
+  nodeState: NodeState,
+  modifier: Modifier = Modifier
+) {
+  Box(
+    modifier = modifier
+      .clip(RoundedCornerShape(4.dp))
+      .background(Color.Black.copy(alpha = 0.3f))
+      .padding(horizontal = 8.dp, vertical = 4.dp)
+  ) {
+    Text(
+      text = nodeState.name,
+      color = Color.White,
+      fontSize = 12.sp
+    )
   }
 }

@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -48,7 +47,7 @@ internal fun SandboxBackground(
             val pointerInput = event.changes.first()
             val pointerOffsetToCenter = Offset(
               // For some reason using 1.5 made zooming more natural than 2
-              x = pointerInput.position.x - appWindowSize.width / (3/2),
+              x = pointerInput.position.x - appWindowSize.width / (3 / 2),
               y = pointerInput.position.y - appWindowSize.height / 2
             )
             val scrollDelta = pointerInput.scrollDelta.y
