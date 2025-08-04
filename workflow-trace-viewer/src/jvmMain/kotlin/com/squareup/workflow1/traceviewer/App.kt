@@ -1,7 +1,9 @@
 package com.squareup.workflow1.traceviewer
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,12 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.control.DisplayDevices
 import com.squareup.workflow1.traceviewer.ui.control.FileDump
-import com.squareup.workflow1.traceviewer.ui.control.FrameSelectTab
+import com.squareup.workflow1.traceviewer.ui.control.FrameNavigator
 import com.squareup.workflow1.traceviewer.ui.control.SearchBox
 import com.squareup.workflow1.traceviewer.ui.control.TraceModeToggleSwitch
 import com.squareup.workflow1.traceviewer.ui.control.UploadFile
@@ -97,15 +100,13 @@ internal fun App(
     }
 
     Column(
-      modifier = Modifier.align(Alignment.TopCenter)
+      modifier = Modifier
+        .align(Alignment.TopCenter)
+        .padding(top = 8.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
     ) {
       if (active) {
-        FrameSelectTab(
-          size = frameSize,
-          currentIndex = frameIndex,
-          onIndexChange = { frameIndex = it },
-        )
-
         // Since we can jump from frame to frame, we fill in the map during each recomposition
         if (nodeLocations.getOrNull(frameInd) == null) {
           // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
@@ -124,7 +125,12 @@ internal fun App(
             val newY = sandboxState.offset.y - nodeLocations[frameInd][node]!!.y + appWindowSize.height / 2
             sandboxState.offset = Offset(x = newX, y = newY)
           },
-          modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        FrameNavigator(
+          totalFrames = frameSize,
+          currentIndex = frameIndex,
+          onIndexChange = { frameIndex = it },
         )
       }
     }
