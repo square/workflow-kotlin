@@ -181,13 +181,14 @@ public interface WorkflowInterceptor {
 
   /**
    * This runtime has produced a new rendering after at least one render pass.
-   *
-   * @param renderingAndSnapshot This is the rendering and snapshot that was passed out of the
-   *        Workflow runtime.
    */
-  public data class RenderingProduced<R>(
-    public val renderingAndSnapshot: RenderingAndSnapshot<R>
-  ) : RuntimeUpdate
+  public data object RenderingProduced : RuntimeUpdate
+
+  /**
+   * The runtime has finished its work and is stable again - either skipping rendering because
+   * of no change ([RenderPassSkipped]), or having passed a new rendering ([RenderingProduced]).
+   */
+  public data object RuntimeLoopTick : RuntimeUpdate
 
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method

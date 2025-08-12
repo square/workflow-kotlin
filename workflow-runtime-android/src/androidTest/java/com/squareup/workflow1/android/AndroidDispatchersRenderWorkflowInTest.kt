@@ -374,7 +374,7 @@ class AndroidDispatchersRenderWorkflowInTest(
   private var renderPasses = 0
   private val countingInterceptor = object : WorkflowInterceptor {
     override fun onRuntimeUpdate(update: RuntimeUpdate) {
-      if (update is RenderingProduced<*>) {
+      if (update is RenderingProduced) {
         renderingsProduced++
       }
     }

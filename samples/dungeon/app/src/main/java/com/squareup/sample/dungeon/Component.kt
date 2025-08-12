@@ -56,7 +56,6 @@ class Component(context: AppCompatActivity) {
 
   val timeMachineModelFactory = TimeMachineModel.Factory(
     context,
-    timeMachineWorkflow,
-    traceFilesDir = context.filesDir
+    timeMachineWorkflow
   )
 }

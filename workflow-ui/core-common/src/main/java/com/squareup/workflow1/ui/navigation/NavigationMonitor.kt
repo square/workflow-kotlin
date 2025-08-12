@@ -42,6 +42,11 @@ public class NavigationMonitor(
 /**
  * Creates a [NavigationMonitor] and [updates it][NavigationMonitor.update]
  * with [each element collected][Flow.onEach] by the receiving [Flow].
+ *
+ * Note that one of the best ways to use this is with an installed
+ * [com.squareup.workflow1.tracing.WorkflowRuntimeMonitor] and then calling
+ * [com.squareup.workflow1.tracing.RuntimeTraceContext.addRuntimeUpdate] with a
+ * [com.squareup.workflow1.tracing.UiUpdateLogLine] in [onNavigate].
  */
 public fun <T : Any> Flow<T>.reportNavigation(
   skipFirstScreen: Boolean = false,

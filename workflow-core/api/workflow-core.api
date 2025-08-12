@@ -371,11 +371,13 @@ public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/W
 
 public abstract interface class com/squareup/workflow1/Worker {
 	public static final field Companion Lcom/squareup/workflow1/Worker$Companion;
+	public static final field WORKER_OUTPUT_ACTION_NAME Ljava/lang/String;
 	public abstract fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
 	public abstract fun run ()Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/squareup/workflow1/Worker$Companion {
+	public static final field WORKER_OUTPUT_ACTION_NAME Ljava/lang/String;
 	public final fun finished ()Lcom/squareup/workflow1/Worker;
 	public final fun timer (JLjava/lang/String;)Lcom/squareup/workflow1/Worker;
 	public static synthetic fun timer$default (Lcom/squareup/workflow1/Worker$Companion;JLjava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/Worker;
