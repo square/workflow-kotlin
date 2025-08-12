@@ -34,14 +34,13 @@ internal data class Node(
 
   companion object {
     fun getNodeFields(): List<String> {
-      return listOf("Props", "State", "Rendering")
+      return listOf("Props", "State")
     }
 
     fun getNodeData(node: Node, field: String): String {
       return when (field.lowercase()) {
         "props" -> node.props
         "state" -> node.state
-        "rendering" -> node.rendering
         else -> throw IllegalArgumentException("Unknown field: $field")
       }
     }

@@ -72,6 +72,7 @@ internal fun App(
       selectedNode = null
       frameIndex = 0
       frameSize = 0
+      rawRenderPass = ""
       active = false
       nodeLocations.clear()
     }
