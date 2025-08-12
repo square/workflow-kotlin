@@ -13,7 +13,7 @@ public fun interface WorkflowRuntimeLoopListener {
    * Called whenever the runtime loop completes with all the update events that have happened in
    * that loop.
    */
-  public fun onRuntimeLoopTick(
+  public fun onRuntimeLoopSettled(
     configSnapshot: ConfigSnapshot,
     runtimeUpdates: RuntimeUpdates
   )

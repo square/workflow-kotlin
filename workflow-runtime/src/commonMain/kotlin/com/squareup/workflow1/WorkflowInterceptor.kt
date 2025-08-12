@@ -188,7 +188,7 @@ public interface WorkflowInterceptor {
    * The runtime has finished its work and is stable again - either skipping rendering because
    * of no change ([RenderPassSkipped]), or having passed a new rendering ([RenderingProduced]).
    */
-  public data object RuntimeLoopTick : RuntimeUpdate
+  public data object RuntimeSettled : RuntimeUpdate
 
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method

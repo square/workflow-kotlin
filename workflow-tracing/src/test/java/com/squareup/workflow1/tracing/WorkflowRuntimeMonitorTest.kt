@@ -14,7 +14,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopTick
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.identifier
@@ -277,7 +277,7 @@ internal class WorkflowRuntimeMonitorTest {
   }
 
   @Test
-  fun `onRuntimeUpdate handles RuntimeLoopTick`() {
+  fun `onRuntimeUpdate handles RuntimeLoopSettled`() {
     val monitor = WorkflowRuntimeMonitor(
       runtimeName = runtimeName,
       workflowRuntimeTracers = listOf(fakeRuntimeTracer),
@@ -290,10 +290,10 @@ internal class WorkflowRuntimeMonitorTest {
     // Initialize to set up config snapshot
     monitor.onSessionStarted(testScope, rootSession)
 
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     assertTrue(fakeRuntimeTracer.onRuntimeUpdateEnhancedCalled)
-    assertTrue(fakeRuntimeLoopListener.onRuntimeLoopTickCalled)
+    assertTrue(fakeRuntimeLoopListener.onRuntimeLoopSettledCalled)
     assertTrue(monitor.renderIncomingCauses.isEmpty())
   }
 
@@ -334,7 +334,7 @@ internal class WorkflowRuntimeMonitorTest {
     val logLine = UiUpdateLogLine("Test update")
 
     monitor.addRuntimeUpdate(logLine)
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     assertContains(runtimeListener.runtimeUpdatesReceived!!.readAndClear(), logLine)
   }
@@ -357,7 +357,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.renderIncomingCauses.add(RootCreation(runtimeName, "TestWorkflow"))
 
     monitor.onRuntimeUpdate(RenderPassSkipped)
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
     assertTrue(updates.any { it is SkipLogLine })
@@ -378,7 +378,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionStarted(testScope, rootSession)
 
     monitor.onRuntimeUpdate(RenderingConflated)
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
     // RenderingConflated is commented out in the implementation, so no log line should be added
@@ -400,7 +400,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionStarted(testScope, rootSession)
 
     monitor.onRuntimeUpdate(RenderingProduced)
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
     // RenderingProduced is commented out in the implementation, so no log line should be added
@@ -433,7 +433,7 @@ internal class WorkflowRuntimeMonitorTest {
       session = rootSession
     )
 
-    monitor.onRuntimeUpdate(RuntimeLoopTick)
+    monitor.onRuntimeUpdate(RuntimeSettled)
 
     val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
     assertTrue(updates.any { it is RenderLogLine })
@@ -821,14 +821,14 @@ internal class WorkflowRuntimeMonitorTest {
   }
 
   private class TestWorkflowRuntimeLoopListener : WorkflowRuntimeLoopListener {
-    var onRuntimeLoopTickCalled = false
+    var onRuntimeLoopSettledCalled = false
     var runtimeUpdatesReceived: RuntimeUpdates? = null
 
-    override fun onRuntimeLoopTick(
+    override fun onRuntimeLoopSettled(
       configSnapshot: ConfigSnapshot,
       runtimeUpdates: RuntimeUpdates
     ) {
-      onRuntimeLoopTickCalled = true
+      onRuntimeLoopSettledCalled = true
       runtimeUpdatesReceived = runtimeUpdates
     }
   }

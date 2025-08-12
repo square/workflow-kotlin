@@ -7,7 +7,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopTick
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.tracing.ConfigSnapshot
@@ -175,8 +175,8 @@ internal class WorkflowPapaTracerTest {
     // Should not throw for RenderPassSkipped
     papaTracer.onRuntimeUpdateEnhanced(RenderPassSkipped, false, configSnapshot)
 
-    // Should not throw for RuntimeLoopTick
-    papaTracer.onRuntimeUpdateEnhanced(RuntimeLoopTick, true, configSnapshot)
+    // Should not throw for RuntimeLoopSettled
+    papaTracer.onRuntimeUpdateEnhanced(RuntimeSettled, true, configSnapshot)
   }
 
   @Test

@@ -6,21 +6,21 @@ import kotlin.time.Duration
  * Can be passed to a [WorkflowRuntimeMonitor] to track each render pass as it happens, and the
  * cause of it.
  */
-fun interface WorkflowRenderPassTracker {
+public fun interface WorkflowRenderPassTracker {
 
   /**
    * Records that a render pass happened.
    */
-  fun recordRenderPass(renderPass: RenderPassInfo)
+  public fun recordRenderPass(renderPass: RenderPassInfo)
 }
 
 /**
  * A bundle of little info about a render pass.
  */
-class RenderPassInfo(
-  val runnerName: String,
-  val renderCause: RenderCause,
-  val durationUptime: Duration
+public class RenderPassInfo(
+  public val runnerName: String,
+  public val renderCause: RenderCause,
+  public val durationUptime: Duration
 )
 
 /**
@@ -43,8 +43,8 @@ public sealed interface RenderCause {
    * First creation of the root workflow for the runtime.
    */
   public class RootCreation(
-    val runnerName: String,
-    val workflowName: String,
+    public val runnerName: String,
+    public val workflowName: String,
   ) : RenderCause {
     override fun toString(): String {
       return "Creation of $runnerName root workflow $workflowName"
@@ -55,9 +55,9 @@ public sealed interface RenderCause {
    * An action was handled.
    */
   public class Action(
-    val actionName: String,
-    val workerIncomingName: String?,
-    val workflowName: String,
+    public val actionName: String,
+    public val workerIncomingName: String?,
+    public val workflowName: String,
   ) : RenderCause {
     override fun toString(): String {
       return "Output:A($actionName)/R($workerIncomingName)/W($workflowName)"
@@ -78,8 +78,8 @@ public sealed interface RenderCause {
    * A rendering callback was invoked.
    */
   public class Callback(
-    val actionName: String,
-    val workflowName: String,
+    public val actionName: String,
+    public val workflowName: String,
   ) : RenderCause {
     override fun toString(): String {
       return "Callback:A($actionName)/W($workflowName)"

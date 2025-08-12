@@ -10,7 +10,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopTick
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.applyTo
@@ -154,26 +154,11 @@ class WorkflowPapaTracer(
       // Skipping, end the section started when renderIncomingCause was set.
       safeTrace.endSection()
     }
-    if (runtimeUpdate == RuntimeLoopTick) {
+    if (runtimeUpdate == RuntimeSettled) {
       // Build and add the summary!
       val summary = buildString {
         append("SUM${renderPassNumber()} ")
-        append("Config:")
-        if (configSnapshot.shortCircuitConfig) {
-          append("ROWSC, ")
-        }
-        if (configSnapshot.csrConfig) {
-          append("CSR, ")
-        }
-        if (configSnapshot.ptrConfig) {
-          append("PTR, ")
-        }
-        if (!configSnapshot.shortCircuitConfig &&
-          !configSnapshot.csrConfig &&
-          !configSnapshot.ptrConfig
-        ) {
-          append("Base, ")
-        }
+        append(configSnapshot.shortConfigAsString)
         append("StateChange:")
         if (currentActionHandlingChangedState) {
           append("Y, ")
