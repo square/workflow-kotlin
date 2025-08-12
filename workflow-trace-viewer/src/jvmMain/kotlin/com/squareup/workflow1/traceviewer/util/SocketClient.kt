@@ -11,6 +11,10 @@ import kotlinx.coroutines.withContext
 import okio.IOException
 import java.net.Socket
 
+/**
+ * Maintains the channel, which acts as buffer for information read from the socket, as the data are
+ * being processed.
+ */
 internal suspend fun streamRenderPassesFromDevice(device: String, parseOnNewRenderPass: (String) -> Unit) {
   val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
   coroutineScope {

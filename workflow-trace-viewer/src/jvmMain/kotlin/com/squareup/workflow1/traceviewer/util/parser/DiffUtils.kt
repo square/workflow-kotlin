@@ -20,8 +20,8 @@ fun computeAnnotatedDiff(
     .showInlineDiffs(true)
     .inlineDiffByWord(true)
     .mergeOriginalRevised(true)
-    .oldTag { f -> "--" }
-    .newTag { f -> "++" }
+    .oldTag { _ -> "--" }
+    .newTag { _ -> "++" }
     .build()
 
   val pastName = extractTypeName(past)
@@ -40,9 +40,6 @@ fun computeAnnotatedDiff(
         text = "$pastName(...)",
         builder = this
       )
-      // pushStyle(DiffStyles.DELETE)
-      // append("$pastName(...)")
-      // pop()
       append(" → ")
       buildStringWithStyle(
         style = DiffStyles.INSERT,
@@ -202,8 +199,8 @@ private fun getFieldsAsList(field: String): List<String> {
         if (depth == 0) { // end of key=value pair
           fields += currentField.toString().trim()
           currentField.clear()
-          i++ // skip space, e.g. "key=value, key2=value2, etc..."
-        } else { // nested list
+          i++ // skip space in between key value pairs, i.e. "key1=value1, key2=value2"
+        } else { // nested list, so we ignore
           currentField.append(char)
         }
       }

@@ -72,7 +72,7 @@ internal fun RenderTrace(
           tree = parseResult.trees,
           affected = parseResult.affectedNodes
         )
-        // Only increment the frame index and add the raw data during Live tracing mode
+        // Only increment the frame index and add the raw data during Live tracing mode.
         onNewFrame?.invoke()
         rawRenderPass?.let { onNewData(it) }
       }
@@ -107,14 +107,15 @@ internal fun RenderTrace(
 
   // This will only happen in the initial switch to Live Mode, where a socket error bubbled up and
   // the lambda call to parse the data was immediately cancelled, meaning handleParseResult was never
-  // called to set isLoading to false
+  // called to set isLoading to false.
   if (isLoading && error != null) {
     Text("Socket Error: $error")
     return
   }
 
   // This meant that there was an exception, but it was stored in ParseResult and read in
-  // handleParseResult. Since there is no parsed data, this likely means there was a moshi parsing error
+  // handleParseResult method. Since there is no parsed data, this likely means there was a moshi
+  // parsing error.
   if (error != null && frames.isEmpty()) {
     Text("Malformed File: $error")
     return

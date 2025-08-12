@@ -167,16 +167,14 @@ internal fun App(
       )
     }
 
-    if (traceMode is TraceMode.Live) {
-      if ((traceMode as TraceMode.Live).device == null) {
-        DisplayDevices(
-          onDeviceSelect = { selectedDevice ->
-            traceMode = TraceMode.Live(selectedDevice)
-          },
-          devices = listDevices(),
-          modifier = Modifier.align(Alignment.Center)
-        )
-      }
+    if (traceMode is TraceMode.Live && (traceMode as TraceMode.Live).device == null) {
+      DisplayDevices(
+        onDeviceSelect = { selectedDevice ->
+          traceMode = TraceMode.Live(selectedDevice)
+        },
+        devices = listDevices(),
+        modifier = Modifier.align(Alignment.Center)
+      )
 
       FileDump(
         trace = rawRenderPass,
@@ -186,8 +184,7 @@ internal fun App(
 
     RightInfoPanel(
       selectedNode = selectedNode,
-      modifier = Modifier
-        .align(Alignment.TopEnd)
+      modifier = Modifier.align(Alignment.TopEnd)
     )
   }
 }

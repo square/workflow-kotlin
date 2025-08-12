@@ -7,8 +7,6 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.addChild
 import com.squareup.workflow1.traceviewer.model.replaceChild
-import com.squareup.workflow1.traceviewer.util.parser.ParseResult.Failure
-import com.squareup.workflow1.traceviewer.util.parser.ParseResult.Success
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 import kotlin.reflect.jvm.javaType
@@ -16,7 +14,7 @@ import kotlin.reflect.typeOf
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
- parentId, the root node has a parent of -1 ID. This is reflected seen inside android-register
+ parentId, the root node will have -1 as a fake parent ID. This is reflected inside android-register.
  */
 const val ROOT_ID: String = "-1"
 
@@ -33,11 +31,11 @@ internal suspend fun parseFileTrace(
   val jsonString = file.readString()
   val workflowAdapter = createMoshiAdapter<List<Node>>()
   val parsedRenderPasses = try {
-    workflowAdapter.fromJson(jsonString) ?: return Failure(
+    workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace file is empty or malformed.")
     )
   } catch (e: Exception) {
-    return Failure(e)
+    return ParseResult.Failure(e)
   }
 
   val parsedFrames = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
@@ -47,7 +45,7 @@ internal suspend fun parseFileTrace(
     frameTrees.add(mergedTree)
     mergedTree
   }
-  return Success(
+  return ParseResult.Success(
     trace = parsedFrames,
     trees = frameTrees,
     affectedNodes = parsedRenderPasses
@@ -66,11 +64,11 @@ internal fun parseLiveTrace(
   currentTree: Node? = null
 ): ParseResult {
   val parsedRenderPass = try {
-    adapter.fromJson(renderPass) ?: return Failure(
+    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace data is empty or malformed.")
     )
   } catch (e: Exception) {
-    return Failure(e)
+    return ParseResult.Failure(e)
   }
 
   val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
@@ -83,7 +81,7 @@ internal fun parseLiveTrace(
   }
 
   // Since live tracing handles one frame at a time, we generalize and return listOf for each.
-  return Success(
+  return ParseResult.Success(
     trace = listOf(parsedFrame),
     trees = listOf(mergedTree),
     affectedNodes = listOf(parsedRenderPass)
@@ -155,9 +153,13 @@ internal fun mergeFrameIntoMainTree(
 }
 
 internal sealed interface ParseResult {
-  class Success(val trace: List<Node>, val trees: List<Node>, affectedNodes: List<List<Node>>) :
-    ParseResult {
+  class Success(
+    val trace: List<Node>,
+    val trees: List<Node>,
+    affectedNodes: List<List<Node>>
+  ) : ParseResult {
     val affectedNodes = affectedNodes.map { it.toSet() }
   }
+
   class Failure(val error: Throwable) : ParseResult
 }
