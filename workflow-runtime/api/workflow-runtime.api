@@ -108,8 +108,8 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced 
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopTick : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
-	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopTick;
+public final class com/squareup/workflow1/WorkflowInterceptor$RuntimeSettled : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeSettled;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

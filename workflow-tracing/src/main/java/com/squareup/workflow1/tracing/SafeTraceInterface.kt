@@ -3,21 +3,21 @@ package com.squareup.workflow1.tracing
 /**
  * Interface abstracting tracing functionality to allow for testing with fake implementations.
  */
-interface SafeTraceInterface {
-  val isTraceable: Boolean
-  val isCurrentlyTracing: Boolean
+public interface SafeTraceInterface {
+  public val isTraceable: Boolean
+  public val isCurrentlyTracing: Boolean
 
-  fun beginSection(label: String)
-  fun endSection()
-  fun beginAsyncSection(
+  public fun beginSection(label: String)
+  public fun endSection()
+  public fun beginAsyncSection(
     name: String,
     cookie: Int
   )
 
-  fun endAsyncSection(
+  public fun endAsyncSection(
     name: String,
     cookie: Int
   )
 
-  fun logSection(info: String)
+  public fun logSection(info: String)
 }

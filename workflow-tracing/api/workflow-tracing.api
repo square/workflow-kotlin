@@ -27,12 +27,7 @@ public final class com/squareup/workflow1/tracing/ChainedWorkflowRuntimeTracerKt
 public final class com/squareup/workflow1/tracing/ConfigSnapshot {
 	public fun <init> (Ljava/util/Set;)V
 	public final fun getConfigAsString ()Ljava/lang/String;
-	public final fun getCsrConfig ()Z
-	public final fun getDeaConfig ()Z
-	public final fun getPtrConfig ()Z
-	public final fun getSehConfig ()Z
-	public final fun getShortCircuitConfig ()Z
-	public final fun getWsdConfig ()Z
+	public final fun getShortConfigAsString ()Ljava/lang/String;
 }
 
 public abstract interface class com/squareup/workflow1/tracing/Loggable {
@@ -148,7 +143,7 @@ public abstract interface class com/squareup/workflow1/tracing/WorkflowRenderPas
 }
 
 public abstract interface class com/squareup/workflow1/tracing/WorkflowRuntimeLoopListener {
-	public abstract fun onRuntimeLoopTick (Lcom/squareup/workflow1/tracing/ConfigSnapshot;Lcom/squareup/workflow1/tracing/RuntimeUpdates;)V
+	public abstract fun onRuntimeLoopSettled (Lcom/squareup/workflow1/tracing/ConfigSnapshot;Lcom/squareup/workflow1/tracing/RuntimeUpdates;)V
 }
 
 public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor : com/squareup/workflow1/WorkflowInterceptor, com/squareup/workflow1/tracing/RuntimeTraceContext {

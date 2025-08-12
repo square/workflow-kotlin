@@ -330,7 +330,7 @@ internal class WorkflowTracingIntegrationTest {
       runtimeLoopMutex.lock()
 
       // Verify that runtime loop listener was called
-      assertTrue(runtimeListener.onRuntimeLoopTickCalled)
+      assertTrue(runtimeListener.onRuntimeLoopSettledCalled)
       assertNotNull(runtimeListener.runtimeUpdatesReceived)
 
       val traceCalls = fakeTrace.traceCalls
@@ -505,15 +505,15 @@ internal class WorkflowTracingIntegrationTest {
   private class TestWorkflowRuntimeLoopListener(
     val runtimeLoopMutex: Mutex,
   ) : WorkflowRuntimeLoopListener {
-    var onRuntimeLoopTickCalled = false
+    var onRuntimeLoopSettledCalled = false
     var runtimeUpdatesReceived: RuntimeUpdates? = null
 
-    override fun onRuntimeLoopTick(
+    override fun onRuntimeLoopSettled(
       configSnapshot: ConfigSnapshot,
       runtimeUpdates: RuntimeUpdates
     ) {
       runtimeLoopMutex.unlock()
-      onRuntimeLoopTickCalled = true
+      onRuntimeLoopSettledCalled = true
       runtimeUpdatesReceived = runtimeUpdates
     }
   }

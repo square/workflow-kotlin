@@ -14,7 +14,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopTick
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.applyTo
@@ -293,8 +293,8 @@ public class WorkflowRuntimeMonitor(
         // runtimeUpdates.logUpdate(ProducedLogLine)
       }
 
-      RuntimeLoopTick -> {
-        runtimeLoopListener?.onRuntimeLoopTick(
+      RuntimeSettled -> {
+        runtimeLoopListener?.onRuntimeLoopSettled(
           configSnapshot,
           runtimeUpdates
         )
