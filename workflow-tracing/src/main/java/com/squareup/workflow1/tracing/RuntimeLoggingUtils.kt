@@ -9,7 +9,11 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-internal fun WorkflowSession.toWfLoggingName(): String {
+/**
+ * Short name that can be used for logs that has the [identifier] logged as well
+ * as the key.
+ */
+public fun WorkflowSession.toWfLoggingName(): String {
   val renderKey = renderKey
   return if (renderKey.isEmpty()) {
     identifier.toWfLoggingName()
@@ -18,7 +22,11 @@ internal fun WorkflowSession.toWfLoggingName(): String {
   }
 }
 
-internal fun WorkflowIdentifier.toWfLoggingName(): String {
+/**
+ * Short name that for the identifier that can be used for logs. This reports
+ * the 'log name' of the class.
+ */
+public fun WorkflowIdentifier.toWfLoggingName(): String {
   return when (val type = realType) {
     is Snapshottable -> type.kClass?.toWfLoggingName() ?: type.typeName
     is Unsnapshottable -> type.kType.toWfLoggingName()
@@ -55,7 +63,10 @@ public fun String.workerKey(): String {
   }
 }
 
-internal fun KType.toWfLoggingName(): String {
+/**
+ * Reasonable log name based on type.
+ */
+public fun KType.toWfLoggingName(): String {
   if (classifier == null) return toString().wfStripSquarePackage()
 
   val classifierName = when (val c = classifier) {
@@ -79,7 +90,7 @@ internal fun KType.toWfLoggingName(): String {
  *
  * For example, `java.util.Map` would be `Map`, and `java.util.Map.Entry` would be `Map.Entry`.
  */
-internal fun getWfHumanClassName(obj: Any): String {
+public fun getWfHumanClassName(obj: Any): String {
   val objClass: Class<*> = when (obj) {
     is KClass<*> -> obj.java
     is Class<*> -> obj
@@ -98,7 +109,10 @@ internal fun getWfHumanClassName(obj: Any): String {
   return humanName
 }
 
-internal fun KClass<*>.toWfLoggingName(): String {
+/**
+ * Reasonable class name based on type.
+ */
+public fun KClass<*>.toWfLoggingName(): String {
   return getWfHumanClassName(this)
 }
 
@@ -134,7 +148,7 @@ public fun getWfLogString(log: Any?): String {
  * @param maxLength The maximum length the string can be before ellipsizing will occur. This must be
  * a positive number.
  */
-internal fun String.wfEllipsizeEnd(maxLength: Int): String {
+public fun String.wfEllipsizeEnd(maxLength: Int): String {
   require(maxLength > 0)
 
   return if (maxLength < length) {
@@ -147,7 +161,7 @@ internal fun String.wfEllipsizeEnd(maxLength: Int): String {
 /**
  * Removes the string from kotlin.jvm.internal.Reflection#REFLECTION_NOT_AVAILABLE
  */
-internal fun String.wfRemoveReflectionNotAvailable() = replace(
+public fun String.wfRemoveReflectionNotAvailable() = replace(
   " (Kotlin reflection is not available)",
   ""
 )
@@ -158,7 +172,7 @@ internal fun String.wfRemoveReflectionNotAvailable() = replace(
  *
  * This will help make things more readable for classes within this library.
  */
-internal fun String.wfStripSquarePackage(): String {
+public fun String.wfStripSquarePackage(): String {
   // Find the index of every "com.squareup".
   var cursor = 0
   var packages: MutableList<Int>? = null
