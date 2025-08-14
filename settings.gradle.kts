@@ -37,7 +37,6 @@ include(
   ":benchmarks:dungeon-benchmark",
   ":benchmarks:performance-poetry:complex-benchmark",
   ":benchmarks:performance-poetry:complex-poetry",
-  ":internal-testing-utils",
   ":samples:compose-samples",
   ":samples:containers:app-poetry",
   ":samples:containers:app-raven",

@@ -49,8 +49,8 @@ dependencies {
 
 dokka {
   // This is the displayed name for the module, like in the Html sidebar.
-  //   artifact id: workflow-internal-testing-utils
-  //          path: internal-testing-utils
+  //   artifact id: workflow-config-android
+  //          path: workflow-config/config-android
   moduleName.set(
     provider {
       findProperty("POM_ARTIFACT_ID") as? String

@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal.util
+package com.squareup.workflow1.testing
 
 import java.util.concurrent.atomic.AtomicReference
 
