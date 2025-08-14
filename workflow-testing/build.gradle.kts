@@ -33,10 +33,10 @@ dependencies {
   implementation(libs.kotlin.reflect)
   implementation(libs.turbine)
 
-  implementation(project(":internal-testing-utils"))
   implementation(project(":workflow-config:config-jvm"))
 
   testImplementation(libs.kotlin.test.jdk)
   testImplementation(libs.mockito.kotlin)
   testImplementation(libs.mockk)
+  testImplementation(libs.truth)
 }

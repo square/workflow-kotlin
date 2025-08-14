@@ -1,7 +1,7 @@
-package com.squareup.workflow1.internal.util
+package com.squareup.workflow1.testing
 
 import com.google.common.truth.Truth.assertThat
-import junit.framework.TestCase.fail
+import junit.framework.TestCase
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import kotlin.test.assertFailsWith
@@ -49,7 +49,7 @@ class UncaughtExceptionGuardTest {
         Thread.getDefaultUncaughtExceptionHandler()
           .uncaughtException(Thread.currentThread(), RuntimeException("fail"))
       }
-      fail("Expected exception.")
+      TestCase.fail("Expected exception.")
     } catch (e: RuntimeException) {
       assertThat(e.message).isEqualTo("fail")
     }

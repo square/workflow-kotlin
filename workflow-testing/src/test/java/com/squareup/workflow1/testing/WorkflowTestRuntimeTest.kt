@@ -5,7 +5,6 @@ package com.squareup.workflow1.testing
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.internal.util.rethrowingUncaughtExceptions
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
