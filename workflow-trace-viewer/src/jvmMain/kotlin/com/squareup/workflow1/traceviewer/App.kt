@@ -19,8 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPosition.PlatformDefault.x
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
@@ -63,8 +65,8 @@ internal fun App(
   }
 
   Box(
-    modifier = modifier.onGloballyPositioned {
-      appWindowSize = it.size
+    modifier = modifier.onSizeChanged {
+      appWindowSize = it
     }
   ) {
     fun resetStates() {
@@ -113,17 +115,20 @@ internal fun App(
           // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
           // and it will append a new map
           while (nodeLocations.size <= frameSize) {
-            nodeLocations.add(mutableStateMapOf())
+            nodeLocations += mutableStateMapOf()
           }
         }
 
+        val frameNodeLocations = nodeLocations[frameInd]
         SearchBox(
-          nodes = nodeLocations[frameInd].keys.toList(),
+          nodes = frameNodeLocations.keys.toList(),
           onSearch = { name ->
             sandboxState.scale = 1f
-            val node = nodeLocations[frameInd].keys.firstOrNull { it.name == name }
-            val newX = sandboxState.offset.x - nodeLocations[frameInd][node]!!.x + appWindowSize.width / 2
-            val newY = sandboxState.offset.y - nodeLocations[frameInd][node]!!.y + appWindowSize.height / 2
+            val node = frameNodeLocations.keys.first { it.name == name }
+            val newX = (sandboxState.offset.x - frameNodeLocations.getValue(node).x
+              + appWindowSize.width / 2)
+            val newY = (sandboxState.offset.y - frameNodeLocations.getValue(node).y
+              + appWindowSize.height / 2)
             sandboxState.offset = Offset(x = newX, y = newY)
           },
         )
@@ -216,7 +221,7 @@ internal sealed interface TraceMode {
 /**
  * Allows users to select from multiple devices that are currently running.
  */
-internal fun listDevices(): List<String> {
+private fun listDevices(): List<String> {
   val process = ProcessBuilder("adb", "devices", "-l").start()
   process.waitFor()
   // We drop the header "List of devices attached"

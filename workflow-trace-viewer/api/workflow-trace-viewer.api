@@ -33,7 +33,3 @@ public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingl
 	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
-public final class com/squareup/workflow1/traceviewer/util/parser/JsonParserKt {
-	public static final field ROOT_ID Ljava/lang/String;
-}
-

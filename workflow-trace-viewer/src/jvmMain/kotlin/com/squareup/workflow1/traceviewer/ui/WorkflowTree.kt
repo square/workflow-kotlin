@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -75,7 +77,7 @@ internal fun DrawTree(
       isAffected = isAffected,
       isExpanded = isExpanded,
       onNodeSelect = onNodeSelect,
-      onExpandToggle = { expandedNodes[node.id] = !expandedNodes[node.id]!! },
+      onExpandToggle = { expandedNodes[node.id] = !expandedNodes.getValue(node.id) },
       storeNodeLocation = storeNodeLocation
     )
 
@@ -126,8 +128,9 @@ private fun UnaffectedChildrenGroup(
   if (children.isEmpty()) return
 
   val groupKey = "${node.id}_unaffected_group"
-  LaunchedEffect(Unit) {
+  DisposableEffect(Unit) {
     expandedNodes[groupKey] = false
+    onDispose {}
   }
   val isGroupExpanded = expandedNodes[groupKey] == true
 
@@ -325,7 +328,10 @@ private fun DrawNode(
           storeNodeLocation(node, offsetToCenter)
         }
     ) {
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.wrapContentSize()
+      ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -358,16 +364,14 @@ private fun NodeTooltip(
   nodeState: NodeState,
   modifier: Modifier = Modifier
 ) {
-  Box(
+  Text(
     modifier = modifier
+      .wrapContentSize()
       .clip(RoundedCornerShape(4.dp))
       .background(Color.Black.copy(alpha = 0.3f))
-      .padding(horizontal = 8.dp, vertical = 4.dp)
-  ) {
-    Text(
-      text = nodeState.name,
-      color = Color.White,
-      fontSize = 12.sp
-    )
-  }
+      .padding(horizontal = 8.dp, vertical = 4.dp),
+    text = nodeState.name,
+    color = Color.White,
+    fontSize = 12.sp
+  )
 }

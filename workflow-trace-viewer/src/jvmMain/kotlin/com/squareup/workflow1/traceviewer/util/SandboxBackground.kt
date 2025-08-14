@@ -38,7 +38,7 @@ internal fun SandboxBackground(
           sandboxState.offset += translation
         }
       }
-      .pointerInput(Unit) {
+      .pointerInput(appWindowSize) {
         // Zooming capabilities: watches for any scroll events and immediately consumes changes.
         // - This is AI generated.
         awaitEachGesture {

@@ -15,6 +15,7 @@ import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,18 +66,20 @@ internal fun SearchBox(
     val relevantNodes = nodes.filter { it.name.contains(searchText, ignoreCase = true) }
     Column {
       relevantNodes.take(5).forEach { node ->
-        ListItem(
-          headlineContent = { Text(node.name) },
-          modifier = Modifier
-            .clickable {
-              onSearch(node.name)
-              expanded = false
-            },
-          colors = ListItemDefaults.colors(
-            containerColor = Color.White,
-            headlineColor = Color.Black
+        key(node.id) {
+          ListItem(
+            headlineContent = { Text(node.name) },
+            modifier = Modifier
+              .clickable {
+                onSearch(node.name)
+                expanded = false
+              },
+            colors = ListItemDefaults.colors(
+              containerColor = Color.White,
+              headlineColor = Color.Black
+            )
           )
-        )
+        }
       }
     }
   }

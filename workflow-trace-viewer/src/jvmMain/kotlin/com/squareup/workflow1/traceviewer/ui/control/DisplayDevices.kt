@@ -10,10 +10,16 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
+/**
+ * Only give back the specific emulator device, i.e. "emulator-5554"
+ */
+private val emulatorRegex = Regex("""\bemulator-\d+\b""")
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -35,25 +41,25 @@ internal fun DisplayDevices(
       return@Box
     }
 
-    val emulatorRegex = Regex("""\bemulator-\d+\b""")
     Column {
       devices.forEach { device ->
-        Card(
-          onClick = {
-            // Only give back the specific emulator device, i.e. "emulator-5554"
-            emulatorRegex.find(device)?.value?.let { emulator ->
-              onDeviceSelect(emulator)
-            }
-          },
-          shape = RoundedCornerShape(16.dp),
-          border = BorderStroke(1.dp, Color.Gray),
-          modifier = Modifier.padding(4.dp),
-          elevation = 2.dp
-        ) {
-          Text(
-            text = device,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-          )
+        key(device) {
+          Card(
+            onClick = {
+              emulatorRegex.find(device)?.value?.let { emulator ->
+                onDeviceSelect(emulator)
+              }
+            },
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, Color.Gray),
+            modifier = Modifier.padding(4.dp),
+            elevation = 2.dp
+          ) {
+            Text(
+              text = device,
+              modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+          }
         }
       }
     }

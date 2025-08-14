@@ -9,6 +9,12 @@ import com.github.difflib.text.DiffRowGenerator
 import com.squareup.workflow1.traceviewer.util.parser.DiffStyles.buildStringWithStyle
 
 /**
+ * Matching for the type name of a field. This is used to pull out the name to compare
+ * Loading() -> Loading; Idle() -> Idle; CheckoutAppletWorkflow() -> CheckoutAppletWorkflow
+ */
+private val stateRegex = Regex("""^(\w+)\(""")
+
+/**
  * Generates a field-level word-diff for each node's states.
  *
  */
@@ -116,35 +122,36 @@ internal fun computeAnnotatedDiff(
  * Parses the full diff within Tag.CHANGED to give back a list of operations to perform
  */
 private fun parseChangedDiff(fullDiff: String): List<Pair<SpanStyle, String>> {
-  val operations: MutableList<Pair<SpanStyle, String>> = mutableListOf()
-  var i = 0
-  while (i < fullDiff.length) {
-    when {
-      fullDiff.startsWith("--", i) -> {
-        val end = fullDiff.indexOf("--", i + 2)
-        if (end != -1) {
-          val removed = fullDiff.substring(i + 2, end)
-          operations.add(DiffStyles.DELETE to removed)
-          i = end + 2
+  val operations = buildList {
+    var i = 0
+    while (i < fullDiff.length) {
+      when {
+        fullDiff.startsWith("--", i) -> {
+          val end = fullDiff.indexOf("--", i + 2)
+          if (end != -1) {
+            val removed = fullDiff.substring(i + 2, end)
+            add(DiffStyles.DELETE to removed)
+            i = end + 2
+          }
         }
-      }
 
-      fullDiff.startsWith("++", i) -> {
-        val end = fullDiff.indexOf("++", i + 2)
-        if (end != -1) {
-          val added = fullDiff.substring(i + 2, end)
-          operations.add(DiffStyles.INSERT to added)
-          i = end + 2
+        fullDiff.startsWith("++", i) -> {
+          val end = fullDiff.indexOf("++", i + 2)
+          if (end != -1) {
+            val added = fullDiff.substring(i + 2, end)
+            add(DiffStyles.INSERT to added)
+            i = end + 2
+          }
         }
-      }
 
-      else -> {
-        val nextTagStart = listOf(
-          fullDiff.indexOf("--", i),
-          fullDiff.indexOf("++", i)
-        ).filter { it >= 0 }.minOrNull() ?: fullDiff.length
-        operations.add(DiffStyles.UNCHANGED to fullDiff.substring(i, nextTagStart))
-        i = nextTagStart
+        else -> {
+          val nextTagStart = listOf(
+            fullDiff.indexOf("--", i),
+            fullDiff.indexOf("++", i)
+          ).filter { it >= 0 }.minOrNull() ?: fullDiff.length
+          add(DiffStyles.UNCHANGED to fullDiff.substring(i, nextTagStart))
+          i = nextTagStart
+        }
       }
     }
   }
@@ -216,7 +223,6 @@ private fun getFieldsAsList(field: String): List<String> {
 }
 
 private fun extractTypeName(field: String): String {
-  val stateRegex = Regex("""^(\w+)\(""")
   // If regex doesn't match, that means it's likely "kotlin.Unit" or "0"
   return stateRegex.find(field)?.groupValues?.get(1) ?: field
 }

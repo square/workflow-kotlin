@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
+import com.squareup.workflow1.traceviewer.model.getNodeData
 import com.squareup.workflow1.traceviewer.util.parser.computeAnnotatedDiff
 
 /**
@@ -123,10 +124,10 @@ private fun NodePanelDetails(
       )
     }
 
-    val fields = Node.getNodeFields()
+    val fields = Node.nodeFields
     for (field in fields) {
-      val currVal = Node.getNodeData(node.current, field)
-      val pastVal = if (node.past != null) Node.getNodeData(node.past, field) else null
+      val currVal = node.current.getNodeData(field)
+      val pastVal = if (node.past != null) node.past.getNodeData(field) else null
       item {
         DetailCard(
           label = field,
