@@ -19,7 +19,7 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
  * contains information pulled from workflow traces
  */
 @Composable
-public fun UploadFile(
+internal fun UploadFile(
   resetOnFileSelect: (PlatformFile?) -> Unit,
   modifier: Modifier = Modifier,
 ) {

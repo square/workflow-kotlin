@@ -16,7 +16,7 @@ import kotlin.reflect.typeOf
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
  parentId, the root node will have -1 as a fake parent ID. This is reflected inside android-register.
  */
-const val ROOT_ID: String = "-1"
+internal const val ROOT_ID: String = "-1"
 
 /**
  * Parses a given file's JSON String into a list of [Node]s with Moshi adapters. Each of these nodes

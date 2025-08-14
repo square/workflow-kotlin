@@ -12,7 +12,7 @@ import com.squareup.workflow1.traceviewer.util.parser.DiffStyles.buildStringWith
  * Generates a field-level word-diff for each node's states.
  *
  */
-fun computeAnnotatedDiff(
+internal fun computeAnnotatedDiff(
   past: String,
   current: String
 ): AnnotatedString {
@@ -152,7 +152,7 @@ private fun parseChangedDiff(fullDiff: String): List<Pair<SpanStyle, String>> {
   return operations
 }
 
-object DiffStyles {
+internal object DiffStyles {
   val DELETE = SpanStyle(background = Color.Red.copy(alpha = 0.3f))
   val INSERT = SpanStyle(background = Color.Green.copy(alpha = 0.3f))
   val NO_CHANGE = SpanStyle(background = Color.LightGray)

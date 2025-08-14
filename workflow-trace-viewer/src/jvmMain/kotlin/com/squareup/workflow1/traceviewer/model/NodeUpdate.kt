@@ -29,7 +29,7 @@ internal data class NodeUpdate(
   }
 }
 
-enum class NodeState(val color: Color) {
+internal enum class NodeState(val color: Color) {
   NEW(Color(0x804CAF50)), // green
   STATE_CHANGED(Color(0xFFE57373)), // red
   PROPS_CHANGED(Color(0xFFFF8A65)), // orange
