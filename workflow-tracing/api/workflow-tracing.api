@@ -86,9 +86,17 @@ public final class com/squareup/workflow1/tracing/RenderPassInfo {
 }
 
 public final class com/squareup/workflow1/tracing/RuntimeLoggingUtilsKt {
+	public static final fun getWfHumanClassName (Ljava/lang/Object;)Ljava/lang/String;
 	public static final fun getWfLogString (Ljava/lang/Object;)Ljava/lang/String;
 	public static final fun toLoggingShortName (Lcom/squareup/workflow1/WorkflowAction;)Ljava/lang/String;
 	public static final fun toWfLoggingName (Lcom/squareup/workflow1/WorkflowAction;)Ljava/lang/String;
+	public static final fun toWfLoggingName (Lcom/squareup/workflow1/WorkflowIdentifier;)Ljava/lang/String;
+	public static final fun toWfLoggingName (Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/String;
+	public static final fun toWfLoggingName (Lkotlin/reflect/KClass;)Ljava/lang/String;
+	public static final fun toWfLoggingName (Lkotlin/reflect/KType;)Ljava/lang/String;
+	public static final fun wfEllipsizeEnd (Ljava/lang/String;I)Ljava/lang/String;
+	public static final fun wfRemoveReflectionNotAvailable (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun wfStripSquarePackage (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun workerKey (Ljava/lang/String;)Ljava/lang/String;
 }
 
