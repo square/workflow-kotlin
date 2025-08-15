@@ -109,7 +109,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Output, TodoListScr
     // …
   }
 
-  override fun snapshotState(state: Unit): Snapshot? = null
+  override fun snapshotState(state: State): Snapshot? = null
 
   // …
 }
@@ -213,7 +213,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
@@ -294,7 +294,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
@@ -403,7 +403,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
-        username = renderProps.name,
+        username = renderProps.username,
         todos = renderState.todos
       )
     ) { output ->
@@ -441,3 +441,5 @@ Additionally, now the `TodoList` and `TodoEdit` workflows are completely decoupl
 there is no longer a requirement that the `TodoEdit` workflow is displayed after the list.
 For instance, we could change the list to have "viewing" or "editing" modes,
 where tapping on an item might only allow it to be viewed, but another mode would allow editing.
+
+[Tutorial 5](Tutorial5.md)

@@ -241,7 +241,8 @@ The child's rendering _must_ be specified when declaring an expected workflow
 since the parent's call to `renderChild` _must_ return a value of the appropriate rendering type,
 and the workflow library can't know how to create those instances of your own types.
 
-> [!NOTE] Under `testRender` all children are mocked
+> [!NOTE]
+> Under `testRender` all children are mocked
 >
 > We consider tests built around `testRender` to be unit tests (as opposed to integration tests)
 > because they do not actually run any child workflows or workers.
@@ -342,7 +343,7 @@ class TodoNavigationWorkflowTest {
 
     TodoNavigationWorkflow
       .testRender(
-        props = TodoProps(name = "Ada"),
+        props = TodoProps(username = "Ada"),
         // Start from the list step to validate selecting a todo.
         initialState = State(
           todos = todos,
@@ -384,7 +385,7 @@ class TodoNavigationWorkflowTest {
 
     TodoNavigationWorkflow
       .testRender(
-        props = TodoProps(name = "Ada"),
+        props = TodoProps(username = "Ada"),
         // Start from the edit step so we can simulate saving.
         initialState = State(
           todos = todos,
@@ -463,7 +464,7 @@ class TodoNavigationWorkflowTest {
 The `RenderTester` allows easy "mocking" of child workflows and workers.
 However, this means that we are not exercising the full infrastructure
 (even though we could get a fairly high confidence from the tests).
-ometimes, it may be worth putting together integration tests that test a full tree of Workflows.
+Sometimes, it may be worth putting together integration tests that test a full tree of Workflows.
 This lets us test integration with the non-workflow world as well,
 such as external reactive data sources that your workflows might be observing via Workers.
 
@@ -481,12 +482,12 @@ the same runtime that `renderWorkflowIn` uses.
 When you create an Android app using Workflow,
 you will probably use `renderWorkflowIn`,
 which starts a runtime to host your workflows in an androidx ViewModel.
-Under the hood,this method is an overload of lower-level `renderWorkflowIn` function
+Under the hood, this method is an overload of lower-level `renderWorkflowIn` function
 that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings.
 When writing integration tests for workflows,
 you can use this core function directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)),
 or you can use `workflow-testing`'s `WorkflowTester`.
-The `WorkflowTester` starts a workflow and lets you request renderingsand outputs manually
+The `WorkflowTester` starts a workflow and lets you request renderings and outputs manually
 so you can write tests that interact with the runtime from the outside.
 
 This will be a properly opaque test,

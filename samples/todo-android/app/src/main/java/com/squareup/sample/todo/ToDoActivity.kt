@@ -12,14 +12,12 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
-import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import java.io.File
 
 class ToDoActivity : AppCompatActivity() {
 
@@ -31,7 +29,7 @@ class ToDoActivity : AppCompatActivity() {
     workflowContentView
       .take(
         lifecycle,
-        model.ensureWorkflow(traceFilesDir = filesDir).map { it.withRegistry(viewRegistry) }
+        model.ensureWorkflow().map { it.withRegistry(viewRegistry) }
       )
   }
 
@@ -43,15 +41,14 @@ class ToDoActivity : AppCompatActivity() {
 class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
   private var renderings: StateFlow<Screen>? = null
 
-  fun ensureWorkflow(traceFilesDir: File): StateFlow<Screen> {
+  fun ensureWorkflow(): StateFlow<Screen> {
     if (renderings == null) {
-      val traceFile = traceFilesDir.resolve("workflow-trace-todo.json")
 
       renderings = renderWorkflowIn(
         workflow = TodoListsAppWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState,
-        interceptors = listOf(TracingWorkflowInterceptor(traceFile)),
+        interceptors = emptyList(),
         runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )
     }

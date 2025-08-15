@@ -10,7 +10,7 @@ The `tutorial-base` module will be our starting place to build from.
 
 Go ahead and launch `TutorialActivity`. You should see this welcome screen:
 
-![Welcome](im "An Android phone app with title text _Welcome!_, an EditText with prompt _Please enter your name_, and a Log In button")
+![Welcome](images/welcome.png "An Android phone app with title text _Welcome!_, an EditText with prompt _Please enter your name_, and a Log In button")
 
 You can enter a name, but the login button won't do anything.
 
@@ -142,7 +142,7 @@ private fun welcomeScreenRunner(
   viewBinding: WelcomeViewBinding
 ) = ScreenViewRunner { screen: WelcomeScreen, _ ->
   viewBinding.prompt.text = screen.promptText
-  viewBinding.login.setOnClickListener {
+  viewBinding.logIn.setOnClickListener {
     screen.onLogInTapped(viewBinding.username.text.toString())
   }
 }
@@ -196,7 +196,8 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
 }
 ```
 
-> [!TIP] This tutorial doesn't cover persistence support.
+> [!TIP]
+> This tutorial doesn't cover persistence support.
 > If you feel the need for it,
 > the easiest way to get there is by using the [`@Parcelize` annotation](https://developer.android.com/kotlin/parcelize) on your state types.
 > They will be saved and restored via the `savedStateHandler` of the JetPack `ViewModel`
@@ -372,7 +373,7 @@ You could also write:
     }
 ```
 
-And let's make an `onLogInTapped` event handler that enques one of those `updateName` actions.
+And let's make an `onLogInTapped` event handler that enqueues one of those `updateName` actions.
 
 ```kotlin
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {

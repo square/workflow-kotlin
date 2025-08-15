@@ -55,7 +55,7 @@ class TicTacToeComponent : ViewModel() {
   private val ticTacToeWorkflow = TicTacToeWorkflow(authWorkflow(), gameWorkflow())
 
   fun ticTacToeModelFactory(owner: AppCompatActivity): TicTacToeModel.Factory =
-    TicTacToeModel.Factory(owner, ticTacToeWorkflow, traceFilesDir = owner.filesDir)
+    TicTacToeModel.Factory(owner, ticTacToeWorkflow)
 
   companion object {
     init {

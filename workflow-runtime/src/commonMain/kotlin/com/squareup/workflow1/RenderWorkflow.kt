@@ -6,6 +6,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGE
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
@@ -174,7 +175,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   val renderingsAndSnapshots = MutableStateFlow(
     try {
       runner.nextRendering().also {
-        chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
+        chainedInterceptor.onRuntimeUpdate(RenderingProduced)
+        chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
       }
     } catch (e: Throwable) {
       // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
@@ -237,6 +239,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
+        chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
         sendOutput(actionResult, onOutput)
         continue@outer
       }
@@ -292,6 +295,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
               // in case it is the last update!
               break@conflate
             }
+            chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
             sendOutput(actionResult, onOutput)
             continue@outer
           }
@@ -304,8 +308,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       // Pass on the rendering to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot.also {
-        chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
+        chainedInterceptor.onRuntimeUpdate(RenderingProduced)
       }
+      chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
 
       // Emit the Output
       sendOutput(actionResult, onOutput)

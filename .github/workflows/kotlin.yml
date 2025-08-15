@@ -172,7 +172,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Lint via gradle
         uses: ./.github/actions/gradle-task
         with:
           task: lint
@@ -187,7 +187,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: allTests via gradle
         uses: ./.github/actions/gradle-task
         with:
           task: |
@@ -228,10 +228,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: jvmTest via Gradle
         uses: ./.github/actions/gradle-task
         with:
           task: jvmTest --continue -Pworkflow.runtime=drainExclusive
+          restore-cache-key: main-build-artifacts
+
+      - name: test via Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: test --continue -Pworkflow.runtime=drainExclusive
           restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
@@ -239,7 +245,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-runtime-test:
     name: CSR JVM Tests
@@ -260,7 +266,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-stateChange-runtime-test:
     name: SCO JVM Tests
@@ -281,7 +287,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-stable-handlers-test:
     name: SEH JVM Tests
@@ -302,7 +308,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-partial-runtime-test:
     name: PTR JVM Tests
@@ -323,7 +329,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-stateChange-runtime-test:
     name: SCO, CSR JVM Tests
@@ -344,7 +350,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-partial-runtime-test:
     name: CSR, PTR JVM Tests
@@ -365,7 +371,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-drainExclusive-runtime-test:
     name: CSR, DEA JVM Tests
@@ -386,7 +392,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-stateChange-drainExclusive-runtime-test:
     name: SCO, DEA JVM Tests
@@ -407,7 +413,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-partial-drainExclusive-runtime-test:
     name: PTR, DEA JVM Tests
@@ -428,7 +434,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-stateChange-drainExclusive-runtime-test:
     name: SCO, CSR, DEA JVM Tests
@@ -449,7 +455,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-conflate-partial-drainExclusive-runtime-test:
     name: CSR, PTR, DEA JVM Tests
@@ -470,7 +476,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   jvm-all-runtime-test:
     name: ALL Optimizations JVM Tests
@@ -491,7 +497,7 @@ jobs:
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jvmTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   ios-tests:
     name: iOS Tests

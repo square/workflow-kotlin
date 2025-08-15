@@ -38,13 +38,15 @@ internal class DialogSession(
       val was = field
       field = value
       holder.dialog.window?.takeIf { value != was }?.let { window ->
-        // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
-        // If any motion events were enqueued on the main thread, cancel them.
-        dispatchCancelEvent { window.superDispatchTouchEvent(it) }
-        // When we cancel, have to warn things like RecyclerView that handle streams
-        // of motion events and eventually dispatch input events (click, key pressed, etc.)
-        // based on them.
-        window.peekDecorView()?.cancelPendingInputEvents()
+        window.peekDecorView()?.let { decorView ->
+          // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
+          // If any motion events were enqueued on the main thread, cancel them.
+          dispatchCancelEvent { window.superDispatchTouchEvent(it) }
+          // When we cancel, have to warn things like RecyclerView that handle streams
+          // of motion events and eventually dispatch input events (click, key pressed, etc.)
+          // based on them.
+          decorView.cancelPendingInputEvents()
+        }
       }
     }
 
