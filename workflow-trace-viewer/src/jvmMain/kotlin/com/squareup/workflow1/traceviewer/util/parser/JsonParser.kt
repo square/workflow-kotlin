@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.util
+package com.squareup.workflow1.traceviewer.util.parser
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -14,9 +14,9 @@ import kotlin.reflect.typeOf
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
- parentId, the root node has a parent of -1 ID. This is reflected seen inside android-register
+ parentId, the root node will have -1 as a fake parent ID. This is reflected inside android-register.
  */
-const val ROOT_ID: String = "-1"
+internal const val ROOT_ID: String = "-1"
 
 /**
  * Parses a given file's JSON String into a list of [Node]s with Moshi adapters. Each of these nodes
@@ -153,8 +153,13 @@ internal fun mergeFrameIntoMainTree(
 }
 
 internal sealed interface ParseResult {
-  class Success(val trace: List<Node>, val trees: List<Node>, affectedNodes: List<List<Node>>) : ParseResult {
+  class Success(
+    val trace: List<Node>,
+    val trees: List<Node>,
+    affectedNodes: List<List<Node>>
+  ) : ParseResult {
     val affectedNodes = affectedNodes.map { it.toSet() }
   }
+
   class Failure(val error: Throwable) : ParseResult
 }

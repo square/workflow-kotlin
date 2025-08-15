@@ -1,27 +1,38 @@
 package com.squareup.workflow1.traceviewer
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
-import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
-import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
-import com.squareup.workflow1.traceviewer.util.RenderTrace
+import com.squareup.workflow1.traceviewer.ui.control.DisplayDevices
+import com.squareup.workflow1.traceviewer.ui.control.FileDump
+import com.squareup.workflow1.traceviewer.ui.control.FrameNavigator
+import com.squareup.workflow1.traceviewer.ui.control.SearchBox
+import com.squareup.workflow1.traceviewer.ui.control.TraceModeToggleSwitch
+import com.squareup.workflow1.traceviewer.ui.control.UploadFile
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
-import com.squareup.workflow1.traceviewer.util.UploadFile
+import com.squareup.workflow1.traceviewer.util.parser.RenderTrace
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -31,14 +42,20 @@ import io.github.vinceglb.filekit.PlatformFile
 internal fun App(
   modifier: Modifier = Modifier
 ) {
+  var appWindowSize by remember { mutableStateOf(IntSize(0, 0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
-  val workflowFrames = remember { mutableStateListOf<Node>() }
+  var frameSize by remember { mutableIntStateOf(0) }
+  var rawRenderPass by remember { mutableStateOf("") }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
+  val nodeLocations = remember { mutableStateListOf<SnapshotStateMap<Node, Offset>>() }
 
   // Default to File mode, and can be toggled to be in Live mode.
+  var active by remember { mutableStateOf(false) }
   var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
+  // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one errors
+  val frameInd = if (traceMode is TraceMode.Live) frameIndex + 1 else frameIndex
 
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
@@ -47,47 +64,83 @@ internal fun App(
   }
 
   Box(
-    modifier = modifier
+    modifier = modifier.onSizeChanged {
+      appWindowSize = it
+    }
   ) {
     fun resetStates() {
       selectedTraceFile = null
       selectedNode = null
       frameIndex = 0
-      workflowFrames.clear()
+      frameSize = 0
+      rawRenderPass = ""
+      active = false
+      nodeLocations.clear()
     }
 
     // Main content
     SandboxBackground(
+      appWindowSize = appWindowSize,
       sandboxState = sandboxState,
     ) {
       // if there is not a file selected and trace mode is live, then don't render anything.
-      val readyForFileTrace = traceMode is TraceMode.File && selectedTraceFile != null
-      val readyForLiveTrace = traceMode is TraceMode.Live
+      val readyForFileTrace = TraceMode.validateFileMode(traceMode)
+      val readyForLiveTrace = TraceMode.validateLiveMode(traceMode)
+
       if (readyForFileTrace || readyForLiveTrace) {
+        active = true
         RenderTrace(
           traceSource = traceMode,
           frameInd = frameIndex,
-          onFileParse = { workflowFrames.addAll(it) },
-          onNodeSelect = { node, prevNode ->
-            selectedNode = NodeUpdate(node, prevNode)
-          },
-          onNewFrame = { frameIndex += 1 }
+          onFileParse = { frameSize += it },
+          onNodeSelect = { selectedNode = it },
+          onNewFrame = { frameIndex += 1 },
+          onNewData = { rawRenderPass += "$it," },
+          storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) }
         )
       }
     }
 
-    FrameSelectTab(
-      frames = workflowFrames,
-      currentIndex = frameIndex,
-      onIndexChange = { frameIndex = it },
-      modifier = Modifier.align(Alignment.TopCenter)
-    )
-
-    RightInfoPanel(
-      selectedNode = selectedNode,
+    Column(
       modifier = Modifier
-        .align(Alignment.TopEnd)
-    )
+        .align(Alignment.TopCenter)
+        .padding(top = 8.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      if (active) {
+        // Frames that appear in composition may not happen sequentially, so when the current frame
+        // locations is null, that means we've skipped frames and need to fill all the intermediate
+        // ones. e.g. Frame 1 to Frame 10
+        if (nodeLocations.getOrNull(frameInd) == null) {
+          // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
+          // and it will append a new map
+          while (nodeLocations.size <= frameSize) {
+            nodeLocations += mutableStateMapOf()
+          }
+        }
+
+        val frameNodeLocations = nodeLocations[frameInd]
+        SearchBox(
+          nodes = frameNodeLocations.keys.toList(),
+          onSearch = { name ->
+            sandboxState.scale = 1f
+            val node = frameNodeLocations.keys.first { it.name == name }
+            val newX = (sandboxState.offset.x - frameNodeLocations.getValue(node).x
+              + appWindowSize.width / 2)
+            val newY = (sandboxState.offset.y - frameNodeLocations.getValue(node).y
+              + appWindowSize.height / 2)
+            sandboxState.offset = Offset(x = newX, y = newY)
+          },
+        )
+
+        FrameNavigator(
+          totalFrames = frameSize,
+          currentIndex = frameIndex,
+          onIndexChange = { frameIndex = it },
+        )
+      }
+    }
 
     TraceModeToggleSwitch(
       onToggle = {
@@ -96,13 +149,12 @@ internal fun App(
           frameIndex = 0
           TraceMode.File(null)
         } else {
-          // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
           /*
           We set the frame to -1 here since we always increment it during Live mode as the list of
           frames get populated, so we avoid off by one when indexing into the frames.
            */
           frameIndex = -1
-          TraceMode.Live
+          TraceMode.Live()
         }
       },
       traceMode = traceMode,
@@ -120,6 +172,26 @@ internal fun App(
         modifier = Modifier.align(Alignment.BottomStart)
       )
     }
+
+    if (traceMode is TraceMode.Live && (traceMode as TraceMode.Live).device == null) {
+      DisplayDevices(
+        onDeviceSelect = { selectedDevice ->
+          traceMode = TraceMode.Live(selectedDevice)
+        },
+        devices = listDevices(),
+        modifier = Modifier.align(Alignment.Center)
+      )
+
+      FileDump(
+        trace = rawRenderPass,
+        modifier = Modifier.align(Alignment.BottomStart)
+      )
+    }
+
+    RightInfoPanel(
+      selectedNode = selectedNode,
+      modifier = Modifier.align(Alignment.TopEnd)
+    )
   }
 }
 
@@ -134,5 +206,25 @@ internal class SandboxState {
 
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
-  data object Live : TraceMode
+  data class Live(val device: String? = null) : TraceMode
+
+  companion object {
+    fun validateLiveMode(traceMode: TraceMode): Boolean {
+      return traceMode is Live && traceMode.device != null
+    }
+
+    fun validateFileMode(traceMode: TraceMode): Boolean {
+      return traceMode is File && traceMode.file != null
+    }
+  }
+}
+
+/**
+ * Allows users to select from multiple devices that are currently running.
+ */
+private fun listDevices(): List<String> {
+  val process = ProcessBuilder("adb", "devices", "-l").start()
+  process.waitFor()
+  // We drop the header "List of devices attached"
+  return process.inputStream.bufferedReader().readLines().drop(1).dropLast(1)
 }

@@ -98,7 +98,6 @@ turbine = "1.0.0"
 vanniktech-publish = "0.32.0"
 
 [plugins]
-
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

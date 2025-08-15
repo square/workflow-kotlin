@@ -11,12 +11,16 @@ import kotlinx.coroutines.withContext
 import okio.IOException
 import java.net.Socket
 
-internal suspend fun streamRenderPassesFromDevice(parseOnNewRenderPass: (String) -> Unit) {
+/**
+ * Maintains the channel, which acts as buffer for information read from the socket, as the data are
+ * being processed.
+ */
+internal suspend fun streamRenderPassesFromDevice(device: String, parseOnNewRenderPass: (String) -> Unit) {
   val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
   coroutineScope {
     launch {
       try {
-        pollSocket(onNewRenderPass = renderPassChannel::send)
+        pollSocket(device = device, onNewRenderPass = renderPassChannel::send)
       } finally {
         renderPassChannel.close()
       }
@@ -39,10 +43,10 @@ internal suspend fun streamRenderPassesFromDevice(parseOnNewRenderPass: (String)
  * @param onNewRenderPass is called from an arbitrary thread, so it is important to ensure that the
  *        caller is thread safe
  */
-private suspend fun pollSocket(onNewRenderPass: suspend (String) -> Unit) {
+private suspend fun pollSocket(device: String, onNewRenderPass: suspend (String) -> Unit) {
   withContext(Dispatchers.IO) {
     try {
-      runForwardingPortThroughAdb { port ->
+      runForwardingPortThroughAdb(device) { port ->
         Socket("localhost", port).useWithCancellation { socket ->
           val reader = socket.getInputStream().bufferedReader()
           do {
@@ -88,9 +92,9 @@ private suspend fun Socket.useWithCancellation(block: suspend (Socket) -> Unit) 
  * If block throws or returns on finish, the port forwarding is removed via adb (best effort).
  */
 @Suppress("BlockingMethodInNonBlockingContext")
-private suspend inline fun runForwardingPortThroughAdb(block: (port: Int) -> Unit) {
+private suspend inline fun runForwardingPortThroughAdb(device: String, block: (port: Int) -> Unit) {
   val process = ProcessBuilder(
-    "adb", "forward", "tcp:0", "localabstract:workflow-trace"
+    "adb", "-s", device, "forward", "tcp:0", "localabstract:workflow-trace"
   ).start()
 
   // The adb forward command will output the port number it picks to connect.

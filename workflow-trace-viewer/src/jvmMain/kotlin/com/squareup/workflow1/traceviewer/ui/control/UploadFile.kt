@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.util
+package com.squareup.workflow1.traceviewer.ui.control
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -19,7 +19,7 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
  * contains information pulled from workflow traces
  */
 @Composable
-public fun UploadFile(
+internal fun UploadFile(
   resetOnFileSelect: (PlatformFile?) -> Unit,
   modifier: Modifier = Modifier,
 ) {

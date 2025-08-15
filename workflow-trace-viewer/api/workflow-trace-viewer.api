@@ -12,21 +12,19 @@ public final class com/squareup/workflow1/traceviewer/MainKt {
 public final class com/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt;
 	public fun <init> ()V
-	public final fun getLambda$-1066151803$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1653175968$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
-public final class com/squareup/workflow1/traceviewer/util/ComposableSingletons$UploadFileKt {
-	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/util/ComposableSingletons$UploadFileKt;
+public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$SearchBoxKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$SearchBoxKt;
 	public fun <init> ()V
-	public final fun getLambda$-1046372460$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1622160509$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$673874721$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
 }
 
-public final class com/squareup/workflow1/traceviewer/util/JsonParserKt {
-	public static final field ROOT_ID Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/traceviewer/util/UploadFileKt {
-	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$UploadFileKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$UploadFileKt;
+	public fun <init> ()V
+	public final fun getLambda$-1248702605$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 

@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntSize
 import com.squareup.workflow1.traceviewer.SandboxState
 
 /**
@@ -22,6 +24,7 @@ import com.squareup.workflow1.traceviewer.SandboxState
  */
 @Composable
 internal fun SandboxBackground(
+  appWindowSize: IntSize,
   sandboxState: SandboxState,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit,
@@ -35,20 +38,35 @@ internal fun SandboxBackground(
           sandboxState.offset += translation
         }
       }
-      .pointerInput(Unit) {
+      .pointerInput(appWindowSize) {
         // Zooming capabilities: watches for any scroll events and immediately consumes changes.
         // - This is AI generated.
         awaitEachGesture {
           val event = awaitPointerEvent()
           if (event.type == PointerEventType.Scroll) {
-            val scrollDelta = event.changes.first().scrollDelta.y
+            val pointerInput = event.changes.first()
+            val pointerOffsetToCenter = Offset(
+              // For some reason using 1.5 made zooming more natural than 2
+              x = pointerInput.position.x - appWindowSize.width / (3 / 2),
+              y = pointerInput.position.y - appWindowSize.height / 2
+            )
+            val scrollDelta = pointerInput.scrollDelta.y
             // Applies zoom factor based on the actual delta change rather than just the act of scrolling
             // This helps to normalize mouse scrolling and touchpad scrolling, since touchpad will
             // fire a lot more scroll events.
             val factor = 1f + (-scrollDelta * 0.1f)
             val minWindowSize = 0.1f
-            val maxWindowSize = 10f
-            sandboxState.scale = (sandboxState.scale * factor).coerceIn(minWindowSize, maxWindowSize)
+            val maxWindowSize = 2f
+            val oldScale = sandboxState.scale
+            val newScale = (oldScale * factor).coerceIn(minWindowSize, maxWindowSize)
+            val scaleRatio = newScale / oldScale
+
+            val newOrigin = sandboxState.offset - pointerOffsetToCenter
+            val scaledView = newOrigin * scaleRatio
+            val resetViewOffset = scaledView + pointerOffsetToCenter
+            sandboxState.offset = resetViewOffset
+            sandboxState.scale = newScale
+
             event.changes.forEach { it.consume() }
           }
         }
