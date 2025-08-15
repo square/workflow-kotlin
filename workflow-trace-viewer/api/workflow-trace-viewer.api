@@ -11,24 +11,20 @@ public final class com/squareup/workflow1/traceviewer/MainKt {
 
 public final class com/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt;
-	public static field lambda-1 Lkotlin/jvm/functions/Function3;
 	public fun <init> ()V
-	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1653175968$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$SearchBoxKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$SearchBoxKt;
-	public static field lambda-1 Lkotlin/jvm/functions/Function2;
-	public static field lambda-2 Lkotlin/jvm/functions/Function2;
 	public fun <init> ()V
-	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda-2$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1622160509$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$673874721$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$UploadFileKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$UploadFileKt;
-	public static field lambda-1 Lkotlin/jvm/functions/Function3;
 	public fun <init> ()V
-	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1248702605$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
