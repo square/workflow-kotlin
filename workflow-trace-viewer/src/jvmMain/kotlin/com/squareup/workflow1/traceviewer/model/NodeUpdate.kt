@@ -21,7 +21,7 @@ internal data class NodeUpdate(
         past == null -> NodeState.NEW
         current.props != past.props -> NodeState.PROPS_CHANGED
         current.state != past.state -> NodeState.STATE_CHANGED
-        else -> NodeState.CHILDREN_CHANGED
+        else -> NodeState.RENDERED
       }
 
       return NodeUpdate(current, past, state)
@@ -33,6 +33,6 @@ internal enum class NodeState(val color: Color) {
   NEW(Color(0x804CAF50)), // green
   STATE_CHANGED(Color(0xFFE57373)), // red
   PROPS_CHANGED(Color(0xFFFF8A65)), // orange
-  CHILDREN_CHANGED(Color(0x802196F3)), // blue
+  RENDERED(Color(0x802196F3)), // blue
   UNCHANGED(Color.LightGray.copy(alpha = 0.3f)),
 }

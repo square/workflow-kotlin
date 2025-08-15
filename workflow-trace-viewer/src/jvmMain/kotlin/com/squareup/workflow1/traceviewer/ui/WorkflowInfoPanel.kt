@@ -62,7 +62,6 @@ internal fun RightInfoPanel(
         .clip(CircleShape)
         .background(Color.White)
         .padding(8.dp)
-        .size(40.dp)
         .align(Alignment.Top)
     ) {
       Icon(

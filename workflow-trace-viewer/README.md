@@ -24,7 +24,7 @@ click to expand/collapse a specific node's children.
 
 <img src="https://github.com/square/workflow-kotlin/raw/wenli/improve-visualizer/workflow-trace-viewer/docs/demo.gif" width="320" alt="Demo" />
 
-#### File Mode
+### File Mode
 
 Once a file of the live data is saved, it can easily be uploaded to retrace the steps taken during
 the live session. Currently, text/json files that are saved from recordings only contain raw data,
@@ -32,14 +32,14 @@ meaning it is simply a list of lists of node renderings.
 
 <img src="https://github.com/square/workflow-kotlin/raw/wenli/improve-visualizer/workflow-trace-viewer/docs/file_mode.gif" width="320" alt="File Mode" />
 
-#### Live Mode
+### Live Mode
 
 By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly
 pulled from the emulator into the visualizer. To do so:
 
-1. Start the app (on any device)
-2. Start the app, and toggle the switch to enter Live mode
-3. Select the desired device
+- Start the app (on any device)
+- Start the app, and toggle the switch to enter Live mode
+- Select the desired device
 
 Once in Live mode, frames will appear as you interact with the app. You may also save the current
 data into a file saved in `~/Downloads` to be used later (this action will take some time, so it may
@@ -58,10 +58,10 @@ A connection can only happen once. There is currently no support for a recording
 due to the fact that an open socket will consume all render pass data when a connection begins. To
 restart the recording:
 
-1. (optional) Save the current trace
-2. Switch out of Live mode
-3. Restart the app
-4. Switch back to Live mode, and the
+- (optional) Save the current trace
+- Switch out of Live mode
+- Restart the app
+- Switch back to Live mode, and the
 
 ### Terminology
 
@@ -83,4 +83,4 @@ on Kotlin and KMP projects. This simplified the development process of allowing 
 ## Future
 
 This app can be integrated into the process of anyone working with Workflow, so it's highly
-encouraged for anyone to make improvements that makes their life a little easier using this app. 
+encouraged for anyone to make improvements that makes their life a little easier using this app.

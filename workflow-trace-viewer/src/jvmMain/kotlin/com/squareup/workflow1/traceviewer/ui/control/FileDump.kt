@@ -1,6 +1,7 @@
 package com.squareup.workflow1.traceviewer.ui.control
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults.buttonColors
@@ -24,29 +25,34 @@ internal fun FileDump(
   trace: String,
   modifier: Modifier = Modifier
 ) {
+  var filePath by remember { mutableStateOf("") }
   var clicked by remember { mutableStateOf(false) }
   Button(
-    modifier = modifier.padding(16.dp),
+    modifier = modifier
+      .padding(16.dp)
+      .widthIn(max = 300.dp),
     shape = CircleShape,
     colors = buttonColors(Color.Black),
     onClick = {
       clicked = true
-      writeToFile(trace)
+      filePath = writeToFile(trace)
     }
   ) {
     val text = if (clicked) {
-      "Trace saved to Downloads"
+      "Trace saved to $filePath"
     } else {
       "Save trace to file"
     }
     Text(
       text = text,
-      color = Color.White
+      color = Color.White,
+      maxLines = 3,
+      softWrap = true
     )
   }
 }
 
-private fun writeToFile(trace: String) {
+private fun writeToFile(trace: String): String{
   val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
   val home = System.getProperty("user.home")
   val path = "$home/Downloads/workflow-trace_$timestamp.json".toPath()
@@ -58,4 +64,6 @@ private fun writeToFile(trace: String) {
       bufferedSink.writeUtf8("]")
     }
   }
+
+  return path.toString()
 }

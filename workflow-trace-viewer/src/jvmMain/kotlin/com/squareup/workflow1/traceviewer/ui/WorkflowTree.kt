@@ -306,8 +306,10 @@ private fun DrawNode(
   )
 
   Box {
-    Box(
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally,
       modifier = Modifier
+        .wrapContentSize()
         .hoverable(interactionSource)
         .background(nodeUpdate.state.color)
         .clickable {
@@ -328,21 +330,16 @@ private fun DrawNode(
           storeNodeLocation(node, offsetToCenter)
         }
     ) {
-      Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.wrapContentSize()
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
       ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          if (node.children.isNotEmpty()) {
-            Text(text = if (isExpanded) "▼" else "▶")
-          }
-          Text(text = node.name)
+        if (node.children.isNotEmpty()) {
+          Text(text = if (isExpanded) "▼" else "▶")
         }
-        Text(text = "ID: ${node.id}")
+        Text(text = node.name)
       }
+      Text(text = "ID: ${node.id}")
     }
 
     if (isHovered) {

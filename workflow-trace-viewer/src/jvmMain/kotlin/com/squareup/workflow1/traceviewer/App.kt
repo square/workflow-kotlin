@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,11 +19,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowPosition.PlatformDefault.x
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
@@ -49,7 +48,7 @@ internal fun App(
   var rawRenderPass by remember { mutableStateOf("") }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
-  val nodeLocations = remember { mutableListOf<SnapshotStateMap<Node, Offset>>() }
+  val nodeLocations = remember { mutableStateListOf<SnapshotStateMap<Node, Offset>>() }
 
   // Default to File mode, and can be toggled to be in Live mode.
   var active by remember { mutableStateOf(false) }
@@ -110,7 +109,9 @@ internal fun App(
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       if (active) {
-        // Since we can jump from frame to frame, we fill in the map during each recomposition
+        // Frames that appear in composition may not happen sequentially, so when the current frame
+        // locations is null, that means we've skipped frames and need to fill all the intermediate
+        // ones. e.g. Frame 1 to Frame 10
         if (nodeLocations.getOrNull(frameInd) == null) {
           // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
           // and it will append a new map
