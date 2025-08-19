@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -193,6 +194,8 @@ public interface WorkflowInterceptor {
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method
    * is intercepting.
+   *
+   * Implementations should override [toString] to call [WorkflowSession.workflowSessionToString].
    */
   public interface WorkflowSession {
     /** The [WorkflowIdentifier] that represents the type of this workflow. */
@@ -416,6 +419,16 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
 
     override fun toString(): String = "InterceptedWorkflow($workflow, $this@intercept)"
   }
+}
+
+internal fun WorkflowSession.workflowSessionToString(): String {
+  val parentDescription = parent?.let { "WorkflowInstance(…)" }
+  return "WorkflowInstance(" +
+    "identifier=$identifier, " +
+    "renderKey=$renderKey, " +
+    "instanceId=$sessionId, " +
+    "parent=$parentDescription" +
+    ")"
 }
 
 private class InterceptedRenderContext<P, S, O>(
