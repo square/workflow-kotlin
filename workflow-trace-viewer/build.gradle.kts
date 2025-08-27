@@ -50,7 +50,7 @@ compose {
         includeAllModules = true
         targetFormats(TargetFormat.Dmg)
         packageName = "Workflow Trace Viewer"
-        packageVersion = "1.0.0"
+        packageVersion = (property("VERSION_NAME") as String).substringBefore("-SNAPSHOT")
         macOS {
           bundleID = "com.squareup.workflow1.traceviewer"
         }
