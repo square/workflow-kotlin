@@ -37,10 +37,10 @@ internal fun UploadFile(
     colors = buttonColors(Color.Black)
   ) {
     Text(
-      text = "+",
+      text = "Open Trace File",
       color = Color.White,
-      fontSize = 24.sp,
-      fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+      fontSize = 14.sp,
+      fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
     )
   }
 }
