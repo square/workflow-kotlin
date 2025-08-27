@@ -2,7 +2,7 @@ package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,12 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
-import com.squareup.workflow1.traceviewer.ui.control.DisplayDevices
 import com.squareup.workflow1.traceviewer.ui.control.FileDump
 import com.squareup.workflow1.traceviewer.ui.control.FrameNavigator
 import com.squareup.workflow1.traceviewer.ui.control.SearchBox
-import com.squareup.workflow1.traceviewer.ui.control.TraceModeToggleSwitch
-import com.squareup.workflow1.traceviewer.ui.control.UploadFile
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.parser.RenderTrace
 import io.github.vinceglb.filekit.PlatformFile
@@ -39,21 +36,20 @@ import io.github.vinceglb.filekit.PlatformFile
  * Main composable that provides the different layers of UI.
  */
 @Composable
-internal fun App(
-  modifier: Modifier = Modifier
+internal fun TraceViewerWindow(
+  modifier: Modifier = Modifier,
+  traceMode: TraceMode,
 ) {
   var appWindowSize by remember { mutableStateOf(IntSize(0, 0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
   var rawRenderPass by remember { mutableStateOf("") }
-  var frameIndex by remember { mutableIntStateOf(0) }
+  var frameIndex by remember { mutableIntStateOf(if (traceMode is TraceMode.Live) -1 else 0) }
   val sandboxState = remember { SandboxState() }
   val nodeLocations = remember { mutableStateListOf<SnapshotStateMap<Node, Offset>>() }
 
   // Default to File mode, and can be toggled to be in Live mode.
   var active by remember { mutableStateOf(false) }
-  var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
-  var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one errors
   val frameInd = if (traceMode is TraceMode.Live) frameIndex + 1 else frameIndex
 
@@ -68,15 +64,6 @@ internal fun App(
       appWindowSize = it
     }
   ) {
-    fun resetStates() {
-      selectedTraceFile = null
-      selectedNode = null
-      frameIndex = 0
-      frameSize = 0
-      rawRenderPass = ""
-      active = false
-      nodeLocations.clear()
-    }
 
     // Main content
     SandboxBackground(
@@ -101,12 +88,12 @@ internal fun App(
       }
     }
 
-    Column(
+    Row(
       modifier = Modifier
         .align(Alignment.TopCenter)
         .padding(top = 8.dp),
-      verticalArrangement = Arrangement.spacedBy(8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.Top,
     ) {
       if (active) {
         // Frames that appear in composition may not happen sequentially, so when the current frame
@@ -141,50 +128,10 @@ internal fun App(
         )
       }
     }
-
-    TraceModeToggleSwitch(
-      onToggle = {
-        resetStates()
-        traceMode = if (traceMode is TraceMode.Live) {
-          frameIndex = 0
-          TraceMode.File(null)
-        } else {
-          /*
-          We set the frame to -1 here since we always increment it during Live mode as the list of
-          frames get populated, so we avoid off by one when indexing into the frames.
-           */
-          frameIndex = -1
-          TraceMode.Live()
-        }
-      },
-      traceMode = traceMode,
-      modifier = Modifier.align(Alignment.BottomCenter)
-    )
-
-    // The states are reset when a new file is selected.
-    if (traceMode is TraceMode.File) {
-      UploadFile(
-        resetOnFileSelect = {
-          resetStates()
-          selectedTraceFile = it
-          traceMode = TraceMode.File(it)
-        },
-        modifier = Modifier.align(Alignment.BottomStart)
-      )
-    }
-
-    if (traceMode is TraceMode.Live && (traceMode as TraceMode.Live).device == null) {
-      DisplayDevices(
-        onDeviceSelect = { selectedDevice ->
-          traceMode = TraceMode.Live(selectedDevice)
-        },
-        devices = listDevices(),
-        modifier = Modifier.align(Alignment.Center)
-      )
-
+    if (traceMode is TraceMode.Live) {
       FileDump(
         trace = rawRenderPass,
-        modifier = Modifier.align(Alignment.BottomStart)
+        modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
       )
     }
 
@@ -217,14 +164,4 @@ internal sealed interface TraceMode {
       return traceMode is File && traceMode.file != null
     }
   }
-}
-
-/**
- * Allows users to select from multiple devices that are currently running.
- */
-private fun listDevices(): List<String> {
-  val process = ProcessBuilder("adb", "devices", "-l").start()
-  process.waitFor()
-  // We drop the header "List of devices attached"
-  return process.inputStream.bufferedReader().readLines().drop(1).dropLast(1)
 }

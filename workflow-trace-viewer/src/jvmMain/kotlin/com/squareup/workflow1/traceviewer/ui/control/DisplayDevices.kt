@@ -3,6 +3,7 @@ package com.squareup.workflow1.traceviewer.ui.control
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,12 +53,13 @@ internal fun DisplayDevices(
             },
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(1.dp, Color.Gray),
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier.padding(4.dp).defaultMinSize(minWidth = 500.dp),
             elevation = 2.dp
           ) {
             Text(
               text = device,
-              modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+              modifier = Modifier.align(Alignment.CenterHorizontally)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
             )
           }
         }
