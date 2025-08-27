@@ -42,6 +42,7 @@ include(
   ":samples:containers:app-raven",
   ":samples:containers:android",
   ":samples:containers:common",
+  ":samples:containers:thingy",
   ":samples:containers:hello-back-button",
   ":samples:containers:poetry",
   ":samples:dungeon:app",
