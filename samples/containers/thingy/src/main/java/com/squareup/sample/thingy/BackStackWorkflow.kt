@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 /**
  * Creates a [BackStackWorkflow]. See the docs on [BackStackWorkflow.runBackStack] for more
@@ -45,11 +46,58 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    * Show renderings by calling [BackStackScope.showScreen]. Show child workflows by calling
    * [BackStackScope.showWorkflow]. Emit outputs by calling [emitOutput].
    *
-   * # Examples
+   * # Showing a screen
+   *
+   * ```
+   * backStackWorkflow { _, _ ->
+   *   // Suspends until continueWith is called.
+   *   val result = showScreen {
+   *     MyScreenClass(
+   *       // Returns "finished" from showScreen.
+   *       onDoneClicked = { continueWith("finished") },
+   *     )
+   *   }
+   * }
+   * ```
+   *
+   * # Showing a workflow
+   *
+   * ```
+   * backStackWorkflow { _, _ ->
+   *   // Suspends until an onOutput lambda returns a value.
+   *   val result = showWorkflow(
+   *     childWorkflow,
+   *     props = flowOf(childProps)
+   *     onOutput = { output ->
+   *       // Returns "finished: …" from showWorkflow.
+   *       return@showWorkflow "finished: $output"
+   *     }
+   *   )
+   * }
+   * ```
+   *
+   * # Emitting output
+   *
+   * The second parameter to the [runBackStack] function is an [emitOutput] function that will send
+   * whatever you pass to it to this workflow's parent as an output.
+   * ```
+   * backStackWorkflow { _, emitOutput ->
+   *   showWorkflow(
+   *     childWorkflow,
+   *     props = flowOf(childProps)
+   *     onOutput = { output ->
+   *       // Forward the output to parent.
+   *       emitOutput(output)
+   *     }
+   *   )
+   * }
+   * ```
+   *
+   * # Nested vs serial calls
    *
    * The backstack is represented by _nesting_ `showWorkflow` calls. Consider this example:
    * ```
-   * backStackWorkflow {
+   * backStackWorkflow { _, _ ->
    *   showWorkflow(child1) {
    *     showWorkflow(child2) {
    *       showWorkflow(child3) {
@@ -66,7 +114,7 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    *
    * Contrast with calls in series:
    * ```
-   * backStackWorkflow {
+   * backStackWorkflow { _, _ ->
    *   showWorkflow(child1) { finishWith(Unit) }
    *   showWorkflow(child2) { finishWith(Unit) }
    *   showWorkflow(child3) { }
@@ -77,7 +125,7 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    *
    * These can be combined:
    * ```
-   * backStackWorkflow {
+   * backStackWorkflow { _, _ ->
    *   showWorkflow(child1) {
    *     showWorkflow(child2) {
    *       // goBack(), or
@@ -93,6 +141,77 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    * `child2` emits an output, it can decide to call `goBack` to show `child1` again, or call
    * `finishWith` to replace itself with `child3`. `child3` can also call `goBack` to show `child`
    * again.
+   *
+   * To push another screen on the backstack from a non-workflow screen, [launch] a coroutine:
+   * ```
+   * backStackScreen { _, _ ->
+   *   showScreen {
+   *     MyScreen(
+   *       onEvent = {
+   *         launch {
+   *           showWorkflow(…)
+   *         }
+   *       }
+   *     }
+   *   }
+   * }
+   * ```
+   *
+   * # Cancelling screens
+   *
+   * Calling [BackStackScope.showScreen] or [BackStackScope.showWorkflow] suspends the caller until
+   * that workflow/screen produces a result. They handle coroutine cancellation too: if the calling
+   * coroutine is cancelled while they're showing, they are removed from the backstack.
+   *
+   * This can be used to, for example, update a screen based on a flow:
+   * ```
+   * backStackWorkflow { props, _ ->
+   *   props.collectLatest { prop ->
+   *     showScreen {
+   *       MyScreen(message = prop)
+   *     }
+   *   }
+   * }
+   * ```
+   * This example shows the props received from the parent to the user via `MyScreen`. Every time
+   * the parent passes a new props, the `showScreen` call is cancelled and called again with the
+   * new props, replacing the old instance of `MyScreen` in the backstack with a new one. Since
+   * both instances of `MyScreen` are compatible, this is not a navigation event but just updates
+   * the `MyScreen` view factory.
+   *
+   * # Factoring out code
+   *
+   * You don't have to keep all the logic for your backstack in a single function. You can pull out
+   * functions, just make them extensions on [BackStackParentScope] to get access to `showScreen`
+   * and `showRendering` calls.
+   *
+   * E.g. here's a helper that performs some suspending task and shows a retry screen if it fails:
+   * ```
+   * suspend fun <R> BackStackParentScope.userRetriable(
+   *   action: suspend () -> R
+   * ): R {
+   *   var result = runCatching { action() }
+   *   // runCatching can catch CancellationException, so check.
+   *   ensureActive()
+   *
+   *   while (result.isFailure) {
+   *     showScreen {
+   *       RetryScreen(
+   *         message = "Failed: ${result.exceptionOrNull()}",
+   *         onRetryClicked = { continueWith(Unit) },
+   *         onCancelClicked = { goBack() }
+   *       )
+   *     }
+   *
+   *     // Try again.
+   *     result = runCatching { action() }
+   *     ensureActive()
+   *   }
+   *
+   *   // We only leave the loop when action succeeded.
+   *   return result.getOrThrow()
+   * }
+   * ```
    */
   abstract suspend fun BackStackScope.runBackStack(
     props: StateFlow<PropsT>,
@@ -134,6 +253,12 @@ public sealed interface BackStackParentScope {
    * that is relevant within a backstack, and it's not possible to know whether the parent supports
    * back. What you probably want is to emit an output instead to tell the parent to go back.
    *
+   * If the coroutine calling [showWorkflow] is cancelled, the workflow stops being rendered and its
+   * rendering will be removed from the backstack.
+   *
+   * See [BackStackWorkflow.runBackStack] for high-level documentation about how to use this method
+   * to implement a backstack workflow.
+   *
    * @param props The props passed to [workflow] when rendering it. [showWorkflow] will suspend
    * until the first value is emitted. Consider transforming the [BackStackWorkflow.runBackStack]
    * props [StateFlow] or using [flowOf].
@@ -149,6 +274,12 @@ public sealed interface BackStackParentScope {
   /**
    * Shows the screen produced by [screenFactory]. Suspends untilBackStackNestedScope.goBack] is
    * called.
+   *
+   * If the coroutine calling [showScreen] is cancelled, the rendering will be removed from the
+   * backstack.
+   *
+   * See [BackStackWorkflow.runBackStack] for high-level documentation about how to use this method
+   * to implement a backstack workflow.
    */
   suspend fun <R> showScreen(
     screenFactory: BackStackScreenScope<R>.() -> Screen
