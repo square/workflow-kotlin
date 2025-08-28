@@ -57,7 +57,7 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: check published artifacts
+      - name: Check Yaml for Version
         uses: ./.github/actions/gradle-task-with-commit
         with:
           check-task: connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
@@ -183,32 +183,6 @@ jobs:
           task: lint
           write-cache-key: main-build-artifacts
 
-  check:
-    name: Unit Tests
-    runs-on: macos-latest
-    needs: build-all
-    timeout-minutes: 40
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: allTests via gradle
-        uses: ./.github/actions/gradle-task
-        with:
-          task: |
-            allTests
-            test
-            --continue
-          restore-cache-key: build-logic
-          write-cache-key: main-build-artifacts
-
-      # Report as GitHub Pull Request Check.
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
-        with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
-
   tutorials:
     name: Build Tutorials
     runs-on: ubuntu-latest
@@ -225,25 +199,49 @@ jobs:
           build-root-directory: samples/tutorial
           restore-cache-key: main-build-artifacts
 
-  jvm-drainExclusive-runtime-test:
-    name: DEA JVM Tests
+  unit-tests:
+    name: General Unit Tests (not KMP)
+    runs-on: macos-latest
+    needs: build-all
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: allTests via gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: |
+            allTests
+            test
+            --continue
+          restore-cache-key: build-logic
+          write-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'unit-tests-report'
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+
+  unit-drainExclusive-runtime-tests:
+    name: DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: jvmTest via Gradle
-        uses: ./.github/actions/gradle-task
-        with:
-          task: jvmTest --continue -Pworkflow.runtime=drainExclusive
-          restore-cache-key: main-build-artifacts
 
       - name: test via Gradle
         uses: ./.github/actions/gradle-task
         with:
           task: test --continue -Pworkflow.runtime=drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'dea-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -252,19 +250,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-runtime-test:
-    name: CSR JVM Tests
+  unit-conflate-runtime-tests:
+    name: CSR Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: test via Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate
+          task: test --continue -Pworkflow.runtime=conflate
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'csr-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -273,19 +273,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-stateChange-runtime-test:
-    name: SCO JVM Tests
+  unit-stateChange-runtime-tests:
+    name: SCO Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: test via Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=stateChange
+          task: test --continue -Pworkflow.runtime=stateChange
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'sco-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -294,19 +296,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-stable-handlers-test:
-    name: SEH JVM Tests
+  unit-stable-handlers-tests:
+    name: SEH Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=stable
+          task: test --continue -Pworkflow.runtime=stable
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'seh-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -315,19 +319,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-partial-runtime-test:
-    name: PTR JVM Tests
+  unit-partial-runtime-tests:
+    name: PTR Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=partial
+          task: test --continue -Pworkflow.runtime=partial
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'ptr-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -336,19 +342,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-stateChange-runtime-test:
-    name: SCO, CSR JVM Tests
+  unit-conflate-stateChange-runtime-tests:
+    name: SCO, CSR Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate-stateChange
+          task: test --continue -Pworkflow.runtime=conflate-stateChange
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'csr-sco-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -357,19 +365,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-partial-runtime-test:
-    name: CSR, PTR JVM Tests
+  unit-conflate-partial-runtime-tests:
+    name: CSR, PTR Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate-partial
+          task: test --continue -Pworkflow.runtime=conflate-partial
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'csr-ptr-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -378,19 +388,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-drainExclusive-runtime-test:
-    name: CSR, DEA JVM Tests
+  unit-conflate-drainExclusive-runtime-tests:
+    name: CSR, DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate-drainExclusive
+          task: test --continue -Pworkflow.runtime=conflate-drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'csr-dea-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -399,19 +411,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-stateChange-drainExclusive-runtime-test:
-    name: SCO, DEA JVM Tests
+  unit-stateChange-drainExclusive-runtime-tests:
+    name: SCO, DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=stateChange-drainExclusive
+          task: test --continue -Pworkflow.runtime=stateChange-drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'sco-dea-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -420,19 +434,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-partial-drainExclusive-runtime-test:
-    name: PTR, DEA JVM Tests
+  unit-partial-drainExclusive-runtime-tests:
+    name: PTR, DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=partial-drainExclusive
+          task: test --continue -Pworkflow.runtime=partial-drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'ptr-dea-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -441,19 +457,21 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-stateChange-drainExclusive-runtime-test:
-    name: SCO, CSR, DEA JVM Tests
+  unit-conflate-stateChange-drainExclusive-runtime-tests:
+    name: SCO, CSR, DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate-stateChange-drainExclusive
+          task: test --continue -Pworkflow.runtime=conflate-stateChange-drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'csr-sco-dea-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -462,19 +480,20 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  jvm-conflate-partial-drainExclusive-runtime-test:
-    name: CSR, PTR, DEA JVM Tests
+  unit-conflate-partial-drainExclusive-runtime-tests:
+    name: CSR, PTR, DEA Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=conflate-partial-drainExclusive
+          task: test --continue -Pworkflow.runtime=conflate-partial-drainExclusive
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -482,20 +501,23 @@ jobs:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          failure-upload-name: 'csr-ptr-dea-unit-tests-report'
 
-  jvm-all-runtime-test:
-    name: ALL Optimizations JVM Tests
+  unit-all-runtime-tests:
+    name: ALL Optimizations Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check with Gradle
+      - name: Test with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jvmTest --continue -Pworkflow.runtime=all
+          task: test --continue -Pworkflow.runtime=all
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'all-runtime-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
@@ -504,8 +526,8 @@ jobs:
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  ios-tests:
-    name: iOS Tests
+  kmp-jvm-tests:
+    name: JVM Tests for KMP Modules
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -515,17 +537,42 @@ jobs:
       - name: Check with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: iosX64Test
+          task: jvmTest --continue
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'kmp-jvm-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/iosX64Test/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
-  js-tests:
+  kmp-ios-tests:
+    name: iOS Tests for KMP Modules
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: iosSimulatorArm64Test
+          restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'kmp-ios-unit-tests-report'
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+
+  kmp-js-tests:
     name: JS Tests
     runs-on: macos-latest
     timeout-minutes: 30
@@ -537,15 +584,17 @@ jobs:
       - name: Check with Gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: jsTest
+          task: jsBrowserTest
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'kmp-js-unit-tests-report'
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
         if: always() # always run even if the previous step fails
         with:
-          report_paths: '**/build/test-results/jsTest/TEST-*.xml'
+          report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   performance-tests:
     name: Performance tests
@@ -569,6 +618,8 @@ jobs:
           prepare-task: :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
           test-task: :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
           restore-cache-key: androidTest-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: 'perf-tests-report'
 
   instrumentation-tests:
     name: Instrumentation tests
@@ -596,6 +647,8 @@ jobs:
           test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: core-tests-report-${{matrix.shardNum}}
 
   runtime-instrumentation-tests:
     name: Alternate Runtime Instrumentation tests
@@ -624,6 +677,8 @@ jobs:
           test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
           restore-cache-key: main-build-artifacts
+          failure-path-upload: '**/build/reports/tests/*[tT]est'
+          failure-upload-name: core-tests-report-${{matrix.runtime}}-${{matrix.shardNum}}
 
   all-green:
     if: always()
@@ -632,25 +687,26 @@ jobs:
       - android-lint
       - api-check
       - artifacts-check
-      - check
       - dependency-guard
       - dokka
+      - unit-tests
       - instrumentation-tests
-      - ios-tests
-      - js-tests
-      - jvm-drainExclusive-runtime-test
-      - jvm-conflate-runtime-test
-      - jvm-stateChange-runtime-test
-      - jvm-stable-handlers-test
-      - jvm-partial-runtime-test
-      - jvm-conflate-stateChange-runtime-test
-      - jvm-conflate-partial-runtime-test
-      - jvm-conflate-drainExclusive-runtime-test
-      - jvm-stateChange-drainExclusive-runtime-test
-      - jvm-partial-drainExclusive-runtime-test
-      - jvm-conflate-stateChange-drainExclusive-runtime-test
-      - jvm-conflate-partial-drainExclusive-runtime-test
-      - jvm-all-runtime-test
+      - kmp-jvm-tests
+      - kmp-ios-tests
+      - kmp-js-tests
+      - unit-drainExclusive-runtime-tests
+      - unit-conflate-runtime-tests
+      - unit-stateChange-runtime-tests
+      - unit-stable-handlers-tests
+      - unit-partial-runtime-tests
+      - unit-conflate-stateChange-runtime-tests
+      - unit-conflate-partial-runtime-tests
+      - unit-conflate-drainExclusive-runtime-tests
+      - unit-stateChange-drainExclusive-runtime-tests
+      - unit-partial-drainExclusive-runtime-tests
+      - unit-conflate-stateChange-drainExclusive-runtime-tests
+      - unit-conflate-partial-drainExclusive-runtime-tests
+      - unit-all-runtime-tests
       - ktlint
       - performance-tests
       - runtime-instrumentation-tests

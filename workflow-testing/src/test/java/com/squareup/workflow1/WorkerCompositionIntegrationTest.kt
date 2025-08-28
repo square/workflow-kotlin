@@ -3,6 +3,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.testing.WorkerSink
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import kotlinx.coroutines.CoroutineDispatcher
@@ -241,7 +242,16 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `worker context is used for workers`() {
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test
+  fun `worker context is used for workers`() {
+    if (JvmTestRuntimeConfigTools.getTestRuntimeConfig()
+        .contains(RuntimeConfigOptions.WORK_STEALING_DISPATCHER)
+    ) {
+      // This test does not work when the WSD is wrapping the dispatcher,
+      // and that is internal so ideally we don't expose it just for this test.
+      return
+    }
     val worker = Worker.from { coroutineContext }
     val leafWorkflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
       runningWorker(worker) { context -> action("") { setOutput(context) } }

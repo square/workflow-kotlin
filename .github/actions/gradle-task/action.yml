@@ -23,6 +23,9 @@ inputs:
   failure-path-upload:
     description: 'The relative path to a desired log for upload if the task fails.'
     default: 'null'
+  failure-upload-name:
+    description: 'The name for the upload of failure reports.'
+    default: 'specified-upload'
 
 runs:
   using: 'composite'
@@ -149,6 +152,6 @@ runs:
       if: failure() && inputs.failure-path-upload != 'null'
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        name: specified-upload
+        name: ${{inputs.failure-upload-name}}
         path: ${{github.workspace}}/${{inputs.failure-path-upload}}
 
