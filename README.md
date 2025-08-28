@@ -9,7 +9,7 @@ Workflow is an application framework that provides architectural primitives.
 
 Workflow is:
 
-* Written in and used for Kotlin and Swift
+* Written in and used for Kotlin and [Swift](https://github.com/square/workflow-swift)
 * A unidirectional data flow library that uses immutable data within each Workflow.
   Data flows in a single direction from source to UI, and events in a single direction
   from the UI to the business logic.
