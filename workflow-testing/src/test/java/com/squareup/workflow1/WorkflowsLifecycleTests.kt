@@ -7,7 +7,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
-import com.squareup.workflow1.testing.headlessIntegrationTest
+import com.squareup.workflow1.testing.renderForTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -84,7 +84,7 @@ class WorkflowsLifecycleTests(
   }
 
   @Test fun sideEffectsStartedWhenExpected() {
-    workflowWithSideEffects.headlessIntegrationTest(
+    workflowWithSideEffects.renderForTest(
       runtimeConfig = runtimeConfig
     ) {
       // One time starts but does not stop the side effect.
@@ -98,7 +98,7 @@ class WorkflowsLifecycleTests(
   }
 
   @Test fun sideEffectsStoppedWhenExpected() {
-    workflowWithSideEffects.headlessIntegrationTest(
+    workflowWithSideEffects.renderForTest(
       runtimeConfig = runtimeConfig
     ) {
       // Twice will start and stop the side effect.
@@ -112,7 +112,7 @@ class WorkflowsLifecycleTests(
   }
 
   @Test fun childSessionWorkflowStartedWhenExpected() {
-    workflowWithChildSession.headlessIntegrationTest(
+    workflowWithChildSession.renderForTest(
       runtimeConfig = runtimeConfig
     ) {
       // One time starts but does not stop the child session workflow.
@@ -139,7 +139,7 @@ class WorkflowsLifecycleTests(
   @Test
   fun sideEffectsStartAndStoppedWhenHandledSynchronously() {
     val dispatcher = UnconfinedTestDispatcher()
-    workflowWithSideEffects.headlessIntegrationTest(
+    workflowWithSideEffects.renderForTest(
       coroutineContext = dispatcher,
       runtimeConfig = runtimeConfig
     ) {
@@ -163,7 +163,7 @@ class WorkflowsLifecycleTests(
   }
 
   @Test fun childSessionWorkflowStoppedWhenExpected() {
-    workflowWithChildSession.headlessIntegrationTest(
+    workflowWithChildSession.renderForTest(
       runtimeConfig = runtimeConfig
     ) {
       // Twice will start and stop the child session workflow.
@@ -185,7 +185,7 @@ class WorkflowsLifecycleTests(
   @Test
   fun childSessionWorkflowStartAndStoppedWhenHandledSynchronously() {
     val dispatcher = UnconfinedTestDispatcher()
-    workflowWithChildSession.headlessIntegrationTest(
+    workflowWithChildSession.renderForTest(
       coroutineContext = dispatcher,
       runtimeConfig = runtimeConfig
     ) {

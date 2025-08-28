@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
-@file:Suppress("ktlint:standard:indent")
+@file:Suppress("ktlint:standard:indent", "DEPRECATION")
 
 package com.squareup.workflow1.testing
 
@@ -53,6 +53,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - [sendProps]
  *    - Send a new [PropsT] to the root workflow.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
@@ -173,6 +174,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 @TestOnly
 public fun <T, PropsT, OutputT, RenderingT>
   Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
@@ -187,6 +189,7 @@ public fun <T, PropsT, OutputT, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 @TestOnly
 public fun <T, OutputT, RenderingT>
   Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
@@ -202,6 +205,7 @@ public fun <T, OutputT, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
@@ -223,6 +227,7 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 @TestOnly
 public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
@@ -236,6 +241,7 @@ public fun <StateT, OutputT, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(

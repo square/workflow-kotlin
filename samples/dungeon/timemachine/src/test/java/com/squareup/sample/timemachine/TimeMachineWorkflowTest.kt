@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.timemachine
 
 import com.google.common.truth.Truth.assertThat

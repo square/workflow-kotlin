@@ -112,6 +112,14 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * - It is a test failure if no workflow or worker emitted an output, no rendering event was
  *   invoked, and any of the action verification methods on [RenderTestResult] is called.
  *
+ * ## Testing Application
+ *
+ * Note that by providing the values for all child workflows, workers, and side effects, the test
+ * is extremely focused on the logic of the `render()` method. Everything else is essentially
+ * 'mocked'. If you do not have complex logic within `render()` that needs to be directly unit
+ * tested, then you may be better served by using a [WorkflowTurbine] and [renderForResult] as this
+ * will actually run your workflow (and any children, fake or not) in the runtime.
+ *
  * ## Examples
  *
  * ### Worker output
