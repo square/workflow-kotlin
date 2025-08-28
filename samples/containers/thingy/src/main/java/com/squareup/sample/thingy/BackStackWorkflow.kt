@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlin.experimental.ExperimentalTypeInference
 
 /**
  * Creates a [BackStackWorkflow]. See the docs on [BackStackWorkflow.runBackStack] for more
@@ -164,10 +165,16 @@ public sealed interface BackStackNestedScope<OutputT, R> : BackStackScope<Output
   suspend fun goBack(): Nothing
 }
 
+@OptIn(ExperimentalTypeInference::class)
 public suspend inline fun <OutputT, ChildOutputT, R> BackStackScope<OutputT>.showWorkflow(
   workflow: Workflow<Unit, ChildOutputT, Screen>,
-  noinline onOutput: suspend BackStackNestedScope<OutputT, R>.(output: ChildOutputT) -> Unit
+  @BuilderInference noinline onOutput: suspend BackStackNestedScope<OutputT, R>.(output: ChildOutputT) -> Unit
 ): R = showWorkflow(workflow, props = flowOf(Unit), onOutput)
+
+// public suspend inline fun <OutputT, ChildOutputT> BackStackScope<OutputT>.showWorkflow(
+//   workflow: Workflow<Unit, ChildOutputT, Screen>,
+//   noinline onOutput: suspend BackStackNestedScope<OutputT, Unit>.(output: ChildOutputT) -> Unit
+// ): Unit = showWorkflow(workflow, props = flowOf(Unit), onOutput)
 
 public suspend inline fun <ChildPropsT> BackStackScope<*>.showWorkflow(
   workflow: Workflow<ChildPropsT, Nothing, Screen>,
