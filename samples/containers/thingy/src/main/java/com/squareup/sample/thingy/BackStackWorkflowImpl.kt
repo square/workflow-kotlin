@@ -1,10 +1,12 @@
 package com.squareup.sample.thingy
 
+import com.squareup.workflow1.SessionWorkflow
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.BackStackScreen
@@ -16,222 +18,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
-/**
- * Creates a [BackStackWorkflow].
- */
-public inline fun <PropsT, OutputT> backStackWorkflow(
-  crossinline block: suspend RootScope<PropsT, OutputT>.() -> Unit
-): Workflow<PropsT, OutputT, BackStackScreen<Screen>> =
-  object : BackStackWorkflow<PropsT, OutputT>() {
-    override suspend fun RootScope<PropsT, OutputT>.runBackStack() {
-      block()
-    }
-  }
-
-/**
- * Returns a [Workflow] that renders a [BackStackScreen] whose frames are controlled by the code
- * in [runBackStack].
- *
- * [runBackStack] can render child workflows by calling [RootScope.showWorkflow]. It can emit
- * outputs to its parent by calling [RootScope.emitOutput], and access its props via
- * [RootScope.props].
- *
- * # Examples
- *
- * The backstack is represented by _nesting_ `showWorkflow` calls. Consider this example:
- * ```
- * backStackWorkflow {
- *   showWorkflow(child1) {
- *     showWorkflow(child2) {
- *       showWorkflow(child3) {
- *         // goBack()
- *       }
- *     }
- *   }
- * }
- * ```
- * This eventually represents a backstack of `[child1, child2, child3]`. `child2` will be pushed
- * onto the stack when `child1` emits an output, and `child3` pushed when `child2` emits. The
- * lambdas for `child2` and `child3` can call `goBack` to pop the stack and cancel the lambdas that
- * called their `showWorkflow`, until the next output is emitted.
- *
- * Contrast with calls in series:
- * ```
- * backStackWorkflow {
- *   showWorkflow(child1) { finishWith(Unit) }
- *   showWorkflow(child2) { finishWith(Unit) }
- *   showWorkflow(child3) { }
- * }
- * ```
- * `child1` will be shown immediately, but when it emits an output, instead of pushing `child2` onto
- * the stack, `child1` will be removed from the stack and replaced with `child2`.
- *
- * These can be combined:
- * ```
- * backStackWorkflow {
- *   showWorkflow(child1) {
- *     showWorkflow(child2) {
- *       // goBack(), or
- *       finishWith(Unit)
- *     }
- *     showWorkflow(child3) {
- *       // goBack()
- *     }
- *   }
- * }
- * ```
- * This code will show `child1` immediately, then when it emits an output show `child2`. When
- * `child2` emits an output, it can decide to call `goBack` to show `child1` again, or call
- * `finishWith` to replace itself with `child3`. `child3` can also call `goBack` to show `child`
- * again.
- */
-public abstract class BackStackWorkflow<PropsT, OutputT> :
-  Workflow<PropsT, OutputT, BackStackScreen<Screen>> {
-
-  abstract suspend fun RootScope<PropsT, OutputT>.runBackStack()
-
-  final override fun asStatefulWorkflow():
-    StatefulWorkflow<PropsT, *, OutputT, BackStackScreen<Screen>> =
-    BackStackWorkflowImpl(this)
-}
-
-@DslMarker
-annotation class BackStackWorkflowDsl
-
-@BackStackWorkflowDsl
-public interface RootScope<PropsT, OutputT> : CoroutineScope {
-  val props: StateFlow<PropsT>
-
-  /**
-   * Emits an output to the [backStackWorkflow]'s parent.
-   */
-  fun emitOutput(output: OutputT)
-
-  /**
-   * Starts rendering [workflow] and pushes its rendering onto the top of the backstack.
-   *
-   * Whenever [workflow] emits an output, [onOutput] is launched into a new coroutine. If one call
-   * doesn't finish before another output is emitted, multiple callbacks can run concurrently.
-   *
-   * When [onOutput] calls [ShowWorkflowScope.finishWith], this workflow stops rendering, its
-   * rendering is removed from the backstack, and any running output handlers are cancelled.
-   *
-   * Note that top-level workflows inside a [backStackWorkflow] cannot call
-   * [ShowWorkflowChildScope.goBack] because the parent doesn't necessarily support that operation.
-   */
-  suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
-    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
-    props: ChildPropsT,
-    onOutput: suspend ShowWorkflowScope<OutputT, R>.(output: ChildOutputT) -> Unit
-  ): R
-}
-
-@BackStackWorkflowDsl
-public sealed interface ShowWorkflowScope<OutputT, R> : CoroutineScope {
-
-  /**
-   * Emits an output to the [backStackWorkflow]'s parent.
-   */
-  fun emitOutput(output: OutputT)
-
-  /**
-   * Causes the [showWorkflow] call that ran the output handler that was passed this scope to return
-   * [value] and cancels any output handlers still running for that workflow. The workflow is
-   * removed from the stack and will no longer be rendered.
-   */
-  suspend fun finishWith(value: R): Nothing
-
-  /**
-   * Starts rendering [workflow] and pushes its rendering onto the top of the backstack.
-   *
-   * Whenever [workflow] emits an output, [onOutput] is launched into a new coroutine. If one call
-   * doesn't finish before another output is emitted, multiple callbacks can run concurrently.
-   *
-   * When [onOutput] calls [ShowWorkflowScope.finishWith] or [ShowWorkflowChildScope.goBack], this
-   * workflow stops rendering, its rendering is removed from the backstack, and any running output
-   * handlers are cancelled. [ShowWorkflowChildScope.goBack] will also cancel the output handler
-   * of the parent workflow that called this [showWorkflow].
-   */
-  suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
-    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
-    props: ChildPropsT,
-    onOutput: suspend ShowWorkflowChildScope<OutputT, R>.(output: ChildOutputT) -> Unit
-  ): R
-}
-
-@BackStackWorkflowDsl
-public sealed interface ShowWorkflowChildScope<OutputT, R> : ShowWorkflowScope<OutputT, R> {
-  /**
-   * Removes all workflows started by the parent workflow's handler that invoked this [showWorkflow]
-   * from the stack, and cancels that parent output handler coroutine (and thus all child workflow
-   * coroutines as well).
-   */
-  suspend fun goBack(): Nothing
-}
-
-public suspend inline fun <OutputT, ChildOutputT, R> RootScope<*, OutputT>.showWorkflow(
-  workflow: Workflow<Unit, ChildOutputT, Screen>,
-  noinline onOutput: suspend ShowWorkflowScope<OutputT, R>.(output: ChildOutputT) -> Unit
-): R = showWorkflow(workflow, props = Unit, onOutput)
-
-public suspend inline fun <ChildPropsT> RootScope<*, *>.showWorkflow(
-  workflow: Workflow<ChildPropsT, Nothing, Screen>,
-  props: ChildPropsT,
-): Nothing = showWorkflow(workflow, props = props) { error("Cannot call") }
-
-public suspend inline fun RootScope<*, *>.showWorkflow(
-  workflow: Workflow<Unit, Nothing, Screen>,
-): Nothing = showWorkflow(workflow, props = Unit) { error("Cannot call") }
-
-public suspend inline fun <OutputT, ChildOutputT, R> ShowWorkflowScope<OutputT, *>.showWorkflow(
-  workflow: Workflow<Unit, ChildOutputT, Screen>,
-  noinline onOutput: suspend ShowWorkflowChildScope<OutputT, R>.(output: ChildOutputT) -> Unit
-): R = showWorkflow(workflow, props = Unit, onOutput)
-
-public suspend inline fun <ChildPropsT> ShowWorkflowScope<*, *>.showWorkflow(
-  workflow: Workflow<ChildPropsT, Nothing, Screen>,
-  props: ChildPropsT,
-): Nothing = showWorkflow(workflow, props = props) { error("Cannot call") }
-
-public suspend inline fun ShowWorkflowScope<*, *>.showWorkflow(
-  workflow: Workflow<Unit, Nothing, Screen>,
-): Nothing = showWorkflow(workflow, props = Unit) { error("Cannot call") }
-
-private class RootScopeImpl<PropsT, OutputT>(
-  override val props: MutableStateFlow<PropsT>,
-  private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
-  coroutineScope: CoroutineScope,
-) : RootScope<PropsT, OutputT>, CoroutineScope by coroutineScope {
-
-  override fun emitOutput(output: OutputT) {
-    actionSink.send(action("emitOutput") {
-      setOutput(output)
-    })
-  }
-
-  override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
-    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
-    props: ChildPropsT,
-    onOutput: suspend ShowWorkflowScope<OutputT, R>.(ChildOutputT) -> Unit
-  ): R = showWorkflow(
-    workflow = workflow,
-    props = props,
-    onOutput = onOutput,
-    actionSink = actionSink,
-    parentFrame = null
-  )
-}
-
-private class BackStackWorkflowImpl<PropsT, OutputT>(
+@OptIn(WorkflowExperimentalApi::class)
+internal class BackStackWorkflowImpl<PropsT, OutputT>(
   private val workflow: BackStackWorkflow<PropsT, OutputT>
-) : StatefulWorkflow<
+) : SessionWorkflow<
   PropsT,
   BackStackState,
   OutputT,
@@ -240,12 +35,31 @@ private class BackStackWorkflowImpl<PropsT, OutputT>(
 
   override fun initialState(
     props: PropsT,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowScope: CoroutineScope
   ): BackStackState {
-    return BackStackState(
+    val propsFlow = MutableStateFlow(props)
+
+    @Suppress("UNCHECKED_CAST")
+    val initialState = BackStackState(
       stack = emptyList(),
-      props = MutableStateFlow(props)
+      props = propsFlow as MutableStateFlow<Any?>
     )
+
+    // TODO move this into the launch call so the scope is correct (use this instead of
+    //  workflowScope).
+    val scope = BackStackScopeImpl<OutputT>(
+      coroutineScope = workflowScope,
+    )
+    workflowScope.launch(start = CoroutineStart.UNDISPATCHED) {
+      with(workflow) {
+        scope.runBackStack(propsFlow)
+      }
+    }
+
+    // TODO gather initial state from the coroutine
+
+    return initialState
   }
 
   override fun onPropsChanged(
@@ -254,6 +68,7 @@ private class BackStackWorkflowImpl<PropsT, OutputT>(
     state: BackStackState
   ): BackStackState = state.apply {
     props.value = new
+    // TODO gather updated state from coroutine
   }
 
   override fun render(
@@ -261,17 +76,6 @@ private class BackStackWorkflowImpl<PropsT, OutputT>(
     renderState: BackStackState,
     context: RenderContext<PropsT, BackStackState, OutputT>
   ): BackStackScreen<Screen> {
-    context.runningSideEffect("main") {
-      @Suppress("UNCHECKED_CAST")
-      val scope = RootScopeImpl(
-        props = renderState.props as MutableStateFlow<PropsT>,
-        actionSink = context.actionSink,
-        coroutineScope = this,
-      )
-      with(workflow) {
-        scope.runBackStack()
-      }
-    }
 
     val renderings = renderState.stack.map { frame ->
       @Suppress("UNCHECKED_CAST")
@@ -285,13 +89,36 @@ private class BackStackWorkflowImpl<PropsT, OutputT>(
   override fun snapshotState(state: BackStackState): Snapshot? = null
 }
 
-private class ShowWorkflowChildScopeImpl<PropsT, OutputT, R>(
+internal class BackStackScopeImpl<OutputT>(
+  coroutineScope: CoroutineScope,
+) : BackStackScope<OutputT>, CoroutineScope by coroutineScope {
+  lateinit var actionSink: Sink<WorkflowAction<Any?, BackStackState, OutputT>>
+
+  override fun emitOutput(output: OutputT) {
+    actionSink.send(action("emitOutput") {
+      setOutput(output)
+    })
+  }
+
+  override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
+    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
+    props: Flow<ChildPropsT>,
+    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit
+  ): R = showWorkflow(
+    workflow = workflow,
+    props = props,
+    onOutput = onOutput,
+    actionSink = actionSink,
+    parentFrame = null
+  )
+}
+
+private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   coroutineScope: CoroutineScope,
-  private val onFinish: (R) -> Unit,
-  private val thisFrame: Frame<*, *, *, *, *>,
+  private val thisFrame: Frame<*, *, *, *, R>,
   private val parentFrame: Frame<*, *, *, *, *>?,
-) : ShowWorkflowChildScope<OutputT, R>, CoroutineScope by coroutineScope {
+) : BackStackNestedScope<OutputT, R>, CoroutineScope by coroutineScope {
 
   override fun emitOutput(output: OutputT) {
     actionSink.send(action("emitOutput") {
@@ -302,8 +129,8 @@ private class ShowWorkflowChildScopeImpl<PropsT, OutputT, R>(
   @Suppress("UNCHECKED_CAST")
   override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
     workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
-    props: ChildPropsT,
-    onOutput: suspend ShowWorkflowChildScope<OutputT, R>.(ChildOutputT) -> Unit
+    props: Flow<ChildPropsT>,
+    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit
   ): R = showWorkflow(
     workflow = workflow,
     props = props,
@@ -312,32 +139,82 @@ private class ShowWorkflowChildScopeImpl<PropsT, OutputT, R>(
     parentFrame = thisFrame,
   )
 
-  override suspend fun finishWith(value: R): Nothing {
-    onFinish(value)
-    cancelSelf()
+  override fun finishWith(value: R): Nothing {
+    // TODO figure out how to coalesce this action into the one for showWorkflow. WorkStealingDispatcher?
+    actionSink.send(action("finishFrame") {
+      state = state.removeFrame(thisFrame)
+    })
+    thisFrame.finishWith(value)
   }
 
-  override suspend fun goBack(): Nothing {
+  override fun goBack(): Nothing {
     // If parent is null, goBack will not be exposed and will never be called.
     val parent = checkNotNull(parentFrame) { "goBack called on root scope" }
-    parent.popTo()
-
-    cancelSelf()
+    actionSink.send(action("popTo") {
+      state = state.popToFrame(parent)
+    })
+    thisFrame.cancelSelf()
   }
 }
 
-private class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>(
+internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private constructor(
   private val workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
   private val props: ChildPropsT,
   private val callerJob: Job,
   val frameScope: CoroutineScope,
-  private val onOutput: suspend ShowWorkflowChildScopeImpl<PropsT, OutputT, R>.(ChildOutputT) -> Unit,
+  private val onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   private val parent: Frame<*, *, *, *, *>?,
+  private val result: CompletableDeferred<R>,
 ) {
-  private val result = CompletableDeferred<R>(parent = frameScope.coroutineContext.job)
+  constructor(
+    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
+    initialProps: ChildPropsT,
+    callerJob: Job,
+    frameScope: CoroutineScope,
+    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
+    actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
+    parent: Frame<*, *, *, *, *>?,
+  ) : this(
+    workflow = workflow,
+    props = initialProps,
+    callerJob = callerJob,
+    frameScope = frameScope,
+    onOutput = onOutput,
+    actionSink = actionSink,
+    parent = parent,
+    result = CompletableDeferred(parent = frameScope.coroutineContext.job)
+  )
+
+  fun copy(
+    props: ChildPropsT = this.props,
+  ): Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> = Frame(
+    workflow = workflow,
+    props = props,
+    callerJob = callerJob,
+    frameScope = frameScope,
+    onOutput = onOutput,
+    actionSink = actionSink,
+    parent = parent,
+    result = result
+  )
 
   suspend fun awaitResult(): R = result.await()
+
+  fun cancelCaller() {
+    callerJob.cancel()
+  }
+
+  fun finishWith(value: R): Nothing {
+    result.complete(value)
+    cancelSelf()
+  }
+
+  fun cancelSelf(): Nothing {
+    frameScope.cancel()
+    frameScope.ensureActive()
+    error("Nonsense")
+  }
 
   fun renderWorkflow(
     context: StatefulWorkflow.RenderContext<PropsT, BackStackState, OutputT>
@@ -346,28 +223,6 @@ private class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>(
     props = props,
     handler = ::onOutput
   )
-
-  /**
-   * Pops everything off the stack that comes after this.
-   */
-  fun popTo() {
-    actionSink.send(action("popTo") {
-      val stack = state.stack
-      val index = stack.indexOf(this@Frame)
-      check(index != -1) { "Frame was not in the stack!" }
-
-      // Cancel all the frames we're about to drop, starting from the top.
-      for (i in stack.lastIndex downTo index + 1) {
-        // Don't just cancel the frame job, since that would only cancel output handlers the frame
-        // is running. We want to cancel the whole parent's output handler that called showWorkflow,
-        // in case the showWorkflow is in a try/catch that tries to make other suspending calls.
-        stack[i].callerJob.cancel()
-      }
-
-      val newStack = stack.take(index + 1)
-      state = state.copy(stack = newStack)
-    })
-  }
 
   private fun onOutput(output: ChildOutputT): WorkflowAction<PropsT, BackStackState, OutputT> {
     var canAcceptAction = true
@@ -393,17 +248,9 @@ private class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>(
     // either call showWorkflow, finishWith, or goBack, and so then we can just return that action
     // immediately instead of needing a whole separate render pass.
     frameScope.launch(start = CoroutineStart.UNDISPATCHED) {
-      val showScope = ShowWorkflowChildScopeImpl<PropsT, OutputT, R>(
-        sink,
+      val showScope = BackStackNestedScopeImpl(
+        actionSink = sink,
         coroutineScope = this,
-        onFinish = {
-          // This will eventually cancel the frame scope.
-          result.complete(it)
-          // TODO figure out how to coalesce this action into the one for showWorkflow. WorkStealingDispatcher?
-          sink.send(action("unshowWorkflow") {
-            state = state.removeFrame(this@Frame)
-          })
-        },
         thisFrame = this@Frame,
         parentFrame = parent
       )
@@ -419,11 +266,10 @@ private class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>(
 }
 
 // TODO concurrent calls to this function on the same scope should cancel/remove prior calls.
-//  Or maybe just enforce the same thing as Flow, only allow calls from the same job?
 private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow(
   workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
-  props: ChildPropsT,
-  onOutput: suspend ShowWorkflowChildScopeImpl<PropsT, OutputT, R>.(ChildOutputT) -> Unit,
+  props: Flow<ChildPropsT>,
+  onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
   actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   parentFrame: Frame<*, *, *, *, *>?,
 ): R {
@@ -432,19 +278,38 @@ private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow
   val frameScope = CoroutineScope(callerContext + Job(parent = callerJob))
   lateinit var frame: Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>
 
+  val initialProps = CompletableDeferred<ChildPropsT>()
+  val readyForPropUpdates = Job()
+  frameScope.launch {
+    props.collect { newProps ->
+      if (initialProps.isActive) {
+        initialProps.complete(newProps)
+      } else {
+        // Ensure the frame has actually been added to the stack.
+        readyForPropUpdates.join()
+        actionSink.send(action("setProps") {
+          state = state.setFrameProps(frame, newProps)
+        })
+      }
+    }
+  }
+  frame = Frame(
+    workflow = workflow,
+    initialProps = initialProps.await(),
+    callerJob = callerJob,
+    frameScope = frameScope,
+    onOutput = onOutput,
+    actionSink = actionSink,
+    parent = parentFrame,
+  )
+
   // Tell the workflow runtime to start rendering the new workflow.
-  actionSink.sendAndAwaitApplication(action("showWorkflow") {
-    frame = Frame(
-      workflow = workflow,
-      props = props,
-      callerJob = callerJob,
-      frameScope = frameScope,
-      onOutput = onOutput,
-      actionSink = actionSink,
-      parent = parentFrame,
-    )
+  actionSink.send(action("showWorkflow") {
     state = state.appendFrame(frame)
   })
+  // Allow the props collector to send more prop update actions. Even though the initial action
+  // hasn't run yet, any future actions will be enqueued after it, so it's safe.
+  readyForPropUpdates.complete()
 
   return try {
     frame.awaitResult()
@@ -456,7 +321,7 @@ private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow
   }
 }
 
-private class BackStackState(
+internal class BackStackState(
   val stack: List<Frame<*, *, *, *, *>>,
   val props: MutableStateFlow<Any?>,
 ) {
@@ -468,39 +333,34 @@ private class BackStackState(
 
   fun appendFrame(frame: Frame<*, *, *, *, *>) = copy(stack = stack + frame)
   fun removeFrame(frame: Frame<*, *, *, *, *>) = copy(stack = stack - frame)
-}
 
-private suspend fun cancelSelf(): Nothing {
-  val job = currentCoroutineContext().job
-  job.cancel()
-  job.ensureActive()
-  error("Nonsense")
-}
+  fun popToFrame(frame: Frame<*, *, *, *, *>): BackStackState {
+    val index = stack.indexOf(frame)
+    check(index != -1) { "Frame was not in the stack!" }
 
-private suspend fun <
-  PropsT,
-  StateT,
-  OutputT
-  > Sink<WorkflowAction<PropsT, StateT, OutputT>>.sendAndAwaitApplication(
-  action: WorkflowAction<PropsT, StateT, OutputT>
-) {
-  suspendCancellableCoroutine { continuation ->
-    val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
-      // Pipe through debugging name to the original action.
-      override val debuggingName: String
-        get() = action.debuggingName
-
-      override fun Updater.apply() {
-        // Don't execute anything if the caller was cancelled while we were in the queue.
-        if (!continuation.isActive) return
-
-        with(action) {
-          // Forward our Updater to the real action.
-          apply()
-        }
-        continuation.resume(Unit)
-      }
+    // Cancel all the frames we're about to drop, starting from the top.
+    for (i in stack.lastIndex downTo index + 1) {
+      // Don't just cancel the frame job, since that would only cancel output handlers the frame
+      // is running. We want to cancel the whole parent's output handler that called showWorkflow,
+      // in case the showWorkflow is in a try/catch that tries to make other suspending calls.
+      stack[i].cancelCaller()
     }
-    send(resumingAction)
+
+    val newStack = stack.take(index + 1)
+    return copy(stack = newStack)
+  }
+
+  fun <ChildPropsT> setFrameProps(
+    frame: Frame<*, *, ChildPropsT, *, *>,
+    newProps: ChildPropsT
+  ): BackStackState {
+    val stack = stack.toMutableList()
+    val myIndex = stack.indexOf(frame)
+    if (myIndex == -1) {
+      // Frame has been removed from the stack, so just no-op.
+      return this
+    }
+    stack[myIndex] = frame.copy(props = newProps)
+    return copy(stack = stack)
   }
 }

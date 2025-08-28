@@ -3,6 +3,7 @@ package com.squareup.sample.thingy
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.ui.Screen
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -42,7 +43,7 @@ fun MyWorkflow(
           delay(3.seconds)
           emitOutput(MyOutputs.Done)
         }
-        showWorkflow(child3, networkResult) {}
+        showWorkflow(child3, flowOf(networkResult)) {}
       }
 
       else -> {}
