@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import app.cash.burst.Burst
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
@@ -13,7 +14,11 @@ import kotlinx.coroutines.yield
 import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
 
-class WorkflowRuntimeMultithreadingStressTest {
+@OptIn(WorkflowExperimentalRuntime::class)
+@Burst
+class WorkflowRuntimeMultithreadingStressTest(
+  private val runtime: RuntimeConfigOptions.Companion.RuntimeOptions = RuntimeConfigOptions.Companion.RuntimeOptions.NONE
+) {
 
   @OptIn(DelicateCoroutinesApi::class)
   @Test
@@ -71,6 +76,7 @@ class WorkflowRuntimeMultithreadingStressTest {
         workflow = root,
         scope = backgroundScope + testDispatcher,
         props = MutableStateFlow(Unit),
+        runtimeConfig = runtime.runtimeConfig,
         onOutput = {}
       )
 

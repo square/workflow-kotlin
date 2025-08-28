@@ -3,6 +3,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.testing.WorkflowTestParams
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
@@ -133,7 +134,18 @@ class SnapshottingIntegrationTest {
   }
 
   // See https://github.com/square/workflow/issues/404
-  @Test fun `descendant snapshots are independent over state transitions`() {
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test
+  fun `descendant snapshots are independent over state transitions`() {
+    if (JvmTestRuntimeConfigTools.getTestRuntimeConfig()
+        .contains(RuntimeConfigOptions.PARTIAL_TREE_RENDERING) ||
+      JvmTestRuntimeConfigTools.getTestRuntimeConfig()
+        .contains(RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES)
+    ) {
+      // Partial Tree Rendering and Render Only When State changes means this test hangs because
+      // there is no render/snapshot as state does not change!
+      return
+    }
     val workflow = Workflow.stateful<String, String, Nothing, () -> Unit>(
       initialState = { props, _ -> props },
       onPropsChanged = { _, new, _ -> new },
