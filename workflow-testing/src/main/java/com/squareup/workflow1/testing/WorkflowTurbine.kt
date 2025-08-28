@@ -3,9 +3,9 @@ package com.squareup.workflow1.testing
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.testing.WorkflowTurbine.Companion.WORKFLOW_TEST_DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.CoroutineScope
@@ -22,8 +22,8 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * This is a test harness to run integration tests for a Workflow tree. The parameters passed here are
- * the same as those to start a Workflow runtime with [renderWorkflowIn] except for ignoring
+ * This is a test harness to run turbine like tests for a Workflow tree. The parameters passed here
+ * are the same as those to start a Workflow runtime with [renderWorkflowIn] except for ignoring
  * state persistence as that is not needed for this style of test.
  *
  * The [coroutineContext] rather than a [CoroutineScope] is passed so that this harness handles the
@@ -35,13 +35,15 @@ import kotlin.time.Duration.Companion.milliseconds
  * This will start the Workflow runtime (with params as passed) rooted at whatever Workflow
  * it is called on and then create a [WorkflowTurbine] for its renderings and run [testCase] on that.
  * [testCase] can thus drive the test scenario and assert against renderings.
+ *
+ * The default [RuntimeConfig] will be the one specified via [JvmTestRuntimeConfigTools].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.headlessIntegrationTest(
+public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderForTest(
   props: StateFlow<PropsT>,
   coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT>.() -> Unit
@@ -82,18 +84,18 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.h
 }
 
 /**
- * Version of [headlessIntegrationTest] that does not require props. For Workflows that have [Unit]
+ * Version of [renderForTest] that does not require props. For Workflows that have [Unit]
  * props type.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.headlessIntegrationTest(
+public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTest(
   coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT>.() -> Unit
-): Unit = headlessIntegrationTest(
+): Unit = renderForTest(
   props = MutableStateFlow(Unit).asStateFlow(),
   coroutineContext = coroutineContext,
   interceptors = interceptors,

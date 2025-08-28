@@ -1,10 +1,3 @@
-public final class com/squareup/workflow1/testing/HeadlessIntegrationTestKt {
-	public static final fun headlessIntegrationTest (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
-	public static final fun headlessIntegrationTest (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
-	public static synthetic fun headlessIntegrationTest$default (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public static synthetic fun headlessIntegrationTest$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-}
-
 public final class com/squareup/workflow1/testing/RenderIdempotencyChecker : com/squareup/workflow1/WorkflowInterceptor {
 	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderIdempotencyChecker;
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -210,5 +203,12 @@ public final class com/squareup/workflow1/testing/WorkflowTurbine {
 }
 
 public final class com/squareup/workflow1/testing/WorkflowTurbine$Companion {
+}
+
+public final class com/squareup/workflow1/testing/WorkflowTurbineKt {
+	public static final fun renderForTest (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
+	public static final fun renderForTest (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
+	public static synthetic fun renderForTest$default (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static synthetic fun renderForTest$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 }
 

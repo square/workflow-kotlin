@@ -1,4 +1,4 @@
-@file:Suppress("JUnitMalformedDeclaration")
+@file:Suppress("JUnitMalformedDeclaration", "DEPRECATION")
 
 package com.squareup.workflow1
 

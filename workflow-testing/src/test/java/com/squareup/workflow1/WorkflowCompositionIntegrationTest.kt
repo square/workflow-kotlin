@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1
 
 import com.squareup.workflow1.testing.WorkerSink
