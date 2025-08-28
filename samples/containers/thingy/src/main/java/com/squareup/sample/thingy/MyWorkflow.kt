@@ -13,6 +13,12 @@ enum class MyOutputs {
   Done,
 }
 
+data class RetryScreen(
+  val message: String,
+  val onRetryClicked: () -> Unit,
+  val onCancelClicked: () -> Unit,
+) : Screen
+
 class MyWorkflow(
   private val child1: Workflow<Unit, String, Screen>,
   private val child2: Workflow<Unit, String, Screen>,
@@ -20,28 +26,28 @@ class MyWorkflow(
   private val networkCall: suspend (String) -> String
 ) : BackStackWorkflow<String, MyOutputs>() {
 
-  override suspend fun BackStackScope<MyOutputs>.runBackStack(props: StateFlow<String>) {
+  override suspend fun BackStackScope.runBackStack(
+    props: StateFlow<String>,
+    emitOutput: (MyOutputs) -> Unit
+  ) {
     // Step 1
-    // TODO clean this up
-    val ignored: Unit = showWorkflow(child1) { output ->
+    showWorkflow(child1) { output ->
       when (output) {
         "back" -> emitOutput(MyOutputs.Back)
         "next" -> {
           // Step 2
           val childResult = showWorkflow(child2) { output ->
-            if (output == "back") {
               // Removes child2 from the stack, cancels the output handler from step 1, and just
               // leaves child1 rendering.
-              goBack()
-            } else {
-              finishWith(output)
-            }
+            if (output == "back") goBack()
+            output
           }
 
-          // TODO: Show a loading screen automatically.
-          val networkResult = networkCall(childResult)
+          // Step 3 – make a network call, showing a retry screen if it fails. If the user cancels
+          // instead of retrying, we go back to showing child1.
+          val networkResult = networkCallWithRetry(childResult)
 
-          // Step 3: Show a workflow for 3 seconds then finish.
+          // Step 4: Show a workflow for 3 seconds then finish.
           launch {
             delay(3.seconds)
             emitOutput(MyOutputs.Done)
@@ -49,8 +55,27 @@ class MyWorkflow(
           showWorkflow(child3, flowOf(networkResult))
         }
 
-        else -> {}
+        else -> error("Unexpected output: $output")
       }
     }
+  }
+
+  private suspend fun BackStackParentScope.networkCallWithRetry(
+    request: String
+  ): String {
+    // TODO: Show a loading screen automatically.
+    var networkResult = networkCall(request)
+    while (networkResult == "failure") {
+      showScreen {
+        RetryScreen(
+          message = networkResult,
+          onRetryClicked = { continueWith(Unit) },
+          // Go back to showing child1.
+          onCancelClicked = { goBack() }
+        )
+      }
+      networkResult = networkCall(request)
+    }
+    return networkResult
   }
 }

@@ -53,7 +53,11 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
     )
     workflowScope.launch(start = CoroutineStart.UNDISPATCHED) {
       with(workflow) {
-        scope.runBackStack(propsFlow)
+        scope.runBackStack(propsFlow, emitOutput = { output ->
+          @Suppress("UNCHECKED_CAST")
+          (scope.actionSink as Sink<WorkflowAction<PropsT, BackStackState, OutputT>>)
+            .send(action("emitOutput") { setOutput(output) })
+        })
       }
     }
 
@@ -76,7 +80,6 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
     renderState: BackStackState,
     context: RenderContext<PropsT, BackStackState, OutputT>
   ): BackStackScreen<Screen> {
-
     val renderings = renderState.mapFrames { frame ->
       when (frame) {
         is WorkflowFrame<*, *, *, *, *> -> {
@@ -99,19 +102,14 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
 
 internal class BackStackScopeImpl<OutputT>(
   coroutineScope: CoroutineScope,
-) : BackStackScope<OutputT>, CoroutineScope by coroutineScope {
+) : BackStackScope, CoroutineScope by coroutineScope {
+  // TODO set this
   lateinit var actionSink: Sink<WorkflowAction<Any?, BackStackState, OutputT>>
-
-  override fun emitOutput(output: OutputT) {
-    actionSink.send(action("emitOutput") {
-      setOutput(output)
-    })
-  }
 
   override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
     workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
     props: Flow<ChildPropsT>,
-    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit
+    onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R
   ): R = showWorkflow(
     workflow = workflow,
     props = props,
@@ -121,7 +119,7 @@ internal class BackStackScopeImpl<OutputT>(
   )
 
   override suspend fun <R> showScreen(
-    screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen
+    screenFactory: BackStackScreenScope<R>.() -> Screen
   ): R = showScreenImpl(
     screenFactory = screenFactory,
     actionSink = actionSink,
@@ -129,24 +127,18 @@ internal class BackStackScopeImpl<OutputT>(
   )
 }
 
-private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
+private class BackStackWorkflowScopeImpl<PropsT, OutputT, R>(
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   coroutineScope: CoroutineScope,
-  private val thisFrame: Frame<R>,
+  private val thisFrame: WorkflowFrame<*, *, *, *, R>,
   private val parentFrame: Frame<*>?,
-) : BackStackNestedScope<OutputT, R>, CoroutineScope by coroutineScope {
-
-  override fun emitOutput(output: OutputT) {
-    actionSink.send(action("emitOutput") {
-      setOutput(output)
-    })
-  }
+) : BackStackWorkflowScope, CoroutineScope by coroutineScope {
 
   @Suppress("UNCHECKED_CAST")
   override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
     workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
     props: Flow<ChildPropsT>,
-    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit
+    onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R
   ): R = showWorkflow(
     workflow = workflow,
     props = props,
@@ -157,20 +149,12 @@ private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
 
   @Suppress("UNCHECKED_CAST")
   override suspend fun <R> showScreen(
-    screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen
+    screenFactory: BackStackScreenScope<R>.() -> Screen
   ): R = showScreenImpl(
     screenFactory = screenFactory,
     actionSink = actionSink as Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
     parentFrame = thisFrame,
   )
-
-  override suspend fun finishWith(value: R): Nothing {
-    // TODO figure out how to coalesce this action into the one for showWorkflow. WorkStealingDispatcher?
-    actionSink.send(action("finishFrame") {
-      state = state.removeFrame(thisFrame)
-    })
-    thisFrame.finishWith(value)
-  }
 
   override suspend fun goBack(): Nothing {
     // If parent is null, goBack will not be exposed and will never be called.
@@ -182,11 +166,54 @@ private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
   }
 }
 
+private class BackStackScreenScopeImpl<PropsT, OutputT, R>(
+  private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
+  coroutineScope: CoroutineScope,
+  private val thisFrame: ScreenFrame<OutputT, R>,
+  private val parentFrame: Frame<*>?,
+) : BackStackScreenScope<R>, CoroutineScope by coroutineScope {
+
+  @Suppress("UNCHECKED_CAST")
+  override suspend fun <ChildPropsT, ChildOutputT, R> showWorkflow(
+    workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
+    props: Flow<ChildPropsT>,
+    onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R
+  ): R = showWorkflow(
+    workflow = workflow,
+    props = props,
+    onOutput = onOutput,
+    actionSink = actionSink,
+    parentFrame = thisFrame,
+  )
+
+  @Suppress("UNCHECKED_CAST")
+  override suspend fun <R> showScreen(
+    screenFactory: BackStackScreenScope<R>.() -> Screen
+  ): R = showScreenImpl(
+    screenFactory = screenFactory,
+    actionSink = actionSink as Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
+    parentFrame = thisFrame,
+  )
+
+  override fun continueWith(value: R) {
+    thisFrame.continueWith(value)
+  }
+
+  override fun goBack() {
+    // If parent is null, goBack will not be exposed and will never be called.
+    val parent = checkNotNull(parentFrame) { "goBack called on root scope" }
+    actionSink.send(action("popTo") {
+      state = state.popToFrame(parent)
+    })
+    thisFrame.cancel()
+  }
+}
+
 internal sealed interface Frame<R> {
   fun cancelCaller()
   suspend fun awaitResult(): R
-  suspend fun finishWith(value: R): Nothing
   suspend fun cancelSelf(): Nothing
+  fun cancel()
 }
 
 /**
@@ -197,7 +224,7 @@ internal class WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> priv
   private val props: ChildPropsT,
   private val callerJob: Job,
   private val frameScope: CoroutineScope,
-  private val onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
+  private val onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R,
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   private val parent: Frame<*>?,
   private val result: CompletableDeferred<R>,
@@ -208,7 +235,7 @@ internal class WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> priv
     initialProps: ChildPropsT,
     callerJob: Job,
     frameScope: CoroutineScope,
-    onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
+    onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R,
     actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
     parent: Frame<*>?,
   ) : this(
@@ -241,17 +268,21 @@ internal class WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> priv
     callerJob.cancel()
   }
 
-  override suspend fun finishWith(value: R): Nothing {
+  suspend fun finishWith(value: R): Nothing {
     result.complete(value)
     cancelSelf()
   }
 
   override suspend fun cancelSelf(): Nothing {
-    frameScope.cancel()
+    cancel()
     val currentContext = currentCoroutineContext()
     currentContext.cancel()
     currentContext.ensureActive()
     error("Nonsense")
+  }
+
+  override fun cancel() {
+    frameScope.cancel()
   }
 
   fun renderWorkflow(
@@ -286,13 +317,13 @@ internal class WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> priv
     // either call showWorkflow, finishWith, or goBack, and so then we can just return that action
     // immediately instead of needing a whole separate render pass.
     frameScope.launch(start = CoroutineStart.UNDISPATCHED) {
-      val showScope = BackStackNestedScopeImpl(
+      val showScope = BackStackWorkflowScopeImpl(
         actionSink = sink,
         coroutineScope = this,
         thisFrame = this@WorkflowFrame,
         parentFrame = parent
       )
-      onOutput(showScope, output)
+      finishWith(onOutput(showScope, output))
     }
 
     // Once the coroutine has suspended, all sends must go to the real sink.
@@ -317,8 +348,8 @@ internal class ScreenFrame<OutputT, R>(
   lateinit var screen: Screen
     private set
 
-  fun initScreen(screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen) {
-    val factoryScope = BackStackNestedScopeImpl<Any?, OutputT, R>(
+  fun initScreen(screenFactory: BackStackScreenScope<R>.() -> Screen) {
+    val factoryScope = BackStackScreenScopeImpl<Any?, OutputT, R>(
       actionSink = actionSink,
       coroutineScope = frameScope,
       thisFrame = this,
@@ -333,17 +364,21 @@ internal class ScreenFrame<OutputT, R>(
     callerJob.cancel()
   }
 
-  override suspend fun finishWith(value: R): Nothing {
+  fun continueWith(value: R) {
     result.complete(value)
-    cancelSelf()
+    cancel()
   }
 
   override suspend fun cancelSelf(): Nothing {
-    frameScope.cancel()
+    cancel()
     val currentContext = currentCoroutineContext()
     currentContext.cancel()
     currentContext.ensureActive()
     error("Nonsense")
+  }
+
+  override fun cancel() {
+    frameScope.cancel()
   }
 }
 
@@ -351,7 +386,7 @@ internal class ScreenFrame<OutputT, R>(
 private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow(
   workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
   props: Flow<ChildPropsT>,
-  onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
+  onOutput: suspend BackStackWorkflowScope.(ChildOutputT) -> R,
   actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   parentFrame: Frame<*>?,
 ): R {
@@ -404,7 +439,7 @@ private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow
 }
 
 private suspend fun <OutputT, R> showScreenImpl(
-  screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen,
+  screenFactory: BackStackScreenScope<R>.() -> Screen,
   actionSink: Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
   parentFrame: Frame<*>?,
 ): R {

@@ -8,18 +8,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlin.experimental.ExperimentalTypeInference
 
 /**
  * Creates a [BackStackWorkflow]. See the docs on [BackStackWorkflow.runBackStack] for more
  * information about what [block] can do.
  */
 public inline fun <PropsT, OutputT> backStackWorkflow(
-  crossinline block: suspend BackStackScope<OutputT>.(props: StateFlow<PropsT>) -> Unit
+  crossinline block: suspend BackStackScope.(
+    props: StateFlow<PropsT>,
+    emitOutput: (OutputT) -> Unit
+  ) -> Unit
 ): Workflow<PropsT, OutputT, BackStackScreen<Screen>> =
   object : BackStackWorkflow<PropsT, OutputT>() {
-    override suspend fun BackStackScope<OutputT>.runBackStack(props: StateFlow<PropsT>) {
-      block(props)
+    override suspend fun BackStackScope.runBackStack(
+      props: StateFlow<PropsT>,
+      emitOutput: (OutputT) -> Unit
+    ) {
+      block(props, emitOutput)
     }
   }
 
@@ -35,7 +40,7 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
 
   /**
    * Show renderings by calling [BackStackScope.showScreen]. Show child workflows by calling
-   * [BackStackScope.showWorkflow]. Emit outputs by calling [BackStackScope.emitOutput].
+   * [BackStackScope.showWorkflow]. Emit outputs by calling [emitOutput].
    *
    * # Examples
    *
@@ -86,7 +91,10 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    * `finishWith` to replace itself with `child3`. `child3` can also call `goBack` to show `child`
    * again.
    */
-  abstract suspend fun BackStackScope<OutputT>.runBackStack(props: StateFlow<PropsT>)
+  abstract suspend fun BackStackScope.runBackStack(
+    props: StateFlow<PropsT>,
+    emitOutput: (OutputT) -> Unit
+  )
 
   final override fun asStatefulWorkflow():
     StatefulWorkflow<PropsT, *, OutputT, BackStackScreen<Screen>> =
@@ -97,12 +105,7 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
 annotation class BackStackWorkflowDsl
 
 @BackStackWorkflowDsl
-public sealed interface BackStackScope<OutputT> : CoroutineScope {
-
-  /**
-   * Emits an output to the [backStackWorkflow]'s parent.
-   */
-  fun emitOutput(output: OutputT)
+public sealed interface BackStackParentScope {
 
   /**
    * Starts rendering [workflow] and pushes its rendering onto the top of the backstack.
@@ -110,10 +113,11 @@ public sealed interface BackStackScope<OutputT> : CoroutineScope {
    * Whenever [workflow] emits an output, [onOutput] is launched into a new coroutine. If one call
    * doesn't finish before another output is emitted, multiple callbacks can run concurrently.
    *
-   * When [onOutput] calls [BackStackNestedScope.finishWith], this workflow stops rendering, its
-   * rendering is removed from the backstack, and any running output handlers are cancelled.
+   * When [onOutput] returns a value, this workflow stops rendering, its rendering is removed from
+   * the backstack, and any running output handlers are cancelled. The calling coroutine is resumed
+   * with the value.
    *
-   * When [onOutput] calls [BackStackNestedScope.goBack], if this [showWorkflow] call is nested in
+   * When [onOutput] calls [BackStackWorkflowScope.goBack], if this [showWorkflow] call is nested in
    * another, then this workflow will stop rendering, any of its still-running output handlers will
    * be cancelled, and the output handler that called this [showWorkflow] will be cancelled.
    * If this is a top-level workflow in the [BackStackWorkflow], the whole
@@ -130,32 +134,27 @@ public sealed interface BackStackScope<OutputT> : CoroutineScope {
     // TODO revert this back to a single value – can use the same trick to update props as for
     //  emitting new screens.
     props: Flow<ChildPropsT>,
-    onOutput: suspend BackStackNestedScope<OutputT, R>.(output: ChildOutputT) -> Unit
+    onOutput: suspend BackStackWorkflowScope.(output: ChildOutputT) -> R
   ): R
 
   /**
-   * Shows the screen produced by [screenFactory]. Suspends until [BackStackNestedScope.finishWith]
-   * or [BackStackNestedScope.goBack] is called.
+   * Shows the screen produced by [screenFactory]. Suspends untilBackStackNestedScope.goBack] is
+   * called.
    */
   suspend fun <R> showScreen(
-    screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen
+    screenFactory: BackStackScreenScope<R>.() -> Screen
   ): R
 }
 
+@BackStackWorkflowDsl
+public sealed interface BackStackScope : BackStackParentScope, CoroutineScope
+
 /**
  * Scope receiver used for all [showWorkflow] calls. This has all the capabilities of
- * [BackStackScope] with the additional ability to [finish][finishWith] a nested workflow or
- * [go back][goBack] to its outer workflow.
+ * [BackStackScope] with the additional ability to [go back][goBack] to its outer workflow.
  */
 @BackStackWorkflowDsl
-public sealed interface BackStackNestedScope<OutputT, R> : BackStackScope<OutputT> {
-
-  /**
-   * Causes the [showWorkflow] call that ran the output handler that was passed this scope to return
-   * [value] and cancels any output handlers still running for that workflow. The workflow is
-   * removed from the stack and will no longer be rendered.
-   */
-  suspend fun finishWith(value: R): Nothing
+public sealed interface BackStackWorkflowScope : BackStackScope {
 
   /**
    * Removes all workflows started by the parent workflow's handler that invoked this [showWorkflow]
@@ -165,22 +164,22 @@ public sealed interface BackStackNestedScope<OutputT, R> : BackStackScope<Output
   suspend fun goBack(): Nothing
 }
 
-@OptIn(ExperimentalTypeInference::class)
-public suspend inline fun <OutputT, ChildOutputT, R> BackStackScope<OutputT>.showWorkflow(
+@BackStackWorkflowDsl
+public sealed interface BackStackScreenScope<R> : BackStackScope {
+  fun continueWith(value: R)
+  fun goBack()
+}
+
+public suspend inline fun <ChildOutputT, R> BackStackParentScope.showWorkflow(
   workflow: Workflow<Unit, ChildOutputT, Screen>,
-  @BuilderInference noinline onOutput: suspend BackStackNestedScope<OutputT, R>.(output: ChildOutputT) -> Unit
+  noinline onOutput: suspend BackStackWorkflowScope.(output: ChildOutputT) -> R
 ): R = showWorkflow(workflow, props = flowOf(Unit), onOutput)
 
-// public suspend inline fun <OutputT, ChildOutputT> BackStackScope<OutputT>.showWorkflow(
-//   workflow: Workflow<Unit, ChildOutputT, Screen>,
-//   noinline onOutput: suspend BackStackNestedScope<OutputT, Unit>.(output: ChildOutputT) -> Unit
-// ): Unit = showWorkflow(workflow, props = flowOf(Unit), onOutput)
-
-public suspend inline fun <ChildPropsT> BackStackScope<*>.showWorkflow(
+public suspend inline fun <ChildPropsT> BackStackParentScope.showWorkflow(
   workflow: Workflow<ChildPropsT, Nothing, Screen>,
   props: Flow<ChildPropsT>,
 ): Nothing = showWorkflow(workflow, props = props) { error("Cannot call") }
 
-public suspend inline fun BackStackScope<*>.showWorkflow(
+public suspend inline fun BackStackParentScope.showWorkflow(
   workflow: Workflow<Unit, Nothing, Screen>,
 ): Nothing = showWorkflow(workflow, props = flowOf(Unit)) { error("Cannot call") }
