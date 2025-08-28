@@ -11,10 +11,11 @@ import kotlinx.coroutines.flow.flowOf
 
 /**
  * Creates a [BackStackWorkflow]. See the docs on [BackStackWorkflow.runBackStack] for more
- * information about what [block] can do.
+ * information about what [runBackStack] can do.
  */
 public inline fun <PropsT, OutputT> backStackWorkflow(
-  crossinline block: suspend BackStackScope.(
+  crossinline createIdleScreen: () -> Screen,
+  crossinline runBackStack: suspend BackStackScope.(
     props: StateFlow<PropsT>,
     emitOutput: (OutputT) -> Unit
   ) -> Unit
@@ -24,8 +25,10 @@ public inline fun <PropsT, OutputT> backStackWorkflow(
       props: StateFlow<PropsT>,
       emitOutput: (OutputT) -> Unit
     ) {
-      block(props, emitOutput)
+      runBackStack(props, emitOutput)
     }
+
+    override fun createIdleScreen(): Screen = createIdleScreen()
   }
 
 /**
@@ -95,6 +98,12 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
     props: StateFlow<PropsT>,
     emitOutput: (OutputT) -> Unit
   )
+
+  /**
+   * Called to provide a screen to display when [runBackStack] has not shown anything yet, or when
+   * a workflow's output handler is idle (not showing an active screen).
+   */
+  abstract fun createIdleScreen(): Screen
 
   final override fun asStatefulWorkflow():
     StatefulWorkflow<PropsT, *, OutputT, BackStackScreen<Screen>> =

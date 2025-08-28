@@ -19,6 +19,8 @@ data class RetryScreen(
   val onCancelClicked: () -> Unit,
 ) : Screen
 
+data object LoadingScreen : Screen
+
 class MyWorkflow(
   private val child1: Workflow<Unit, String, Screen>,
   private val child2: Workflow<Unit, String, Screen>,
@@ -59,6 +61,8 @@ class MyWorkflow(
       }
     }
   }
+
+  override fun createIdleScreen(): Screen = LoadingScreen
 
   private suspend fun BackStackParentScope.networkCallWithRetry(
     request: String

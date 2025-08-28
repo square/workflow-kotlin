@@ -93,8 +93,11 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
       }
     }
 
-    // TODO show a loading screen if renderings is empty.
-    return renderings.toBackStackScreen()
+    return if (renderings.isEmpty()) {
+      BackStackScreen(workflow.createIdleScreen())
+    } else {
+      renderings.toBackStackScreen()
+    }
   }
 
   override fun snapshotState(state: BackStackState): Snapshot? = null
