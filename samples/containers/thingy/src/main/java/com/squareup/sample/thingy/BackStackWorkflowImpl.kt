@@ -67,7 +67,7 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
     new: PropsT,
     state: BackStackState
   ): BackStackState = state.apply {
-    props.value = new
+    setProps(new)
     // TODO gather updated state from coroutine
   }
 
@@ -77,9 +77,17 @@ internal class BackStackWorkflowImpl<PropsT, OutputT>(
     context: RenderContext<PropsT, BackStackState, OutputT>
   ): BackStackScreen<Screen> {
 
-    val renderings = renderState.stack.map { frame ->
-      @Suppress("UNCHECKED_CAST")
-      (frame as Frame<PropsT, OutputT, *, *, *>).renderWorkflow(context)
+    val renderings = renderState.mapFrames { frame ->
+      when (frame) {
+        is WorkflowFrame<*, *, *, *, *> -> {
+          @Suppress("UNCHECKED_CAST")
+          (frame as WorkflowFrame<PropsT, OutputT, *, *, *>).renderWorkflow(context)
+        }
+
+        is ScreenFrame<*, *> -> {
+          frame.screen
+        }
+      }
     }
 
     // TODO show a loading screen if renderings is empty.
@@ -111,13 +119,21 @@ internal class BackStackScopeImpl<OutputT>(
     actionSink = actionSink,
     parentFrame = null
   )
+
+  override suspend fun <R> showScreen(
+    screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen
+  ): R = showScreenImpl(
+    screenFactory = screenFactory,
+    actionSink = actionSink,
+    parentFrame = null
+  )
 }
 
 private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
   coroutineScope: CoroutineScope,
-  private val thisFrame: Frame<*, *, *, *, R>,
-  private val parentFrame: Frame<*, *, *, *, *>?,
+  private val thisFrame: Frame<R>,
+  private val parentFrame: Frame<*>?,
 ) : BackStackNestedScope<OutputT, R>, CoroutineScope by coroutineScope {
 
   override fun emitOutput(output: OutputT) {
@@ -139,7 +155,16 @@ private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
     parentFrame = thisFrame,
   )
 
-  override fun finishWith(value: R): Nothing {
+  @Suppress("UNCHECKED_CAST")
+  override suspend fun <R> showScreen(
+    screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen
+  ): R = showScreenImpl(
+    screenFactory = screenFactory,
+    actionSink = actionSink as Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
+    parentFrame = thisFrame,
+  )
+
+  override suspend fun finishWith(value: R): Nothing {
     // TODO figure out how to coalesce this action into the one for showWorkflow. WorkStealingDispatcher?
     actionSink.send(action("finishFrame") {
       state = state.removeFrame(thisFrame)
@@ -147,7 +172,7 @@ private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
     thisFrame.finishWith(value)
   }
 
-  override fun goBack(): Nothing {
+  override suspend fun goBack(): Nothing {
     // If parent is null, goBack will not be exposed and will never be called.
     val parent = checkNotNull(parentFrame) { "goBack called on root scope" }
     actionSink.send(action("popTo") {
@@ -157,16 +182,27 @@ private class BackStackNestedScopeImpl<PropsT, OutputT, R>(
   }
 }
 
-internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private constructor(
+internal sealed interface Frame<R> {
+  fun cancelCaller()
+  suspend fun awaitResult(): R
+  suspend fun finishWith(value: R): Nothing
+  suspend fun cancelSelf(): Nothing
+}
+
+/**
+ * Represents a call to [BackStackScope.showWorkflow].
+ */
+internal class WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private constructor(
   private val workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
   private val props: ChildPropsT,
   private val callerJob: Job,
-  val frameScope: CoroutineScope,
+  private val frameScope: CoroutineScope,
   private val onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
   private val actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
-  private val parent: Frame<*, *, *, *, *>?,
+  private val parent: Frame<*>?,
   private val result: CompletableDeferred<R>,
-) {
+) : Frame<R> {
+
   constructor(
     workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
     initialProps: ChildPropsT,
@@ -174,7 +210,7 @@ internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private cons
     frameScope: CoroutineScope,
     onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
     actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
-    parent: Frame<*, *, *, *, *>?,
+    parent: Frame<*>?,
   ) : this(
     workflow = workflow,
     props = initialProps,
@@ -188,7 +224,7 @@ internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private cons
 
   fun copy(
     props: ChildPropsT = this.props,
-  ): Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> = Frame(
+  ): WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> = WorkflowFrame(
     workflow = workflow,
     props = props,
     callerJob = callerJob,
@@ -199,20 +235,22 @@ internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private cons
     result = result
   )
 
-  suspend fun awaitResult(): R = result.await()
+  override suspend fun awaitResult(): R = result.await()
 
-  fun cancelCaller() {
+  override fun cancelCaller() {
     callerJob.cancel()
   }
 
-  fun finishWith(value: R): Nothing {
+  override suspend fun finishWith(value: R): Nothing {
     result.complete(value)
     cancelSelf()
   }
 
-  fun cancelSelf(): Nothing {
+  override suspend fun cancelSelf(): Nothing {
     frameScope.cancel()
-    frameScope.ensureActive()
+    val currentContext = currentCoroutineContext()
+    currentContext.cancel()
+    currentContext.ensureActive()
     error("Nonsense")
   }
 
@@ -251,7 +289,7 @@ internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private cons
       val showScope = BackStackNestedScopeImpl(
         actionSink = sink,
         coroutineScope = this,
-        thisFrame = this@Frame,
+        thisFrame = this@WorkflowFrame,
         parentFrame = parent
       )
       onOutput(showScope, output)
@@ -265,18 +303,62 @@ internal class Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R> private cons
   }
 }
 
+/**
+ * Represents a call to [BackStackScope.showScreen].
+ */
+internal class ScreenFrame<OutputT, R>(
+  private val callerJob: Job,
+  private val frameScope: CoroutineScope,
+  private val actionSink: Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
+  private val parent: Frame<*>?,
+) : Frame<R> {
+  private val result = CompletableDeferred<R>()
+
+  lateinit var screen: Screen
+    private set
+
+  fun initScreen(screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen) {
+    val factoryScope = BackStackNestedScopeImpl<Any?, OutputT, R>(
+      actionSink = actionSink,
+      coroutineScope = frameScope,
+      thisFrame = this,
+      parentFrame = parent
+    )
+    screen = screenFactory(factoryScope)
+  }
+
+  override suspend fun awaitResult(): R = result.await()
+
+  override fun cancelCaller() {
+    callerJob.cancel()
+  }
+
+  override suspend fun finishWith(value: R): Nothing {
+    result.complete(value)
+    cancelSelf()
+  }
+
+  override suspend fun cancelSelf(): Nothing {
+    frameScope.cancel()
+    val currentContext = currentCoroutineContext()
+    currentContext.cancel()
+    currentContext.ensureActive()
+    error("Nonsense")
+  }
+}
+
 // TODO concurrent calls to this function on the same scope should cancel/remove prior calls.
 private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow(
   workflow: Workflow<ChildPropsT, ChildOutputT, Screen>,
   props: Flow<ChildPropsT>,
   onOutput: suspend BackStackNestedScope<OutputT, R>.(ChildOutputT) -> Unit,
   actionSink: Sink<WorkflowAction<PropsT, BackStackState, OutputT>>,
-  parentFrame: Frame<*, *, *, *, *>?,
+  parentFrame: Frame<*>?,
 ): R {
   val callerContext = currentCoroutineContext()
   val callerJob = callerContext.job
   val frameScope = CoroutineScope(callerContext + Job(parent = callerJob))
-  lateinit var frame: Frame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>
+  lateinit var frame: WorkflowFrame<PropsT, OutputT, ChildPropsT, ChildOutputT, R>
 
   val initialProps = CompletableDeferred<ChildPropsT>()
   val readyForPropUpdates = Job()
@@ -293,7 +375,7 @@ private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow
       }
     }
   }
-  frame = Frame(
+  frame = WorkflowFrame(
     workflow = workflow,
     initialProps = initialProps.await(),
     callerJob = callerJob,
@@ -321,20 +403,56 @@ private suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflow
   }
 }
 
+private suspend fun <OutputT, R> showScreenImpl(
+  screenFactory: BackStackNestedScope<OutputT, R>.() -> Screen,
+  actionSink: Sink<WorkflowAction<Any?, BackStackState, OutputT>>,
+  parentFrame: Frame<*>?,
+): R {
+  val callerContext = currentCoroutineContext()
+  val callerJob = callerContext.job
+  val frameScope = CoroutineScope(callerContext + Job(parent = callerJob))
+
+  val frame = ScreenFrame<OutputT, R>(
+    callerJob = callerJob,
+    frameScope = frameScope,
+    actionSink = actionSink,
+    parent = parentFrame,
+  )
+  frame.initScreen(screenFactory)
+
+  // Tell the workflow runtime to start rendering the new workflow.
+  actionSink.send(action("showScreen") {
+    state = state.appendFrame(frame)
+  })
+
+  return try {
+    frame.awaitResult()
+  } finally {
+    frameScope.cancel()
+    actionSink.send(action("unshowScreen") {
+      state = state.removeFrame(frame)
+    })
+  }
+}
+
 internal class BackStackState(
-  val stack: List<Frame<*, *, *, *, *>>,
-  val props: MutableStateFlow<Any?>,
+  private val stack: List<Frame<*>>,
+  private val props: MutableStateFlow<Any?>,
 ) {
 
-  fun copy(stack: List<Frame<*, *, *, *, *>> = this.stack) = BackStackState(
+  fun copy(stack: List<Frame<*>> = this.stack) = BackStackState(
     stack = stack,
     props = props
   )
 
-  fun appendFrame(frame: Frame<*, *, *, *, *>) = copy(stack = stack + frame)
-  fun removeFrame(frame: Frame<*, *, *, *, *>) = copy(stack = stack - frame)
+  fun setProps(props: Any?) {
+    this.props.value = props
+  }
 
-  fun popToFrame(frame: Frame<*, *, *, *, *>): BackStackState {
+  fun appendFrame(frame: Frame<*>) = copy(stack = stack + frame)
+  fun removeFrame(frame: Frame<*>) = copy(stack = stack - frame)
+
+  fun popToFrame(frame: Frame<*>): BackStackState {
     val index = stack.indexOf(frame)
     check(index != -1) { "Frame was not in the stack!" }
 
@@ -351,7 +469,7 @@ internal class BackStackState(
   }
 
   fun <ChildPropsT> setFrameProps(
-    frame: Frame<*, *, ChildPropsT, *, *>,
+    frame: WorkflowFrame<*, *, ChildPropsT, *, *>,
     newProps: ChildPropsT
   ): BackStackState {
     val stack = stack.toMutableList()
@@ -363,4 +481,6 @@ internal class BackStackState(
     stack[myIndex] = frame.copy(props = newProps)
     return copy(stack = stack)
   }
+
+  inline fun <R> mapFrames(block: (Frame<*>) -> R): List<R> = stack.map(block)
 }

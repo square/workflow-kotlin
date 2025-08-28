@@ -43,7 +43,7 @@ fun MyWorkflow(
           delay(3.seconds)
           emitOutput(MyOutputs.Done)
         }
-        showWorkflow(child3, flowOf(networkResult)) {}
+        showWorkflow(child3, flowOf(networkResult))
       }
 
       else -> {}
