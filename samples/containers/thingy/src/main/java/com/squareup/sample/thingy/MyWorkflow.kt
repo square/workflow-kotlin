@@ -16,7 +16,7 @@ fun MyWorkflow(
   child2: Workflow<Unit, String, Screen>,
   child3: Workflow<String, Nothing, Screen>,
   networkCall: suspend (String) -> String
-) = thingyWorkflow<String, MyOutputs> {
+) = backStackWorkflow<String, MyOutputs> {
 
   // Step 1
   showWorkflow(child1) { output ->
