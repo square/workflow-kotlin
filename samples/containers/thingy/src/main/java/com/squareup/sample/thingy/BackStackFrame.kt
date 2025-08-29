@@ -4,7 +4,6 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Companion
 import com.squareup.workflow1.ui.Screen
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

@@ -39,9 +39,11 @@ internal class BackStackWorkflowScopeImpl<PropsT, OutputT, R>(
   override suspend fun cancelWorkflow(): Nothing {
     // If parent is null, goBack will not be exposed and will never be called.
     val parent = checkNotNull(parentFrame) { "goBack called on root scope" }
-    actionSink.send(action("popTo") {
-      state = state.popToFrame(parent)
-    })
+    actionSink.send(
+      action("popTo") {
+        state = state.popToFrame(parent)
+      }
+    )
     thisFrame.cancelSelf()
   }
 }

@@ -41,9 +41,11 @@ internal suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflo
       } else {
         // Ensure the frame has actually been added to the stack.
         readyForPropUpdates.join()
-        actionSink.send(action("setProps") {
-          state = state.setFrameProps(frame, newProps)
-        })
+        actionSink.send(
+          action("setProps") {
+            state = state.setFrameProps(frame, newProps)
+          }
+        )
       }
     }
   }
@@ -58,9 +60,11 @@ internal suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflo
   )
 
   // Tell the workflow runtime to start rendering the new workflow.
-  actionSink.send(action("showWorkflow") {
-    state = state.appendFrame(frame)
-  })
+  actionSink.send(
+    action("showWorkflow") {
+      state = state.appendFrame(frame)
+    }
+  )
   // Allow the props collector to send more prop update actions. Even though the initial action
   // hasn't run yet, any future actions will be enqueued after it, so it's safe.
   readyForPropUpdates.complete()
@@ -69,9 +73,11 @@ internal suspend fun <PropsT, OutputT, ChildPropsT, ChildOutputT, R> showWorkflo
     frame.awaitResult()
   } finally {
     frameScope.cancel()
-    actionSink.send(action("unshowWorkflow") {
-      state = state.removeFrame(frame)
-    })
+    actionSink.send(
+      action("unshowWorkflow") {
+        state = state.removeFrame(frame)
+      }
+    )
   }
 }
 
@@ -93,16 +99,20 @@ internal suspend fun <OutputT, R> showScreenImpl(
   frame.initScreen(screenFactory)
 
   // Tell the workflow runtime to start rendering the new workflow.
-  actionSink.send(action("showScreen") {
-    state = state.appendFrame(frame)
-  })
+  actionSink.send(
+    action("showScreen") {
+      state = state.appendFrame(frame)
+    }
+  )
 
   return try {
     frame.awaitResult()
   } finally {
     frameScope.cancel()
-    actionSink.send(action("unshowScreen") {
-      state = state.removeFrame(frame)
-    })
+    actionSink.send(
+      action("unshowScreen") {
+        state = state.removeFrame(frame)
+      }
+    )
   }
 }

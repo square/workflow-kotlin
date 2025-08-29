@@ -39,18 +39,18 @@ TODO: Design for coalescing state updates/output emissions and dispatching
     …
 
     /**
-     * Suspends indefinitely, handling any dispatch calls that aren't inside a [runThenDrain] by
-     * dispatching to the dispatcher from the current context. After processing at least one task,
-     * when there are no more tasks enqueued, calls [onIdle].
-     */
+ * Suspends indefinitely, handling any dispatch calls that aren't inside a [runThenDrain] by
+ * dispatching to the dispatcher from the current context. After processing at least one task,
+ * when there are no more tasks enqueued, calls [onIdle].
+ */
     suspend fun run(onIdle: () -> Unit)
 
     /**
-     * Runs [block] such that any tasks that are dispatched to this dispatcher by [block] are not
-     * dispatched like normal, but collected into a special queue and all ran after [block] returns
-     * but before this function returns. I.e. any coroutine work started by [block] is guaranteed to
-     * be have been run and the dispatcher will be idle when this function returns.
-     */
+ * Runs [block] such that any tasks that are dispatched to this dispatcher by [block] are not
+ * dispatched like normal, but collected into a special queue and all ran after [block] returns
+ * but before this function returns. I.e. any coroutine work started by [block] is guaranteed to
+ * be have been run and the dispatcher will be idle when this function returns.
+ */
     fun runThenDrain(block: () -> Unit)
   }
 
