@@ -9,13 +9,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 /**
- * Creates a [BackStackWorkflow]. See the docs on [BackStackWorkflow.runBackStack] for more
- * information about what [runBackStack] can do.
+ * Creates a [BackStackWorkflow].
+ *
+ * @param getBackStackFactory See [BackStackWorkflow.getBackStackFactory]. If null, the default
+ * implementation is used.
+ * @param runBackStack See [BackStackWorkflow.runBackStack].
  */
 public inline fun <PropsT, OutputT> backStackWorkflow(
-  crossinline createIdleScreen: () -> Screen,
+  noinline getBackStackFactory: ((CoroutineContext) -> BackStackFactory)? = null,
   crossinline runBackStack: suspend BackStackScope.(
     props: StateFlow<PropsT>,
     emitOutput: (OutputT) -> Unit
@@ -29,7 +33,12 @@ public inline fun <PropsT, OutputT> backStackWorkflow(
       runBackStack(props, emitOutput)
     }
 
-    override fun createIdleScreen(): Screen = createIdleScreen()
+    override fun getBackStackFactory(coroutineContext: CoroutineContext): BackStackFactory =
+      if (getBackStackFactory != null) {
+        getBackStackFactory(coroutineContext)
+      } else {
+        super.getBackStackFactory(coroutineContext)
+      }
   }
 
 /**
@@ -219,10 +228,15 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
   )
 
   /**
-   * Called to provide a screen to display when [runBackStack] has not shown anything yet, or when
-   * a workflow's output handler is idle (not showing an active screen).
+   * Return a [BackStackFactory] used to convert the stack of screens produced by this workflow to
+   * a [BackStackScreen].
+   *
+   * The default implementation tries to find a [BackStackFactory] passed to the workflow runtime
+   * via its [CoroutineScope], and if that fails, returns an implementation that will throw whenever
+   * the stack is empty or the top screen is idle.
    */
-  abstract fun createIdleScreen(): Screen
+  open fun getBackStackFactory(coroutineContext: CoroutineContext): BackStackFactory =
+    coroutineContext.backStackFactory ?: BackStackFactory.ThrowOnIdle
 
   final override fun asStatefulWorkflow():
     StatefulWorkflow<PropsT, *, OutputT, BackStackScreen<Screen>> =
@@ -245,21 +259,21 @@ public sealed interface BackStackParentScope {
    * the backstack, and any running output handlers are cancelled. The calling coroutine is resumed
    * with the value.
    *
-   * When [onOutput] calls [BackStackWorkflowScope.goBack], if this [showWorkflow] call is nested in
+   * When [onOutput] calls [BackStackWorkflowScope.cancelWorkflow], if this [showWorkflowImpl] call is nested in
    * another, then this workflow will stop rendering, any of its still-running output handlers will
-   * be cancelled, and the output handler that called this [showWorkflow] will be cancelled.
+   * be cancelled, and the output handler that called this [showWorkflowImpl] will be cancelled.
    * If this is a top-level workflow in the [BackStackWorkflow], the whole
    * [BackStackWorkflow.runBackStack] is cancelled and restarted, since "back" is only a concept
    * that is relevant within a backstack, and it's not possible to know whether the parent supports
    * back. What you probably want is to emit an output instead to tell the parent to go back.
    *
-   * If the coroutine calling [showWorkflow] is cancelled, the workflow stops being rendered and its
+   * If the coroutine calling [showWorkflowImpl] is cancelled, the workflow stops being rendered and its
    * rendering will be removed from the backstack.
    *
    * See [BackStackWorkflow.runBackStack] for high-level documentation about how to use this method
    * to implement a backstack workflow.
    *
-   * @param props The props passed to [workflow] when rendering it. [showWorkflow] will suspend
+   * @param props The props passed to [workflow] when rendering it. [showWorkflowImpl] will suspend
    * until the first value is emitted. Consider transforming the [BackStackWorkflow.runBackStack]
    * props [StateFlow] or using [flowOf].
    */
@@ -291,23 +305,32 @@ public sealed interface BackStackScope : BackStackParentScope, CoroutineScope
 
 /**
  * Scope receiver used for all [showWorkflow] calls. This has all the capabilities of
- * [BackStackScope] with the additional ability to [go back][goBack] to its outer workflow.
+ * [BackStackScope] with the additional ability to [go back][cancelWorkflow] to its outer workflow.
  */
 @BackStackWorkflowDsl
 public sealed interface BackStackWorkflowScope : BackStackScope {
 
   /**
-   * Removes all workflows started by the parent workflow's handler that invoked this [showWorkflow]
+   * Removes all workflows started by the parent workflow's handler that invoked this [showWorkflowImpl]
    * from the stack, and cancels that parent output handler coroutine (and thus all child workflow
    * coroutines as well).
    */
-  suspend fun goBack(): Nothing
+  suspend fun cancelWorkflow(): Nothing
 }
 
+/**
+ * Scope receiver used for all [showScreen] calls. This has all the capabilities of
+ * [BackStackScope] with the additional ability to [go back][cancelScreen] to its outer workflow and
+ * to return from [showScreen] by calling [continueWith].
+ */
 @BackStackWorkflowDsl
 public sealed interface BackStackScreenScope<R> : BackStackScope {
+  /**
+   * Causes [showScreen] to return with [value].
+   */
   fun continueWith(value: R)
-  fun goBack()
+
+  fun cancelScreen()
 }
 
 public suspend inline fun <ChildOutputT, R> BackStackParentScope.showWorkflow(

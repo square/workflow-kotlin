@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 enum class MyOutputs {
@@ -21,6 +22,7 @@ data class RetryScreen(
 
 data object LoadingScreen : Screen
 
+@Suppress("NAME_SHADOWING")
 class MyWorkflow(
   private val child1: Workflow<Unit, String, Screen>,
   private val child2: Workflow<Unit, String, Screen>,
@@ -41,7 +43,7 @@ class MyWorkflow(
           val childResult = showWorkflow(child2) { output ->
               // Removes child2 from the stack, cancels the output handler from step 1, and just
               // leaves child1 rendering.
-            if (output == "back") goBack()
+            if (output == "back") cancelWorkflow()
             output
           }
 
@@ -62,7 +64,8 @@ class MyWorkflow(
     }
   }
 
-  override fun createIdleScreen(): Screen = LoadingScreen
+  override fun getBackStackFactory(coroutineContext: CoroutineContext): BackStackFactory =
+    BackStackFactory.showLoadingScreen { LoadingScreen }
 
   private suspend fun BackStackParentScope.networkCallWithRetry(
     request: String
@@ -75,7 +78,7 @@ class MyWorkflow(
           message = networkResult,
           onRetryClicked = { continueWith(Unit) },
           // Go back to showing child1.
-          onCancelClicked = { goBack() }
+          onCancelClicked = { cancelScreen() }
         )
       }
       networkResult = networkCall(request)
