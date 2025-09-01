@@ -1,5 +1,7 @@
 package com.squareup.sample.thingy
 
+import com.squareup.workflow1.StatefulWorkflow.RenderContext
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -87,59 +89,57 @@ TODO: Design for coalescing state updates/output emissions and dispatching
 */
 
 // Impl note: Does some casting to avoid dealing with generics everywhere, since this is internal-
-// only. Can we use this trick in more places?
+// only.
 internal class BackStackState(
-  private val stack: List<BackStackFrame<*>>,
+  private val stack: List<BackStackFrame>,
   private val props: MutableStateFlow<Any?>,
   private val backStackFactory: BackStackFactory,
+  private val actionQueue: ActionQueue,
+  private val dispatcher: BackStackDispatcher,
 ) {
 
-  fun copy(stack: List<BackStackFrame<*>> = this.stack) = BackStackState(
+  fun setProps(props: Any?): BackStackState {
+    dispatcher.runThenDispatchImmediately {
+      this.props.value = props
+    }
+
+    val mutableStack = stack.toMutableList()
+    actionQueue.consumeActionsToStack(mutableStack)
+    return copy(stack = mutableStack)
+  }
+
+  fun renderOn(context: RenderContext<Any?, BackStackState, Any?>): BackStackScreen<Screen> {
+    context.runningSideEffect("TODO") {
+      dispatcher.runDispatch(onIdle = {
+        sendActionToSink(context)
+      })
+    }
+
+    val renderings = stack.map { frame ->
+      frame.render(context)
+    }
+    return backStackFactory.createBackStack(renderings, isTopIdle = false)
+  }
+
+  fun transformStack(transformations: List<StateTransformation>): BackStackState {
+    val mutableStack = stack.toMutableList()
+    transformations.forEach {
+      it(mutableStack)
+    }
+    return copy(stack = mutableStack)
+  }
+
+  private fun sendActionToSink(context: RenderContext<Any?, BackStackState, Any?>) {
+    @Suppress("UNCHECKED_CAST")
+    context.actionSink.send(actionQueue.consumeToAction { sendActionToSink(context) } as
+      WorkflowAction<Any?, BackStackState, Any?>)
+  }
+
+  private fun copy(stack: List<BackStackFrame> = this.stack) = BackStackState(
     stack = stack,
     props = props,
     backStackFactory = backStackFactory,
+    actionQueue = actionQueue,
+    dispatcher = dispatcher,
   )
-
-  fun setProps(props: Any?) {
-    this.props.value = props
-  }
-
-  fun appendFrame(frame: BackStackFrame<*>) = copy(stack = stack + frame)
-  fun removeFrame(frame: BackStackFrame<*>) = copy(stack = stack - frame)
-
-  fun popToFrame(frame: BackStackFrame<*>): BackStackState {
-    val index = stack.indexOf(frame)
-    check(index != -1) { "Frame was not in the stack!" }
-
-    // Cancel all the frames we're about to drop, starting from the top.
-    for (i in stack.lastIndex downTo index + 1) {
-      // Don't just cancel the frame job, since that would only cancel output handlers the frame
-      // is running. We want to cancel the whole parent's output handler that called showWorkflow,
-      // in case the showWorkflow is in a try/catch that tries to make other suspending calls.
-      stack[i].cancelCaller()
-    }
-
-    val newStack = stack.take(index + 1)
-    return copy(stack = newStack)
-  }
-
-  fun <ChildPropsT> setFrameProps(
-    frame: WorkflowFrame<*, *, ChildPropsT, *, *>,
-    newProps: ChildPropsT
-  ): BackStackState {
-    val stack = stack.toMutableList()
-    val myIndex = stack.indexOf(frame)
-    if (myIndex == -1) {
-      // Frame has been removed from the stack, so just no-op.
-      return this
-    }
-    stack[myIndex] = frame.copy(props = newProps)
-    return copy(stack = stack)
-  }
-
-  inline fun <R> mapFrames(block: (BackStackFrame<*>) -> R): List<R> = stack.map(block)
-
-  fun createBackStack(screens: List<Screen>): BackStackScreen<Screen> =
-    // TODO pass isTopIdle
-    backStackFactory.createBackStack(screens, isTopIdle = false)
 }

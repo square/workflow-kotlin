@@ -4,7 +4,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.ui.Screen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -56,7 +55,7 @@ class MyWorkflow(
             delay(3.seconds)
             emitOutput(MyOutputs.Done)
           }
-          showWorkflow(child3, flowOf(networkResult))
+          showWorkflow(child3, networkResult)
         }
 
         else -> error("Unexpected output: $output")
@@ -70,7 +69,6 @@ class MyWorkflow(
   private suspend fun BackStackParentScope.networkCallWithRetry(
     request: String
   ): String {
-    // TODO: Show a loading screen automatically.
     var networkResult = networkCall(request)
     while (networkResult == "failure") {
       showScreen {

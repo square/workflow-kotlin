@@ -87,7 +87,7 @@ public abstract class BackStackWorkflow<PropsT, OutputT> :
    *
    * # Emitting output
    *
-   * The second parameter to the [runBackStack] function is an [emitOutput] function that will send
+   * The second parameter to the [launchRunBackStack] function is an [emitOutput] function that will send
    * whatever you pass to it to this workflow's parent as an output.
    * ```
    * backStackWorkflow { _, emitOutput ->
@@ -301,14 +301,14 @@ public sealed interface BackStackParentScope {
 }
 
 @BackStackWorkflowDsl
-public sealed interface BackStackScope : BackStackParentScope, CoroutineScope
+public interface BackStackScope : BackStackParentScope
 
 /**
  * Scope receiver used for all [showWorkflow] calls. This has all the capabilities of
  * [BackStackScope] with the additional ability to [go back][cancelWorkflow] to its outer workflow.
  */
 @BackStackWorkflowDsl
-public sealed interface BackStackWorkflowScope : BackStackScope {
+public interface BackStackWorkflowScope : BackStackScope, CoroutineScope {
 
   /**
    * Removes all workflows started by the parent workflow's handler that invoked this [showWorkflowImpl]
@@ -324,14 +324,22 @@ public sealed interface BackStackWorkflowScope : BackStackScope {
  * to return from [showScreen] by calling [continueWith].
  */
 @BackStackWorkflowDsl
-public sealed interface BackStackScreenScope<R> : BackStackScope {
+public interface BackStackScreenScope<R> : BackStackScope {
   /**
    * Causes [showScreen] to return with [value].
    */
   fun continueWith(value: R)
 
   fun cancelScreen()
+
+  fun launch(block: suspend CoroutineScope.() -> Unit)
 }
+
+public suspend inline fun <ChildPropsT, ChildOutputT, R> BackStackParentScope.showWorkflow(
+  workflow: Workflow<ChildPropsT, Nothing, Screen>,
+  props: ChildPropsT,
+  noinline onOutput: suspend BackStackWorkflowScope.(output: ChildOutputT) -> R
+): R = showWorkflow(workflow, props = flowOf(props), onOutput = onOutput)
 
 public suspend inline fun <ChildOutputT, R> BackStackParentScope.showWorkflow(
   workflow: Workflow<Unit, ChildOutputT, Screen>,
@@ -342,6 +350,11 @@ public suspend inline fun <ChildPropsT> BackStackParentScope.showWorkflow(
   workflow: Workflow<ChildPropsT, Nothing, Screen>,
   props: Flow<ChildPropsT>,
 ): Nothing = showWorkflow(workflow, props = props) { error("Cannot call") }
+
+public suspend inline fun <ChildPropsT> BackStackParentScope.showWorkflow(
+  workflow: Workflow<ChildPropsT, Nothing, Screen>,
+  props: ChildPropsT,
+): Nothing = showWorkflow(workflow, props = flowOf(props)) { error("Cannot call") }
 
 public suspend inline fun BackStackParentScope.showWorkflow(
   workflow: Workflow<Unit, Nothing, Screen>,
