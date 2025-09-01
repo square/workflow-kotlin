@@ -79,7 +79,8 @@ internal class BackStackNode(
             handler = { output ->
               dispatcher.runThenDispatchImmediately {
                 workflowNode.launch {
-                  val scope = object : BackStackWorkflowScope,
+                  val scope = object :
+                    BackStackWorkflowScope,
                     BackStackScope by workflowNode,
                     CoroutineScope by this {
 

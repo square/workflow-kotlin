@@ -40,8 +40,8 @@ class MyWorkflow(
         "next" -> {
           // Step 2
           val childResult = showWorkflow(child2) { output ->
-              // Removes child2 from the stack, cancels the output handler from step 1, and just
-              // leaves child1 rendering.
+            // Removes child2 from the stack, cancels the output handler from step 1, and just
+            // leaves child1 rendering.
             if (output == "back") cancelWorkflow()
             output
           }
