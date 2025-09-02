@@ -53,7 +53,7 @@ internal fun RightInfoPanel(
   Row(
     modifier = modifier
   ) {
-    var panelOpen by remember { mutableStateOf(false) }
+    var panelOpen by remember { mutableStateOf(selectedNode != null) }
 
     IconButton(
       onClick = { panelOpen = !panelOpen },
