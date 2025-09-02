@@ -10,7 +10,7 @@ plugins {
 
 kotlin {
   jvm()
-  
+
   jvmToolchain(11)
 
   sourceSets {
@@ -32,7 +32,7 @@ kotlin {
         implementation(libs.filekit.dialogs.compose)
         implementation(libs.java.diff.utils)
         implementation(libs.telephoto)
-        
+
         // Add explicit Skiko dependency for current platform
         implementation("org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.9.4")
       }
