@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("kotlin-multiplatform")
@@ -8,6 +10,8 @@ plugins {
 
 kotlin {
   jvm()
+  
+  jvmToolchain(11)
 
   sourceSets {
     jvmMain {
@@ -27,6 +31,10 @@ kotlin {
         implementation(libs.squareup.moshi.kotlin)
         implementation(libs.filekit.dialogs.compose)
         implementation(libs.java.diff.utils)
+        implementation(libs.telephoto)
+        
+        // Add explicit Skiko dependency for current platform
+        implementation("org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.9.4")
       }
     }
     jvmTest {
@@ -61,4 +69,10 @@ compose {
 
 tasks.named<Test>("jvmTest") {
   useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_11)
+  }
 }

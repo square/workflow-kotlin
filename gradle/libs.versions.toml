@@ -92,6 +92,7 @@ squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.3"
 squareup-workflow = "1.0.0"
 
+telephoto = "0.16.0"
 timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.0.0"
@@ -203,7 +204,7 @@ google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin
 hamcrest = "org.hamcrest:hamcrest-core:2.2"
 
 java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
-
+telephoto = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
