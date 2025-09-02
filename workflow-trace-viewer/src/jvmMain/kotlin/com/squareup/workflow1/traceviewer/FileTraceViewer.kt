@@ -111,7 +111,6 @@ internal fun TraceViewerWindow(
         SearchBox(
           nodes = frameNodeLocations.keys.toList(),
           onSearch = { name ->
-            sandboxState.scale = 1f
             val node = frameNodeLocations.keys.first { it.name == name }
             val newX = (sandboxState.offset.x - frameNodeLocations.getValue(node).x
               + appWindowSize.width / 2)
@@ -144,7 +143,6 @@ internal fun TraceViewerWindow(
 
 internal class SandboxState {
   var offset by mutableStateOf(Offset.Zero)
-  var scale by mutableFloatStateOf(1f)
 
   fun reset() {
     offset = Offset.Zero
