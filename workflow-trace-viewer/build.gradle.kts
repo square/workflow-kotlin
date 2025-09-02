@@ -59,6 +59,10 @@ compose {
           bundleID = "com.squareup.workflow1.traceviewer"
         }
       }
+
+      buildTypes.release.proguard {
+        isEnabled.set(false)
+      }
     }
   }
 }
