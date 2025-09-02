@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -133,11 +133,12 @@ internal fun TraceViewerWindow(
         modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
       )
     }
-
-    RightInfoPanel(
-      selectedNode = selectedNode,
-      modifier = Modifier.align(Alignment.TopEnd)
-    )
+    key(selectedNode) {
+      RightInfoPanel(
+        selectedNode = selectedNode,
+        modifier = Modifier.align(Alignment.TopEnd)
+      )
+    }
   }
 }
 
