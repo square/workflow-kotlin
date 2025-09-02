@@ -1,6 +1,6 @@
 package com.squareup.workflow1.traceviewer.util.parser
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -12,9 +12,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.squareup.moshi.JsonAdapter
@@ -23,6 +23,11 @@ import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.DrawTree
 import com.squareup.workflow1.traceviewer.util.streamRenderPassesFromDevice
+
+private const val ERROR_MESSAGE =
+  "\nEnsure app on device is logged in and running before connecting." +
+    "\n\nNote: Only one live connection per session is currently supported, " +
+    "\nif you have previously connected restart app on device and try again."
 
 /**
  * Handles parsing the trace's after JsonParser has turned all render passes into frames. Also calls
@@ -39,7 +44,6 @@ internal fun RenderTrace(
   onNewFrame: () -> Unit,
   onNewData: (String) -> Unit,
   storeNodeLocation: (Node, Offset) -> Unit,
-  modifier: Modifier = Modifier
 ) {
   key(traceSource) {
     var isLoading by remember { mutableStateOf(true) }
@@ -106,7 +110,7 @@ internal fun RenderTrace(
             val parseResult = parseLiveTrace(rawRenderPass, adapter, currentTree)
             handleParseResult(parseResult, rawRenderPass, onNewFrame)
           }
-          error = "Socket has already been closed or is not available."
+          error = ERROR_MESSAGE
         }
       }
     }
@@ -115,7 +119,7 @@ internal fun RenderTrace(
     // the lambda call to parse the data was immediately cancelled, meaning handleParseResult was never
     // called to set isLoading to false.
     if (isLoading && error != null) {
-      Text("Socket Error: $error")
+      Error("Device Connection Failed:\n$error")
       return
     }
 
@@ -123,7 +127,7 @@ internal fun RenderTrace(
     // handleParseResult method. Since there is no parsed data, this likely means there was a moshi
     // parsing error.
     if (error != null && frames.isEmpty()) {
-      Text("Malformed File: $error")
+      Error("Malformed File:\n$error")
       return
     }
 
@@ -140,13 +144,18 @@ internal fun RenderTrace(
 
       // This error happens when there has already been previous data parsed, but some exception bubbled
       // up again, meaning it has to be a socket closure in Live mode.
-      error?.let {
-        Text(
-          text = "Socket closed: $error",
-          fontSize = 20.sp,
-          modifier = modifier.background(Color.White).padding(20.dp)
-        )
-      }
+      error?.let { Error("Lost Connection:\n$error") }
     }
+  }
+}
+
+@Composable
+fun Error(message: String) {
+  Box {
+    Text(
+      text = message,
+      fontSize = 20.sp,
+      modifier = Modifier.align(Alignment.Center).padding(200.dp)
+    )
   }
 }
