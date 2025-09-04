@@ -164,6 +164,8 @@ public fun <PropsT, OutputT, RenderingT> renderChild(
   props: PropsT,
   onOutput: ((OutputT) -> Unit)?
 ): RenderingT {
+  // TODO get rid of WorkflowComposableRenderer – this should just call into
+  //  ComposeWorkflowChildNode directly, somehow.
   val renderer = LocalWorkflowComposableRenderer.current
   return renderer.renderChild(workflow, props, onOutput)
 }

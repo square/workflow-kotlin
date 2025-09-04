@@ -22,15 +22,19 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.Sink
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
+import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.LocalWorkflowComposableRenderer
 import com.squareup.workflow1.compose.WorkflowComposableRenderer
@@ -172,17 +176,32 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       LocalWorkflowComposableRenderer provides this
     ) {
       workflowTracer?.beginSection("ComposeChildProduceSelfRendering")
-      workflow.produceRendering(props, onEmitOutput)
-        .also { workflowTracer?.endSection() }
-      // interceptor.onRenderComposeWorkflow(
-      //   renderProps = props,
-      //   emitOutput = onEmitOutput,
-      //   session = this,
-      //   proceed = { innerProps, innerEmitOutput ->
-      //     _DO_NOT_USE_invokeComposeWorkflowProduceRendering(workflow, innerProps, innerEmitOutput)
-      //   }
-      // )
-    }.also { workflowTracer?.endSection() }
+      Trapdoor.open { trapdoor ->
+        val baseContext = TrapdoorRenderContext(
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+          actionSink = object : Sink<WorkflowAction<PropsT, ComposeWorkflowState, OutputT>> {
+            override fun send(value: WorkflowAction<PropsT, ComposeWorkflowState, OutputT>) {
+              val (_, applied) = value.applyTo(lastProps, ComposeWorkflowState)
+              applied.output?.value?.let(::sendOutputToChannel)
+            }
+          },
+          trapdoor = trapdoor
+        )
+
+        interceptor.onRender(
+          renderProps = props,
+          renderState = ComposeWorkflowState,
+          context = RenderContext(baseContext),
+          session = this,
+          proceed = { innerProps, _, contextInterceptor ->
+            trapdoor.composeReturning {
+              workflow.produceRendering(innerProps, onEmitOutput)
+            }
+          }
+        )
+      }.also { workflowTracer?.endSection() } // ComposeChildProduceSelfRendering
+    }.also { workflowTracer?.endSection() } // ComposeChildWithCompositionLocals
   }
 
   @ReadOnlyComposable
@@ -348,7 +367,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
             id = childId,
             workflow = childWorkflow,
             initialProps = initialProps,
-            contextForChildren = childCoroutineScope.coroutineContext + ComposerContextElement(composer),
+            contextForChildren = childCoroutineScope.coroutineContext,
             parentNode = this,
             parent = this,
             snapshot = childSnapshot,
