@@ -1,5 +1,7 @@
 package com.squareup.workflow1.internal.compose
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
@@ -10,18 +12,23 @@ import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
+import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
+
+private const val OUTPUT_QUEUE_LIMIT = 1_000
 
 internal fun log(message: String) = message.lines().forEach {
   // println("WorkflowComposableNode $it")
@@ -35,27 +42,34 @@ internal fun log(message: String) = message.lines().forEach {
  * [ComposeWorkflowChildNode]. [ComposeWorkflow]s nested directly under this one do not have their
  * own composition, they share this one.
  */
-@OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
-  initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
-  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  private val workflowTracer: WorkflowTracer? = null,
+  override val workflowTracer: WorkflowTracer? = null,
+  override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  override val parent: WorkflowSession?,
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
-  parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  idCounter: IdCounter? = null
+  private val idCounter: IdCounter = IdCounter()
   // TODO AbstractWorkflowNode should not implement WorkflowSession, since only StatefulWorkflowNode
   //  needs that. The composable session is implemented by ComposeWorkflowChildNode.
-) : WorkflowNode<PropsT, OutputT, RenderingT>(
-  id = id,
-  baseContext = baseContext,
-  interceptor = interceptor,
-  emitAppliedActionToParent = emitAppliedActionToParent,
-) {
+) :
+  WorkflowNode<PropsT, OutputT, RenderingT>(
+    id = id,
+    baseContext = baseContext,
+    interceptor = interceptor,
+    emitAppliedActionToParent = emitAppliedActionToParent,
+  ),
+  WorkflowSession,
+  WorkflowSessionProvider {
+
+  override val identifier: WorkflowIdentifier
+    get() = id.identifier
+  override val renderKey: String
+    get() = id.name
+  override val sessionId: Long = idCounter.createId()
 
   private val recomposeChannel = Channel<Unit>(capacity = 1)
   private val molecule = workflowTracer.trace("ComposeWorkflowAdapterInstantiateCompose") {
@@ -64,52 +78,38 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     )
   }
 
-  private val childNode = workflowTracer.trace("ComposeWorkflowAdapterInstantiateChildNode") {
-    ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
-      id = id,
-      initialProps = initialProps,
-      snapshot = snapshot,
-      baseContext = scope.coroutineContext,
-      parentNode = null,
-      parent = parent,
-      workflowTracer = workflowTracer,
-      runtimeConfig = runtimeConfig,
-      interceptor = interceptor,
-      idCounter = idCounter,
-      emitAppliedActionToParent = { actionApplied ->
-        // Ensure any state updates performed by the output sender gets to invalidate any
-        // compositions that read them, so we can check needsRecompose below.
-        Snapshot.sendApplyNotifications()
-        log(
-          "adapter node sent apply notifications from action cascade (" +
-            "actionApplied=$actionApplied, needsRecompose=${molecule.needsRecomposition})"
-        )
+  /** This does not need to be a snapshot state object, it's only set again by [snapshot]. */
+  private var snapshotCache = snapshot?.childTreeSnapshots
+  private val saveableStateRegistry =
+    restoreSaveableStateRegistryFromSnapshot(snapshot?.workflowSnapshot)
 
-        // ComposeWorkflowChildNode can't tell if its own state changed since that information about
-        // specific composables/recompose scopes is only visible inside the compose runtime, so
-        // individual ComposeWorkflow nodes always report no state changes (unless they have a
-        // traditional child that reported a state change).
-        // However, we *can* check if any state changed that was read by anything in the
-        // composition, so when an action bubbles up to here, the top of the composition, we use
-        // that information to set the state changed flag if necessary.
-        val aggregateAction = if (molecule.needsRecomposition && !actionApplied.stateChanged) {
-          actionApplied.copy(stateChanged = true)
-        } else {
-          actionApplied
-        }
+  private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
 
-        // Don't bubble up if no state changed and there was no output.
-        if (aggregateAction.stateChanged || aggregateAction.output != null) {
-          log("adapter node propagating action cascade up (aggregateAction=$aggregateAction)")
-          emitAppliedActionToParent(aggregateAction)
-        } else {
-          log(
-            "adapter node not propagating action cascade since nothing happened (aggregateAction=$aggregateAction)"
-          )
-          aggregateAction
-        }
-      }
+  /**
+   * Function invoked when [onNextAction] receives an output from [outputsChannel].
+   */
+  private val processOutputFromChannel: (OutputT) -> ActionProcessingResult = { output ->
+    log("got output from channel: $output")
+
+    // Ensure any state updates performed by the output sender gets to invalidate any
+    // compositions that read them, so we can check needsRecompose below.
+    Snapshot.sendApplyNotifications()
+
+    // ComposeWorkflowChildNode can't tell if its own state changed since that information about
+    // specific composables/recompose scopes is only visible inside the compose runtime, so
+    // individual ComposeWorkflow nodes always report no state changes (unless they have a
+    // traditional child that reported a state change).
+    // However, we *can* check if any state changed that was read by anything in the
+    // composition, so when an action bubbles up to here, the top of the composition, we use
+    // that information to set the state changed flag if necessary.
+    val actionApplied = ActionApplied(
+      output = WorkflowOutput(output),
+      stateChanged = molecule.needsRecomposition
     )
+
+    // Don't bubble up if no state changed and there was no output.
+    log("adapter node propagating action cascade up (aggregateAction=$actionApplied)")
+    emitAppliedActionToParent(actionApplied)
   }
 
   /**
@@ -133,7 +133,18 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   }
 
   override val session: WorkflowSession
-    get() = childNode
+    get() = this
+
+  override fun createSession(identifier: WorkflowIdentifier): WorkflowSession = this
+
+  override fun getSessionProviderForChild(parent: WorkflowSession): WorkflowSessionProvider {
+    return DefaultSessionProvider(
+      runtimeConfig = runtimeConfig,
+      workflowTracer = workflowTracer,
+      parent = parent,
+      idCounter = idCounter,
+    )
+  }
 
   override fun render(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -159,7 +170,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     workflowTracer.trace("ComposeWorkflowAdapterRecomposeWithContent") {
       return molecule.recomposeWithContent {
         workflowTracer?.beginSection("ComposeWorkflowAdapterProduceRendering")
-        childNode.produceRendering(
+        produceRendering(
           workflow = workflow,
           props = input
         ).also {
@@ -169,20 +180,46 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     }
   }
 
-  override fun snapshot(): TreeSnapshot = childNode.snapshot()
+  @OptIn(WorkflowExperimentalApi::class)
+  @Composable
+  private fun produceRendering(
+    workflow: Workflow<PropsT, OutputT, RenderingT>,
+    props: PropsT
+  ): RenderingT =
+    withCompositionLocals(LocalSaveableStateRegistry provides saveableStateRegistry) {
+      ProvideWorkflowComposableRenderer(
+        workflowTracer = workflowTracer,
+        sessionProvider = this,
+      ) {
+        com.squareup.workflow1.compose.renderChild(
+          workflow = workflow,
+          props = props,
+          onOutput = outputsChannel::requireSend
+        )
+      }
+    }
+
+  override fun snapshot(): TreeSnapshot {
+    // Get rid of any snapshots that weren't applied on the first render pass.
+    // They belong to children that were saved but not restarted.
+    snapshotCache = null
+
+    val workflowSnapshot = saveSaveableStateRegistryToSnapshot(saveableStateRegistry)
+    return TreeSnapshot.forRootOnly(workflowSnapshot)
+  }
 
   override fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
-    // We must register for child actions before frame requests, because selection is
-    // strongly-ordered: If multiple subjects become available simultaneously, then the one whose
-    // receiver was registered first will fire first. We always want to handle outputs first because
-    // the output handler will implicitly also handle frame requests. If a frame request happens at
-    // the same time or the output handler enqueues a frame request, then the subsequent render pass
-    // will dequeue the frame request itself before the next call to register.
-    childNode.registerTreeActionSelectors(selector)
-
-    // If there's a frame request, then some state changed, which is equivalent to the traditional
-    // case of a WorkflowAction being enqueued that just modifies state.
     with(selector) {
+      // We must register for child actions before frame requests, because selection is
+      // strongly-ordered: If multiple subjects become available simultaneously, then the one whose
+      // receiver was registered first will fire first. We always want to handle outputs first because
+      // the output handler will implicitly also handle frame requests. If a frame request happens at
+      // the same time or the output handler enqueues a frame request, then the subsequent render pass
+      // will dequeue the frame request itself before the next call to register.
+      outputsChannel.onReceive(processOutputFromChannel)
+
+      // If there's a frame request, then some state changed, which is equivalent to the traditional
+      // case of a WorkflowAction being enqueued that just modifies state.
       recomposeChannel.onReceive(processRecompositionRequestFromChannel)
     }
   }
@@ -190,12 +227,17 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult {
     if (skipDirtyNodes && molecule.needsRecomposition) return ActionsExhausted
 
-    val result = childNode.applyNextAvailableTreeAction(skipDirtyNodes)
+    // If none of our children had any actions to process, then we can process any outputs of our
+    // own.
+    val pendingOutput = outputsChannel.tryReceive().getOrNull()
+    if (pendingOutput != null) {
+      return processOutputFromChannel(pendingOutput)
+    }
 
     // If no child nodes had any actions to process, then we can check if we need to recompose,
     // which means some composition state changed and is equivalent to the traditional case of a
     // WorkflowAction being enqueued that just modifies state.
-    if (result == ActionsExhausted && molecule.needsRecomposition) {
+    if (molecule.needsRecomposition) {
       // Consume the request since we're going to process it directly. The channel just contains
       // Unit though so we don't actually care what the result of the receive is.
       recomposeChannel.tryReceive()

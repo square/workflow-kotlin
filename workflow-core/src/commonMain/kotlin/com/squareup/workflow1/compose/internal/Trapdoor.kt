@@ -1,9 +1,9 @@
-package com.squareup.workflow1.internal.compose
+package com.squareup.workflow1.compose.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
 import androidx.compose.runtime.currentComposer
-import com.squareup.workflow1.internal.compose.Trapdoor.Companion.open
+import com.squareup.workflow1.compose.internal.Trapdoor.Companion.open
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
@@ -47,7 +47,7 @@ import kotlin.jvm.JvmInline
  */
 @Suppress("UNCHECKED_CAST")
 @JvmInline
-internal value class Trapdoor(private val composer: Composer) {
+public value class Trapdoor(private val composer: Composer) {
 
   /**
    * Calls [content] as if it were called directly in composition from wherever this [Trapdoor] was

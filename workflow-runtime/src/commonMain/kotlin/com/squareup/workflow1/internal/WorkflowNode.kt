@@ -39,19 +39,20 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
 ): WorkflowNode<PropsT, OutputT, RenderingT> = when (workflow) {
   is ComposeWorkflow<*, *, *> -> {
     // Reuse the compose runtime if possible.
-      ComposeWorkflowNodeAdapter(
-        id = id,
-        initialProps = initialProps,
-        snapshot = snapshot,
-        baseContext = baseContext,
-        runtimeConfig = runtimeConfig,
-        workflowTracer = workflowTracer,
-        emitAppliedActionToParent = emitAppliedActionToParent,
-        parent = parent,
-        interceptor = interceptor,
-        idCounter = idCounter,
-      )
+    ComposeWorkflowNodeAdapter(
+      id = id,
+      initialProps = initialProps,
+      snapshot = snapshot,
+      baseContext = baseContext,
+      runtimeConfig = runtimeConfig,
+      workflowTracer = workflowTracer,
+      emitAppliedActionToParent = emitAppliedActionToParent,
+      parent = parent,
+      interceptor = interceptor,
+      idCounter = idCounter,
+    )
   }
+
   else -> StatefulWorkflowNode(
     id = id,
     workflow = workflow.asStatefulWorkflow(),

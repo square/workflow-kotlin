@@ -9,7 +9,7 @@ import com.squareup.workflow1.WorkflowExperimentalApi
 
 @WorkflowExperimentalApi
 public val LocalWorkflowComposableRenderer =
-  staticCompositionLocalOf<WorkflowComposableRenderer> { error("No renderer") }
+  staticCompositionLocalOf<WorkflowComposableRenderer?> { null }
 
 @WorkflowExperimentalApi
 public interface WorkflowComposableRenderer {
@@ -18,6 +18,11 @@ public interface WorkflowComposableRenderer {
   fun <PropsT, OutputT, RenderingT> renderChild(
     childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
     props: PropsT,
-    onOutput: ((OutputT) -> Unit)?
+    onOutput: ((OutputT) -> Unit)?,
+    proceed: @Composable (
+      childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
+      props: PropsT,
+      onOutput: ((OutputT) -> Unit)?,
+    ) -> RenderingT
   ): RenderingT
 }

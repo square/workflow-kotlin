@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal.compose
+package com.squareup.workflow1.compose.internal
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -11,7 +11,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.renderChild
-import com.squareup.workflow1.internal.id
+import com.squareup.workflow1.identifier
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
 
@@ -26,7 +26,7 @@ import kotlin.reflect.KType
  * [renderChild] uses [Workflow.id]).
  */
 @OptIn(WorkflowExperimentalApi::class)
-internal class TrapdoorRenderContext<PropsT, StateT, OutputT>(
+public class TrapdoorRenderContext<PropsT, StateT, OutputT>(
   override val runtimeConfig: RuntimeConfig,
   override val workflowTracer: WorkflowTracer?,
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>,
@@ -74,7 +74,7 @@ internal class TrapdoorRenderContext<PropsT, StateT, OutputT>(
     return trapdoor.composeReturning {
       // renderChild creates a movable group based on child.identifier, but does not include
       // key.
-      key(child.id(key)) {
+      key(child.identifier, key) {
         renderChild(child, props, onOutput = onOutput)
       }
     }
