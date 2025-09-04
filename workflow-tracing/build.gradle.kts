@@ -1,6 +1,7 @@
 plugins {
   id("kotlin-jvm")
   id("published")
+  alias(libs.plugins.compose.compiler)
 }
 
 dependencies {

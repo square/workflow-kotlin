@@ -4,6 +4,7 @@ plugins {
   id("kotlin-multiplatform")
   id("published")
   id("app.cash.burst")
+  alias(libs.plugins.compose.compiler)
 }
 
 kotlin {
