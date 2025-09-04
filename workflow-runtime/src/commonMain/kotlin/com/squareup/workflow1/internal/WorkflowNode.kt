@@ -14,6 +14,8 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.internal.compose.ComposeWorkflowNodeAdapter
+import com.squareup.workflow1.internal.compose.ComposerContextElement
+import com.squareup.workflow1.internal.compose.ReuseComposeWorkflowNodeAdapter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -37,18 +39,38 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
 ): WorkflowNode<PropsT, OutputT, RenderingT> = when (workflow) {
-  is ComposeWorkflow<*, *, *> -> ComposeWorkflowNodeAdapter(
-    id = id,
-    initialProps = initialProps,
-    snapshot = snapshot,
-    baseContext = baseContext,
-    runtimeConfig = runtimeConfig,
-    workflowTracer = workflowTracer,
-    emitAppliedActionToParent = emitAppliedActionToParent,
-    parent = parent,
-    interceptor = interceptor,
-    idCounter = idCounter,
-  )
+  is ComposeWorkflow<*, *, *> -> {
+    // Reuse the compose runtime if possible.
+    val composer = baseContext[ComposerContextElement]?.composer
+    if (composer == null) {
+      ComposeWorkflowNodeAdapter(
+        id = id,
+        initialProps = initialProps,
+        snapshot = snapshot,
+        baseContext = baseContext,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
+        emitAppliedActionToParent = emitAppliedActionToParent,
+        parent = parent,
+        interceptor = interceptor,
+        idCounter = idCounter,
+      )
+    } else {
+      ReuseComposeWorkflowNodeAdapter(
+        id = id,
+        initialProps = initialProps,
+        snapshot = snapshot,
+        baseContext = baseContext,
+        composer = composer,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
+        emitAppliedActionToParent = emitAppliedActionToParent,
+        parent = parent,
+        interceptor = interceptor,
+        idCounter = idCounter,
+      )
+    }
+  }
 
   else -> StatefulWorkflowNode(
     id = id,

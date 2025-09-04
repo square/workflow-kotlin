@@ -6,6 +6,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collection.MutableVector
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -338,6 +339,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       // cascade results in this child changing state because traditional workflows don't know
       // about Compose. See comment in acceptChildActionResult for more info.
       val recomposeScope = currentRecomposeScope
+      val composer = currentComposer
       remember {
         val childId = WorkflowNodeId(childIdentifier, name = childRenderKey)
         val childSnapshot = snapshotCache?.get(childId)
@@ -346,7 +348,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
             id = childId,
             workflow = childWorkflow,
             initialProps = initialProps,
-            contextForChildren = childCoroutineScope.coroutineContext,
+            contextForChildren = childCoroutineScope.coroutineContext + ComposerContextElement(composer),
             parentNode = this,
             parent = this,
             snapshot = childSnapshot,
