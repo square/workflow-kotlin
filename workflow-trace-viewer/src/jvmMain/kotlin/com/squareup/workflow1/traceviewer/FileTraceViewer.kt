@@ -2,10 +2,10 @@ package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -13,14 +13,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
@@ -31,6 +30,10 @@ import com.squareup.workflow1.traceviewer.ui.control.SearchBox
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.parser.RenderTrace
 import io.github.vinceglb.filekit.PlatformFile
+import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.rememberZoomableState
+import kotlin.also
 
 /**
  * Main composable that provides the different layers of UI.
@@ -40,12 +43,10 @@ internal fun TraceViewerWindow(
   modifier: Modifier = Modifier,
   traceMode: TraceMode,
 ) {
-  var appWindowSize by remember { mutableStateOf(IntSize(0, 0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
   var rawRenderPass by remember { mutableStateOf("") }
   var frameIndex by remember { mutableIntStateOf(if (traceMode is TraceMode.Live) -1 else 0) }
-  val sandboxState = remember { SandboxState() }
   val nodeLocations = remember { mutableStateListOf<SnapshotStateMap<Node, Offset>>() }
 
   // Default to File mode, and can be toggled to be in Live mode.
@@ -53,40 +54,41 @@ internal fun TraceViewerWindow(
   // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one errors
   val frameInd = if (traceMode is TraceMode.Live) frameIndex + 1 else frameIndex
 
-  LaunchedEffect(sandboxState) {
-    snapshotFlow { frameIndex }.collect {
-      sandboxState.reset()
-    }
-  }
+  Box(modifier) {
+    val zoomableState = key(frameInd) {
+      rememberZoomableState(
+        zoomSpec = ZoomSpec(maxZoomFactor = 1f)
+      ).also {
+        it.contentScale = ContentScale.Fit
 
-  Box(
-    modifier = modifier.onSizeChanged {
-      appWindowSize = it
+        // TODO: do we want to draw behind the search bar?
+        val searchBarHeight = 80.dp
+        it.contentPadding = PaddingValues(horizontal = 24.dp, vertical = searchBarHeight)
+      }
     }
-  ) {
 
     // Main content
     SandboxBackground(
-      appWindowSize = appWindowSize,
-      sandboxState = sandboxState,
-    ) {
-      // if there is not a file selected and trace mode is live, then don't render anything.
-      val readyForFileTrace = TraceMode.validateFileMode(traceMode)
-      val readyForLiveTrace = TraceMode.validateLiveMode(traceMode)
+      zoomableState = zoomableState,
+      content = {
+        // if there is not a file selected and trace mode is live, then don't render anything.
+        val readyForFileTrace = TraceMode.validateFileMode(traceMode)
+        val readyForLiveTrace = TraceMode.validateLiveMode(traceMode)
 
-      if (readyForFileTrace || readyForLiveTrace) {
-        active = true
-        RenderTrace(
-          traceSource = traceMode,
-          frameInd = frameIndex,
-          onFileParse = { frameSize += it },
-          onNodeSelect = { selectedNode = it },
-          onNewFrame = { frameIndex += 1 },
-          onNewData = { rawRenderPass += "$it," },
-          storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) }
-        )
-      }
-    }
+        if (readyForFileTrace || readyForLiveTrace) {
+          active = true
+          RenderTrace(
+            traceSource = traceMode,
+            frameInd = frameIndex,
+            onFileParse = { frameSize += it },
+            onNodeSelect = { selectedNode = it },
+            onNewFrame = { frameIndex += 1 },
+            onNewData = { rawRenderPass += "$it," },
+            storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) }
+          )
+        }
+      },
+    )
 
     Row(
       modifier = Modifier
@@ -108,15 +110,19 @@ internal fun TraceViewerWindow(
         }
 
         val frameNodeLocations = nodeLocations[frameInd]
+        val scope = rememberCoroutineScope()
         SearchBox(
           nodes = frameNodeLocations.keys.toList(),
           onSearch = { name ->
             val node = frameNodeLocations.keys.first { it.name == name }
-            val newX = (sandboxState.offset.x - frameNodeLocations.getValue(node).x
-              + appWindowSize.width / 2)
-            val newY = (sandboxState.offset.y - frameNodeLocations.getValue(node).y
-              + appWindowSize.height / 2)
-            sandboxState.offset = Offset(x = newX, y = newY)
+            scope.launch {
+              // TODO: this doesn't work super well.
+              //  Probably because of https://github.com/saket/telephoto/issues/135?
+              zoomableState.zoomTo(
+                zoomFactor = zoomableState.zoomSpec.maximum.factor,
+                centroid = frameNodeLocations.getValue(node),
+              )
+            }
           },
         )
 
@@ -139,14 +145,6 @@ internal fun TraceViewerWindow(
         modifier = Modifier.align(Alignment.TopEnd)
       )
     }
-  }
-}
-
-internal class SandboxState {
-  var offset by mutableStateOf(Offset.Zero)
-
-  fun reset() {
-    offset = Offset.Zero
   }
 }
 
