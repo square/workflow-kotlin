@@ -1,18 +1,15 @@
 package com.squareup.workflow1.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.Stable
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
 
 // TODO mark these with a separate InternalWorkflow annotation
 
 @WorkflowExperimentalApi
-public val LocalWorkflowComposableRenderer =
-  staticCompositionLocalOf<WorkflowComposableRenderer?> { null }
-
-@WorkflowExperimentalApi
-public interface WorkflowComposableRenderer {
+@Stable
+public interface ComposeWorkflowInterceptor {
 
   @Composable
   fun <PropsT, OutputT, RenderingT> renderChild(

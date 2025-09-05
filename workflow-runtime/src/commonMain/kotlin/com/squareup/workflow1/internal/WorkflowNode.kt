@@ -47,7 +47,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
       runtimeConfig = runtimeConfig,
       workflowTracer = workflowTracer,
       emitAppliedActionToParent = emitAppliedActionToParent,
-      parent = parent,
+      parentSession = parent,
       interceptor = interceptor,
       idCounter = idCounter,
     )

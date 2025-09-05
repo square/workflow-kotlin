@@ -1,12 +1,10 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
-import androidx.compose.runtime.Composable
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor.Companion.NODES_TO_TRACE
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -32,17 +30,6 @@ class PerformanceTracingInterceptor(
     session: WorkflowSession
   ): R = traceRender(session) {
     proceed(renderProps, renderState, null)
-  }
-
-  @OptIn(WorkflowExperimentalApi::class)
-  @Composable
-  override fun <P, O, R> onRenderComposeWorkflow(
-    renderProps: P,
-    emitOutput: (O) -> Unit,
-    proceed: @Composable (P, (O) -> Unit) -> R,
-    session: WorkflowSession
-  ): R = traceRender(session) {
-    proceed(renderProps, emitOutput)
   }
 
   private inline fun <R> traceRender(

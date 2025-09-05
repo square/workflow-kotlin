@@ -12,12 +12,13 @@ import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
-import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.LocalWorkflowComposableRuntimeConfig
+import com.squareup.workflow1.compose.WorkflowComposableRuntimeConfig
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
@@ -42,34 +43,25 @@ internal fun log(message: String) = message.lines().forEach {
  * [ComposeWorkflowChildNode]. [ComposeWorkflow]s nested directly under this one do not have their
  * own composition, they share this one.
  */
+@OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
-  override val workflowTracer: WorkflowTracer? = null,
-  override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  override val parent: WorkflowSession?,
+  private val workflowTracer: WorkflowTracer? = null,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  parentSession: WorkflowSession?,
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter = IdCounter()
-  // TODO AbstractWorkflowNode should not implement WorkflowSession, since only StatefulWorkflowNode
-  //  needs that. The composable session is implemented by ComposeWorkflowChildNode.
+  idCounter: IdCounter = IdCounter()
 ) :
   WorkflowNode<PropsT, OutputT, RenderingT>(
     id = id,
     baseContext = baseContext,
     interceptor = interceptor,
     emitAppliedActionToParent = emitAppliedActionToParent,
-  ),
-  WorkflowSession,
-  WorkflowSessionProvider {
-
-  override val identifier: WorkflowIdentifier
-    get() = id.identifier
-  override val renderKey: String
-    get() = id.name
-  override val sessionId: Long = idCounter.createId()
+  ) {
 
   private val recomposeChannel = Channel<Unit>(capacity = 1)
   private val molecule = workflowTracer.trace("ComposeWorkflowAdapterInstantiateCompose") {
@@ -132,19 +124,12 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     emitAppliedActionToParent(applied)
   }
 
-  override val session: WorkflowSession
-    get() = this
-
-  override fun createSession(identifier: WorkflowIdentifier): WorkflowSession = this
-
-  override fun getSessionProviderForChild(parent: WorkflowSession): WorkflowSessionProvider {
-    return DefaultSessionProvider(
-      runtimeConfig = runtimeConfig,
-      workflowTracer = workflowTracer,
-      parent = parent,
-      idCounter = idCounter,
-    )
-  }
+  override val session: WorkflowSession = parentSession.createChild(
+    id = id,
+    idCounter = idCounter,
+    runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
+  )
 
   override fun render(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -180,24 +165,30 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     }
   }
 
+  private val workflowComposeRuntimeConfig = WorkflowComposableRuntimeConfig(
+    runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
+    interceptor = interceptor.asComposeWorkflowInterceptor(
+      idCounter = idCounter,
+      parentSession = parentSession,
+    ),
+  )
+
   @OptIn(WorkflowExperimentalApi::class)
   @Composable
   private fun produceRendering(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
     props: PropsT
-  ): RenderingT =
-    withCompositionLocals(LocalSaveableStateRegistry provides saveableStateRegistry) {
-      ProvideWorkflowComposableRenderer(
-        workflowTracer = workflowTracer,
-        sessionProvider = this,
-      ) {
-        com.squareup.workflow1.compose.renderChild(
-          workflow = workflow,
-          props = props,
-          onOutput = outputsChannel::requireSend
-        )
-      }
-    }
+  ): RenderingT = withCompositionLocals(
+    LocalSaveableStateRegistry provides saveableStateRegistry,
+    LocalWorkflowComposableRuntimeConfig provides workflowComposeRuntimeConfig,
+  ) {
+    com.squareup.workflow1.compose.renderChild(
+      workflow = workflow,
+      props = props,
+      onOutput = outputsChannel::requireSend
+    )
+  }
 
   override fun snapshot(): TreeSnapshot {
     // Get rid of any snapshots that weren't applied on the first render pass.

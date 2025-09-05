@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.compose.LocalWorkflowComposableRenderer
-import com.squareup.workflow1.compose.WorkflowComposableRenderer
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
 import com.squareup.workflow1.internal.compose.withCompositionLocals
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -77,8 +77,8 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   @OptIn(WorkflowExperimentalApi::class)
   private inner class SimpleLoggingWorkflowComposableRenderer(
     val session: WorkflowSession,
-    val childRenderer: WorkflowComposableRenderer
-  ) : WorkflowComposableRenderer {
+    val childRenderer: ComposeWorkflowInterceptor
+  ) : ComposeWorkflowInterceptor {
     @Composable
     override fun <PropsT, OutputT, RenderingT> renderChild(
       childWorkflow: Workflow<PropsT, OutputT, RenderingT>,

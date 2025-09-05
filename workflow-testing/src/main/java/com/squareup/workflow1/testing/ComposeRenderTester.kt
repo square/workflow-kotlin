@@ -9,7 +9,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.LocalWorkflowComposableRenderer
-import com.squareup.workflow1.compose.WorkflowComposableRenderer
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
 import com.squareup.workflow1.compose.internal._DO_NOT_USE_invokeComposeWorkflowProduceRendering
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.compose.ComposeWorkflowState
@@ -29,7 +29,7 @@ internal class ComposeRenderTester<PropsT, OutputT, RenderingT>(
   private val props: PropsT,
   private val runtimeConfig: RuntimeConfig,
 ) : RenderTester<PropsT, ComposeWorkflowState, OutputT, RenderingT>(),
-  WorkflowComposableRenderer,
+  ComposeWorkflowInterceptor,
   RenderTestResult<PropsT, ComposeWorkflowState, OutputT, RenderingT> {
 
   private data class OutputWithHandler<ChildOutputT>(

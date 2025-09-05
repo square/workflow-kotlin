@@ -1,10 +1,8 @@
 package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.compose.WorkflowComposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -122,16 +120,6 @@ public interface WorkflowInterceptor {
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
-
-  @WorkflowExperimentalApi
-  @WorkflowComposable
-  @Composable
-  public fun <P, O, R> onRenderComposeWorkflow(
-    renderProps: P,
-    emitOutput: (O) -> Unit,
-    proceed: @WorkflowComposable @Composable (P, (O) -> Unit) -> R,
-    session: WorkflowSession
-  ): R = proceed(renderProps, emitOutput)
 
   /**
    * Intercept calls to [StatefulWorkflow.snapshotState] including the children calls.

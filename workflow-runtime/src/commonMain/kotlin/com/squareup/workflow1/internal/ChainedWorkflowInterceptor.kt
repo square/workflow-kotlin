@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderingAndSnapshot
@@ -8,7 +7,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
@@ -99,56 +97,6 @@ internal class ChainedWorkflowInterceptor(
       }
     }
     return chainedProceed(renderProps, renderState, null)
-  }
-
-  @OptIn(WorkflowExperimentalApi::class)
-  @Composable
-  override fun <P, O, R> onRenderComposeWorkflow(
-    renderProps: P,
-    emitOutput: (O) -> Unit,
-    proceed: @Composable (P, (O) -> Unit) -> R,
-    session: WorkflowSession
-  ): R = onRenderComposeWorkflowStep(
-    index = 0,
-    stepProps = renderProps,
-    stepEmitOutput = emitOutput,
-    stepProceed = proceed,
-    session = session
-  )
-
-  /**
-   * Recursive function for nesting chained interceptors' [onRenderComposeWorkflow] calls. We use
-   * recursion for the compose call since it avoids creating a new list in the composition on every
-   * render call.
-   */
-  @OptIn(WorkflowExperimentalApi::class)
-  @Composable
-  private fun <P, O, R> onRenderComposeWorkflowStep(
-    index: Int,
-    stepProps: P,
-    stepEmitOutput: (O) -> Unit,
-    stepProceed: @Composable (P, (O) -> Unit) -> R,
-    session: WorkflowSession
-  ): R {
-    if (index >= interceptors.size) {
-      return stepProceed(stepProps, stepEmitOutput)
-    }
-
-    val interceptor = interceptors[index]
-    return interceptor.onRenderComposeWorkflow(
-      renderProps = stepProps,
-      emitOutput = stepEmitOutput,
-      proceed = { innerProps, innerEmitOutput ->
-        onRenderComposeWorkflowStep(
-          index = index + 1,
-          stepProps = innerProps,
-          stepEmitOutput = innerEmitOutput,
-          stepProceed = stepProceed,
-          session = session
-        )
-      },
-      session = session
-    )
   }
 
   override fun onSnapshotStateWithChildren(
