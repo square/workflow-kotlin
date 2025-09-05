@@ -2,12 +2,10 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
@@ -19,12 +17,78 @@ import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
 import com.squareup.workflow1.compose.LocalWorkflowComposableRuntimeConfig
 import com.squareup.workflow1.compose.internal.Trapdoor
-import com.squareup.workflow1.compose.internal._DO_NOT_USE_invokeComposeWorkflowProduceRendering
-import com.squareup.workflow1.identifier
+import com.squareup.workflow1.compose.internal._UNSAFE_rememberComposeWorkflowAsStatefulWorkflow
+import com.squareup.workflow1.compose.internal.withCompositionLocals
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.id
+
+/**
+ * Returns a view of a [WorkflowInterceptor] as a [ComposeWorkflowInterceptor]. When the returned
+ * interceptor is provided to a compose workflow runtime, it will intercept all `renderChild` calls
+ * through appropriate [WorkflowInterceptor] methods.
+ */
+@OptIn(WorkflowExperimentalApi::class)
+internal fun WorkflowInterceptor.asComposeWorkflowInterceptor(
+  parentSession: WorkflowSession?,
+  idCounter: IdCounter,
+): ComposeWorkflowInterceptor? =
+  if (this === NoopWorkflowInterceptor) null else {
+    WorkflowInterceptingComposeInterceptor(this, parentSession, idCounter)
+  }
+
+/** See [asComposeWorkflowInterceptor]. */
+@OptIn(WorkflowExperimentalApi::class)
+private class WorkflowInterceptingComposeInterceptor(
+  private val workflowInterceptor: WorkflowInterceptor,
+  private val parentSession: WorkflowSession?,
+  private val idCounter: IdCounter,
+) : ComposeWorkflowInterceptor {
+
+  @Composable
+  override fun <PropsT, OutputT, RenderingT> renderChild(
+    childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
+    props: PropsT,
+    onOutput: ((OutputT) -> Unit)?,
+    proceed: @Composable (
+      childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
+      props: PropsT,
+      onOutput: ((OutputT) -> Unit)?
+    ) -> RenderingT
+  ): RenderingT {
+    val session = LocalParentWorkflowSession.current?.createChild(childWorkflow.id(), idCounter)
+      ?: parentSession.createChild(childWorkflow.id(), idCounter)
+
+    workflowInterceptor.onSessionStarted(
+      // Not exactly the same scope as passed to onInitialState inside renderChild, but it's a
+      // parent so it's probably fine.
+      workflowScope = rememberCoroutineScope(),
+      session = session,
+    )
+
+    val statefulWorkflow = Trapdoor.open { trapdoor ->
+      @Suppress("UNCHECKED_CAST")
+      if (childWorkflow is ComposeWorkflow<*, *, *>) {
+        // The WorkflowInterceptor API requires StatefulWorkflows, so shove it in there.
+        _UNSAFE_rememberComposeWorkflowAsStatefulWorkflow(composeWorkflow = childWorkflow)
+      } else {
+        // asStatefulWorkflow implementations tend to be cached by the Workflow instance so there's
+        // no point to remembering the call.
+        childWorkflow.asStatefulWorkflow()
+      } as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
+    }
+
+    val interceptedWorkflow = workflowInterceptor.intercept(
+      workflow = statefulWorkflow,
+      workflowSession = session
+    )
+
+    return withCompositionLocals(LocalParentWorkflowSession provides session) {
+      proceed(interceptedWorkflow, props, onOutput)
+    }
+  }
+}
 
 private val LocalParentWorkflowSession = staticCompositionLocalOf<WorkflowSession?> { null }
 
@@ -93,91 +157,3 @@ private fun WorkflowSession?.createChild(
   workflowTracer = this?.workflowTracer
     ?: LocalWorkflowComposableRuntimeConfig.current.workflowTracer,
 )
-
-@OptIn(WorkflowExperimentalApi::class)
-internal fun WorkflowInterceptor.asComposeWorkflowInterceptor(
-  parentSession: WorkflowSession?,
-  idCounter: IdCounter,
-): ComposeWorkflowInterceptor? =
-  if (this === NoopWorkflowInterceptor) null else {
-    WorkflowInterceptingComposeInterceptor(this, parentSession, idCounter)
-  }
-
-@OptIn(WorkflowExperimentalApi::class)
-private class WorkflowInterceptingComposeInterceptor(
-  private val workflowInterceptor: WorkflowInterceptor,
-  private val parentSession: WorkflowSession?,
-  private val idCounter: IdCounter,
-) : ComposeWorkflowInterceptor {
-
-  @Composable
-  override fun <PropsT, OutputT, RenderingT> renderChild(
-    childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
-    props: PropsT,
-    onOutput: ((OutputT) -> Unit)?,
-    proceed: @Composable (
-      childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
-      props: PropsT,
-      onOutput: ((OutputT) -> Unit)?
-    ) -> RenderingT
-  ): RenderingT = key(childWorkflow.identifier) {
-    val session = LocalParentWorkflowSession.current?.createChild(childWorkflow.id(), idCounter)
-      ?: parentSession.createChild(childWorkflow.id(), idCounter)
-
-    workflowInterceptor.onSessionStarted(
-      // Not exactly the same scope as passed to onInitialState inside renderChild, but it's a
-      // parent so it's probably fine.
-      workflowScope = rememberCoroutineScope(),
-      session = session,
-    )
-
-    val statefulWorkflow = Trapdoor.open { trapdoor ->
-      @Suppress("UNCHECKED_CAST")
-      if (childWorkflow is ComposeWorkflow<*, *, *>) {
-        // The WorkflowInterceptor API requires StatefulWorkflows, so shove it in there.
-        (childWorkflow as ComposeWorkflow<PropsT, OutputT, RenderingT>)
-          .asStatefulWorkflow(trapdoor, onOutput)
-      } else {
-        childWorkflow.asStatefulWorkflow()
-      } as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
-    }
-
-    val interceptedWorkflow = workflowInterceptor.intercept(
-      workflow = statefulWorkflow,
-      workflowSession = session
-    )
-
-    withCompositionLocals(LocalParentWorkflowSession provides session) {
-      proceed(interceptedWorkflow, props, onOutput)
-    }
-  }
-}
-
-@OptIn(WorkflowExperimentalApi::class)
-private fun <PropsT, OutputT, RenderingT>
-  ComposeWorkflow<PropsT, OutputT, RenderingT>.asStatefulWorkflow(
-  trapdoor: Trapdoor,
-  onOutput: ((OutputT) -> Unit)?,
-) = object : StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
-  override fun initialState(
-    props: PropsT,
-    snapshot: Snapshot?
-  ) {
-  }
-
-  override fun render(
-    renderProps: PropsT,
-    renderState: Unit,
-    context: RenderContext<PropsT, Unit, OutputT>
-  ): RenderingT {
-    return trapdoor.composeReturning {
-      _DO_NOT_USE_invokeComposeWorkflowProduceRendering(
-        workflow = this@asStatefulWorkflow,
-        props = renderProps,
-        emitOutput = onOutput ?: {}
-      )
-    }
-  }
-
-  override fun snapshotState(state: Unit): Snapshot? = null
-}

@@ -71,5 +71,8 @@ public value class Trapdoor(private val composer: Composer) {
      */
     @Composable
     inline fun <R> open(block: (Trapdoor) -> R): R = block(Trapdoor(currentComposer))
+
+    @Composable
+    fun open(): Trapdoor = Trapdoor(currentComposer)
   }
 }

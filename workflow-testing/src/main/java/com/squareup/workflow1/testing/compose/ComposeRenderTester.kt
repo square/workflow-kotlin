@@ -4,14 +4,13 @@ import androidx.compose.runtime.Composable
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.compose.ComposeWorkflow
-import com.squareup.workflow1.compose.WorkflowComposable
 import com.squareup.workflow1.testing.RenderTester
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
 
 @WorkflowExperimentalApi
 public fun <OutputT, RenderingT> testRender(
-  produceRendering: @WorkflowComposable @Composable (emitOutput: (OutputT) -> Unit) -> RenderingT
+  produceRendering: @Composable (emitOutput: (OutputT) -> Unit) -> RenderingT
 ): ComposeRenderTester<OutputT, RenderingT> {
   TODO()
 }

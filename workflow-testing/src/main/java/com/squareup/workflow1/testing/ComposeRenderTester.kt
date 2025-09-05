@@ -14,7 +14,7 @@ import com.squareup.workflow1.compose.internal._DO_NOT_USE_invokeComposeWorkflow
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.compose.ComposeWorkflowState
 import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
-import com.squareup.workflow1.internal.compose.withCompositionLocals
+import com.squareup.workflow1.compose.internal.withCompositionLocals
 import com.squareup.workflow1.testing.RealRenderTester.Expectation
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched

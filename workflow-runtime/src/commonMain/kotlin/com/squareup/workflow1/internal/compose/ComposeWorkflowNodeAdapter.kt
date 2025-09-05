@@ -19,6 +19,8 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.LocalWorkflowComposableRuntimeConfig
 import com.squareup.workflow1.compose.WorkflowComposableRuntimeConfig
+import com.squareup.workflow1.compose.internal.withCompositionLocals
+import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
@@ -183,7 +185,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     LocalSaveableStateRegistry provides saveableStateRegistry,
     LocalWorkflowComposableRuntimeConfig provides workflowComposeRuntimeConfig,
   ) {
-    com.squareup.workflow1.compose.renderChild(
+    renderChild(
       workflow = workflow,
       props = props,
       onOutput = outputsChannel::requireSend

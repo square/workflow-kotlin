@@ -74,32 +74,37 @@ import com.squareup.workflow1.identifier
  * to be a [ComposeWorkflow].
  */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 public fun <PropsT, OutputT, RenderingT> renderChild(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   props: PropsT,
   onOutput: ((OutputT) -> Unit)?
-): RenderingT {
-  val config = LocalWorkflowComposableRuntimeConfig.current
-  key(config) {
+): RenderingT = withFixedWorkflowComposableRuntimeConfig { config ->
+  key(workflow.identifier, config) {
     // Allow the runtime to intercept composable render calls.
-    return if (config.interceptor != null) {
-      config.interceptor.renderChild(
+    if (config.interceptor != null) {
+      // Ensure the interceptor doesn't try to do anything weird with its proceed calls.
+      config.interceptor.renderChildSafely(
         childWorkflow = workflow,
         props = props,
         onOutput = onOutput,
         proceed = { innerWorkflow, innerProps, innerOnOutput ->
-          renderChildImpl(
-            workflow = innerWorkflow,
-            props = innerProps,
-            onOutput = innerOnOutput,
-            runtimeConfig = config.runtimeConfig,
-            workflowTracer = config.workflowTracer
-          )
+          // The interceptor can pass a different workflow instance, so we need to key again.
+          key(innerWorkflow.identifier) {
+            renderChildImpl(
+              workflow = innerWorkflow,
+              props = innerProps,
+              onOutput = innerOnOutput,
+              runtimeConfig = config.runtimeConfig,
+              workflowTracer = config.workflowTracer
+            )
+          }
         }
       )
     } else {
+      // This whole function is keyed on the config, so the fact that there are two callsites of
+      // this function is fine since the only way a different branch can be used is if the entire
+      // workflow tree is being reset anyway.
       renderChildImpl(
         workflow = workflow,
         props = props,
@@ -113,7 +118,6 @@ public fun <PropsT, OutputT, RenderingT> renderChild(
 
 /** @see renderChild */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <OutputT, RenderingT> renderChild(
   workflow: Workflow<Unit, OutputT, RenderingT>,
@@ -122,7 +126,6 @@ inline fun <OutputT, RenderingT> renderChild(
 
 /** @see renderChild */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <PropsT, RenderingT> renderChild(
   workflow: Workflow<PropsT, Nothing, RenderingT>,
@@ -131,7 +134,6 @@ inline fun <PropsT, RenderingT> renderChild(
 
 /** @see renderChild */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <RenderingT> renderChild(
   workflow: Workflow<Unit, Nothing, RenderingT>,
@@ -188,7 +190,6 @@ inline fun <RenderingT> renderChild(
  * to be a [ComposeWorkflow].
  */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 public fun <PropsT, OutputT, RenderingT> renderChildAsState(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -207,7 +208,6 @@ public fun <PropsT, OutputT, RenderingT> renderChildAsState(
 
 /** @see renderChildAsState */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <OutputT, RenderingT> renderChildAsState(
   workflow: Workflow<Unit, OutputT, RenderingT>,
@@ -216,7 +216,6 @@ inline fun <OutputT, RenderingT> renderChildAsState(
 
 /** @see renderChildAsState */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <PropsT, RenderingT> renderChildAsState(
   workflow: Workflow<PropsT, Nothing, RenderingT>,
@@ -225,7 +224,6 @@ inline fun <PropsT, RenderingT> renderChildAsState(
 
 /** @see renderChildAsState */
 @WorkflowExperimentalApi
-@WorkflowComposable
 @Composable
 inline fun <RenderingT> renderChildAsState(
   workflow: Workflow<Unit, Nothing, RenderingT>,
@@ -270,7 +268,8 @@ private fun <PropsT, OutputT, RenderingT> renderChildImpl(
   onOutput: ((OutputT) -> Unit)?,
   runtimeConfig: RuntimeConfig,
   workflowTracer: WorkflowTracer?,
-): RenderingT = key(workflow.identifier) {
+): RenderingT =
+  // Do not need to call key() again here since it's done in renderChild.
   if (workflow is ComposeWorkflow<*, *, *>) {
     workflow as ComposeWorkflow<PropsT, OutputT, RenderingT>
     workflow.invokeProduceRendering(
@@ -333,4 +332,3 @@ private fun <PropsT, OutputT, RenderingT> renderChildImpl(
       statefulWorkflow.render(props, state, renderContext)
     }
   }
-}

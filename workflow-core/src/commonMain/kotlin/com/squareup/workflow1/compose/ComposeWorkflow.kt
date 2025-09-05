@@ -84,7 +84,6 @@ public abstract class ComposeWorkflow<PropsT, OutputT, out RenderingT> :
    * instance for the entire lifetime of this composable, so it's safe to capture in state that
    * lives beyond a single recomposition.
    */
-  @WorkflowComposable
   @Composable
   protected abstract fun produceRendering(
     props: PropsT,

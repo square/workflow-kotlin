@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal.compose
+package com.squareup.workflow1.compose.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,13 +16,12 @@ import androidx.compose.runtime.currentComposer
 @OptIn(InternalComposeApi::class)
 @Composable
 // TODO annotate internal, or pull out
-public fun <T> withCompositionLocals(
+public inline fun <T> withCompositionLocals(
   vararg values: ProvidedValue<*>,
-  content: @Composable () -> T,
+  crossinline content: @Composable () -> T,
 ): T {
   currentComposer.startProviders(values)
   val result = content()
   currentComposer.endProviders()
-
   return result
 }
