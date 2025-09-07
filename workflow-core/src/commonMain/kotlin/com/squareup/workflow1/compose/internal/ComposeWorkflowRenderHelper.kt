@@ -5,9 +5,10 @@ package com.squareup.workflow1.compose.internal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.NonSkippableComposable
-import androidx.compose.runtime.remember
+import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.action
 import com.squareup.workflow1.compose.ComposeWorkflow
@@ -26,22 +27,27 @@ import com.squareup.workflow1.compose.renderChild
 @NonRestartableComposable
 @NonSkippableComposable
 @Composable
-fun <P, O, R> _UNSAFE_rememberComposeWorkflowAsStatefulWorkflow(
+fun <P, O, R> _UNSAFE_createComposeWorkflowAsStatefulWorkflow(
   composeWorkflow: ComposeWorkflow<P, O, R>
 ): StatefulWorkflow<P, Unit, O, R> {
   val trapdoor = Trapdoor.open()
-  return remember(composeWorkflow) {
-    StatefulComposeWorkflow(
-      composeWorkflow = composeWorkflow,
-      trapdoor = trapdoor,
-    )
-  }
+  return StatefulComposeWorkflow(
+    composeWorkflow = composeWorkflow,
+    trapdoor = trapdoor,
+  )
 }
 
 private class StatefulComposeWorkflow<P, O, R>(
   private val composeWorkflow: ComposeWorkflow<P, O, R>,
-  private val trapdoor: Trapdoor,
+  var trapdoor: Trapdoor,
 ) : StatefulWorkflow<P, Unit, O, R>() {
+
+  private lateinit var actionSink: Sink<WorkflowAction<P, Unit, O>>
+  private val emitOutput: (O) -> Unit = { output ->
+    // When rendered by renderChild, the output sink will just send it to emitOutput.
+    actionSink.send(action("emitOutput") { setOutput(output) })
+  }
+
   override fun initialState(
     props: P,
     snapshot: Snapshot?
@@ -53,12 +59,7 @@ private class StatefulComposeWorkflow<P, O, R>(
     renderState: Unit,
     context: RenderContext<P, Unit, O>
   ): R = trapdoor.composeReturning {
-    val emitOutput = remember(context) {
-      fun(output: O) {
-        // When rendered by renderChild, the output sink will just send it to emitOutput.
-        context.actionSink.send(action("emitOutput") { setOutput(output) })
-      }
-    }
+    actionSink = context.actionSink
     composeWorkflow.invokeProduceRendering(
       props = renderProps,
       emitOutput = emitOutput

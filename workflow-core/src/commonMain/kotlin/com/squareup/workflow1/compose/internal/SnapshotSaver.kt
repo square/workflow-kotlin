@@ -4,7 +4,9 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.renderChild
+import com.squareup.workflow1.trace
 import okio.ByteString
 
 /**
@@ -14,12 +16,16 @@ import okio.ByteString
  */
 internal class SnapshotSaver<PropsT, StateT>(
   private val initialProps: PropsT,
-  private val statefulWorkflow: StatefulWorkflow<PropsT, StateT, *, *>
+  private val statefulWorkflow: StatefulWorkflow<PropsT, StateT, *, *>,
+  private val workflowTracer: WorkflowTracer?,
 ) : Saver<StateT, ByteArray> {
-  override fun restore(value: ByteArray): StateT? = statefulWorkflow.initialState(
-    props = initialProps,
-    snapshot = Snapshot.of(ByteString.of(*value))
-  )
+  override fun restore(value: ByteArray): StateT? =
+    workflowTracer.trace(TraceLabels.InitialState) {
+      statefulWorkflow.initialState(
+        props = initialProps,
+        snapshot = Snapshot.of(ByteString.of(*value))
+      )
+    }
 
   override fun SaverScope.save(value: StateT): ByteArray? =
     statefulWorkflow.snapshotState(value)?.bytes?.toByteArray()

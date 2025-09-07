@@ -29,3 +29,13 @@ public inline fun <T> WorkflowTracer?.trace(
     }
   }
 }
+
+public inline fun <T> WorkflowTracer?.traceNoFinally(
+  label: String,
+  block: () -> T
+): T {
+  this?.beginSection(label)
+  val result = block()
+  this?.endSection()
+  return result
+}

@@ -21,7 +21,7 @@ public typealias ComposableRenderChildFunction<PropsT, OutputT, RenderingT> = @C
 
 /**
  * Intercepts calls to [com.squareup.workflow1.compose.renderChild].
- * See [ComposeWorkflowInterceptor.renderChild] for more info.
+ * See [ComposeWorkflowInterceptor.renderWorkflow] for more info.
  * Install an interceptor by providing a [WorkflowComposableRuntimeConfig] via
  * [LocalWorkflowComposableRuntimeConfig].
  *
@@ -50,7 +50,7 @@ public interface ComposeWorkflowInterceptor {
    *   extra cost.
    */
   @Composable
-  fun <PropsT, OutputT, RenderingT> renderChild(
+  fun <PropsT, OutputT, RenderingT> renderWorkflow(
     childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
     props: PropsT,
     onOutput: ((OutputT) -> Unit)?,
@@ -59,7 +59,7 @@ public interface ComposeWorkflowInterceptor {
 }
 
 /**
- * Calls [ComposeWorkflowInterceptor.renderChild] with some checks to ensure the
+ * Calls [ComposeWorkflowInterceptor.renderWorkflow] with some checks to ensure the
  * [ComposeWorkflowInterceptor] is complying with its contract:
  *
  * - Throws [IllegalStateException] if [proceed] is called more than once.
@@ -71,7 +71,7 @@ internal inline fun <P, O, R> ComposeWorkflowInterceptor.renderChildSafely(
   props: P,
   noinline onOutput: ((O) -> Unit)?,
   crossinline proceed: ComposableRenderChildFunction<P, O, R>
-): R = this.renderChild(
+): R = this.renderWorkflow(
   childWorkflow = childWorkflow,
   props = props,
   onOutput = onOutput,

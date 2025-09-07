@@ -1,14 +1,23 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.ComposableRenderChildFunction
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 
 /**
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
-public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
+@OptIn(WorkflowExperimentalApi::class)
+public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor,
+  ComposeWorkflowInterceptor {
+
+  override val composeInterceptor: ComposeWorkflowInterceptor?
+    get() = this
+
   override fun onSessionStarted(
     workflowScope: CoroutineScope,
     session: WorkflowSession
@@ -57,9 +66,18 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     proceed(state)
   }
 
+  @Composable override fun <PropsT, OutputT, RenderingT> renderWorkflow(
+    childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
+    props: PropsT,
+    onOutput: ((OutputT) -> Unit)?,
+    proceed: ComposableRenderChildFunction<PropsT, OutputT, RenderingT>
+  ): RenderingT = logMethod("renderWorkflow") {
+    proceed(childWorkflow, props, onOutput)
+  }
+
   private inline fun <T> logMethod(
     name: String,
-    session: WorkflowSession,
+    session: WorkflowSession? = null,
     vararg extras: Pair<String, Any?>,
     block: () -> T
   ): T {
@@ -90,7 +108,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
    */
   protected open fun logBeforeMethod(
     name: String,
-    session: WorkflowSession,
+    session: WorkflowSession?,
     vararg extras: Pair<String, Any?>
   ) {
     log("START| ${formatLogMessage(name, session, extras)}")
@@ -101,7 +119,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
    */
   protected open fun logAfterMethod(
     name: String,
-    session: WorkflowSession,
+    session: WorkflowSession?,
     vararg extras: Pair<String, Any?>
   ) {
     log("  END| ${formatLogMessage(name, session, extras)}")
@@ -118,12 +136,12 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
 
   private fun formatLogMessage(
     name: String,
-    session: WorkflowSession,
+    session: WorkflowSession?,
     extras: Array<out Pair<String, Any?>>
   ): String = if (extras.isEmpty()) {
-    "$name($session)"
+    "$name(session=$session)"
   } else {
-    "$name($session, ${extras.toMap()})"
+    "$name(session=$session, ${extras.toMap()})"
   }
 
   private inner class SimpleLoggingContextInterceptor<P, S, O>(

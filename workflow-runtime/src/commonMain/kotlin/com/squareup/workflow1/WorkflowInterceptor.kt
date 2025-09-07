@@ -3,6 +3,8 @@ package com.squareup.workflow1
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -65,6 +67,27 @@ import kotlin.reflect.KType
  * then starts again, the value will be different.
  */
 public interface WorkflowInterceptor {
+
+  /**
+   * Optional [ComposeWorkflowInterceptor] used to handle [ComposeWorkflow]s. If this is null, then
+   * the stateful interceptor methods [onInitialState], [onPropsChanged], [onRender], and
+   * [onSnapshotState] will be invoked on a special view of the [ComposeWorkflow]. This requires
+   * more bookkeeping than just invoking a [ComposeWorkflowInterceptor] directly, interceptors
+   * *should* implement this property to return non-null.
+   *
+   * Example:
+   * ```
+   * class MyInterceptor: WorkflowInterceptor, ComposeWorkflowInterceptor {
+   *   override val composeInterceptor: ComposeWorkflowInterceptor
+   *     get() = this
+   *
+   *   // …
+   * }
+   * ```
+   */
+  @WorkflowExperimentalApi
+  public val composeInterceptor: ComposeWorkflowInterceptor?
+    get() = null
 
   /**
    * Called when the session is starting, before [onInitialState].

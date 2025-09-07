@@ -53,7 +53,7 @@ internal class ComposeRenderTester<PropsT, OutputT, RenderingT>(
   private var processedOutputHandler: OutputWithHandler<*>? = null
 
   /**
-   * Tracks the identifier/key pairs of all calls to [renderChild], so it can emulate the behavior
+   * Tracks the identifier/key pairs of all calls to [renderWorkflow], so it can emulate the behavior
    * of the real runtime and throw if a workflow is rendered twice in the same pass.
    */
   private val renderedChildren: MutableList<WorkflowIdentifier> = mutableListOf()

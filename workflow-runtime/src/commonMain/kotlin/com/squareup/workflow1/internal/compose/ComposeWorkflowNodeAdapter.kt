@@ -1,7 +1,10 @@
 package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
@@ -18,7 +21,6 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.compose.LocalWorkflowComposableRuntimeConfig
-import com.squareup.workflow1.compose.WorkflowComposableRuntimeConfig
 import com.squareup.workflow1.compose.internal.withCompositionLocals
 import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.internal.IdCounter
@@ -26,16 +28,12 @@ import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
 import com.squareup.workflow1.internal.requireSend
-import com.squareup.workflow1.trace
+import com.squareup.workflow1.traceNoFinally
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
 private const val OUTPUT_QUEUE_LIMIT = 1_000
-
-internal fun log(message: String) = message.lines().forEach {
-  // println("WorkflowComposableNode $it")
-}
 
 /**
  * Entry point into the Compose runtime from the Workflow runtime.
@@ -56,7 +54,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   parentSession: WorkflowSession?,
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  idCounter: IdCounter = IdCounter()
+  idCounter: IdCounter? = null,
 ) :
   WorkflowNode<PropsT, OutputT, RenderingT>(
     id = id,
@@ -65,8 +63,12 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     emitAppliedActionToParent = emitAppliedActionToParent,
   ) {
 
+  /**
+   * We use a separate channel for recompositions so we can drain it during render to prevent extra
+   * no-op render passes.
+   */
   private val recomposeChannel = Channel<Unit>(capacity = 1)
-  private val molecule = workflowTracer.trace("ComposeWorkflowAdapterInstantiateCompose") {
+  private val molecule = workflowTracer.traceNoFinally("ComposeWorkflowAdapterInstantiateCompose") {
     scope.launchSynchronizedMolecule(
       onNeedsRecomposition = { recomposeChannel.trySend(Unit) }
     )
@@ -83,8 +85,6 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
    * Function invoked when [onNextAction] receives an output from [outputsChannel].
    */
   private val processOutputFromChannel: (OutputT) -> ActionProcessingResult = { output ->
-    log("got output from channel: $output")
-
     // Ensure any state updates performed by the output sender gets to invalidate any
     // compositions that read them, so we can check needsRecompose below.
     Snapshot.sendApplyNotifications()
@@ -102,7 +102,6 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     )
 
     // Don't bubble up if no state changed and there was no output.
-    log("adapter node propagating action cascade up (aggregateAction=$actionApplied)")
     emitAppliedActionToParent(actionApplied)
   }
 
@@ -122,7 +121,6 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     )
 
     // Propagate the action up the workflow tree.
-    log("frame request received from channel, sending no output to parent: $applied")
     emitAppliedActionToParent(applied)
   }
 
@@ -133,20 +131,33 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     workflowTracer = workflowTracer,
   )
 
+  private var workflow: Workflow<PropsT,OutputT,RenderingT>? by mutableStateOf(null)
+  private var input: PropsT? by mutableStateOf(null)
+  private val content: @Composable () -> RenderingT = {
+    withCompositionLocals(
+      LocalSaveableStateRegistry provides saveableStateRegistry,
+      LocalWorkflowComposableRuntimeConfig provides workflowComposeRuntimeConfig,
+    ) {
+      renderChild(
+        workflow = workflow!!,
+        props = input!!,
+        onOutput = outputsChannel::requireSend
+      )
+    }
+  }
+
   override fun render(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
     input: PropsT
   ): RenderingT {
     // Ensure that recomposer has a chance to process any state changes from the action cascade that
     // triggered this render before we check for a frame.
-    log("render sending apply notifications again needsRecompose=${molecule.needsRecomposition}")
     // TODO Consider pulling this up into the workflow runtime loop, since we only need to run it
     //  once before the entire tree renders, not at every level. In fact, if this is only here to
     //  ensure cachedComposeWorkflow and lastProps are seen, that will only work if this
     //  ComposeWorkflow is not nested below another traditional and compose workflow, since anything
     //  rendering under the first CW will be in a snapshot.
     Snapshot.sendApplyNotifications()
-    log("sent apply notifications, needsRecompose=${molecule.needsRecomposition}")
 
     // If this re-render was not triggered by the channel handler, then clear it so we don't
     // immediately trigger another redundant render pass after this.
@@ -154,43 +165,21 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
 
     // It is very likely that this will be a noop: any time the workflow runtime is doing a
     // render pass and no state read by our composition changed, there shouldn't be a frame request.
-    workflowTracer.trace("ComposeWorkflowAdapterRecomposeWithContent") {
-      return molecule.recomposeWithContent {
-        workflowTracer?.beginSection("ComposeWorkflowAdapterProduceRendering")
-        produceRendering(
-          workflow = workflow,
-          props = input
-        ).also {
-          workflowTracer?.endSection()
-        }
-      }
+    return workflowTracer.traceNoFinally("ComposeWorkflowAdapterRecomposeWithContent") {
+      this.workflow = workflow
+      this.input = input
+      // TODO finish cleaning this up
+      molecule.recomposeWithContent(content)
     }
   }
 
   private val workflowComposeRuntimeConfig = WorkflowComposableRuntimeConfig(
+    interceptor = interceptor,
+    parentSession = parentSession,
+    idCounter = idCounter,
     runtimeConfig = runtimeConfig,
     workflowTracer = workflowTracer,
-    interceptor = interceptor.asComposeWorkflowInterceptor(
-      idCounter = idCounter,
-      parentSession = parentSession,
-    ),
   )
-
-  @OptIn(WorkflowExperimentalApi::class)
-  @Composable
-  private fun produceRendering(
-    workflow: Workflow<PropsT, OutputT, RenderingT>,
-    props: PropsT
-  ): RenderingT = withCompositionLocals(
-    LocalSaveableStateRegistry provides saveableStateRegistry,
-    LocalWorkflowComposableRuntimeConfig provides workflowComposeRuntimeConfig,
-  ) {
-    renderChild(
-      workflow = workflow,
-      props = props,
-      onOutput = outputsChannel::requireSend
-    )
-  }
 
   override fun snapshot(): TreeSnapshot {
     // Get rid of any snapshots that weren't applied on the first render pass.
@@ -205,10 +194,11 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     with(selector) {
       // We must register for child actions before frame requests, because selection is
       // strongly-ordered: If multiple subjects become available simultaneously, then the one whose
-      // receiver was registered first will fire first. We always want to handle outputs first because
-      // the output handler will implicitly also handle frame requests. If a frame request happens at
-      // the same time or the output handler enqueues a frame request, then the subsequent render pass
-      // will dequeue the frame request itself before the next call to register.
+      // receiver was registered first will fire first. We always want to handle outputs first
+      // because the output handler will implicitly also handle frame requests. If a frame request
+      // happens at the same time or the output handler enqueues a frame request, then the
+      // subsequent render pass will dequeue the frame request itself before the next call to
+      // register.
       outputsChannel.onReceive(processOutputFromChannel)
 
       // If there's a frame request, then some state changed, which is equivalent to the traditional

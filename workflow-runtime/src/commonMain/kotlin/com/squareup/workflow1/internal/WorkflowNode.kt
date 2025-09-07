@@ -35,13 +35,12 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  idCounter: IdCounter? = null
+  idCounter: IdCounter? = null,
 ): WorkflowNode<PropsT, OutputT, RenderingT> = when (workflow) {
   is ComposeWorkflow<*, *, *> -> {
     // Reuse the compose runtime if possible.
     ComposeWorkflowNodeAdapter(
       id = id,
-      initialProps = initialProps,
       snapshot = snapshot,
       baseContext = baseContext,
       runtimeConfig = runtimeConfig,

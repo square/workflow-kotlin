@@ -7,6 +7,7 @@ import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.tracing.Trace
 import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime

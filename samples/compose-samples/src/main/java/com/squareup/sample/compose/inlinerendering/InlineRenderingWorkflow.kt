@@ -14,7 +14,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +35,7 @@ object InlineRenderingWorkflow : ComposeWorkflow<Unit, Nothing, Screen>() {
     props: Unit,
     emitOutput: (Nothing) -> Unit
   ): Screen {
-    var state by rememberSaveable { mutableIntStateOf(0) }
+    var state by rememberSaveable { mutableStateOf(0) }
     return ComposeScreen {
       Content(state, onClick = { state++ })
     }

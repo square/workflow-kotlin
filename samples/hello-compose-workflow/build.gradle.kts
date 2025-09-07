@@ -14,7 +14,8 @@ android {
 }
 
 dependencies {
-  debugImplementation(libs.squareup.leakcanary.android)
+  // Disable for profiling, uncomment for normal builds.
+  // debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(libs.androidx.activity.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)

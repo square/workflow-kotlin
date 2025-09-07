@@ -22,7 +22,9 @@ import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.withEnvironment
 import com.squareup.workflow1.ui.workflowContentView
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.plus
 
 private val viewRegistry = ViewRegistry(RecursiveComposableFactory)
 
@@ -46,7 +48,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
-        scope = viewModelScope,
+        scope = viewModelScope + Dispatchers.Main,
         savedStateHandle = savedState,
         runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
         interceptors = listOf(SimpleLoggingWorkflowInterceptor())

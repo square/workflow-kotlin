@@ -5,29 +5,18 @@ package com.squareup.workflow1.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
-import com.squareup.workflow1.applyTo
-import com.squareup.workflow1.compose.internal.SnapshotSaver
-import com.squareup.workflow1.compose.internal.Trapdoor
-import com.squareup.workflow1.compose.internal.TrapdoorRenderContext
+import com.squareup.workflow1.compose.internal.TraceLabels
+import com.squareup.workflow1.compose.internal.renderTraditionalWorkflow
 import com.squareup.workflow1.identifier
+import com.squareup.workflow1.traceNoFinally
 
 /**
  * Renders a child [Workflow] with the given [props] and returns its rendering.
@@ -83,24 +72,27 @@ public fun <PropsT, OutputT, RenderingT> renderChild(
   key(workflow.identifier, config) {
     // Allow the runtime to intercept composable render calls.
     if (config.interceptor != null) {
-      // Ensure the interceptor doesn't try to do anything weird with its proceed calls.
-      config.interceptor.renderChildSafely(
-        childWorkflow = workflow,
-        props = props,
-        onOutput = onOutput,
-        proceed = { innerWorkflow, innerProps, innerOnOutput ->
-          // The interceptor can pass a different workflow instance, so we need to key again.
-          key(innerWorkflow.identifier) {
-            renderChildImpl(
-              workflow = innerWorkflow,
-              props = innerProps,
-              onOutput = innerOnOutput,
-              runtimeConfig = config.runtimeConfig,
-              workflowTracer = config.workflowTracer
-            )
+      config.workflowTracer.traceNoFinally(TraceLabels.InterceptRenderWorkflow) {
+        // renderChildSafely ensures the interceptor doesn't try to do anything weird with its
+        // proceed calls.
+        config.interceptor.renderChildSafely(
+          childWorkflow = workflow,
+          props = props,
+          onOutput = onOutput,
+          proceed = { innerWorkflow, innerProps, innerOnOutput ->
+            // The interceptor can pass a different workflow instance, so we need to key again.
+            key(innerWorkflow.identifier) {
+              renderChildImpl(
+                workflow = innerWorkflow,
+                props = innerProps,
+                onOutput = innerOnOutput,
+                runtimeConfig = config.runtimeConfig,
+                workflowTracer = config.workflowTracer
+              )
+            }
           }
-        }
-      )
+        )
+      }
     } else {
       // This whole function is keyed on the config, so the fact that there are two callsites of
       // this function is fine since the only way a different branch can be used is if the entire
@@ -270,65 +262,24 @@ private fun <PropsT, OutputT, RenderingT> renderChildImpl(
   workflowTracer: WorkflowTracer?,
 ): RenderingT =
   // Do not need to call key() again here since it's done in renderChild.
-  if (workflow is ComposeWorkflow<*, *, *>) {
-    workflow as ComposeWorkflow<PropsT, OutputT, RenderingT>
-    workflow.invokeProduceRendering(
-      props = props,
-      emitOutput = onOutput ?: {}
-    )
-  } else {
-    val statefulWorkflow = remember {
-      @Suppress("UNCHECKED_CAST")
-      workflow.asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
-    }
-
-    val workflowScope = rememberCoroutineScope()
-
-    var state by rememberSaveable(
-      stateSaver = SnapshotSaver(
-        initialProps = props,
-        statefulWorkflow = statefulWorkflow
+  workflowTracer.traceNoFinally(TraceLabels.RenderWorkflow) {
+    if (workflow is ComposeWorkflow<*, *, *>) {
+      workflow as ComposeWorkflow<PropsT, OutputT, RenderingT>
+      workflow.invokeProduceRendering(
+        props = props,
+        emitOutput = onOutput ?: {}
       )
-    ) {
-      mutableStateOf(
-        statefulWorkflow.initialState(
-          props = props,
-          snapshot = null,
-          workflowScope = workflowScope
-        )
-      )
-    }
-
-    var lastProps by remember { mutableStateOf(props) }
-    Snapshot.withoutReadObservation {
-      if (props != lastProps) {
-        state = statefulWorkflow.onPropsChanged(old = lastProps, new = props, state = state)
-        lastProps = props
+    } else {
+      val statefulWorkflow = remember {
+        @Suppress("UNCHECKED_CAST")
+        workflow.asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
       }
-    }
-
-    val updatedOnOutput by rememberUpdatedState(onOutput)
-    val actionSink = remember {
-      object : Sink<WorkflowAction<PropsT, Any?, OutputT>> {
-        override fun send(value: WorkflowAction<PropsT, Any?, OutputT>) {
-          val (newState, applied) = value.applyTo(lastProps, state)
-          state = newState
-          updatedOnOutput?.let { onOutput ->
-            applied.output?.value?.let(onOutput)
-          }
-        }
-      }
-    }
-
-    Trapdoor.open { trapdoor ->
-      val baseContext: BaseRenderContext<PropsT, Any?, OutputT> = TrapdoorRenderContext(
+      renderTraditionalWorkflow(
+        workflow = statefulWorkflow,
+        props = props,
+        onOutput = onOutput,
         runtimeConfig = runtimeConfig,
         workflowTracer = workflowTracer,
-        actionSink = actionSink,
-        handleChildAction = actionSink::send,
-        trapdoor = trapdoor
       )
-      val renderContext = RenderContext(baseContext, statefulWorkflow)
-      statefulWorkflow.render(props, state, renderContext)
     }
   }

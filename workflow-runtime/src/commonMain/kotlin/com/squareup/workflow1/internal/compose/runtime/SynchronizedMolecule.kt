@@ -168,6 +168,8 @@ private class RealSynchronizedMolecule(
   override fun <R> recomposeWithContent(content: @Composable () -> R): R {
     // Update content in a snapshot to ensure it is applied before we ask for a frame.
     // Snapshot.withMutableSnapshot {
+    // TODO get rid of this entirely, only allow content to be specified in constructor. This is a
+    //  useless state write for our one use case and slow.
     this.content = content
     // }
     Snapshot.sendApplyNotifications()
