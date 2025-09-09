@@ -11,24 +11,33 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 /**
  * Only give back the specific emulator device, i.e. "emulator-5554"
  */
 private val emulatorRegex = Regex("""\bemulator-\d+\b""")
+private const val ADB_DEVICE_LIST_POLLING_INTERVAL_MS = 3000L
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun DisplayDevices(
   onDeviceSelect: (String) -> Unit,
-  devices: List<String>,
   modifier: Modifier = Modifier,
 ) {
+  val devices by produceState(initialValue = listDevices()) {
+    while (true) {
+      delay(ADB_DEVICE_LIST_POLLING_INTERVAL_MS)
+      value = listDevices()
+    }
+  }
   Box(
     modifier = modifier
       .fillMaxWidth(),
@@ -67,3 +76,46 @@ internal fun DisplayDevices(
     }
   }
 }
+
+/**
+ * Allows users to select from multiple devices that are currently running.
+ */
+private fun listDevices(): List<String> {
+  if (adb == null) return emptyList()
+  val process = ProcessBuilder(adb, "devices", "-l").start()
+  process.waitFor()
+  // We drop the header "List of devices attached"
+  val devices = process.inputStream.use {
+    it.bufferedReader().readLines().drop(1).dropLast(1)
+  }
+
+  return devices.mapNotNull { device ->
+    if (device.isBlank()) return@mapNotNull null
+    val deviceId = device.split(' ').first()
+    val deviceName = ProcessBuilder(adb, "-s", deviceId, "emu", "avd", "name").start()
+    deviceName.waitFor()
+    "$deviceId " + deviceName.inputStream.use {
+      it.bufferedReader().readLines().firstOrNull() ?: ""
+    }
+  }
+}
+
+val adb: String? by lazy {
+  listOfNotNull(
+    System.getenv("ANDROID_HOME")?.let { "$it/platform-tools/adb"},
+    // Common macOS Android SDK locations
+    "${System.getProperty("user.home")}/Library/Android/sdk/platform-tools/adb",
+    "/Users/${System.getProperty("user.name")}/Library/Android/sdk/platform-tools/adb",
+  ).firstOrNull { path ->
+    try {
+      val process = ProcessBuilder(path, "version").start()
+      if (process.waitFor() == 0) {
+        return@firstOrNull true
+      }
+    } catch (e: Exception) {
+      println(e)
+    }
+    return@firstOrNull false
+  }
+}
+

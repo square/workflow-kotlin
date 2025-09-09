@@ -29,13 +29,6 @@ internal fun LandingWindow(
   onFileSelected: (PlatformFile) -> Unit,
   onDeviceSelected: (String) -> Unit
 ) {
-  val devices by produceState(initialValue = listDevices()) {
-    while (true) {
-      delay(3000L)
-      value = listDevices()
-    }
-  }
-  
   Box(modifier = modifier.fillMaxSize()) {
     Column(
       modifier = Modifier
@@ -75,50 +68,7 @@ internal fun LandingWindow(
       
       DisplayDevices(
         onDeviceSelect = onDeviceSelected,
-        devices = devices
       )
     }
-  }
-}
-
-/**
- * Allows users to select from multiple devices that are currently running.
- */
-private fun listDevices(): List<String> {
-  if (adb == null) return emptyList()
-  val process = ProcessBuilder(adb, "devices", "-l").start()
-  process.waitFor()
-  // We drop the header "List of devices attached"
-  val devices = process.inputStream.use {
-    it.bufferedReader().readLines().drop(1).dropLast(1)
-  }
-
-  return devices.mapNotNull { device ->
-    if (device.isBlank()) return@mapNotNull null
-      val deviceId = device.split(' ').first()
-      val deviceName = ProcessBuilder(adb, "-s", deviceId, "emu", "avd", "name").start()
-      deviceName.waitFor()
-      "$deviceId " + deviceName.inputStream.use {
-        it.bufferedReader().readLines().firstOrNull() ?: ""
-      }
-  }
-}
-
-val adb: String? by lazy {
-  listOfNotNull(
-    System.getenv("ANDROID_HOME")?.let { "$it/platform-tools/adb"},
-    // Common macOS Android SDK locations
-    "${System.getProperty("user.home")}/Library/Android/sdk/platform-tools/adb",
-    "/Users/${System.getProperty("user.name")}/Library/Android/sdk/platform-tools/adb",
-  ).firstOrNull { path ->
-    try {
-      val process = ProcessBuilder(path, "version").start()
-      if (process.waitFor() == 0) {
-        return@firstOrNull true
-      }
-    } catch (e: Exception) {
-      println(e)
-    }
-    return@firstOrNull false
   }
 }
