@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("kotlin-multiplatform")
@@ -27,6 +29,8 @@ kotlin {
         implementation(libs.squareup.moshi.kotlin)
         implementation(libs.filekit.dialogs.compose)
         implementation(libs.java.diff.utils)
+        implementation(libs.telephoto)
+        implementation(libs.skiko)
       }
     }
     jvmTest {
@@ -50,10 +54,14 @@ compose {
         includeAllModules = true
         targetFormats(TargetFormat.Dmg)
         packageName = "Workflow Trace Viewer"
-        packageVersion = "1.0.0"
+        packageVersion = (property("VERSION_NAME") as String).substringBefore("-SNAPSHOT")
         macOS {
           bundleID = "com.squareup.workflow1.traceviewer"
         }
+      }
+
+      buildTypes.release.proguard {
+        isEnabled.set(false)
       }
     }
   }
@@ -61,4 +69,10 @@ compose {
 
 tasks.named<Test>("jvmTest") {
   useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_11)
+  }
 }

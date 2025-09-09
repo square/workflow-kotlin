@@ -1,7 +1,7 @@
 public final class com/squareup/workflow1/traceviewer/ComposableSingletons$MainKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ComposableSingletons$MainKt;
 	public fun <init> ()V
-	public final fun getLambda$468449326$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-793818668$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class com/squareup/workflow1/traceviewer/MainKt {
@@ -9,10 +9,37 @@ public final class com/squareup/workflow1/traceviewer/MainKt {
 	public static synthetic fun main ([Ljava/lang/String;)V
 }
 
+public abstract interface class com/squareup/workflow1/traceviewer/TraceWindow {
+}
+
+public final class com/squareup/workflow1/traceviewer/TraceWindow$DeviceWindow : com/squareup/workflow1/traceviewer/TraceWindow {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/TraceWindow$DeviceWindow;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/traceviewer/TraceWindow$DeviceWindow;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/traceviewer/TraceWindow$DeviceWindow;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDevice ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/traceviewer/TraceWindow$FileWindow : com/squareup/workflow1/traceviewer/TraceWindow {
+	public static final field $stable I
+	public fun <init> (Lio/github/vinceglb/filekit/PlatformFile;)V
+	public final fun component1 ()Lio/github/vinceglb/filekit/PlatformFile;
+	public final fun copy (Lio/github/vinceglb/filekit/PlatformFile;)Lcom/squareup/workflow1/traceviewer/TraceWindow$FileWindow;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/traceviewer/TraceWindow$FileWindow;Lio/github/vinceglb/filekit/PlatformFile;ILjava/lang/Object;)Lcom/squareup/workflow1/traceviewer/TraceWindow$FileWindow;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFile ()Lio/github/vinceglb/filekit/PlatformFile;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/ComposableSingletons$WorkflowInfoPanelKt;
 	public fun <init> ()V
-	public final fun getLambda$-1653175968$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1925612255$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$SearchBoxKt {
@@ -26,5 +53,13 @@ public final class com/squareup/workflow1/traceviewer/ui/control/ComposableSingl
 	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ui/control/ComposableSingletons$UploadFileKt;
 	public fun <init> ()V
 	public final fun getLambda$-1248702605$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/squareup/workflow1/traceviewer/ui/control/DisplayDevicesKt {
+	public static final fun getAdb ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/traceviewer/util/parser/TraceParserKt {
+	public static final fun Error (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)V
 }
 

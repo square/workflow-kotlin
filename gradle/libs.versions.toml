@@ -92,6 +92,8 @@ squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.3"
 squareup-workflow = "1.0.0"
 
+skiko = "0.9.4"
+telephoto = "0.16.0"
 timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.0.0"
@@ -203,7 +205,7 @@ google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin
 hamcrest = "org.hamcrest:hamcrest-core:2.2"
 
 java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
-
+telephoto = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
@@ -250,6 +252,8 @@ robolectric-annotations = { module = "org.robolectric:annotations", version.ref 
 
 rxjava2-rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxjava2-android" }
 rxjava2-rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava2-core" }
+
+skiko = { module = "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64", version.ref = "skiko" }
 
 squareup-curtains = { module = "com.squareup.curtains:curtains", version.ref = "squareup-curtains" }
 
