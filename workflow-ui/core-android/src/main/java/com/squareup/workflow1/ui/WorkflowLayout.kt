@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.os.Build.VERSION
+import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -20,6 +21,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -89,8 +91,8 @@ public class WorkflowLayout(
    * @param [repeatOnLifecycle] the lifecycle state in which renderings should be actively
    * updated. Defaults to STARTED, which is appropriate for Activity and Fragment.
    * @param [collectionContext] additional [CoroutineContext] we want for the coroutine that is
-   * launched to collect the renderings. This should not override the [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher]
-   * but may include some other instrumentation elements.
+   * launched to collect the renderings, can include a different dispatcher - but it should be
+   * a main thread dispatcher!
    *
    * @return the [Job] started to collect [renderings], to give callers the option to
    * [cancel][Job.cancel] collection -- e.g., before calling [take] again with a new
@@ -104,16 +106,15 @@ public class WorkflowLayout(
     repeatOnLifecycle: State = STARTED,
     collectionContext: CoroutineContext = EmptyCoroutineContext
   ): Job {
-    // We remove the dispatcher as we want to use what is provided by the lifecycle.coroutineScope.
-    val contextWithoutDispatcher = collectionContext.minusKey(CoroutineDispatcher.Key)
-    val lifecycleDispatcher = lifecycle.coroutineScope.coroutineContext[CoroutineDispatcher.Key]
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
-    return lifecycle.coroutineScope.launch(contextWithoutDispatcher) {
+    return lifecycle.coroutineScope.launch {
       lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
-        require(coroutineContext[CoroutineDispatcher.Key] == lifecycleDispatcher) {
-          "Collection dispatch should happen on the lifecycle's dispatcher."
+        withContext(collectionContext) {
+          require(Looper.myLooper() == Looper.getMainLooper()) {
+            "Collection dispatch should happen on the main thread!"
+          }
+          renderings.collect { show(it) }
         }
-        renderings.collect { show(it) }
       }
     }
   }

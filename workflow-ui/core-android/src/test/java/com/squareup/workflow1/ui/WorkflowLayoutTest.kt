@@ -92,23 +92,6 @@ internal class WorkflowLayoutTest {
     unoriginal.show(BScreen(), env)
   }
 
-  @Test fun usesLifecycleDispatcher() {
-    val lifecycleDispatcher = UnconfinedTestDispatcher()
-    val collectionContext: CoroutineContext = UnconfinedTestDispatcher()
-    val testLifecycle = TestLifecycleOwner(
-      Lifecycle.State.RESUMED,
-      lifecycleDispatcher
-    )
-
-    workflowLayout.take(
-      lifecycle = testLifecycle.lifecycle,
-      renderings = flowOf(WrappedScreen(), WrappedScreen()),
-      collectionContext = collectionContext
-    )
-
-    // No crash then we safely removed the dispatcher.
-  }
-
   @Test fun takes() {
     val lifecycleDispatcher = UnconfinedTestDispatcher()
     val testLifecycle = TestLifecycleOwner(
