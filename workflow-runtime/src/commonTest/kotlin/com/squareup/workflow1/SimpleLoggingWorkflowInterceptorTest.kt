@@ -3,6 +3,7 @@ package com.squareup.workflow1
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -90,6 +91,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     override val parent: WorkflowSession? get() = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
     override val workflowTracer: WorkflowTracer? = null
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
   }
 
   private object FakeRenderContext : BaseRenderContext<Unit, Unit, Nothing> {

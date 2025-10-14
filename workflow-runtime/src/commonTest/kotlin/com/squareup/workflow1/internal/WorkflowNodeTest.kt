@@ -42,6 +42,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.typeOf
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -1418,5 +1419,6 @@ internal class WorkflowNodeTest {
     override val parent: WorkflowSession? = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
     override val workflowTracer: WorkflowTracer? = null
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
   }
 }

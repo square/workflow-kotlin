@@ -123,6 +123,7 @@ public abstract interface class com/squareup/workflow1/WorkflowInterceptor$Workf
 	public abstract fun getParent ()Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;
 	public abstract fun getRenderKey ()Ljava/lang/String;
 	public abstract fun getRuntimeConfig ()Ljava/util/Set;
+	public abstract fun getRuntimeContext ()Lkotlin/coroutines/CoroutineContext;
 	public abstract fun getSessionId ()J
 	public abstract fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public abstract fun isRootWorkflow ()Z

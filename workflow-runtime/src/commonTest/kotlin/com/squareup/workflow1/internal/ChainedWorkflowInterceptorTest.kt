@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
 import kotlin.test.Test
@@ -359,5 +360,6 @@ internal class ChainedWorkflowInterceptorTest {
     override val parent: WorkflowSession? = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
     override val workflowTracer: WorkflowTracer? = null
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
   }
 }

@@ -223,6 +223,9 @@ public interface WorkflowInterceptor {
     /** The [RuntimeConfig] of the runtime this session is executing in. */
     public val runtimeConfig: RuntimeConfig
 
+    /** The [CoroutineContext] of the runtime this session is executing in. */
+    public val runtimeContext: CoroutineContext
+
     /** The optional [WorkflowTracer] of the runtime this session is executing in. */
     public val workflowTracer: WorkflowTracer?
   }
