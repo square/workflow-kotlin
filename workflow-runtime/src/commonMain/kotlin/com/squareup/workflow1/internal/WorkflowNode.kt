@@ -71,6 +71,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    */
   override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
 
+  override val runtimeContext: CoroutineContext
+    get() = coroutineContext
+
   // WorkflowInstance properties
   override val identifier: WorkflowIdentifier get() = id.identifier
   override val renderKey: String get() = id.name
