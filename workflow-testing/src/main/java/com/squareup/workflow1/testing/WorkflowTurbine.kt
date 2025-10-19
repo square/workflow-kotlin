@@ -1,27 +1,30 @@
 package com.squareup.workflow1.testing
 
 import app.cash.turbine.ReceiveTurbine
-import app.cash.turbine.test
-import app.cash.turbine.testIn
 import app.cash.turbine.turbineScope
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFresh
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromState
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
 import com.squareup.workflow1.testing.WorkflowTurbine.Companion.WORKFLOW_TEST_DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -34,7 +37,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * state persistence as that is not needed for this style of test.
  *
  * The [coroutineContext] rather than a [CoroutineScope] is passed so that this harness handles the
- * scope for the Workflow runtime for you but you can still specify context for it.
+ * scope for the Workflow runtime for you, but you can still specify context for it.
  *
  * A [testTimeout] may be specified to override the default [WORKFLOW_TEST_DEFAULT_TIMEOUT_MS] for
  * any particular test. This is the max amount of time the test could spend waiting on a rendering.
@@ -48,14 +51,78 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderForTest(
   props: StateFlow<PropsT>,
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
-) {
-  val workflow = this
+) = asStatefulWorkflow().renderForTest(
+  props,
+  testParams,
+  coroutineContext,
+  onOutput,
+  testTimeout,
+  testCase
+)
+
+/**
+ * Version of [renderForTest] that does not require props. For Workflows that have [Unit]
+ * props type.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTest(
+  coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
+  interceptors: List<WorkflowInterceptor> = emptyList(),
+  onOutput: suspend (OutputT) -> Unit = {},
+  testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
+): Unit = renderForTest(
+  props = MutableStateFlow(Unit).asStateFlow(),
+  testParams = testParams,
+  coroutineContext = coroutineContext,
+  interceptors = interceptors,
+  onOutput = onOutput,
+  testTimeout = testTimeout,
+  testCase = testCase
+)
+
+/**
+ * Version of [renderForTest] for a [StatefulWorkflow]
+ * that accepts [WorkflowTestParams] for configuring the test,
+ * including starting from a specific state or snapshot.
+ *
+ * @param props StateFlow of props to send to the workflow.
+ * @param testParams Test configuration parameters. See [WorkflowTestParams] for details.
+ * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param onOutput Callback for workflow outputs.
+ * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
+ * @param testCase The test code to run with access to the [WorkflowTurbine].
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public fun <PropsT, StateT, OutputT, RenderingT>
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderForTest(
+    props: StateFlow<PropsT>,
+    testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
+    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    onOutput: suspend (OutputT) -> Unit = {},
+    testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
+    testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
+  ) {
+  val workflow: Workflow<PropsT, OutputT, RenderingT> = this
+
+  // Determine the initial snapshot based on startFrom mode
+  val initialSnapshot = when (val startFrom = testParams.startFrom) {
+    StartFresh -> null
+    is StartFromWorkflowSnapshot -> TreeSnapshot.forRootOnly(startFrom.snapshot)
+    is StartFromCompleteSnapshot -> startFrom.snapshot
+    is StartFromState -> null
+  }
+
+  val interceptors = testParams.createInterceptors()
+
+  val runtimeConfig = testParams.runtimeConfig ?: JvmTestRuntimeConfigTools.getTestRuntimeConfig()
 
   runTest(
     context = coroutineContext,
@@ -65,13 +132,13 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
     // tests don't all have to do that themselves.
     val workflowRuntimeScope = CoroutineScope(coroutineContext)
 
-    // Capture outputs in a channel
     val outputsChannel = Channel<OutputT>(Channel.UNLIMITED)
 
     val renderings = renderWorkflowIn(
       workflow = workflow,
       props = props,
       scope = workflowRuntimeScope,
+      initialSnapshot = initialSnapshot,
       interceptors = interceptors,
       runtimeConfig = runtimeConfig,
       onOutput = { output ->
@@ -122,35 +189,95 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
 }
 
 /**
- * Version of [renderForTest] that does not require props. For Workflows that have [Unit]
- * props type.
+ * Version of [renderForTest] for a [StatefulWorkflow]
+ * that accepts [WorkflowTestParams] and doesn't require props.
+ * For Workflows that have [Unit] props type.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTest(
-  coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
-  interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
-  onOutput: suspend (OutputT) -> Unit = {},
-  testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
-): Unit = renderForTest(
+public fun <StateT, OutputT, RenderingT>
+  StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTest(
+    testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
+    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    onOutput: suspend (OutputT) -> Unit = {},
+    testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
+    testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
+  ): Unit = renderForTest(
   props = MutableStateFlow(Unit).asStateFlow(),
+  testParams = testParams,
   coroutineContext = coroutineContext,
-  interceptors = interceptors,
-  runtimeConfig = runtimeConfig,
   onOutput = onOutput,
   testTimeout = testTimeout,
   testCase = testCase
 )
 
 /**
- * Simple wrapper around a [ReceiveTurbine] of [RenderingT] to provide convenience helper methods specific
- * to Workflow renderings.
+ * Convenience function to test a workflow starting from a specific state.
  *
- * @property firstRendering The first rendering of the Workflow runtime is made synchronously. This is
- *   provided separately if any assertions or operations are needed from it.
- * @property firstSnapshot The first snapshot of the Workflow runtime is made synchronously. This is
- *   provided separately if any assertions or operations are needed from it.
+ * This is equivalent to calling [renderForTest] with
+ * `testParams = WorkflowTestParams(startFrom = StartFromState(initialState))`.
+ *
+ * @param props StateFlow of props to send to the workflow.
+ * @param initialState The state to start the workflow from.
+ * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param onOutput Callback for workflow outputs.
+ * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
+ * @param testCase The test code to run with access to the [WorkflowTurbine].
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public fun <PropsT, StateT, OutputT, RenderingT>
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
+    props: StateFlow<PropsT>,
+    initialState: StateT,
+    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    onOutput: suspend (OutputT) -> Unit = {},
+    testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
+    testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
+  ): Unit = renderForTest(
+  props = props,
+  testParams = WorkflowTestParams(startFrom = StartFromState(initialState)),
+  coroutineContext = coroutineContext,
+  onOutput = onOutput,
+  testTimeout = testTimeout,
+  testCase = testCase
+)
+
+/**
+ * Convenience function to test a workflow starting from a specific state.
+ * Version for workflows with [Unit] props.
+ *
+ * @param initialState The state to start the workflow from.
+ * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param onOutput Callback for workflow outputs.
+ * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
+ * @param testCase The test code to run with access to the [WorkflowTurbine].
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public fun <StateT, OutputT, RenderingT>
+  StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
+    initialState: StateT,
+    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    onOutput: suspend (OutputT) -> Unit = {},
+    testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
+    testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
+  ): Unit = renderForTestFromStateWith(
+  props = MutableStateFlow(Unit).asStateFlow(),
+  initialState = initialState,
+  coroutineContext = coroutineContext,
+  onOutput = onOutput,
+  testTimeout = testTimeout,
+  testCase = testCase
+)
+
+/**
+ * Provides independent access to three flows emitted by the workflow runtime: renderings, snapshots,
+ * and outputs. Uses [shareIn] to broadcast the combined rendering/snapshot flow to multiple turbines,
+ * ensuring all emissions are available to all flows without race conditions.
+ *
+ * @property firstRendering The first rendering, made synchronously when the workflow runtime starts.
+ * @property firstSnapshot The first snapshot, made synchronously when the workflow runtime starts.
+ * @property renderingTurbine Turbine for consuming subsequent renderings.
+ * @property snapshotTurbine Turbine for consuming subsequent snapshots.
+ * @property outputTurbine Turbine for consuming workflow outputs.
  */
 public class WorkflowTurbine<RenderingT, OutputT>(
   public val firstRendering: RenderingT,

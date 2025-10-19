@@ -91,9 +91,11 @@ class WorkflowTurbineTest {
       context: RenderContext<Unit, Int, Nothing>
     ): Pair<Int, () -> Unit> {
       val increment = {
-        context.actionSink.send(action("increment") {
-          state = renderState + 1
-        })
+        context.actionSink.send(
+          action("increment") {
+            state = renderState + 1
+          }
+        )
       }
       return renderState to increment
     }
@@ -201,10 +203,12 @@ class WorkflowTurbineTest {
       context: RenderContext<Unit, Int, String>
     ): Pair<Int, () -> Unit> {
       val emitOutput = {
-        context.actionSink.send(action("emit") {
-          state = renderState + 1
-          setOutput("output-$renderState")
-        })
+        context.actionSink.send(
+          action("emit") {
+            state = renderState + 1
+            setOutput("output-$renderState")
+          }
+        )
       }
       return renderState to emitOutput
     }
