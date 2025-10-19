@@ -2,7 +2,10 @@ package com.squareup.workflow1.testing
 
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
+import app.cash.turbine.testIn
+import app.cash.turbine.turbineScope
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
@@ -11,11 +14,15 @@ import com.squareup.workflow1.testing.WorkflowTurbine.Companion.WORKFLOW_TEST_DE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
@@ -46,7 +53,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
   runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT>.() -> Unit
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
 ) {
   val workflow = this
 
@@ -57,28 +64,59 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
     // We use a sub-scope so that we can cancel the Workflow runtime when we are done with it so that
     // tests don't all have to do that themselves.
     val workflowRuntimeScope = CoroutineScope(coroutineContext)
+
+    // Capture outputs in a channel
+    val outputsChannel = Channel<OutputT>(Channel.UNLIMITED)
+
     val renderings = renderWorkflowIn(
       workflow = workflow,
       props = props,
       scope = workflowRuntimeScope,
       interceptors = interceptors,
       runtimeConfig = runtimeConfig,
-      onOutput = onOutput
+      onOutput = { output ->
+        outputsChannel.send(output)
+        onOutput(output)
+      }
     )
 
     val firstRendering = renderings.value.rendering
+    val firstSnapshot = renderings.value.snapshot
 
-    // Drop one as its provided separately via `firstRendering`.
-    renderings.drop(1).map {
-      it.rendering
-    }.test {
+    // Share the RenderingAndSnapshot flow so multiple subscribers can collect from it
+    // Use workflowRuntimeScope so it's cancelled when the workflow is cancelled
+    val sharedRenderings = renderings.drop(1)
+      .shareIn(
+        scope = workflowRuntimeScope,
+        started = SharingStarted.Eagerly,
+        replay = 0
+      )
+
+    // Use turbineScope to test multiple flows
+    turbineScope {
+      // Map the shared flow to extract renderings and snapshots separately
+      val renderingTurbine = sharedRenderings.map { it.rendering }
+        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "renderings")
+      val snapshotTurbine = sharedRenderings.map { it.snapshot }
+        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "snapshots")
+      val outputTurbine = outputsChannel.receiveAsFlow()
+        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "outputs")
+
       val workflowTurbine = WorkflowTurbine(
-        firstRendering,
-        this
+        firstRendering = firstRendering,
+        firstSnapshot = firstSnapshot,
+        renderingTurbine = renderingTurbine,
+        snapshotTurbine = snapshotTurbine,
+        outputTurbine = outputTurbine
       )
       workflowTurbine.testCase()
-      cancelAndIgnoreRemainingEvents()
+
+      // Cancel all turbines
+      renderingTurbine.cancel()
+      snapshotTurbine.cancel()
+      outputTurbine.cancel()
     }
+
     workflowRuntimeScope.cancel()
   }
 }
@@ -94,7 +132,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
   runtimeConfig: RuntimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT>.() -> Unit
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
 ): Unit = renderForTest(
   props = MutableStateFlow(Unit).asStateFlow(),
   coroutineContext = coroutineContext,
@@ -111,12 +149,18 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
  *
  * @property firstRendering The first rendering of the Workflow runtime is made synchronously. This is
  *   provided separately if any assertions or operations are needed from it.
+ * @property firstSnapshot The first snapshot of the Workflow runtime is made synchronously. This is
+ *   provided separately if any assertions or operations are needed from it.
  */
-public class WorkflowTurbine<RenderingT>(
+public class WorkflowTurbine<RenderingT, OutputT>(
   public val firstRendering: RenderingT,
-  private val receiveTurbine: ReceiveTurbine<RenderingT>
+  public val firstSnapshot: TreeSnapshot,
+  private val renderingTurbine: ReceiveTurbine<RenderingT>,
+  private val snapshotTurbine: ReceiveTurbine<TreeSnapshot>,
+  private val outputTurbine: ReceiveTurbine<OutputT>,
 ) {
-  private var usedFirst = false
+  private var usedFirstRendering = false
+  private var usedFirstSnapshot = false
 
   /**
    * Suspend waiting for the next rendering to be produced by the Workflow runtime. Note this includes
@@ -125,23 +169,44 @@ public class WorkflowTurbine<RenderingT>(
    * @return the rendering.
    */
   public suspend fun awaitNextRendering(): RenderingT {
-    if (!usedFirst) {
-      usedFirst = true
+    if (!usedFirstRendering) {
+      usedFirstRendering = true
       return firstRendering
     }
-    return receiveTurbine.awaitItem()
+    return renderingTurbine.awaitItem()
+  }
+
+  /**
+   * Suspend waiting for the next output to be produced by the Workflow runtime.
+   *
+   * @return the output.
+   */
+  public suspend fun awaitNextOutput(): OutputT = outputTurbine.awaitItem()
+
+  /**
+   * Suspend waiting for the next snapshot to be produced by the Workflow runtime. Note this includes
+   * the first (synchronously made) snapshot.
+   *
+   * @return the snapshot.
+   */
+  public suspend fun awaitNextSnapshot(): TreeSnapshot {
+    if (!usedFirstSnapshot) {
+      usedFirstSnapshot = true
+      return firstSnapshot
+    }
+    return snapshotTurbine.awaitItem()
   }
 
   public suspend fun skipRenderings(count: Int) {
-    val skippedCount = if (!usedFirst) {
-      usedFirst = true
+    val skippedCount = if (!usedFirstRendering) {
+      usedFirstRendering = true
       count - 1
     } else {
       count
     }
 
     if (skippedCount > 0) {
-      receiveTurbine.skipItems(skippedCount)
+      renderingTurbine.skipItems(skippedCount)
     }
   }
 
