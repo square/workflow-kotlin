@@ -5,6 +5,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
 import com.squareup.workflow1.stateful
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,6 +45,8 @@ class WorkflowTurbineTest {
       // First snapshot should exist
       val firstSnapshot = awaitNextSnapshot()
       assertNotNull(firstSnapshot)
+      val actualSnapshotValue = firstSnapshot.readIntValue()
+      assertEquals(42, actualSnapshotValue)
     }
   }
 
@@ -77,6 +80,7 @@ class WorkflowTurbineTest {
       assertNotNull(firstSnapshot)
       // awaitNextSnapshot should return the same value
       assertEquals(firstSnapshot, awaitNextSnapshot())
+      assertEquals("hello", firstSnapshot.readStringValue())
     }
   }
 
@@ -114,6 +118,7 @@ class WorkflowTurbineTest {
       // Now get first snapshot - should still be for state 0
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
+      assertEquals(0, snapshot0.readIntValue())
 
       // Now get second rendering - should be state 1
       val (value1, increment1) = awaitNextRendering()
@@ -123,6 +128,7 @@ class WorkflowTurbineTest {
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
+      assertEquals(1, snapshot1.readIntValue())
 
       // Trigger another change
       increment1()
@@ -135,6 +141,7 @@ class WorkflowTurbineTest {
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
       assertNotEquals(snapshot1, snapshot2)
+      assertEquals(2, snapshot2.readIntValue())
     }
   }
 
@@ -153,10 +160,12 @@ class WorkflowTurbineTest {
 
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
+      assertEquals(0, snapshot0.readIntValue())
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
+      assertEquals(1, snapshot1.readIntValue())
     }
   }
 
@@ -177,12 +186,15 @@ class WorkflowTurbineTest {
       // Now consume snapshots - should have all 3 available because shareIn broadcasted to both
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
+      assertEquals(0, snapshot0.readIntValue())
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
+      assertEquals(1, snapshot1.readIntValue())
 
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
+      assertEquals(2, snapshot2.readIntValue())
 
       // All snapshots should be different
       assertNotEquals(snapshot0, snapshot1)
@@ -309,6 +321,11 @@ class WorkflowTurbineTest {
       assertNotNull(snapshot2)
       assertNotNull(snapshot3)
 
+      assertEquals(0, snapshot0.readIntValue())
+      assertEquals(1, snapshot1.readIntValue())
+      assertEquals(2, snapshot2.readIntValue())
+      assertEquals(3, snapshot3.readIntValue())
+
       // All should be different
       assertNotEquals(snapshot0, snapshot1)
       assertNotEquals(snapshot1, snapshot2)
@@ -316,3 +333,15 @@ class WorkflowTurbineTest {
     }
   }
 }
+
+/**
+ * Extension function to read an Int value from a TreeSnapshot.
+ */
+private fun TreeSnapshot.readIntValue(): Int? =
+  workflowSnapshotByteString()?.parse { it.readInt() }
+
+/***
+ * Extension function to read a String value from a TreeSnapshot.
+ */
+private fun TreeSnapshot.readStringValue(): String? =
+  workflowSnapshotByteString()?.parse { it.readUtf8() }
