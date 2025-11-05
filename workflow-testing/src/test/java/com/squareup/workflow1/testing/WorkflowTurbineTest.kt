@@ -2,6 +2,7 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.stateful
@@ -150,7 +151,6 @@ class WorkflowTurbineTest {
       val (value1, _) = awaitNextRendering()
       assertEquals(1, value1)
 
-      // Now consume snapshots - they should be in sync
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
 
