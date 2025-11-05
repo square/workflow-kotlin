@@ -8,8 +8,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFresh
@@ -299,35 +297,6 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
       }
     }
   }
-}
-
-private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor> {
-  val interceptors = mutableListOf<WorkflowInterceptor>()
-
-  if (checkRenderIdempotence) {
-    interceptors += RenderIdempotencyChecker
-  }
-
-  (startFrom as? StartFromState)?.let { startFrom ->
-    interceptors += object : WorkflowInterceptor {
-      @Suppress("UNCHECKED_CAST")
-      override fun <P, S> onInitialState(
-        props: P,
-        snapshot: Snapshot?,
-        workflowScope: CoroutineScope,
-        proceed: (P, Snapshot?, CoroutineScope) -> S,
-        session: WorkflowSession
-      ): S {
-        return if (session.parent == null) {
-          startFrom.state as S
-        } else {
-          proceed(props, snapshot, workflowScope)
-        }
-      }
-    }
-  }
-
-  return interceptors
 }
 
 private fun <T> unwrapCancellationCause(block: () -> T): T {

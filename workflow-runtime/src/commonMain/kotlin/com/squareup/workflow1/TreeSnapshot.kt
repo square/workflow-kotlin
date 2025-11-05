@@ -63,6 +63,10 @@ public class TreeSnapshot internal constructor(
     sink.readByteString()
   }
 
+  fun workflowSnapshotByteString(): ByteString? {
+    return workflowSnapshot?.bytes
+  }
+
   override fun equals(other: Any?): Boolean = when {
     other === this -> true
     other !is TreeSnapshot -> false

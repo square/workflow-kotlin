@@ -3,11 +3,14 @@ package com.squareup.workflow1.testing
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFresh
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromState
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
+import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.annotations.TestOnly
 
 /**
@@ -84,4 +87,34 @@ public class WorkflowTestParams<out StateT>(
      */
     public class StartFromState<StateT>(public val state: StateT) : StartMode<StateT>()
   }
+}
+
+// Helper function to create interceptors from WorkflowTestParams
+public fun <StateT> WorkflowTestParams<StateT>.createInterceptors(): List<WorkflowInterceptor> {
+  val interceptors = mutableListOf<WorkflowInterceptor>()
+
+  if (checkRenderIdempotence) {
+    interceptors += RenderIdempotencyChecker
+  }
+
+  (startFrom as? StartFromState)?.let { startFrom ->
+    interceptors += object : WorkflowInterceptor {
+      @Suppress("UNCHECKED_CAST")
+      override fun <P, S> onInitialState(
+        props: P,
+        snapshot: Snapshot?,
+        workflowScope: CoroutineScope,
+        proceed: (P, Snapshot?, CoroutineScope) -> S,
+        session: WorkflowSession
+      ): S {
+        return if (session.parent == null) {
+          startFrom.state as S
+        } else {
+          proceed(props, snapshot, workflowScope)
+        }
+      }
+    }
+  }
+
+  return interceptors
 }

@@ -7,6 +7,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
+import com.squareup.workflow1.testing.WorkflowTestParams
 import com.squareup.workflow1.testing.renderForTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -85,7 +86,9 @@ class WorkflowsLifecycleTests(
 
   @Test fun sideEffectsStartedWhenExpected() {
     workflowWithSideEffects.renderForTest(
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
       // One time starts but does not stop the side effect.
       repeat(1) {
@@ -99,7 +102,9 @@ class WorkflowsLifecycleTests(
 
   @Test fun sideEffectsStoppedWhenExpected() {
     workflowWithSideEffects.renderForTest(
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
       // Twice will start and stop the side effect.
       repeat(2) {
@@ -113,7 +118,9 @@ class WorkflowsLifecycleTests(
 
   @Test fun childSessionWorkflowStartedWhenExpected() {
     workflowWithChildSession.renderForTest(
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
       // One time starts but does not stop the child session workflow.
       repeat(1) {
@@ -141,7 +148,9 @@ class WorkflowsLifecycleTests(
     val dispatcher = UnconfinedTestDispatcher()
     workflowWithSideEffects.renderForTest(
       coroutineContext = dispatcher,
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
 
       val (_, setState) = awaitNextRendering()
@@ -164,7 +173,9 @@ class WorkflowsLifecycleTests(
 
   @Test fun childSessionWorkflowStoppedWhenExpected() {
     workflowWithChildSession.renderForTest(
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
       // Twice will start and stop the child session workflow.
       repeat(2) {
@@ -187,7 +198,9 @@ class WorkflowsLifecycleTests(
     val dispatcher = UnconfinedTestDispatcher()
     workflowWithChildSession.renderForTest(
       coroutineContext = dispatcher,
-      runtimeConfig = runtimeConfig
+      testParams = WorkflowTestParams(
+        runtimeConfig = runtimeConfig
+      )
     ) {
 
       val (_, setState) = awaitNextRendering()
