@@ -103,6 +103,22 @@ internal class WorkflowPapaTracerTest {
   }
 
   @Test
+  fun `PapaSafeTrace can be configured with isTraceable`() {
+    val traceableTrace = PapaSafeTrace(isTraceable = true)
+    assertEquals(true, traceableTrace.isTraceable)
+
+    val nonTraceableTrace = PapaSafeTrace(isTraceable = false)
+    assertEquals(false, nonTraceableTrace.isTraceable)
+  }
+
+  @Test
+  fun `WorkflowPapaTracer can be configured with custom SafeTrace`() {
+    val customTrace = FakeSafeTrace(isTraceable = true)
+    val tracer = WorkflowPapaTracer(safeTrace = customTrace)
+    assertNotNull(tracer)
+  }
+
+  @Test
   fun `onPropsChanged delegates to proceed function`() {
     val testWorkflow = TestWorkflow()
     val mockSession = testWorkflow.createMockSession()

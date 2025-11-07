@@ -5,10 +5,13 @@ import papa.SafeTrace
 
 /**
  * Production implementation of [SafeTraceInterface] that delegates to the actual [SafeTrace].
+ *
+ * @param isTraceable Whether tracing is enabled. Clients should configure this directly.
+ *   Defaults to false for backwards compatibility.
  */
-class PapaSafeTrace : SafeTraceInterface {
-  override val isTraceable: Boolean
-    get() = SafeTrace.isTraceable
+class PapaSafeTrace(
+  override val isTraceable: Boolean = false
+) : SafeTraceInterface {
 
   override val isCurrentlyTracing: Boolean
     get() = SafeTrace.isCurrentlyTracing
