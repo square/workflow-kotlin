@@ -30,9 +30,11 @@ import kotlin.reflect.KType
  * [WorkflowRuntimeTracer] plugin to add [SafeTraceInterface] traces.
  * By default this uses [PapaSafeTrace] which will use [androidx.tracing.Trace] calls that
  * will be received by the system and included in Perfetto traces.
+ *
+ * @param safeTrace The [SafeTraceInterface] implementation to use for tracing.
  */
 class WorkflowPapaTracer(
-  private val safeTrace: SafeTraceInterface = PapaSafeTrace()
+  private val safeTrace: SafeTraceInterface = PapaSafeTrace(isTraceable = false)
 ) : WorkflowRuntimeTracer() {
 
   private data class NameAndCookie(
