@@ -11,9 +11,9 @@ android {
 
 dependencies {
   api(libs.androidx.collection)
+  api(libs.androidx.tracing.ktx)
   api(libs.kotlin.jdk8)
   api(libs.kotlinx.coroutines.core)
-  api(libs.squareup.papa)
 
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
