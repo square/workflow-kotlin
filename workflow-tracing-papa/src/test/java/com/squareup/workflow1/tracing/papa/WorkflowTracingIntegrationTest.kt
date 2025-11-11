@@ -9,9 +9,11 @@ import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.tracing.ConfigSnapshot
+import com.squareup.workflow1.tracing.FakeTrace
 import com.squareup.workflow1.tracing.RuntimeUpdates
 import com.squareup.workflow1.tracing.WorkflowRuntimeLoopListener
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor
+import com.squareup.workflow1.tracing.WorkflowTracer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -38,11 +40,11 @@ internal class WorkflowTracingIntegrationTest {
       val runtimeLoopListener = WorkflowRuntimeLoopListener { _, _ ->
         runtimeLoopMutex.unlock()
       }
-      val fakeTrace = FakeSafeTrace()
-      val papaTracer = WorkflowPapaTracer(fakeTrace)
+      val fakeTrace = FakeTrace()
+      val tracer = WorkflowTracer(fakeTrace)
       val monitor = WorkflowRuntimeMonitor(
         runtimeName = runtimeName,
-        workflowRuntimeTracers = listOf(papaTracer),
+        workflowRuntimeTracers = listOf(tracer),
         runtimeLoopListener = runtimeLoopListener,
       )
 
@@ -99,11 +101,11 @@ internal class WorkflowTracingIntegrationTest {
     val runtimeLoopListener = WorkflowRuntimeLoopListener { _, _ ->
       runtimeLoopMutex.unlock()
     }
-    val fakeTrace = FakeSafeTrace()
-    val papaTracer = WorkflowPapaTracer(fakeTrace)
+    val fakeTrace = FakeTrace()
+    val tracer = WorkflowTracer(fakeTrace)
     val monitor = WorkflowRuntimeMonitor(
       runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(papaTracer),
+      workflowRuntimeTracers = listOf(tracer),
       runtimeLoopListener = runtimeLoopListener,
     )
 
@@ -152,11 +154,11 @@ internal class WorkflowTracingIntegrationTest {
       val runtimeLoopListener = WorkflowRuntimeLoopListener { _, _ ->
         runtimeLoopMutex.unlock()
       }
-      val fakeTrace = FakeSafeTrace()
-      val papaTracer = WorkflowPapaTracer(fakeTrace)
+      val fakeTrace = FakeTrace()
+      val tracer = WorkflowTracer(fakeTrace)
       val monitor = WorkflowRuntimeMonitor(
         runtimeName = runtimeName,
-        workflowRuntimeTracers = listOf(papaTracer),
+        workflowRuntimeTracers = listOf(tracer),
         runtimeLoopListener = runtimeLoopListener,
       )
 
@@ -208,11 +210,11 @@ internal class WorkflowTracingIntegrationTest {
       val runtimeLoopListener = WorkflowRuntimeLoopListener { _, _ ->
         runtimeLoopMutex.unlock()
       }
-      val fakeTrace = FakeSafeTrace()
-      val papaTracer = WorkflowPapaTracer(fakeTrace)
+      val fakeTrace = FakeTrace()
+      val tracer = WorkflowTracer(fakeTrace)
       val monitor = WorkflowRuntimeMonitor(
         runtimeName = runtimeName,
-        workflowRuntimeTracers = listOf(papaTracer),
+        workflowRuntimeTracers = listOf(tracer),
         runtimeLoopListener = runtimeLoopListener
       )
 
@@ -259,11 +261,11 @@ internal class WorkflowTracingIntegrationTest {
       val runtimeLoopListener = WorkflowRuntimeLoopListener { _, _ ->
         runtimeLoopMutex.unlock()
       }
-      val fakeTrace = FakeSafeTrace()
-      val papaTracer = WorkflowPapaTracer(fakeTrace)
+      val fakeTrace = FakeTrace()
+      val tracer = WorkflowTracer(fakeTrace)
       val monitor = WorkflowRuntimeMonitor(
         runtimeName = runtimeName,
-        workflowRuntimeTracers = listOf(papaTracer),
+        workflowRuntimeTracers = listOf(tracer),
         runtimeLoopListener = runtimeLoopListener
       )
 
@@ -307,12 +309,12 @@ internal class WorkflowTracingIntegrationTest {
   fun `integration test - runtime loop processing is traced`() =
     runTest {
       val runtimeLoopMutex = Mutex(locked = true)
-      val fakeTrace = FakeSafeTrace()
-      val papaTracer = WorkflowPapaTracer(fakeTrace)
+      val fakeTrace = FakeTrace()
+      val tracer = WorkflowTracer(fakeTrace)
       val runtimeListener = TestWorkflowRuntimeLoopListener(runtimeLoopMutex)
       val monitor = WorkflowRuntimeMonitor(
         runtimeName = runtimeName,
-        workflowRuntimeTracers = listOf(papaTracer),
+        workflowRuntimeTracers = listOf(tracer),
         runtimeLoopListener = runtimeListener
       )
 
