@@ -1,6 +1,9 @@
 package com.squareup.workflow1.tracing.papa
 
 import com.squareup.workflow1.RenderingAndSnapshot
+import com.squareup.workflow1.tracing.FakeTrace
+import com.squareup.workflow1.tracing.WorkflowTrace
+import com.squareup.workflow1.tracing.WorkflowTracer
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
@@ -23,8 +26,8 @@ import kotlin.test.assertTrue
 
 internal class WorkflowPapaTracerTest {
 
-  private val fakeTrace = FakeSafeTrace()
-  private val papaTracer = WorkflowPapaTracer(fakeTrace)
+  private val fakeTrace = FakeTrace()
+  private val tracer = WorkflowTracer(fakeTrace)
 
   @Test
   fun `onWorkflowSessionStarted creates async section for root workflow`() {
@@ -34,12 +37,12 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[rootSession.sessionId] = WorkflowSessionInfo(rootSession)
 
-    papaTracer.onWorkflowSessionStarted(testScope, rootSession)
+    tracer.onWorkflowSessionStarted(testScope, rootSession)
 
     val asyncSectionCalls = fakeTrace.traceCalls.filter { it.type == "beginAsyncSection" }
     assertEquals(1, asyncSectionCalls.size)
@@ -54,12 +57,12 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[rootSession.sessionId] = WorkflowSessionInfo(rootSession)
 
-    val result = papaTracer.onInitialState(
+    val result = tracer.onInitialState(
       props = "testProps",
       snapshot = null,
       workflowScope = testScope,
@@ -81,12 +84,12 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     val expectedSnapshot = TreeSnapshot.forRootOnly(null)
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
-    val result = papaTracer.onRenderAndSnapshot(
+    val result = tracer.onRenderAndSnapshot(
       renderProps = "props",
       proceed = { renderingAndSnapshot },
       session = rootSession
@@ -99,22 +102,22 @@ internal class WorkflowPapaTracerTest {
 
   @Test
   fun `tracer can be instantiated`() {
-    assertNotNull(papaTracer)
+    assertNotNull(tracer)
   }
 
   @Test
-  fun `PapaSafeTrace can be configured with isTraceable`() {
-    val traceableTrace = PapaSafeTrace(isTraceable = true)
+  fun `WorkflowTrace can be configured with isTraceable`() {
+    val traceableTrace = WorkflowTrace(isTraceable = true)
     assertEquals(true, traceableTrace.isTraceable)
 
-    val nonTraceableTrace = PapaSafeTrace(isTraceable = false)
+    val nonTraceableTrace = WorkflowTrace(isTraceable = false)
     assertEquals(false, nonTraceableTrace.isTraceable)
   }
 
   @Test
-  fun `WorkflowPapaTracer can be configured with custom SafeTrace`() {
-    val customTrace = FakeSafeTrace(isTraceable = true)
-    val tracer = WorkflowPapaTracer(safeTrace = customTrace)
+  fun `WorkflowTracer can be configured with custom TraceInterface`() {
+    val customTrace = FakeTrace(isTraceable = true)
+    val tracer = WorkflowTracer(safeTrace = customTrace)
     assertNotNull(tracer)
   }
 
@@ -125,12 +128,12 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[mockSession.sessionId] = WorkflowSessionInfo(mockSession)
 
-    val result = papaTracer.onPropsChanged(
+    val result = tracer.onPropsChanged(
       old = "old",
       new = "new",
       state = "current",
@@ -148,12 +151,12 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     val expectedSnapshot = TreeSnapshot.forRootOnly(null)
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
-    val result = papaTracer.onRenderAndSnapshot(
+    val result = tracer.onRenderAndSnapshot(
       renderProps = "props",
       proceed = { renderingAndSnapshot },
       session = mockSession
@@ -169,11 +172,11 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     val treeSnapshot = TreeSnapshot.forRootOnly(null)
 
-    val result = papaTracer.onSnapshotStateWithChildren(
+    val result = tracer.onSnapshotStateWithChildren(
       proceed = { treeSnapshot },
       session = mockSession
     )
@@ -184,15 +187,15 @@ internal class WorkflowPapaTracerTest {
   @Test
   fun `onRuntimeUpdateEnhanced handles different runtime updates`() {
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     val configSnapshot = ConfigSnapshot(TestRuntimeConfig())
 
     // Should not throw for RenderPassSkipped
-    papaTracer.onRuntimeUpdateEnhanced(RenderPassSkipped, false, configSnapshot)
+    tracer.onRuntimeUpdateEnhanced(RenderPassSkipped, false, configSnapshot)
 
     // Should not throw for RuntimeLoopSettled
-    papaTracer.onRuntimeUpdateEnhanced(RuntimeSettled, true, configSnapshot)
+    tracer.onRuntimeUpdateEnhanced(RuntimeSettled, true, configSnapshot)
   }
 
   @Test
@@ -202,14 +205,14 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[mockSession.sessionId] = WorkflowSessionInfo(mockSession)
 
     // Should not throw
-    papaTracer.onWorkflowSessionStarted(TestScope(), mockSession)
-    papaTracer.onWorkflowSessionStopped(123L)
+    tracer.onWorkflowSessionStarted(TestScope(), mockSession)
+    tracer.onWorkflowSessionStopped(123L)
   }
 
   @Test
@@ -219,13 +222,13 @@ internal class WorkflowPapaTracerTest {
 
     // Attach runtime context to tracer
     val testContext = TestRuntimeTraceContext()
-    papaTracer.attachRuntimeContext(testContext)
+    tracer.attachRuntimeContext(testContext)
 
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[mockSession.sessionId] = WorkflowSessionInfo(mockSession)
 
     // Should not throw
-    papaTracer.onRootPropsChanged(mockSession)
+    tracer.onRootPropsChanged(mockSession)
   }
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, String>() {
