@@ -19,7 +19,21 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     interceptor.onSessionStarted(scope, TestWorkflowSession)
     scope.cancel()
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    // Only the first, since we don't get cancellation directly from the scope cancellation.
+    // For that we use onSessionCancelled()
+    assertEquals(listOf(ErrorLoggingInterceptor.EXPECTED_ERRORS.first()), interceptor.errors)
+  }
+
+  @Test fun onSessionCancelled_handles_logging_exceptions() {
+    val interceptor = ErrorLoggingInterceptor()
+    interceptor.onSessionCancelled<Unit, Unit, Nothing>(
+      cause = null,
+      droppedActions = emptyList(),
+      session = TestWorkflowSession
+    )
+
+    // Only the second error, since onSessionCancelled only calls logAfterMethod
+    assertEquals(listOf(ErrorLoggingInterceptor.EXPECTED_ERRORS.last()), interceptor.errors)
   }
 
   @Test fun onInitialState_handles_logging_exceptions() {

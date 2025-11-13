@@ -11,6 +11,7 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
 
@@ -30,6 +31,20 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ) {
     interceptors.forEach { it.onSessionStarted(workflowScope, session) }
+  }
+
+  override fun <P, S, O> onSessionCancelled(
+    cause: CancellationException?,
+    droppedActions: List<WorkflowAction<P, S, O>>,
+    session: WorkflowSession
+  ) {
+    interceptors.forEach {
+      it.onSessionCancelled(
+        cause = cause,
+        droppedActions = droppedActions,
+        session = session
+      )
+    }
   }
 
   override fun <P, S> onInitialState(

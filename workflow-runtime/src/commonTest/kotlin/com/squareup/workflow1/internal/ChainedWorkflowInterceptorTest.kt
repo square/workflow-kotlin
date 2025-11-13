@@ -70,6 +70,8 @@ internal class ChainedWorkflowInterceptorTest {
         session: WorkflowSession
       ) {
         events += "started1"
+        // We can't use onSessionCancelled because this is completed when the coroutine from
+        // launch() below finishes, so onSessionCancelled is never called by the runtime.
         workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
           events += "cancelled1"
         }

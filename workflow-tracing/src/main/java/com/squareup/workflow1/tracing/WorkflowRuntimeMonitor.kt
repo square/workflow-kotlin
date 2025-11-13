@@ -29,9 +29,9 @@ import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import com.squareup.workflow1.tracing.RenderCause.WaitingForOutput
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.CascadeAction
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.QueuedAction
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlin.time.Duration.Companion.nanoseconds
 
 /**
@@ -84,12 +84,15 @@ public class WorkflowRuntimeMonitor(
   ) {
     onWorkflowStarted(session)
     chainedWorkflowRuntimeTracer.onWorkflowSessionStarted(workflowScope, session)
+  }
 
-    val workflowJob = workflowScope.coroutineContext[Job]!!
-    workflowJob.invokeOnCompletion {
-      onWorkflowStopped(session.sessionId)
-      chainedWorkflowRuntimeTracer.onWorkflowSessionStopped(session.sessionId)
-    }
+  override fun <P, S, O> onSessionCancelled(
+    cause: CancellationException?,
+    droppedActions: List<WorkflowAction<P, S, O>>,
+    session: WorkflowSession
+  ) {
+    onWorkflowStopped(session.sessionId)
+    chainedWorkflowRuntimeTracer.onWorkflowSessionStopped(session.sessionId)
   }
 
   /**

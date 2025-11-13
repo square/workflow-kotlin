@@ -175,6 +175,63 @@ internal class WorkflowInterceptorTest {
     intercepted.render("props", "string", RenderContext(fakeContext, workflow))
   }
 
+  @Test fun intercept_intercepts_onSessionCancelled() {
+    val recorder = RecordingWorkflowInterceptor()
+    val session = object : WorkflowSession {
+      override val identifier: WorkflowIdentifier = TestWorkflow.identifier
+      override val renderKey: String = ""
+      override val sessionId: Long = 0
+      override val parent: WorkflowSession? = null
+      override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+      override val workflowTracer: WorkflowTracer? = null
+      override val runtimeContext: CoroutineContext = EmptyCoroutineContext
+    }
+
+    recorder.onSessionCancelled<String, String, String>(
+      cause = null,
+      droppedActions = emptyList(),
+      session = session
+    )
+
+    // SimpleLoggingWorkflowInterceptor logs "onInstanceStarted" for onSessionCancelled
+    assertEquals(
+      listOf("END|onInstanceStarted"),
+      recorder.consumeEventNames()
+    )
+  }
+
+  @Test fun intercept_passes_dropped_actions_to_onSessionCancelled() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: kotlinx.coroutines.CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+      }
+    }
+    val session = object : WorkflowSession {
+      override val identifier: WorkflowIdentifier = TestWorkflow.identifier
+      override val renderKey: String = ""
+      override val sessionId: Long = 0
+      override val parent: WorkflowSession? = null
+      override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+      override val workflowTracer: WorkflowTracer? = null
+      override val runtimeContext: CoroutineContext = EmptyCoroutineContext
+    }
+    val testAction = action<String, String, String>("TestAction") { state = "modified" }
+
+    interceptor.onSessionCancelled(
+      cause = null,
+      droppedActions = listOf(testAction),
+      session = session
+    )
+
+    assertEquals(1, capturedDroppedActions!!.size)
+    assertEquals("TestAction", capturedDroppedActions!![0].debuggingName)
+  }
+
   private val Workflow<*, *, *>.session: WorkflowSession
     get() = object : WorkflowSession {
       override val identifier: WorkflowIdentifier = this@session.identifier

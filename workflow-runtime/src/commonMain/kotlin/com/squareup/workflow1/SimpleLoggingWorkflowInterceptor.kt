@@ -2,8 +2,8 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 
 /**
  * A [WorkflowInterceptor] that just prints all method calls using [log].
@@ -14,9 +14,14 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     session: WorkflowSession
   ) {
     invokeSafely("logBeforeMethod") { logBeforeMethod("onInstanceStarted", session) }
-    workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
-      invokeSafely("logAfterMethod") { logAfterMethod("onInstanceStarted", session) }
-    }
+  }
+
+  override fun <P, S, O> onSessionCancelled(
+    cause: CancellationException?,
+    droppedActions: List<WorkflowAction<P, S, O>>,
+    session: WorkflowSession
+  ) {
+    invokeSafely("logAfterMethod") { logAfterMethod("onInstanceStarted", session) }
   }
 
   override fun <P, S> onInitialState(

@@ -1,9 +1,11 @@
 package com.squareup.workflow1.tracing
 
 import androidx.collection.LongObjectMap
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -95,6 +97,18 @@ public abstract class WorkflowRuntimeTracer : WorkflowInterceptor {
     session: WorkflowSession
   ) {
     super.onSessionStarted(workflowScope, session)
+  }
+
+  /**
+   * Prevents [WorkflowRuntimeTracer]s from overriding this method, they should use
+   * [onWorkflowSessionStopped] instead.
+   */
+  final override fun <P, S, O> onSessionCancelled(
+    cause: CancellationException?,
+    droppedActions: List<WorkflowAction<P, S, O>>,
+    session: WorkflowSession
+  ) {
+    super.onSessionCancelled(cause, droppedActions, session)
   }
 
   /**

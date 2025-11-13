@@ -802,9 +802,14 @@ internal class WorkflowNodeTest {
       ) {
         interceptedScope = workflowScope
         interceptedSession = session
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
-          cancellationException = it!!
-        }
+      }
+
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        cancellationException = cause!!
       }
     }
     val workflow = Workflow.rendering<Nothing, Unit>(Unit)
@@ -843,9 +848,14 @@ internal class WorkflowNodeTest {
       ) {
         interceptedScope = workflowScope
         interceptedSession = session
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
-          cancellationException = it!!
-        }
+      }
+
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        cancellationException = cause!!
       }
     }
     val workflow = Workflow.rendering<Nothing, Unit>(Unit)
@@ -1182,8 +1192,8 @@ internal class WorkflowNodeTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
       initialState = { "initial" },
       render = { _, renderState ->
-        renderState to actionSink.contraMap {
-          action("") { state = "$state->$it" }
+        renderState to actionSink.contraMap { value ->
+          action("") { state = "$state->$value" }
         }
       }
     )
@@ -1411,6 +1421,264 @@ internal class WorkflowNodeTest {
 
     val third = node.render(stateful, "key2" to 3)
     assertEquals(3, third)
+  }
+
+  @Test fun cancel_with_no_pending_actions_returns_empty_list() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    var capturedCause: CancellationException? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+        capturedCause = cause
+      }
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val node = WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    val cause = CancellationException("test cancellation")
+    node.cancel(cause)
+
+    assertSame(cause, capturedCause)
+    assertEquals(emptyList(), capturedDroppedActions)
+  }
+
+  @Test fun cancel_with_single_pending_action_returns_that_action() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+      }
+    }
+    lateinit var capturedSink: Sink<String>
+    val workflow = Workflow.stateless<Unit, String, Sink<String>> {
+      val sink = actionSink.contraMap { value: String ->
+        action("TestAction($value)") { setOutput(value) }
+      }
+      capturedSink = sink
+      sink
+    }
+    val node = WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    capturedSink.send("action1")
+
+    node.cancel()
+
+    assertEquals(1, capturedDroppedActions!!.size)
+    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("TestAction(action1)"))
+  }
+
+  @Test fun cancel_with_multiple_pending_actions_returns_all_in_order() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+      }
+    }
+    lateinit var capturedSink: Sink<String>
+    val workflow = Workflow.stateless<Unit, String, Sink<String>> {
+      val sink = actionSink.contraMap { value: String ->
+        action("TestAction($value)") { setOutput(value) }
+      }
+      capturedSink = sink
+      sink
+    }
+    val node = WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    capturedSink.send("action1")
+    capturedSink.send("action2")
+    capturedSink.send("action3")
+
+    node.cancel()
+
+    assertEquals(3, capturedDroppedActions!!.size)
+    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("TestAction(action1)"))
+    assertTrue(capturedDroppedActions!![1].debuggingName.startsWith("TestAction(action2)"))
+    assertTrue(capturedDroppedActions!![2].debuggingName.startsWith("TestAction(action3)"))
+  }
+
+  @Test fun cancel_does_not_apply_pending_actions() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    var actionApplied = false
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+      }
+    }
+    lateinit var capturedSink: Sink<String>
+    val workflow = Workflow.stateful<Unit, String, String, Sink<String>>(
+      initialState = { "initial" },
+      render = { _, state ->
+        val sink = actionSink.contraMap { value: String ->
+          action("TestAction($value)") {
+            actionApplied = true
+            this.state = "$state->$value"
+          }
+        }
+        capturedSink = sink
+        sink
+      }
+    )
+    val node = WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    capturedSink.send("action1")
+
+    assertFalse(actionApplied)
+    node.cancel()
+
+    // Action should not have been applied
+    assertFalse(actionApplied)
+    assertEquals(1, capturedDroppedActions!!.size)
+  }
+
+  @Test fun cancel_with_null_cause_passes_null_to_interceptor() {
+    var capturedCause: CancellationException? = CancellationException("placeholder")
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedCause = cause
+      }
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val node = WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    node.cancel(null)
+
+    assertNull(capturedCause)
+  }
+
+  @Test fun cancel_passes_correct_session_to_interceptor() {
+    var capturedSession: WorkflowSession? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedSession = session
+      }
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val node = WorkflowNode(
+      id = workflow.id(key = "test-key"),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined,
+      parent = TestSession(99)
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    node.cancel()
+
+    assertEquals(workflow.identifier, capturedSession!!.identifier)
+    assertEquals("test-key", capturedSession!!.renderKey)
+    assertEquals(99, capturedSession!!.parent!!.sessionId)
+  }
+
+  @Test fun cancel_with_event_handler_actions_returns_them() {
+    var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O> onSessionCancelled(
+        cause: CancellationException?,
+        droppedActions: List<WorkflowAction<P, S, O>>,
+        session: WorkflowSession
+      ) {
+        capturedDroppedActions = droppedActions
+      }
+    }
+    val workflow = object : StringEventWorkflow() {
+      override fun initialState(
+        props: String,
+        snapshot: Snapshot?
+      ): String = props
+
+      override fun render(
+        renderProps: String,
+        renderState: String,
+        context: RenderContext<String, String, String>
+      ): (String) -> Unit {
+        return context.eventHandler("handler") { event -> setOutput(event) }
+      }
+    }
+    val node = WorkflowNode(
+      workflow.id(),
+      workflow,
+      "",
+      null,
+      context,
+      interceptor = interceptor
+    )
+
+    val eventSink = node.render(workflow, "")
+    eventSink("event1")
+    eventSink("event2")
+
+    node.cancel()
+
+    assertEquals(2, capturedDroppedActions!!.size)
+    // Event handler actions have a specific format
+    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("eH: handler"))
+    assertTrue(capturedDroppedActions!![1].debuggingName.startsWith("eH: handler"))
   }
 
   private class TestSession(override val sessionId: Long = 0) : WorkflowSession {
