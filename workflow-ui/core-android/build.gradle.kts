@@ -52,4 +52,6 @@ dependencies {
   testImplementation(libs.robolectric)
   testImplementation(libs.robolectric.annotations)
   testImplementation(libs.truth)
+
+  androidTestImplementation(libs.androidx.lifecycle.testing)
 }

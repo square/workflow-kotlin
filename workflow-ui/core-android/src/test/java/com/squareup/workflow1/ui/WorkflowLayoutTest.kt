@@ -17,14 +17,16 @@ import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.navigation.WrappedScreen
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 @RunWith(RobolectricTestRunner::class)
 // SDK 28 required for the four-arg constructor we use in our custom view classes.
@@ -92,23 +94,6 @@ internal class WorkflowLayoutTest {
     unoriginal.show(BScreen(), env)
   }
 
-  @Test fun usesLifecycleDispatcher() {
-    val lifecycleDispatcher = UnconfinedTestDispatcher()
-    val collectionContext: CoroutineContext = UnconfinedTestDispatcher()
-    val testLifecycle = TestLifecycleOwner(
-      Lifecycle.State.RESUMED,
-      lifecycleDispatcher
-    )
-
-    workflowLayout.take(
-      lifecycle = testLifecycle.lifecycle,
-      renderings = flowOf(WrappedScreen(), WrappedScreen()),
-      collectionContext = collectionContext
-    )
-
-    // No crash then we safely removed the dispatcher.
-  }
-
   @Test fun takes() {
     val lifecycleDispatcher = UnconfinedTestDispatcher()
     val testLifecycle = TestLifecycleOwner(
@@ -147,6 +132,35 @@ internal class WorkflowLayoutTest {
     }
   }
 
+  @Test fun usesProvidedCoroutineContext() {
+    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val testLifecycle = TestLifecycleOwner(
+      initialState = Lifecycle.State.RESUMED,
+      coroutineDispatcher = lifecycleDispatcher
+    )
+    val flow = MutableSharedFlow<Screen>()
+
+    val testElement = TestContextElement()
+
+    val trackedFlow = flow.onEach {
+      if (coroutineContext[TestContextElement] != null) {
+        testElement.wasUsed = true
+      }
+    }
+
+    runTest(lifecycleDispatcher) {
+      workflowLayout.take(
+        lifecycle = testLifecycle.lifecycle,
+        renderings = trackedFlow,
+        collectionContext = testElement
+      )
+
+      flow.emit(WrappedScreen())
+
+      assertThat(testElement.wasUsed).isTrue()
+    }
+  }
+
   private class BundleSavingView(context: Context) : View(context) {
     var saved = false
 
@@ -165,5 +179,12 @@ internal class WorkflowLayoutTest {
     init {
       id = 42
     }
+  }
+
+  private class TestContextElement : AbstractCoroutineContextElement(Key) {
+    companion object Key : CoroutineContext.Key<TestContextElement>
+
+    @Volatile
+    var wasUsed = false
   }
 }
