@@ -25,8 +25,10 @@ public final class com/squareup/workflow1/tracing/ChainedWorkflowRuntimeTracerKt
 }
 
 public final class com/squareup/workflow1/tracing/ConfigSnapshot {
-	public fun <init> (Ljava/util/Set;)V
+	public fun <init> (Ljava/util/Set;Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Ljava/util/Set;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getConfigAsString ()Ljava/lang/String;
+	public final fun getRuntimeDispatch ()Lkotlinx/coroutines/CoroutineDispatcher;
 	public final fun getShortConfigAsString ()Ljava/lang/String;
 }
 

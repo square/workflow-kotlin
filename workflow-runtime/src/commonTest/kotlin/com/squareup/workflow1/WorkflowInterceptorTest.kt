@@ -183,6 +183,7 @@ internal class WorkflowInterceptorTest {
       override val parent: WorkflowSession? = null
       override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
       override val workflowTracer: WorkflowTracer? = null
+      override val runtimeContext: CoroutineContext = EmptyCoroutineContext
     }
 
   private object TestWorkflow : StatefulWorkflow<String, String, String, String>() {

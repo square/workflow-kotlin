@@ -21,7 +21,11 @@ import com.squareup.workflow1.identifier
 import com.squareup.workflow1.tracing.RenderCause.RootCreation
 import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -72,6 +76,23 @@ internal class WorkflowRuntimeMonitorTest {
     assertEquals(1, monitor.workflowSessionInfo.size)
     assertEquals(1, monitor.renderIncomingCauses.size)
     assertTrue(monitor.renderIncomingCauses.first() is RootCreation)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `onSessionStarted captures runtime context`() {
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
+    )
+    val testWorkflow = TestWorkflow()
+    val testCoroutineDispatcher = UnconfinedTestDispatcher()
+    val rootSession = testWorkflow.createRootSession(testCoroutineDispatcher)
+    val testScope = TestScope(testCoroutineDispatcher)
+
+    monitor.onSessionStarted(testScope, rootSession)
+
+    assertEquals(testCoroutineDispatcher, monitor.configSnapshot.runtimeDispatch)
   }
 
   @Test
@@ -647,18 +668,24 @@ internal class WorkflowRuntimeMonitorTest {
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
 
-    fun createRootSession(): WorkflowSession = TestWorkflowSession(
-      workflow = this,
-      sessionId = 1L,
-      renderKey = "root",
-      parent = null
-    )
+    fun createRootSession(context: CoroutineContext = EmptyCoroutineContext): WorkflowSession =
+      TestWorkflowSession(
+        workflow = this,
+        sessionId = 1L,
+        renderKey = "root",
+        parent = null,
+        runtimeContext = context
+      )
 
-    fun createChildSession(parent: WorkflowSession): WorkflowSession = TestWorkflowSession(
+    fun createChildSession(
+      parent: WorkflowSession,
+      context: CoroutineContext = EmptyCoroutineContext
+    ): WorkflowSession = TestWorkflowSession(
       workflow = this,
       sessionId = 2L,
       renderKey = "child",
-      parent = parent
+      parent = parent,
+      runtimeContext = context
     )
   }
 
@@ -666,7 +693,8 @@ internal class WorkflowRuntimeMonitorTest {
     private val workflow: TestWorkflow,
     override val sessionId: Long,
     override val renderKey: String,
-    override val parent: WorkflowSession?
+    override val parent: WorkflowSession?,
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
   ) : WorkflowSession {
     override val identifier = workflow.identifier
     override val runtimeConfig = TestRuntimeConfig()

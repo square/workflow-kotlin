@@ -16,6 +16,8 @@ import com.squareup.workflow1.tracing.RuntimeTraceContext
 import com.squareup.workflow1.tracing.RuntimeUpdateLogLine
 import com.squareup.workflow1.tracing.WorkflowSessionInfo
 import kotlinx.coroutines.test.TestScope
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -262,7 +264,8 @@ internal class WorkflowPapaTracerTest {
     private val workflow: TestWorkflow,
     override val sessionId: Long,
     override val renderKey: String,
-    override val parent: WorkflowSession?
+    override val parent: WorkflowSession?,
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
   ) : WorkflowSession {
     override val identifier = workflow.identifier
     override val runtimeConfig = TestRuntimeConfig()

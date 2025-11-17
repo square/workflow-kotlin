@@ -8,13 +8,18 @@ import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGE
 import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
 import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * Snapshot of the current [RuntimeConfig]
  */
 @OptIn(WorkflowExperimentalRuntime::class)
-public class ConfigSnapshot(config: RuntimeConfig) {
-  public val configAsString: String = config.toString()
+public class ConfigSnapshot(
+  config: RuntimeConfig,
+  public val runtimeDispatch: CoroutineDispatcher? = null
+) {
+
+  public val configAsString: String = "$config, $runtimeDispatch"
 
   public val shortConfigAsString: String by lazy {
     buildString {
@@ -40,6 +45,7 @@ public class ConfigSnapshot(config: RuntimeConfig) {
       if (config.isEmpty()) {
         append("Base, ")
       }
+      append("Dispatch: ${runtimeDispatch?.toString()?.substringAfter("Dispatchers.")?.take(8)}")
     }
   }
 }

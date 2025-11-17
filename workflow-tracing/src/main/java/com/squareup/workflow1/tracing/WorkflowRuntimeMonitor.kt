@@ -29,6 +29,7 @@ import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import com.squareup.workflow1.tracing.RenderCause.WaitingForOutput
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.CascadeAction
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.QueuedAction
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.time.Duration.Companion.nanoseconds
@@ -105,7 +106,7 @@ public class WorkflowRuntimeMonitor(
 
     if (session.isRootWorkflow) {
       // Cache the config snapshot for this whole runtime.
-      configSnapshot = ConfigSnapshot(session.runtimeConfig)
+      configSnapshot = ConfigSnapshot(session.runtimeConfig, session.runtimeContext[CoroutineDispatcher])
       check(renderIncomingCauses.isEmpty()) {
         "Workflow runtime for $runtimeName already has incoming render on creation triggered by " +
           "${renderIncomingCauses.lastOrNull()}"
