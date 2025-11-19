@@ -2,6 +2,7 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -72,6 +73,19 @@ public interface WorkflowInterceptor {
    */
   public fun onSessionStarted(
     workflowScope: CoroutineScope,
+    session: WorkflowSession
+  ): Unit = Unit
+
+  /**
+   * Called when the session is ending, when the Workflow's [CoroutineScope] is being cancelled.
+   *
+   * @param cause The cause of the cancellation if non-null.
+   * @param droppedActions Any actions that were queued in this node's channel at the time of
+   *  cancellation.
+   */
+  public fun <P, S, O> onSessionCancelled(
+    cause: CancellationException?,
+    droppedActions: List<WorkflowAction<P, S, O>>,
     session: WorkflowSession
   ): Unit = Unit
 

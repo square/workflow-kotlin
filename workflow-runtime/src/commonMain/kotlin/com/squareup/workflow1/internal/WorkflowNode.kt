@@ -265,10 +265,22 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [registerTreeActionSelectors]. It is an error to call [registerTreeActionSelectors]
-   * after calling this method.
+   * This must be called when the caller will no longer call [registerTreeActionSelectors].
+   * It is an error to call [registerTreeActionSelectors] after calling this method.
    */
   fun cancel(cause: CancellationException? = null) {
+    val hangingActions = mutableListOf<WorkflowAction<PropsT, StateT, OutputT>>()
+    // This will only be non-null if there is an action buffered and ready.
+    var nextAction = eventActionsChannel.tryReceive().getOrNull()
+    while (nextAction != null) {
+      hangingActions.add(nextAction)
+      nextAction = eventActionsChannel.tryReceive().getOrNull()
+    }
+    interceptor.onSessionCancelled(
+      cause = cause,
+      droppedActions = hangingActions,
+      session = this
+    )
     coroutineContext.cancel(cause)
     lastRendering = NullableInitBox()
   }
