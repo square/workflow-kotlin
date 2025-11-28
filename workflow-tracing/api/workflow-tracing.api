@@ -20,6 +20,12 @@ public final class com/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowA
 	public static fun values ()[Lcom/squareup/workflow1/tracing/ActionAppliedLogLine$WorkflowActionLogType;
 }
 
+public final class com/squareup/workflow1/tracing/ActionDroppedLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getActionName ()Ljava/lang/String;
+	public fun log (Ljava/lang/StringBuilder;)V
+}
+
 public final class com/squareup/workflow1/tracing/ChainedWorkflowRuntimeTracerKt {
 	public static final fun wrap (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;
 }

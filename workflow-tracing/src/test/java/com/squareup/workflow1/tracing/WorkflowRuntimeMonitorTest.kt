@@ -653,6 +653,196 @@ internal class WorkflowRuntimeMonitorTest {
     assertTrue(renderPassTracker.renderPassInfoReceived!!.renderCause is RenderCause.Callback)
   }
 
+  @Test
+  fun `onSessionCancelled logs dropped actions`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val testScope = TestScope()
+
+    // Initialize session
+    monitor.onSessionStarted(testScope, rootSession)
+
+    // Create some test actions
+    val action1 = TestAction("action1")
+    val action2 = TestAction("action2")
+    val droppedActions = listOf(action1, action2)
+
+    // Call onSessionCancelled with dropped actions
+    monitor.onSessionCancelled(
+      cause = null,
+      droppedActions = droppedActions,
+      session = rootSession
+    )
+
+    // Settle the runtime to flush updates
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    // Verify dropped actions were logged
+    val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+    val droppedLogLines = updates.filterIsInstance<ActionDroppedLogLine>()
+
+    assertEquals(2, droppedLogLines.size)
+    assertEquals("action1", droppedLogLines[0].actionName)
+    assertEquals("action2", droppedLogLines[1].actionName)
+  }
+
+  @Test
+  fun `onSessionCancelled logs no actions when list is empty`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val testScope = TestScope()
+
+    // Initialize session
+    monitor.onSessionStarted(testScope, rootSession)
+
+    // Call onSessionCancelled with empty dropped actions list
+    monitor.onSessionCancelled(
+      cause = null,
+      droppedActions = emptyList<WorkflowAction<String, String, String>>(),
+      session = rootSession
+    )
+
+    // Settle the runtime to flush updates
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    // Verify no dropped actions were logged
+    val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+    val droppedLogLines = updates.filterIsInstance<ActionDroppedLogLine>()
+
+    assertEquals(0, droppedLogLines.size)
+  }
+
+  @Test
+  fun `onSessionCancelled calls tracer onWorkflowSessionStopped`() {
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val testScope = TestScope()
+
+    // Initialize session
+    monitor.onSessionStarted(testScope, rootSession)
+
+    // Verify session is tracked
+    assertEquals(1, monitor.workflowSessionInfo.size)
+
+    // Call onSessionCancelled
+    monitor.onSessionCancelled(
+      cause = null,
+      droppedActions = emptyList<WorkflowAction<String, String, String>>(),
+      session = rootSession
+    )
+
+    // Verify session was removed from tracking
+    assertEquals(0, monitor.workflowSessionInfo.size)
+    assertTrue(fakeRuntimeTracer.onWorkflowSessionStoppedCalled)
+  }
+
+  @Test
+  fun `onSessionCancelled with CancellationException logs dropped actions`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val testScope = TestScope()
+
+    // Initialize session
+    monitor.onSessionStarted(testScope, rootSession)
+
+    // Create test actions
+    val action1 = TestAction("cancelledAction")
+    val droppedActions = listOf(action1)
+
+    // Call onSessionCancelled with a CancellationException
+    val cancellationException = kotlinx.coroutines.CancellationException("Test cancellation")
+    monitor.onSessionCancelled(
+      cause = cancellationException,
+      droppedActions = droppedActions,
+      session = rootSession
+    )
+
+    // Settle the runtime to flush updates
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    // Verify dropped actions were logged even with cancellation exception
+    val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+    val droppedLogLines = updates.filterIsInstance<ActionDroppedLogLine>()
+
+    assertEquals(1, droppedLogLines.size)
+    assertEquals("cancelledAction", droppedLogLines[0].actionName)
+  }
+
+  @Test
+  fun `ActionDroppedLogLine formats correctly in log output`() {
+    val actionName = "testAction"
+    val logLine = ActionDroppedLogLine(actionName)
+    val builder = StringBuilder()
+
+    logLine.log(builder)
+
+    val expected = "DROPPED: $actionName\n"
+    assertEquals(expected, builder.toString())
+  }
+
+  @Test
+  fun `onSessionCancelled with multiple actions logs all in order`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val testScope = TestScope()
+
+    // Initialize session
+    monitor.onSessionStarted(testScope, rootSession)
+
+    // Create multiple test actions with distinct names
+    val actions = listOf(
+      TestAction("firstAction"),
+      TestAction("secondAction"),
+      TestAction("thirdAction")
+    )
+
+    // Call onSessionCancelled with multiple dropped actions
+    monitor.onSessionCancelled(
+      cause = null,
+      droppedActions = actions,
+      session = rootSession
+    )
+
+    // Settle the runtime to flush updates
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    // Verify all dropped actions were logged in order
+    val updates = runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+    val droppedLogLines = updates.filterIsInstance<ActionDroppedLogLine>()
+
+    assertEquals(3, droppedLogLines.size)
+    assertEquals("firstAction", droppedLogLines[0].actionName)
+    assertEquals("secondAction", droppedLogLines[1].actionName)
+    assertEquals("thirdAction", droppedLogLines[2].actionName)
+  }
+
   // Test helper classes
   private class TestWorkflow : StatefulWorkflow<String, String, String, String>() {
     override fun initialState(
@@ -747,6 +937,14 @@ internal class WorkflowRuntimeMonitorTest {
     override fun send(value: WorkflowAction<String, String, String>) {
       // No-op for testing
     }
+  }
+
+  private class TestAction(name: String) : WorkflowAction<String, String, String>() {
+    override fun Updater.apply() {
+      // No-op for testing
+    }
+
+    override val debuggingName: String = name
   }
 
   private class TestWorkflowRuntimeTracer : WorkflowRuntimeTracer() {
