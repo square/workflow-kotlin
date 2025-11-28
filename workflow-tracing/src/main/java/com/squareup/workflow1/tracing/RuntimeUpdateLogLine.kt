@@ -59,6 +59,18 @@ public data object SkipLogLine : RuntimeUpdateLogLine {
 }
 
 /**
+ * An action that was queued but got dropped because the Workflow session ended.
+ */
+public class ActionDroppedLogLine(
+  val actionName: String,
+) : RuntimeUpdateLogLine {
+  override fun log(builder: StringBuilder) {
+    builder.append("DROPPED: $actionName")
+      .append('\n')
+  }
+}
+
+/**
  * The Workflow runtime has applied an action.
  */
 public class ActionAppliedLogLine(

@@ -91,6 +91,13 @@ public class WorkflowRuntimeMonitor(
     droppedActions: List<WorkflowAction<P, S, O>>,
     session: WorkflowSession
   ) {
+    droppedActions.forEach { droppedAction ->
+      runtimeUpdates.logUpdate(
+        updateLine = ActionDroppedLogLine(
+          actionName = droppedAction.toLoggingShortName()
+        )
+      )
+    }
     onWorkflowStopped(session.sessionId)
     chainedWorkflowRuntimeTracer.onWorkflowSessionStopped(session.sessionId)
   }
@@ -349,7 +356,7 @@ public class WorkflowRuntimeMonitor(
      * but we specify it as a [CascadeAction] as this is an action that is applied synchronously
      * as part of an action cascade that originated with a [QueuedAction].
      *
-     * Note that for every [com.squareup.workflow1.Worker] a child workflow is created and rendered,
+     * Note that for every [Worker] a child workflow is created and rendered,
      * so this will be part of the callstack for that. In that case the output of the handler will
      * contain the worker action signature. We can detect that with
      * [Worker.WORKER_OUTPUT_ACTION_NAME].
