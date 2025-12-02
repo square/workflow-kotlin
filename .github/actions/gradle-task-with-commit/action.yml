@@ -45,7 +45,7 @@ runs:
 
     # ensure that we have the actual branch checked out.  By default, actions/checkout is headless.
     - name: check out with the generated app token
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      uses: actions/checkout@v6
       if: steps.can-push.outputs.can_push == 'true'
       with:
         token: ${{ inputs.access-token }}
@@ -75,7 +75,7 @@ runs:
 
     - name: commit ${{ inputs.fix-task }} changes
       if: steps.can-push.outputs.can_push == 'true'
-      uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
+      uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: ${{ steps.set-commit-message.outputs.commit-message }}
         commit_options: '--no-verify --signoff'

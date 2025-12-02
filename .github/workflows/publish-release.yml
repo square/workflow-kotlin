@@ -7,11 +7,11 @@ jobs:
   publish-release:
     runs-on: macos-latest
     if: github.repository == 'square/workflow-kotlin'
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: gradle/wrapper-validation-action@699bb18358f12c5b78b37bb0111d3a0e2276e0e2 # v2
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v5
 
       - name: Ensure this isn't a -SNAPSHOT version
         uses: ./.github/actions/gradle-task

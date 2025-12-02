@@ -39,7 +39,7 @@ runs:
       run: ./gradlew tasks
 
     - name: Set up JDK
-      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+      uses: actions/setup-java@v5
       with:
         distribution: ${{inputs.distribution}}
         java-version: ${{inputs.java-version}}
@@ -49,10 +49,9 @@ runs:
       uses: ./.github/actions/gradle-args
 
     - name: Gradle build action
-      uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3
+      uses: gradle/actions/setup-gradle@v5
       with:
         cache-read-only: false
-        gradle-home-cache-cleanup: true
 
     # Calculate all the hashes for keys just one time.
     # These should only be referenced before the actual task action, since that action
@@ -72,7 +71,7 @@ runs:
     - name: restore cache for ${{inputs.write-cache-key}}
       id: restore-write-cache
       if: inputs.write-cache-key != 'null'
-      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      uses: actions/cache/restore@v4
       with:
         path: |
           ~/.gradle/caches/build-cache-1
@@ -90,7 +89,7 @@ runs:
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
     - name: restore cache for ${{inputs.restore-cache-key}}
       if: inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      uses: actions/cache/restore@v4
       with:
         path: |
           ~/.gradle/caches/build-cache-1
@@ -104,26 +103,25 @@ runs:
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
           ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses: gradle/actions/wrapper-validation@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4
+    - uses: gradle/actions/wrapper-validation@v5
 
-    # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
+    # Run the actual task.  Note that this still uses setup-gradle for more fine-grained caching.
     - name: Run ${{inputs.task}}
-      uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3
+      uses: gradle/actions/setup-gradle@v5
       with:
+        working-directory: ${{inputs.build-root-directory}}
         # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
         # winds up getting parsed as a single argument.
-        arguments: ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
+        run: ./gradlew ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
         cache-read-only: false
-        build-root-directory: ${{inputs.build-root-directory}}
-        gradle-home-cache-cleanup: true
 
     # Save the build cache to `write-cache-key`.
     # Skip if we already had an exact match, or if the key is not set, or if this is a Windows runner.
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
     - name: save the '${{inputs.write-cache-key}}' cache
-      uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      uses: actions/cache/save@v4
       id: save-write-cache-key
       if: inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
       with:
@@ -136,21 +134,21 @@ runs:
 
     - name: Upload Any Logs
       if: failure()
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@v5
       with:
         name: log-upload
         path: ${{github.workspace}}/**/*.log
 
     - name: Upload Any Heap Dumps
       if: failure()
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@v5
       with:
         name: hprof-upload
         path: ${{github.workspace}}/**/*.hprof
 
     - name: Upload Any Specified Files
       if: failure() && inputs.failure-path-upload != 'null'
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{inputs.failure-upload-name}}
         path: ${{github.workspace}}/${{inputs.failure-path-upload}}
