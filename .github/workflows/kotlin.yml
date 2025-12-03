@@ -211,10 +211,7 @@ jobs:
       - name: allTests via gradle
         uses: ./.github/actions/gradle-task
         with:
-          task: |
-            allTests
-            test
-            --continue
+          task: test --continue
           restore-cache-key: build-logic
           write-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/tests/*[tT]est'
@@ -527,7 +524,7 @@ jobs:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   kmp-jvm-tests:
-    name: JVM Tests for KMP Modules
+    name: JVM Unit Tests for KMP Modules
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -550,7 +547,7 @@ jobs:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   kmp-ios-tests:
-    name: iOS Tests for KMP Modules
+    name: iOS Unit Tests for KMP Modules
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -573,7 +570,7 @@ jobs:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
 
   kmp-js-tests:
-    name: JS Tests
+    name: JS Unit Tests for KMP Modules
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
