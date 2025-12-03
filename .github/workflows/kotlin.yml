@@ -219,10 +219,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-drainExclusive-runtime-tests:
     name: DEA Unit Tests
@@ -242,10 +243,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-runtime-tests:
     name: CSR Unit Tests
@@ -265,10 +267,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-stateChange-runtime-tests:
     name: SCO Unit Tests
@@ -288,10 +291,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-stable-handlers-tests:
     name: SEH Unit Tests
@@ -311,10 +315,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-partial-runtime-tests:
     name: PTR Unit Tests
@@ -334,10 +339,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-stateChange-runtime-tests:
     name: SCO, CSR Unit Tests
@@ -357,10 +363,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-partial-runtime-tests:
     name: CSR, PTR Unit Tests
@@ -380,10 +387,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-drainExclusive-runtime-tests:
     name: CSR, DEA Unit Tests
@@ -403,10 +411,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-stateChange-drainExclusive-runtime-tests:
     name: SCO, DEA Unit Tests
@@ -426,10 +435,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-partial-drainExclusive-runtime-tests:
     name: PTR, DEA Unit Tests
@@ -449,10 +459,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-stateChange-drainExclusive-runtime-tests:
     name: SCO, CSR, DEA Unit Tests
@@ -472,10 +483,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   unit-conflate-partial-drainExclusive-runtime-tests:
     name: CSR, PTR, DEA Unit Tests
@@ -494,10 +506,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
           failure-upload-name: 'csr-ptr-dea-unit-tests-report'
 
   unit-all-runtime-tests:
@@ -518,10 +531,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   kmp-jvm-tests:
     name: JVM Unit Tests for KMP Modules
@@ -541,10 +555,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   kmp-ios-tests:
     name: iOS Unit Tests for KMP Modules
@@ -564,10 +579,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   kmp-js-tests:
     name: JS Unit Tests for KMP Modules
@@ -588,10 +604,11 @@ jobs:
 
       # Report as GitHub Pull Request Check.
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v5
+        if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
+          annotate_only: true # no write check perms on this workflow right now.
 
   performance-tests:
     name: Performance tests
