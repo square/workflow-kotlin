@@ -31,13 +31,6 @@ runs:
   using: 'composite'
   steps:
 
-    # Around March 2025 we've started seeing jobs fail with what looks like
-    # a race initialize version catalog (failure to resolve 'libs.', etc.).
-    # Forcing an initial run of `tasks` fixes that.
-    - name: Initial Gradle command
-      shell: bash
-      run: ./gradlew tasks
-
     - name: Set up JDK
       uses: actions/setup-java@v5
       with:
@@ -105,16 +98,14 @@ runs:
 
     - uses: gradle/actions/wrapper-validation@v5
 
-    # Run the actual task.  Note that this still uses setup-gradle for more fine-grained caching.
+    # Run the actual task.
     - name: Run ${{inputs.task}}
-      uses: gradle/actions/setup-gradle@v5
-      with:
-        working-directory: ${{inputs.build-root-directory}}
-        # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
-        # something along the way to the actual CLI invocation gets confused and the jvmargs list
-        # winds up getting parsed as a single argument.
-        run: ./gradlew ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
-        cache-read-only: false
+      shell: bash
+      working-directory: ${{inputs.build-root-directory}}
+      # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
+      # something along the way to the actual CLI invocation gets confused and the jvmargs list
+      # winds up getting parsed as a single argument.
+      run: ./gradlew ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
 
     # Save the build cache to `write-cache-key`.
     # Skip if we already had an exact match, or if the key is not set, or if this is a Windows runner.

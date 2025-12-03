@@ -29,6 +29,12 @@ inputs:
   write-cache-key:
     description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
     default: 'null'
+  failure-path-upload:
+    description: 'The relative path to a desired log for upload if the task fails.'
+    default: 'null'
+  failure-upload-name:
+    description: 'The name for the upload of failure reports.'
+    default: 'specified-upload'
 
 runs:
   using: 'composite'
@@ -53,6 +59,8 @@ runs:
         restore-cache-key: ${{ inputs.restore-cache-key }}
         task: ${{ inputs.prepare-task }}
         write-cache-key: ${{ inputs.write-cache-key }}
+        failure-path-upload: ${{ inputs.failure-path-upload }}
+        failure-upload-name: ${{ inputs.failure-upload-name }}
 
     # Get the AVD if it's already cached.
     - name: AVD cache
