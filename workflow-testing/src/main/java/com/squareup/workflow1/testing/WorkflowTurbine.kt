@@ -178,7 +178,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
-) = asStatefulWorkflow().renderForTest(
+): Unit = asStatefulWorkflow().renderForTest(
   props,
   testParams,
   coroutineContext,

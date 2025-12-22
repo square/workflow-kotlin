@@ -23,7 +23,7 @@ internal class TypedViewRegistry private constructor(
         check(keys.size == bindings.size) {
           "${bindings.map { it.key }} must not have duplicate entries."
         }
-      } as Map<Key<*, *>, Entry<*>>
+      }
   )
 
   override val keys: Set<Key<*, *>> get() = bindings.keys

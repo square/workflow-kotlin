@@ -214,10 +214,6 @@ class PerformancePoemsBrowserWorkflow(
             ) { clearSelection }
             return poems + poem
           }
-
-          else -> {
-            throw IllegalStateException("State can't change while rendering.")
-          }
         }
       }
     }
