@@ -28,13 +28,13 @@ public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivi
 }
 
 public abstract interface class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver {
-	public abstract fun onAttachedToWindow (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onDetachedFromWindow (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onRestoreInstanceState (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onSaveInstanceState (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onShowRendering (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onViewCreated (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onViewTreeLifecycleStateChanged (Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
+	public fun onAttachedToWindow (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onDetachedFromWindow (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onRestoreInstanceState (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onSaveInstanceState (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onShowRendering (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onViewCreated (Landroid/view/View;Ljava/lang/Object;)V
+	public fun onViewTreeLifecycleStateChanged (Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 
 public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver$DefaultImpls {
