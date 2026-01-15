@@ -5,15 +5,14 @@ import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.State
-import com.squareup.workflow1.SessionWorkflow
 import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.ZERO
@@ -28,14 +27,13 @@ import kotlin.time.Duration.Companion.seconds
  * through Composable renderings as well as adapting in both directions.
  */
 @OptIn(WorkflowExperimentalApi::class)
-object RecursiveWorkflow : SessionWorkflow<Unit, State, Unit, Screen>() {
+object RecursiveWorkflow : StatefulWorkflow<Unit, State, Unit, Screen>() {
 
   data class State(
     val children: Int = 0,
     val flashTrigger: Int = 0,
     val nextFlashId: Int = 0,
     val pendingFlashes: List<Int> = emptyList(),
-    val flashScope: CoroutineScope,
   )
 
   /**
@@ -69,8 +67,7 @@ object RecursiveWorkflow : SessionWorkflow<Unit, State, Unit, Screen>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?,
-    workflowScope: CoroutineScope
-  ): State = State(flashScope = workflowScope)
+  ): State = State()
 
   override fun render(
     renderProps: Unit,
