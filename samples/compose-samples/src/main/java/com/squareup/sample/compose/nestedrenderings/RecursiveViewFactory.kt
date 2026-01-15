@@ -20,10 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,13 +52,11 @@ val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering 
       .compositeOver(Color.Black)
   }
 
-  var lastFlashedTrigger by remember { mutableIntStateOf(rendering.flashTrigger) }
   val flashAlpha = remember { Animatable(Color(0x00FFFFFF)) }
 
   // Flash the card white when asked.
   LaunchedEffect(rendering.flashTrigger) {
     if (rendering.flashTrigger != 0) {
-      lastFlashedTrigger = rendering.flashTrigger
       flashAlpha.animateTo(
         Color(0x00FFFFFF),
         animationSpec = keyframes {
