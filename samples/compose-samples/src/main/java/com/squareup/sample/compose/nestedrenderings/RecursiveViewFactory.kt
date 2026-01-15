@@ -6,10 +6,7 @@ import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.keyframes
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement.SpaceEvenly
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,10 +62,13 @@ val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering 
   LaunchedEffect(rendering.flashTrigger) {
     if (rendering.flashTrigger != 0) {
       lastFlashedTrigger = rendering.flashTrigger
-      flashAlpha.animateTo(Color(0x00FFFFFF), animationSpec = keyframes {
-        Color.White at (rendering.flashTime / 7).toInt(MILLISECONDS) using FastOutLinearInEasing
-        Color(0x00FFFFFF) at rendering.flashTime.toInt(MILLISECONDS) using LinearOutSlowInEasing
-      })
+      flashAlpha.animateTo(
+        Color(0x00FFFFFF),
+        animationSpec = keyframes {
+          Color.White at (rendering.flashTime / 7).toInt(MILLISECONDS) using FastOutLinearInEasing
+          Color(0x00FFFFFF) at rendering.flashTime.toInt(MILLISECONDS) using LinearOutSlowInEasing
+        }
+      )
     }
   }
 
