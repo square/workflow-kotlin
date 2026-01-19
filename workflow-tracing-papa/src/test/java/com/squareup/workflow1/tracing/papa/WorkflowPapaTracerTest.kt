@@ -289,14 +289,10 @@ internal class WorkflowPapaTracerTest {
     override val renderIncomingCauses: MutableList<RenderCause> = mutableListOf()
     override var previousRenderCause: RenderCause? = null
     override var currentRenderCause: RenderCause? = null
-    override lateinit var configSnapshot: ConfigSnapshot
+    override var configSnapshot: ConfigSnapshot = ConfigSnapshot(TestRuntimeConfig())
 
     override fun addRuntimeUpdate(event: RuntimeUpdateLogLine) {
       // No-op for testing
-    }
-
-    init {
-      configSnapshot = ConfigSnapshot(TestRuntimeConfig())
     }
   }
 }
