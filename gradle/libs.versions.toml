@@ -192,6 +192,7 @@ androidx-transition = { module = "androidx.transition:transition", version.ref =
 
 androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidx-viewbinding" }
 
+burst = { module = "app.cash.burst:burst", version.ref = "burst" }
 burst-plugin = { module = "app.cash.burst:burst-gradle-plugin", version.ref = "burst" }
 
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }

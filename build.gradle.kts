@@ -37,7 +37,6 @@ apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 dependencies {
   dokka(project(":workflow-core"))
   dokka(project(":workflow-runtime"))
-  dokka(project(":workflow-runtime-android"))
   dokka(project(":workflow-rx2"))
   dokka(project(":workflow-testing"))
   dokka(project(":workflow-ui:compose"))

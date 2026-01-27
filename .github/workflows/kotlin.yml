@@ -659,7 +659,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           prepare-task: prepareConnectedCheckShard${{matrix.shardNum}}
           # -x excludes tasks
-          test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
+          test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}
           restore-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/androidTests/connected'
@@ -690,7 +690,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           prepare-task: prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
           # -x excludes tasks
-          test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
+          test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
           restore-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/androidTests/connected'
