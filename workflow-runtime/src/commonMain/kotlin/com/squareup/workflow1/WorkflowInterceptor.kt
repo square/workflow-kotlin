@@ -431,7 +431,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)
 
-    override fun toString(): String = "InterceptedWorkflow($workflow, $this@intercept)"
+    override fun toString(): String = "InterceptedWorkflow($workflow, ${this@intercept})"
   }
 }
 
