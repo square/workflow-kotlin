@@ -13,7 +13,7 @@ import kotlin.contracts.contract
  * @throws IllegalArgumentException if the [value] is false.
  */
 @OptIn(ExperimentalContracts::class)
-inline fun <T : Any> requireNotNullWithKey(
+public inline fun <T : Any> requireNotNullWithKey(
   value: T?,
   stackTraceKey: Any,
   lazyMessage: () -> Any = { "Required value was null." }
@@ -102,4 +102,4 @@ internal inline fun checkWithKey(
  * for crash reporters. It is important that keys are stable across processes,
  * avoid system hashes.
  */
-expect fun <T : Throwable> T.withKey(stackTraceKey: Any): T
+public expect fun <T : Throwable> T.withKey(stackTraceKey: Any): T

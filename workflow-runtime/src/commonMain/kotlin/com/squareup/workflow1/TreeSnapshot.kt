@@ -63,7 +63,7 @@ public class TreeSnapshot internal constructor(
     sink.readByteString()
   }
 
-  fun workflowSnapshotByteString(): ByteString? {
+  public fun workflowSnapshotByteString(): ByteString? {
     return workflowSnapshot?.bytes
   }
 

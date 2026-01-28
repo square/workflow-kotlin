@@ -47,9 +47,12 @@ fun shardConnectedCheckTasks(target: Project) {
   // Calculate the cost of each project's tests
   val projectsWithTestCount = lazy(NONE) {
     target.subprojects
-      // Only Android projects can have these tasks.
-      // Use the KGP Android plugin instead of AGP since KGP has only one ID to look for.
-      .filter { it.plugins.hasPlugin("org.jetbrains.kotlin.android") }
+      .filter {
+        // Only Android projects can have these tasks.
+        // Use the KGP Android plugin instead of AGP since KGP has only one ID to look for.
+        it.plugins.hasPlugin("org.jetbrains.kotlin.android") ||
+          it.plugins.hasPlugin("com.android.kotlin.multiplatform.library")
+      }
       .map { it to it.androidTestCost() }
   }
 
@@ -58,7 +61,9 @@ fun shardConnectedCheckTasks(target: Project) {
   // outside the task configuration block so that it only happens once.
   val shardAssignments = projectsWithTestCount.shards()
 
-  val connectedTestName = "connectedCheck"
+  // We use connectedAndroidTest instead of connectedCheck since Android instrumented tests in KMP
+  // modules aren't included the latter, but they are in the former.
+  val connectedTestName = "connectedAndroidTest"
 
   shardAssignments.forEach { shard ->
 
@@ -215,13 +220,16 @@ private val testAnnotationRegex = """@(?:org\.junit\.)?Test\s+""".toRegex()
  *
  * Each test function has a cost of 1. A project with 20 tests has a cost of 20.
  */
-private fun Project.androidTestCost(): Int {
+private fun Project.androidTestCost(): Int =
+  listOf(
+    // Android-only, non-KMP modules.
+    file("src/androidTest/java"),
+    // KMP modules with android targets.
+    file("src/androidDeviceTest/kotlin"),
+  ).sumOf { androidTestSrc ->
+    if (!androidTestSrc.exists()) return@sumOf 0
 
-  val androidTestSrc = file("src/androidTest/java")
-
-  if (!androidTestSrc.exists()) return 0
-
-  return androidTestSrc
+    androidTestSrc
     .walkTopDown()
     .filter { it.isFile && it.extension == "kt" }
     .sumOf { file ->
