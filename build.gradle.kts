@@ -28,6 +28,8 @@ plugins {
   alias(libs.plugins.dokka)
   alias(libs.plugins.ktlint)
   alias(libs.plugins.compose.compiler) apply false
+  alias(libs.plugins.androidx.benchmark) apply false
+  alias(libs.plugins.jetbrains.compose) apply false
 }
 
 shardConnectedCheckTasks(project)

@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.androidLibrary
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
   // This is the new/future plugin for Android in KMP. com.android.library is going away.
@@ -9,6 +10,16 @@ plugins {
   id("kotlin-multiplatform")
   id("published")
   id("app.cash.burst")
+  alias(libs.plugins.jetbrains.compose)
+  alias(libs.plugins.compose.compiler)
+}
+
+// Configure dependency resolution to prefer desktop variants for JVM target
+configurations.all {
+  attributes {
+    // When resolving for JVM, prefer the desktop (non-Android) variants of Compose
+    attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
+  }
 }
 
 kotlin {
@@ -49,6 +60,10 @@ kotlin {
       dependencies {
         api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+
+        // These become aliases to the androidx runtime libraries in Compose 1.9.3.
+        implementation(libs.jetbrains.compose.runtime)
+        implementation(libs.jetbrains.compose.runtime.saveable)
       }
     }
 
@@ -59,38 +74,38 @@ kotlin {
       }
     }
 
-    androidMain {
-      dependencies {
-        // Add Android-specific dependencies here. Note that this source set depends on
-        // commonMain by default and will correctly pull the Android artifacts of any KMP
-        // dependencies declared in commonMain.
-        val composeBom = project.dependencies.platform(libs.androidx.compose.bom)
+    if (targets == "kmp" || targets == "android") {
+      androidMain {
+        dependencies {
+          // Add Android-specific dependencies here. Note that this source set depends on
+          // commonMain by default and will correctly pull the Android artifacts of any KMP
+          // dependencies declared in commonMain.
 
-        api(libs.androidx.compose.ui.android)
-        api(libs.androidx.lifecycle.viewmodel.savedstate)
+          api(libs.androidx.lifecycle.viewmodel.savedstate)
 
-        implementation(composeBom)
+          implementation(libs.jetbrains.compose.ui)
+        }
       }
-    }
 
-    getByName("androidDeviceTest") {
-      dependencies {
-        implementation(project(":workflow-ui:internal-testing-android"))
+      getByName("androidDeviceTest") {
+        dependencies {
+          implementation(project(":workflow-ui:internal-testing-android"))
 
-        implementation(libs.androidx.test.espresso.core)
-        implementation(libs.androidx.test.junit)
-        implementation(libs.squareup.leakcanary.instrumentation)
+          implementation(libs.androidx.test.espresso.core)
+          implementation(libs.androidx.test.junit)
+          implementation(libs.squareup.leakcanary.instrumentation)
 
-        implementation(libs.androidx.activity.ktx)
-        implementation(libs.androidx.lifecycle.viewmodel.ktx)
-        implementation(libs.androidx.test.core)
-        implementation(libs.androidx.test.truth)
-        implementation(libs.kotlin.test.core)
-        implementation(libs.kotlin.test.jdk)
-        implementation(libs.kotlinx.coroutines.android)
-        implementation(libs.kotlinx.coroutines.test)
-        implementation(libs.squareup.papa)
-        implementation(libs.burst)
+          implementation(libs.androidx.activity.ktx)
+          implementation(libs.androidx.lifecycle.viewmodel.ktx)
+          implementation(libs.androidx.test.core)
+          implementation(libs.androidx.test.truth)
+          implementation(libs.kotlin.test.core)
+          implementation(libs.kotlin.test.jdk)
+          implementation(libs.kotlinx.coroutines.android)
+          implementation(libs.kotlinx.coroutines.test)
+          implementation(libs.squareup.papa)
+          implementation(libs.burst)
+        }
       }
     }
   }

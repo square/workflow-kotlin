@@ -162,6 +162,7 @@ public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/
 }
 
 public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum {
+	public static final field COMPOSE_RUNTIME Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field CONFLATE_STALE_RENDERINGS Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field Companion Lcom/squareup/workflow1/RuntimeConfigOptions$Companion;
 	public static final field DRAIN_EXCLUSIVE_ACTIONS Lcom/squareup/workflow1/RuntimeConfigOptions;
@@ -182,6 +183,7 @@ public final class com/squareup/workflow1/RuntimeConfigOptions$Companion {
 
 public final class com/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions : java/lang/Enum {
 	public static final field ALL Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field COMPOSE_RUNTIME_ONLY Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field CONFLATE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field CONFLATE_DRAIN Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field CONFLATE_DRAIN_STEAL Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
@@ -485,6 +487,7 @@ public abstract interface class com/squareup/workflow1/WorkflowTracer {
 
 public final class com/squareup/workflow1/WorkflowTracerKt {
 	public static final fun trace (Lcom/squareup/workflow1/WorkflowTracer;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun traceNoFinally (Lcom/squareup/workflow1/WorkflowTracer;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/Workflows {

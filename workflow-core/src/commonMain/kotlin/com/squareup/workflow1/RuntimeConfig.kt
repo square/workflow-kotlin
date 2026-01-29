@@ -105,6 +105,12 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   DRAIN_EXCLUSIVE_ACTIONS,
+
+  /**
+   * Replaces the traditional Workflow runtime with the Compose runtime.
+   */
+  @WorkflowExperimentalRuntime
+  COMPOSE_RUNTIME,
   ;
 
   public companion object {
@@ -117,10 +123,11 @@ public enum class RuntimeConfigOptions {
     public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
 
     /**
-     * Configuration that enables every [RuntimeConfig] option.
+     * Configuration that enables every [RuntimeConfig] option for the traditional (non-Compose)
+     * runtime.
      */
     @WorkflowExperimentalRuntime
-    public val ALL: RuntimeConfig = entries.toSet()
+    public val ALL: RuntimeConfig = entries.toSet() - COMPOSE_RUNTIME
 
     /**
      * Enum of all reasonable config options. Used especially for parameterized testing.
@@ -465,6 +472,8 @@ public enum class RuntimeConfigOptions {
           WORK_STEALING_DISPATCHER
         )
       ),
+
+      COMPOSE_RUNTIME_ONLY(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
 
       /**
        * Always contains all [RuntimeConfigOptions]. Other values in this enum may happen to contain

@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import app.cash.burst.Burst
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
@@ -36,14 +37,18 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.yield
 import okio.ByteString
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
@@ -88,11 +93,17 @@ class RenderWorkflowInTest(
   }
 
   @BeforeTest
-  public fun setup() {
+  fun setup() {
     traces.clear()
+    Dispatchers.setMain(dispatcherUsed)
   }
 
-  @Test fun initial_rendering_is_calculated_synchronously() = runTest(dispatcherUsed) {
+  @AfterTest
+  fun tearDown() {
+    Dispatchers.resetMain()
+  }
+
+  @Test fun initial_rendering_is_calculated_synchronously() = runTestIfConfigValid {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
     // Don't allow the workflow runtime to actually start if this is a [StandardTestDispatcher].
@@ -107,7 +118,7 @@ class RenderWorkflowInTest(
     assertEquals("props: foo", renderings.value.rendering)
   }
 
-  @Test fun initial_rendering_is_reported_through_interceptor() = runTest(dispatcherUsed) {
+  @Test fun initial_rendering_is_reported_through_interceptor() = runTestIfConfigValid {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
@@ -126,12 +137,20 @@ class RenderWorkflowInTest(
       interceptors = listOf(testInterceptor),
       runtimeConfig = runtimeConfig,
       workflowTracer = testTracer,
-    ) {}
+      onOutput = {},
+    )
     hasReportedRendering.lock()
   }
 
-  @Test fun initial_rendering_is_calculated_when_scope_cancelled_before_start() =
-    runTest(dispatcherUsed) {
+  @Test fun initial_rendering_is_calculated_when_scope_cancelled_before_start() {
+    if (COMPOSE_RUNTIME in runtimeConfig) {
+      // Compose can't run in a cancelled scope. It's not clear why this test is here – is this
+      // behavior actually a requirement or did we just want to exercise this code path? Assuming
+      // it's the latter, and so not worth trying to bend over backwards to get Compose to comply.
+      return
+    }
+
+    runTestIfConfigValid {
       val props = MutableStateFlow("foo")
       val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
@@ -146,10 +165,11 @@ class RenderWorkflowInTest(
       ) {}
       assertEquals("props: foo", renderings.value.rendering)
     }
+  }
 
   @Test
   fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -159,13 +179,26 @@ class RenderWorkflowInTest(
 
       val testScope = TestScope(dispatcherUsed)
       testScope.cancel()
-      renderWorkflowIn(
-        workflow,
-        testScope,
-        MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig,
-        workflowTracer = testTracer,
-      ) {}
+      if (COMPOSE_RUNTIME in runtimeConfig) {
+        // The compose runtime will immediately throw if the scope is already cancelled.
+        assertFailsWith<IllegalStateException> {
+          renderWorkflowIn(
+            workflow,
+            testScope,
+            MutableStateFlow(Unit),
+            runtimeConfig = runtimeConfig,
+            workflowTracer = testTracer,
+          ) {}
+        }
+      } else {
+        renderWorkflowIn(
+          workflow,
+          testScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      }
       advanceIfStandard()
 
       assertFalse(sideEffectWasRan)
@@ -173,7 +206,7 @@ class RenderWorkflowInTest(
 
   @Test
   fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -186,19 +219,32 @@ class RenderWorkflowInTest(
 
       val testScope = TestScope(dispatcherUsed)
       testScope.cancel()
-      renderWorkflowIn(
-        workflow = workflow,
-        scope = testScope,
-        props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig,
-        workflowTracer = testTracer,
-      ) {}
+      if (COMPOSE_RUNTIME in runtimeConfig) {
+        // The compose runtime will immediately throw if the scope is already cancelled.
+        assertFailsWith<IllegalStateException> {
+          renderWorkflowIn(
+            workflow = workflow,
+            scope = testScope,
+            props = MutableStateFlow(Unit),
+            runtimeConfig = runtimeConfig,
+            workflowTracer = testTracer,
+          ) {}
+        }
+      } else {
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = testScope,
+          props = MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      }
       advanceIfStandard()
 
       assertFalse(sideEffectWasRan)
     }
 
-  @Test fun new_renderings_are_emitted_on_update() = runTest(dispatcherUsed) {
+  @Test fun new_renderings_are_emitted_on_update() = runTestIfConfigValid {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
     val renderings = renderWorkflowIn(
@@ -218,7 +264,7 @@ class RenderWorkflowInTest(
     assertEquals("props: bar", renderings.value.rendering)
   }
 
-  @Test fun new_renderings_are_emitted_to_interceptor() = runTest(dispatcherUsed) {
+  @Test fun new_renderings_are_emitted_to_interceptor() = runTestIfConfigValid {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
@@ -251,66 +297,73 @@ class RenderWorkflowInTest(
 
   @Test fun saves_to_and_restores_from_snapshot(
     runtime2: RuntimeOptions = NONE
-  ) = runTest(dispatcherUsed) {
-    val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
-      initialState = { _, snapshot ->
-        snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
-      },
-      snapshot = { state ->
-        Snapshot.write { it.writeUtf8WithLength(state) }
-      },
-      render = { _, renderState ->
-        Pair(
-          renderState,
-          { newState -> actionSink.send(action("") { state = newState }) }
-        )
-      }
-    )
-    val props = MutableStateFlow(Unit)
-    val renderings = renderWorkflowIn(
-      workflow = workflow,
-      scope = backgroundScope,
-      props = props,
-      runtimeConfig = runtimeConfig,
-      workflowTracer = null,
-    ) {}
-    advanceIfStandard()
-
-    // Interact with the workflow to change the state.
-    renderings.value.rendering.let { (state, updateState) ->
-      assertEquals("initial state", state)
-      updateState("updated state")
+  ) {
+    if (COMPOSE_RUNTIME in runtimeConfig != COMPOSE_RUNTIME in runtime2.runtimeConfig) {
+      // Snapshots created by the traditional runtime and the compose runtime are not compatible.
+      return
     }
-    advanceIfStandard()
 
-    val snapshot = renderings.value.let { (rendering, snapshot) ->
-      val (state, updateState) = rendering
-      assertEquals("updated state", state)
-      updateState("ignored rendering")
-      return@let snapshot
-    }
-    advanceIfStandard()
-
-    // Create a new scope to launch a second runtime to restore.
-    val restoreScope = TestScope(dispatcherUsed)
-    val restoredRenderings =
-      renderWorkflowIn(
+    runTestIfConfigValid {
+      val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
+        initialState = { _, snapshot ->
+          snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
+        },
+        snapshot = { state ->
+          Snapshot.write { it.writeUtf8WithLength(state) }
+        },
+        render = { _, renderState ->
+          Pair(
+            renderState,
+            { newState -> actionSink.send(action("") { state = newState }) }
+          )
+        }
+      )
+      val props = MutableStateFlow(Unit)
+      val renderings = renderWorkflowIn(
         workflow = workflow,
-        scope = restoreScope,
+        scope = backgroundScope,
         props = props,
-        initialSnapshot = snapshot,
+        runtimeConfig = runtimeConfig,
         workflowTracer = null,
-        runtimeConfig = runtime2.runtimeConfig
       ) {}
-    advanceIfStandard()
-    assertEquals(
-      "updated state",
-      restoredRenderings.value.rendering.first
-    )
+      advanceIfStandard()
+
+      // Interact with the workflow to change the state.
+      renderings.value.rendering.let { (state, updateState) ->
+        assertEquals("initial state", state)
+        updateState("updated state")
+      }
+      advanceIfStandard()
+
+      val snapshot = renderings.value.let { (rendering, snapshot) ->
+        val (state, updateState) = rendering
+        assertEquals("updated state", state)
+        updateState("ignored rendering")
+        return@let snapshot
+      }
+      advanceIfStandard()
+
+      // Create a new scope to launch a second runtime to restore.
+      val restoreScope = TestScope(dispatcherUsed)
+      val restoredRenderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = restoreScope,
+          props = props,
+          initialSnapshot = snapshot,
+          workflowTracer = null,
+          runtimeConfig = runtime2.runtimeConfig
+        ) {}
+      advanceIfStandard()
+      assertEquals(
+        "updated state",
+        restoredRenderings.value.rendering.first
+      )
+    }
   }
 
   // https://github.com/square/workflow-kotlin/issues/223
-  @Test fun snapshots_are_lazy() = runTest(dispatcherUsed) {
+  @Test fun snapshots_are_lazy() = runTestIfConfigValid {
     lateinit var sink: Sink<String>
     var snapped = false
 
@@ -343,7 +396,7 @@ class RenderWorkflowInTest(
     }
     advanceIfStandard()
 
-    if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
+    if (RENDER_ONLY_WHEN_STATE_CHANGES in runtimeConfig || COMPOSE_RUNTIME in runtimeConfig) {
       // we have to change state then or it won't render.
       sink.send("changing state")
     } else {
@@ -351,7 +404,7 @@ class RenderWorkflowInTest(
     }
     advanceIfStandard()
 
-    if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
+    if (RENDER_ONLY_WHEN_STATE_CHANGES in runtimeConfig || COMPOSE_RUNTIME in runtimeConfig) {
       // we have to change state then or it won't render.
       sink.send("changing state, again")
     } else {
@@ -372,7 +425,7 @@ class RenderWorkflowInTest(
     )
   }
 
-  @Test fun onOutput_called_when_output_emitted() = runTest(dispatcherUsed) {
+  @Test fun onOutput_called_when_output_emitted() = runTestIfConfigValid {
     val trigger = Channel<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningWorker(
@@ -414,7 +467,7 @@ class RenderWorkflowInTest(
    * a different dispatcher for the runtime.
    */
   @Test fun onOutput_called_after_rendering_emitted() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val trigger = Channel<String>()
       val workflow = Workflow.stateful<String, String, String>(
         initialState = "initial",
@@ -440,12 +493,13 @@ class RenderWorkflowInTest(
         props = MutableStateFlow(Unit),
         runtimeConfig = runtimeConfig,
         workflowTracer = testTracer,
-      ) { it: String ->
-        receivedOutputs += it
-        // The value of the updated rendering has already been set by the time onOutput is
-        // called
-        assertEquals(it, renderings.value.rendering)
-      }
+        onOutput = {
+          receivedOutputs += it
+          // The value of the updated rendering has already been set by the time onOutput is
+          // called
+          assertEquals(it, renderings.value.rendering)
+        },
+      )
       advanceIfStandard()
 
       assertTrue(receivedOutputs.isEmpty())
@@ -469,7 +523,7 @@ class RenderWorkflowInTest(
    */
   @Test fun onOutput_called_after_rendering_emitted_and_collected() {
     if (dispatcherUsed != myStandardTestDispatcher) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         val trigger = Channel<String>()
         val workflow = Workflow.stateful<String, String, String>(
           initialState = "initial",
@@ -575,7 +629,7 @@ class RenderWorkflowInTest(
   }
 
   @Test fun onOutput_is_not_called_when_no_output_emitted() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val workflow = Workflow.stateless<Int, String, Int> { props -> props }
       var onOutputCalls = 0
       val props = MutableStateFlow(0)
@@ -607,7 +661,7 @@ class RenderWorkflowInTest(
    * the caller, and once to the scope.
    */
   @Test fun exception_from_initial_render_does_not_fail_parent_scope() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         throw ExpectedException()
       }
@@ -625,7 +679,7 @@ class RenderWorkflowInTest(
 
   @Test
   fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -648,7 +702,7 @@ class RenderWorkflowInTest(
 
   @Test
   fun side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var sideEffectWasRan = false
       var cancellationException: Throwable? = null
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -686,7 +740,7 @@ class RenderWorkflowInTest(
 
   @Test
   fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -711,7 +765,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun exception_from_non_initial_render_fails_parent_scope() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val trigger = CompletableDeferred<Unit>()
       // Throws an exception when trigger is completed.
       val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
@@ -741,7 +795,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun exception_from_action_fails_parent_scope() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val trigger = CompletableDeferred<Unit>()
       // Throws an exception when trigger is completed.
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -769,7 +823,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun cancelling_scope_cancels_runtime() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var cancellationException: Throwable? = null
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect(key = "test1") {
@@ -799,7 +853,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun cancelling_scope_in_action_cancels_runtime_and_does_not_render_again() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val testScope = TestScope(dispatcherUsed)
       val trigger = CompletableDeferred<Unit>()
       var renderCount = 0
@@ -836,7 +890,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun failing_scope_cancels_runtime() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       var cancellationException: Throwable? = null
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect(key = "failing") {
@@ -859,12 +913,16 @@ class RenderWorkflowInTest(
 
       testScope.cancel(CancellationException("fail!", ExpectedException()))
       advanceIfStandard()
-      assertTrue(cancellationException is CancellationException)
-      assertTrue(cancellationException!!.cause is ExpectedException)
+      assertIs<CancellationException>(cancellationException)
+      // When compose is cancelled, effects are cancelled with an exception that just says they left
+      // the composition, and doesn't include the cause of the cancellation.
+      if (COMPOSE_RUNTIME !in runtimeConfig) {
+        assertIs<ExpectedException>(cancellationException!!.cause)
+      }
     }
 
   @Test fun error_from_renderings_collector_does_not_fail_parent_scope() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
       val testScope = TestScope(dispatcherUsed)
       val renderings = renderWorkflowIn(
@@ -887,7 +945,7 @@ class RenderWorkflowInTest(
     }
 
   @Test fun exception_from_onOutput_fails_parent_scope() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val trigger = CompletableDeferred<Unit>()
       // Emits a Unit when trigger is completed.
       val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -913,7 +971,7 @@ class RenderWorkflowInTest(
 
   // https://github.com/square/workflow-kotlin/issues/224
   @Test fun exceptions_from_Snapshots_do_not_fail_runtime() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val workflow = Workflow.stateful<Int, Unit, Nothing, Unit>(
         snapshot = {
           Snapshot.of {
@@ -953,7 +1011,7 @@ class RenderWorkflowInTest(
 
   // https://github.com/square/workflow-kotlin/issues/224
   @Test fun exceptions_from_renderings_equals_methods_do_not_fail_runtime() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       @Suppress("EqualsOrHashCode", "unused")
       class FailRendering(val value: Int) {
         override fun equals(other: Any?): Boolean {
@@ -998,7 +1056,7 @@ class RenderWorkflowInTest(
 
   // https://github.com/square/workflow-kotlin/issues/224
   @Test fun exceptions_from_renderings_hashCode_methods_do_not_fail_runtime() =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       @Suppress("EqualsOrHashCode")
       data class FailRendering(val value: Int) {
         override fun hashCode(): Int {
@@ -1042,7 +1100,7 @@ class RenderWorkflowInTest(
 
   @Test fun for_render_on_state_change_only_we_do_not_render_if_state_not_changed() {
     if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
 
@@ -1078,7 +1136,7 @@ class RenderWorkflowInTest(
 
   @Test fun for_render_on_state_change_only_we_report_skipped_in_interceptor() {
     if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
         var interceptedRenderingsCount = 0
@@ -1128,7 +1186,7 @@ class RenderWorkflowInTest(
 
   @Test fun for_render_on_state_change_only_we_render_if_state_changed() {
     if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
 
@@ -1166,7 +1224,7 @@ class RenderWorkflowInTest(
   @Test
   fun for_partial_tree_rendering_we_do_not_render_nodes_if_state_not_changed_even_in_render_pass() {
     if (runtimeConfig.contains(PARTIAL_TREE_RENDERING)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
 
         val trigger = MutableSharedFlow<String>()
@@ -1231,7 +1289,7 @@ class RenderWorkflowInTest(
 
   @Test fun for_partial_tree_rendering_we_render_nodes_if_state_changed() {
     if (runtimeConfig.contains(PARTIAL_TREE_RENDERING)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
 
         val trigger = MutableSharedFlow<String>()
@@ -1308,7 +1366,7 @@ class RenderWorkflowInTest(
         CONFLATE_STALE_RENDERINGS
       )
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -1388,7 +1446,7 @@ class RenderWorkflowInTest(
   @Test
   fun for_conflate_we_conflate_stacked_actions_into_one_rendering() {
     if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
 
         var childHandlerActionExecuted = false
@@ -1472,7 +1530,7 @@ class RenderWorkflowInTest(
     if (CONFLATE_STALE_RENDERINGS in runtimeConfig &&
       WORK_STEALING_DISPATCHER !in runtimeConfig
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
 
         var childHandlerActionExecuted = false
@@ -1557,7 +1615,7 @@ class RenderWorkflowInTest(
     if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
       runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -1636,7 +1694,7 @@ class RenderWorkflowInTest(
     if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
       runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -1736,7 +1794,7 @@ class RenderWorkflowInTest(
       return
     }
 
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid {
       val workflow = Workflow.stateful<Int, Nothing, Unit>(initialState = 0) { effectCount ->
         // Because of the WSD, this effect will be allowed to run after the render pass but before
         // emitting the rendering OR checking for new actions, in the CSR loop. Since it emits an
@@ -1836,73 +1894,71 @@ class RenderWorkflowInTest(
   }
 
   @Test
-  fun for_drain_exclusive_we_handle_multiple_actions_in_one_render_or_not() = runTest(
-    dispatcherUsed
-  ) {
+  fun for_drain_exclusive_we_handle_multiple_actions_in_one_render_or_not() =
+    runTestIfConfigValid {
+      var childActionAppliedCount = 0
+      var parentRenderCount = 0
+      val trigger = MutableSharedFlow<String>()
 
-    var childActionAppliedCount = 0
-    var parentRenderCount = 0
-    val trigger = MutableSharedFlow<String>()
-
-    val childWorkflow = Workflow.stateful<String, String, String>(
-      initialState = "unchanged state",
-      render = { renderState ->
-        runningWorker(
-          trigger.asWorker()
-        ) {
-          action("") {
-            state = it
-            childActionAppliedCount++
+      val childWorkflow = Workflow.stateful<String, String, String>(
+        initialState = "unchanged state",
+        render = { renderState ->
+          runningWorker(
+            trigger.asWorker()
+          ) {
+            action("") {
+              state = it
+              childActionAppliedCount++
+            }
           }
+          renderState
         }
-        renderState
-      }
-    )
-    val workflow = Workflow.stateful<String, String, String>(
-      initialState = "unchanging state",
-      render = { renderState ->
-        renderChild(childWorkflow, key = "key1") { _ ->
-          WorkflowAction.noAction()
+      )
+      val workflow = Workflow.stateful<String, String, String>(
+        initialState = "unchanging state",
+        render = { renderState ->
+          renderChild(childWorkflow, key = "key1") { _ ->
+            WorkflowAction.noAction()
+          }
+          renderChild(childWorkflow, key = "key2") { _ ->
+            WorkflowAction.noAction()
+          }
+          parentRenderCount++
+          renderState
         }
-        renderChild(childWorkflow, key = "key2") { _ ->
-          WorkflowAction.noAction()
-        }
-        parentRenderCount++
-        renderState
-      }
-    )
-    val props = MutableStateFlow(Unit)
-    renderWorkflowIn(
-      workflow = workflow,
-      scope = backgroundScope,
-      props = props,
-      runtimeConfig = runtimeConfig,
-      workflowTracer = testTracer,
-    ) { }
-    advanceIfStandard()
+      )
+      val props = MutableStateFlow(Unit)
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = backgroundScope,
+        props = props,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) { }
+      advanceIfStandard()
 
-    launch {
-      trigger.emit("changed state")
-    }
-    advanceIfStandard()
+      launch {
+        trigger.emit("changed state")
+      }
+      advanceIfStandard()
 
-    // 2 child actions processed.
-    assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
-    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
-      //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
-      assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
-    } else {
-      //  and 3 parent renders - 1 initial (synchronous) and then 1 additional for each child.
-      assertEquals(3, parentRenderCount, "Expecting only 3 total renders.")
+      // 2 child actions processed.
+      assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
+      if (DRAIN_EXCLUSIVE_ACTIONS in runtimeConfig || COMPOSE_RUNTIME in runtimeConfig) {
+        //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
+        assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
+      } else {
+        //  and 3 parent renders - 1 initial (synchronous) and then 1 additional for each child.
+        assertEquals(3, parentRenderCount, "Expecting only 3 total renders.")
+      }
     }
-  }
 
   @Test
   fun for_drain_exclusive_and_render_only_when_state_changes_we_handle_multiple_actions_in_one_render_but_do_not_render_if_no_state_change() {
     if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
       runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -1973,7 +2029,7 @@ class RenderWorkflowInTest(
     if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
       runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
     ) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -2069,7 +2125,7 @@ class RenderWorkflowInTest(
   @Test
   fun for_drain_exclusive_we_do_not_handle_multiple_actions_in_one_render_if_not_exclusive() {
     if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
-      runTest(dispatcherUsed) {
+      runTestIfConfigValid {
         check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
 
         var childActionAppliedCount = 0
@@ -2129,6 +2185,14 @@ class RenderWorkflowInTest(
         assertEquals(3, parentRenderCount, "Expecting 3 parent renders")
       }
     }
+  }
+
+  private fun runTestIfConfigValid(testBody: suspend TestScope.() -> Unit) {
+    if (COMPOSE_RUNTIME in runtimeConfig && useUnconfined) {
+      // Compose runtime does not support unconfined dispatcher.
+      return
+    }
+    runTest(dispatcherUsed, testBody = testBody)
   }
 
   private class ExpectedException : RuntimeException()

@@ -1,4 +1,5 @@
 public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
+	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/NoopWorkflowInterceptor;
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -17,6 +18,7 @@ public final class com/squareup/workflow1/RenderWorkflowKt {
 }
 
 public final class com/squareup/workflow1/RenderingAndSnapshot {
+	public static final field $stable I
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Lcom/squareup/workflow1/TreeSnapshot;
@@ -25,6 +27,7 @@ public final class com/squareup/workflow1/RenderingAndSnapshot {
 }
 
 public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
+	public static final field $stable I
 	public fun <init> ()V
 	protected fun log (Ljava/lang/String;)V
 	protected fun logAfterMethod (Ljava/lang/String;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;[Lkotlin/Pair;)V
@@ -42,6 +45,7 @@ public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squar
 }
 
 public final class com/squareup/workflow1/TreeSnapshot {
+	public static final field $stable I
 	public static final field Companion Lcom/squareup/workflow1/TreeSnapshot$Companion;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -93,6 +97,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInter
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -100,6 +105,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped 
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderingConflated : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderingConflated;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -107,6 +113,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderingConflated
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -114,6 +121,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced 
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RuntimeSettled : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeSettled;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -145,5 +153,13 @@ public final class com/squareup/workflow1/internal/ThrowablesKt {
 
 public final class com/squareup/workflow1/internal/Throwables_jvmKt {
 	public static final fun withKey (Ljava/lang/Throwable;Ljava/lang/Object;)Ljava/lang/Throwable;
+}
+
+public final class com/squareup/workflow1/internal/compose/RememberComposableKt {
+	public static final fun rSKC_after (Ljava/lang/Object;Landroidx/compose/runtime/Composer;)Ljava/lang/Object;
+	public static final fun rSKC_before (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Landroidx/compose/runtime/Composer;I)Z
+	public static synthetic fun rSKC_before$default (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Landroidx/compose/runtime/Composer;IILjava/lang/Object;)Z
+	public static final fun rememberSkippableAndRestartableComposableImpl (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/RecomposeScope;Landroidx/compose/runtime/Composer;IZ)Ljava/lang/Object;
+	public static final fun rememberSkippableComposableImpl (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
 }
 
