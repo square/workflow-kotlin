@@ -75,11 +75,13 @@ kotlin {
 
     getByName("androidDeviceTest") {
       dependencies {
+        implementation(project(":workflow-config:config-android"))
         implementation(project(":workflow-ui:internal-testing-android"))
 
         implementation(libs.androidx.test.espresso.core)
         implementation(libs.androidx.test.junit)
         implementation(libs.squareup.leakcanary.instrumentation)
+        implementation(libs.truth)
 
         implementation(libs.androidx.activity.ktx)
         implementation(libs.androidx.lifecycle.viewmodel.ktx)
