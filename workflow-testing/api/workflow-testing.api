@@ -198,7 +198,9 @@ public final class com/squareup/workflow1/testing/WorkflowTestRuntimeKt {
 public final class com/squareup/workflow1/testing/WorkflowTurbine {
 	public static final field Companion Lcom/squareup/workflow1/testing/WorkflowTurbine$Companion;
 	public static final field WORKFLOW_TEST_DEFAULT_TIMEOUT_MS J
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;)V
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;Lkotlinx/coroutines/test/TestCoroutineScheduler;)V
+	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;Lapp/cash/turbine/ReceiveTurbine;Lkotlinx/coroutines/test/TestCoroutineScheduler;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun advanceRuntime ()V
 	public final fun awaitNext (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun awaitNext$default (Lcom/squareup/workflow1/testing/WorkflowTurbine;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun awaitNextOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

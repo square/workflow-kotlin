@@ -26,7 +26,8 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
@@ -53,7 +54,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderForTest(
     props: StateFlow<PropsT>,
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
-    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    coroutineContext: CoroutineContext = StandardTestDispatcher(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -95,6 +96,11 @@ public fun <PropsT, StateT, OutputT, RenderingT>
       }
     )
 
+    // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
+    // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
+    // This ensures the runtime loop is running and waiting for actions before the test begins.
+    testScheduler.advanceUntilIdle()
+
     val firstRendering = renderings.value.rendering
     val firstSnapshot = renderings.value.snapshot
 
@@ -122,7 +128,8 @@ public fun <PropsT, StateT, OutputT, RenderingT>
         firstSnapshot = firstSnapshot,
         renderingTurbine = renderingTurbine,
         snapshotTurbine = snapshotTurbine,
-        outputTurbine = outputTurbine
+        outputTurbine = outputTurbine,
+        testScheduler = testScheduler
       )
       workflowTurbine.testCase()
 
@@ -144,7 +151,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
 public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTest(
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
-    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    coroutineContext: CoroutineContext = StandardTestDispatcher(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -173,12 +180,12 @@ public fun <StateT, OutputT, RenderingT>
 public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderForTestForStartWith(
   props: StateFlow<PropsT>,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
-  coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+  coroutineContext: CoroutineContext = StandardTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
-) = asStatefulWorkflow().renderForTest(
+): Unit = asStatefulWorkflow().renderForTest(
   props,
   testParams,
   coroutineContext,
@@ -194,7 +201,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTestForStartWith(
-  coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+  coroutineContext: CoroutineContext = StandardTestDispatcher(),
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
   onOutput: suspend (OutputT) -> Unit = {},
@@ -228,7 +235,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
     props: StateFlow<PropsT>,
     initialState: StateT,
-    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    coroutineContext: CoroutineContext = StandardTestDispatcher(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -255,7 +262,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
 public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
     initialState: StateT,
-    coroutineContext: CoroutineContext = UnconfinedTestDispatcher(),
+    coroutineContext: CoroutineContext = StandardTestDispatcher(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -285,9 +292,26 @@ public class WorkflowTurbine<RenderingT, OutputT>(
   private val renderingTurbine: ReceiveTurbine<RenderingT>,
   private val snapshotTurbine: ReceiveTurbine<TreeSnapshot>,
   private val outputTurbine: ReceiveTurbine<OutputT>,
+  private val testScheduler: TestCoroutineScheduler? = null,
 ) {
   private var usedFirstRendering = false
   private var usedFirstSnapshot = false
+
+  /**
+   * Advance the test coroutine scheduler to drain all pending coroutines, simulating the
+   * "drain before next frame" behavior of AndroidUiDispatcher.Main in production.
+   *
+   * With a [StandardTestDispatcher], coroutines are not resumed automatically when dispatched.
+   * This method runs all pending coroutines so that the workflow runtime processes queued actions
+   * and produces new renderings.
+   *
+   * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
+   * and [skipRenderings]. You may also call it explicitly if you need to assert on side effects
+   * after sending an action without first awaiting a rendering.
+   */
+  public fun advanceRuntime() {
+    testScheduler?.advanceUntilIdle()
+  }
 
   /**
    * Suspend waiting for the next rendering to be produced by the Workflow runtime. Note this includes
@@ -300,6 +324,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstRendering = true
       return firstRendering
     }
+    advanceRuntime()
     return renderingTurbine.awaitItem()
   }
 
@@ -308,7 +333,10 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    *
    * @return the output.
    */
-  public suspend fun awaitNextOutput(): OutputT = outputTurbine.awaitItem()
+  public suspend fun awaitNextOutput(): OutputT {
+    advanceRuntime()
+    return outputTurbine.awaitItem()
+  }
 
   /**
    * Suspend waiting for the next snapshot to be produced by the Workflow runtime. Note this includes
@@ -321,6 +349,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstSnapshot = true
       return firstSnapshot
     }
+    advanceRuntime()
     return snapshotTurbine.awaitItem()
   }
 
@@ -333,6 +362,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
     }
 
     if (skippedCount > 0) {
+      advanceRuntime()
       renderingTurbine.skipItems(skippedCount)
     }
   }
