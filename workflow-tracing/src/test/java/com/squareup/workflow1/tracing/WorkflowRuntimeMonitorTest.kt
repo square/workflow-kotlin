@@ -22,8 +22,8 @@ import com.squareup.workflow1.tracing.RenderCause.RootCreation
 import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
@@ -86,7 +86,7 @@ internal class WorkflowRuntimeMonitorTest {
       workflowRuntimeTracers = listOf(fakeRuntimeTracer)
     )
     val testWorkflow = TestWorkflow()
-    val testCoroutineDispatcher = UnconfinedTestDispatcher()
+    val testCoroutineDispatcher = StandardTestDispatcher()
     val rootSession = testWorkflow.createRootSession(testCoroutineDispatcher)
     val testScope = TestScope(testCoroutineDispatcher)
 

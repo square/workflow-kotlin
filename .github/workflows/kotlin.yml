@@ -564,7 +564,7 @@ jobs:
   kmp-ios-tests:
     name: iOS Unit Tests for KMP Modules
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v6

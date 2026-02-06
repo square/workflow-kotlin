@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -68,7 +67,13 @@ internal class SinkTest {
       sentActions += it
     }
 
-    runTest(UnconfinedTestDispatcher()) {
+    // With StandardTestDispatcher, coroutines are not eagerly dispatched. The sendJob starts
+    // UNDISPATCHED so it runs to its first suspension (channel.send("a")). Then advanceUntilIdle
+    // starts the collectJob which receives "a", sends the action to the sink, and suspends in
+    // sendAndAwaitApplication. The sendJob then resumes from send("a") and suspends at send("b")
+    // because the collector is blocked on backpressure. Only after we apply the first action and
+    // advance again does "b" get processed.
+    runTest(StandardTestDispatcher()) {
       val collectJob = launch {
         flow.collectToSink(sink) { action("") { setOutput(it) } }
       }
@@ -76,26 +81,33 @@ internal class SinkTest {
       val sendJob = launch(start = UNDISPATCHED) {
         assertEquals(0, counter.getAndIncrement())
         channel.send("a")
+        // Resumed after advanceUntilIdle when collectJob receives "a" from channel.
         assertEquals(1, counter.getAndIncrement())
         channel.send("b")
-        assertEquals(4, counter.getAndIncrement())
-        channel.close()
+        // Resumed after second advanceUntilIdle when collectJob receives "b" from channel.
         assertEquals(5, counter.getAndIncrement())
+        channel.close()
+        assertEquals(6, counter.getAndIncrement())
       }
       advanceUntilIdle()
       assertEquals(2, counter.getAndIncrement())
 
       sentActions.removeFirst()
         .also {
-          advanceUntilIdle()
           // Sender won't resume until we've _applied_ the action.
           assertEquals(3, counter.getAndIncrement())
         }
         .applyTo(Unit, Unit)
         .let { (_, result) ->
-          assertEquals(6, counter.getAndIncrement())
+          // With StandardTestDispatcher, continuation.resume is dispatched, not immediate.
+          // So the counter hasn't been incremented by the sendJob yet.
+          assertEquals(4, counter.getAndIncrement())
           assertEquals("a", result.output!!.value)
         }
+
+      // Advance to let collector resume from sendAndAwaitApplication, receive "b",
+      // and let sendJob resume from send("b") through close().
+      advanceUntilIdle()
 
       sentActions.removeFirst()
         .applyTo(Unit, Unit)

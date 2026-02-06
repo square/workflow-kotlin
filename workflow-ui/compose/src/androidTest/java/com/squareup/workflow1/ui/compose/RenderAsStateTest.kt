@@ -31,8 +31,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -279,7 +279,7 @@ internal class RenderAsStateTest {
         awaitCancellation()
       }
     }
-    val scope = TestScope(UnconfinedTestDispatcher())
+    val scope = TestScope(StandardTestDispatcher())
 
     class CancelCompositionException : RuntimeException()
 
@@ -287,6 +287,7 @@ internal class RenderAsStateTest {
       assertFailsWith<CancelCompositionException> {
         composeRule.setContent {
           workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
+          scope.advanceUntilIdle()
           throw CancelCompositionException()
         }
       }
