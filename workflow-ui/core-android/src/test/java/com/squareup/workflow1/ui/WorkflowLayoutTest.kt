@@ -18,7 +18,8 @@ import com.squareup.workflow1.ui.navigation.WrappedScreen
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -95,7 +96,7 @@ internal class WorkflowLayoutTest {
   }
 
   @Test fun takes() {
-    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val lifecycleDispatcher = StandardTestDispatcher()
     val testLifecycle = TestLifecycleOwner(
       initialState = Lifecycle.State.RESUMED,
       coroutineDispatcher = lifecycleDispatcher
@@ -107,14 +108,18 @@ internal class WorkflowLayoutTest {
         lifecycle = testLifecycle.lifecycle,
         renderings = flow,
       )
+      // Start the collector coroutine so it subscribes to the SharedFlow before we emit.
+      advanceUntilIdle()
       assertThat(workflowLayout[0]).isInstanceOf(WorkflowViewStub::class.java)
+
       flow.emit(WrappedScreen())
+      advanceUntilIdle()
       assertThat(workflowLayout[0]).isNotInstanceOf(WorkflowViewStub::class.java)
     }
   }
 
   @Test fun canStopTaking() {
-    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val lifecycleDispatcher = StandardTestDispatcher()
     val testLifecycle = TestLifecycleOwner(
       initialState = Lifecycle.State.RESUMED,
       coroutineDispatcher = lifecycleDispatcher
@@ -126,14 +131,21 @@ internal class WorkflowLayoutTest {
         lifecycle = testLifecycle.lifecycle,
         renderings = flow,
       )
+      // Start the collector, then cancel and process cancellation so it unsubscribes from the
+      // SharedFlow. Without this, emit() would deadlock waiting for the cancelled subscriber.
+      advanceUntilIdle()
       job.cancel()
+      advanceUntilIdle()
       flow.emit(WrappedScreen())
+      // Technically not needed since emit returns right away, but included so we know that
+      // we tried to take anything emitted.
+      advanceUntilIdle()
       assertThat(workflowLayout[0]).isInstanceOf(WorkflowViewStub::class.java)
     }
   }
 
   @Test fun usesProvidedCoroutineContext() {
-    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val lifecycleDispatcher = StandardTestDispatcher()
     val testLifecycle = TestLifecycleOwner(
       initialState = Lifecycle.State.RESUMED,
       coroutineDispatcher = lifecycleDispatcher
@@ -154,8 +166,11 @@ internal class WorkflowLayoutTest {
         renderings = trackedFlow,
         collectionContext = testElement
       )
+      // Start the collector coroutine so it subscribes to the SharedFlow before we emit.
+      advanceUntilIdle()
 
       flow.emit(WrappedScreen())
+      advanceUntilIdle()
 
       assertThat(testElement.wasUsed).isTrue()
     }
