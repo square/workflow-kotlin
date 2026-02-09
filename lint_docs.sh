@@ -12,7 +12,7 @@ TUTORIALS_DIR='./samples/tutorial'
 TUTORIALS_STYLE=.markdownlint-tutorials.rb
 
 # CHANGELOG is an mkdocs redirect pointer, not valid markdown.
-# The benchmarks markdown file started failing on existing markdown that doesn't voilate the failed
+# The benchmarks markdown file started failing on existing markdown that doesn't violate the failed
 # check, might be an mdl bug.
 find . \
     -name '*.md' \

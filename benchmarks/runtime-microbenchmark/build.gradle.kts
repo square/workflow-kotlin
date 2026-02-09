@@ -34,7 +34,7 @@ android {
     testInstrumentationRunner = "androidx.benchmark.junit4.AndroidBenchmarkRunner"
 
     // This flag is supposed to enable dry run in the test runner, and it does so locally, but for
-    // some reason it doesn't seem to be working in CI.
+    // some reason it doesn't seem to be working in CI, so we configure it manually.
     val benchmarkDryRunEnabled = project.findProperty("androidx.benchmark.dryRunMode.enable")
     if (benchmarkDryRunEnabled == "true") {
       println("Running benchmarks in dry mode: emulator allowed, no measurements taken, no warmup.")
