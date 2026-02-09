@@ -1,0 +1,13 @@
+---
+description: Workflow runtime usage and lifecycle patterns
+globs: "*.kt"
+alwaysApply: false
+---
+
+# Workflow Runtime Guidelines
+
+(Placeholder — to be filled with actual runtime patterns)
+
+- Use `renderWorkflowIn` to start a workflow runtime
+- Connect the runtime to a lifecycle owner for proper cleanup
+- Use `RuntimeConfig` for runtime configuration

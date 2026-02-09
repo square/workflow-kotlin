@@ -1,0 +1,13 @@
+---
+description: Workflow Compose UI integration patterns
+globs: "*.kt"
+alwaysApply: false
+---
+
+# Workflow Compose Guidelines
+
+(Placeholder — to be filled with actual Compose patterns)
+
+- Use `ViewEnvironment` for cross-cutting UI concerns
+- Use `renderAsState` to bridge workflows into Compose
+- Define `Screen` types for Compose rendering
