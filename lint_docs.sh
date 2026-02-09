@@ -17,6 +17,9 @@ TUTORIALS_STYLE=.markdownlint-tutorials.rb
 find . \
     -name '*.md' \
     -not -name 'CHANGELOG.md' \
+    -not -name 'AGENTS.md' \
+    -not -name 'SKILL.md' \
+    -not -name 'RULES.md' \
     -not -path './.github/*' \
     -not -path $TUTORIALS_DIR/'*' \
     -not -path './compose/*' \
