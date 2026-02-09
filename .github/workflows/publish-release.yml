@@ -7,7 +7,7 @@ jobs:
   publish-release:
     runs-on: macos-latest
     if: github.repository == 'square/workflow-kotlin'
-    timeout-minutes: 90
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v6
