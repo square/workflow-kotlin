@@ -610,8 +610,8 @@ jobs:
           report_paths: '**/build/test-results/*[tT]est/TEST-*.xml'
           annotate_only: true # no write check perms on this workflow right now.
 
-  performance-tests:
-    name: Performance tests
+  macrobenchmarks:
+    name: Macrobenchmarks
     runs-on: workflow-kotlin-test-runner-ubuntu-4core
     timeout-minutes: 45
     strategy:
@@ -627,13 +627,43 @@ jobs:
       - name: Instrumented tests
         uses: ./.github/actions/gradle-tasks-with-emulator
         with:
-          tests-name: perf-tests-results
+          tests-name: macrobenchmarks-results
           api-level: ${{ matrix.api-level }}
           prepare-task: :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
           test-task: :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
           restore-cache-key: androidTest-build-artifacts
           failure-path-upload: '**/build/reports/androidTests/connected'
-          failure-upload-name: 'perf-tests-report'
+          failure-upload-name: 'macrobenchmarks-report'
+
+  microbenchmarks:
+    name: Microbenchmarks
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    timeout-minutes: 45
+    strategy:
+      # Allow tests to continue on other devices if they fail on one device.
+      fail-fast: false
+      matrix:
+        api-level:
+          - 31
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Instrumented tests
+        uses: ./.github/actions/gradle-tasks-with-emulator
+        with:
+          tests-name: microbenchmarks-results
+          api-level: ${{ matrix.api-level }}
+          # Microbenchmarks only run as release builds so we don't use the debug task like most
+          # builds.
+          prepare-task: :benchmarks:runtime-microbenchmark:prepareReleaseAndroidTestArtifacts -Pandroidx.benchmark.dryRunMode.enable=true -Pkotlin.native.ignoreDisabledTargets=true
+          # Run in dry run mode so they only run once, without warmup, since we don't care about measurements.
+          # See https://developer.android.com/topic/performance/benchmarking/microbenchmark-instrumentation-args#dryrunmode-enable
+          # Ignore iOS and other native targets being disabled since this is specifically and Android task.
+          test-task: :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest -Pandroidx.benchmark.dryRunMode.enable=true -Pkotlin.native.ignoreDisabledTargets=true --continue
+          restore-cache-key: androidTest-build-artifacts
+          failure-path-upload: 'benchmarks/runtime-microbenchmark/build/reports/androidTests/connected'
+          failure-upload-name: 'microbenchmarks-report'
 
   instrumentation-tests:
     name: Instrumentation tests
@@ -659,7 +689,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           prepare-task: prepareConnectedCheckShard${{matrix.shardNum}}
           # -x excludes tasks
-          test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest
+          test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest -x :benchmarks:runtime-microbenchmark:connectedAndroidTest
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}
           restore-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/androidTests/connected'
@@ -690,7 +720,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           prepare-task: prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
           # -x excludes tasks
-          test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest
+          test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-benchmark:connectedAndroidTest -x :benchmarks:performance-poetry:complex-poetry:connectedAndroidTest -x :benchmarks:runtime-microbenchmark:connectedAndroidTest
           write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
           restore-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/androidTests/connected'
@@ -724,7 +754,8 @@ jobs:
       - unit-conflate-partial-drainExclusive-runtime-tests
       - unit-all-runtime-tests
       - ktlint
-      - performance-tests
+      - macrobenchmarks
+      - microbenchmarks
       - runtime-instrumentation-tests
       - shards-and-version
       - tutorials

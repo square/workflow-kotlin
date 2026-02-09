@@ -10,6 +10,7 @@ android {
   buildFeatures.buildConfig = true
 
   val runtimeConfig = project.findProperty("workflow.runtime") ?: "baseline"
+  println("Workflow Runtime Configuration via test: 'workflow.runtime': '$runtimeConfig'")
 
   defaultConfig {
     buildConfigField("String", "WORKFLOW_RUNTIME", "\"$runtimeConfig\"")

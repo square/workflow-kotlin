@@ -5,7 +5,18 @@ deterministic tests - such as those for render passes - can be run on any device
 otherwise), but the benchmarks should be run on physical devices, or the closest approximation
 to physical devices you can get.
 
-## Baseline Profiles
+There are two types of benchmarks:
+
+- **Macro benchmarks** measure a particular flow in an entire app and are used to generate baseline
+  profiles. They're analogous to integration tests.
+- **Micro benchmarks** measure a specific operation or set of small operations but running them
+  many times and collecting aggregate statistics. They're used to compare detailed performance of
+  competing implementations, detect specific performance regressions, and inform optimizations.
+  They're analogous to unit tests.
+
+## Macro benchmarks
+
+### Baseline Profiles
 
 The sample apps can be used to extract 'baseline profiles' to improve code loading time after first
 install. See [baseline profiles](https://developer.android.com/studio/profile/baselineprofiles).
@@ -36,7 +47,7 @@ This will create an output file separated by module and then also by package as 
 profile for each module can be added into its /src/main directory as `baseline-prof.txt`. Then on a
 release build this will be included with the resulting APK/binary.
 
-## dungeon-benchmark
+### dungeon-benchmark
 
 These are benchmarks for the [../samples/dungeon] app. Please instead use performance-poetry where
 possible.
@@ -57,11 +68,11 @@ same scenario with and without forcing the use of the profiles. To force the use
 `libs.androidx.profileinstaller` dependency is included into the app under profile (dungeon in this
 case) for side-loading the profiles.
 
-## performance-poetry
+### performance-poetry
 
 Module of code for performance testing related to poetry applications.
 
-### complex-poetry
+#### complex-poetry
 
 This application is a modified version of the samples/containers/app-poetry app which also uses the
 common components in samples/containers/common and samples/containers/poetry. It modifies this
@@ -92,9 +103,23 @@ This module also includes a [robots package](performance-poetry/complex-poetry/s
 that provides some utility helper 'robots' for the UiAutomator [androidx.test.uiautomator.UiDevice]
 as well as scenarios specific to this Complex Poetry application.
 
-### complex-benchmark
+#### complex-benchmark
 
 This is an Android Test module which hosts an application that can run androidx.macrobenchmarks.
 See the kdoc on [ComplexPoetryBenchmarks.](performance-poetry/complex-benchmark/src/main/java/com/squareup/benchmarks/performance/complex/poetry/benchmark/ComplexPoetryBenchmarks.kt)
 
 The results for this are stored in the same folder at [ComplexPoetryResults.txt.](performance-poetry/complex-benchmark/src/main/java/com/squareup/benchmarks/performance/complex/poetry/benchmark/ComplexPoetryResults.txt)
+
+## Micro benchmarks
+
+### runtime-microbenchmark
+
+This module contains benchmarks that measure the performance of the raw workflow runtime. To get
+accurate results, these benchmarks must be ran on real physical devices, not emulators.
+
+You can run them from the IDE like any other test (recommended), or with this command:
+```bash
+./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest
+```
+
+We do not run benchmarks in CI, but we do validate that they compile by running them in "dry mode".
