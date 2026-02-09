@@ -5,6 +5,7 @@ package com.squareup.workflow1.android
 
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.burst.Burst
+import com.google.common.truth.TruthJUnit.assume
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
@@ -21,6 +22,7 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.android.RuntimeDispatcher.COMPOSE_UI
 import com.squareup.workflow1.android.RuntimeDispatcher.IMMEDIATE
 import com.squareup.workflow1.asWorker
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
@@ -54,6 +56,13 @@ class AndroidDispatchersRenderWorkflowInTest(
 
   @Before
   fun setup() {
+    // When the workflow.runtime property is passed to gradle, filter bursted tests by that runtime.
+    // This is used for CI sharding.
+    val runtimeConfigFromProperty = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+    if (runtimeConfigFromProperty.isNotEmpty()) {
+      assume().that(runtime.runtimeConfig).containsExactlyElementsIn(runtimeConfigFromProperty)
+    }
+
     runtimeContext = when (dispatcher) {
       IMMEDIATE -> Dispatchers.Main.immediate
       COMPOSE_UI -> AndroidUiDispatcher.Main
@@ -127,13 +136,13 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
-        dispatcher == COMPOSE_UI
-      ) {
-        2
-      } else {
-        5
-      },
+        if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+          dispatcher == COMPOSE_UI
+        ) {
+          2
+        } else {
+          5
+        },
       expectedRenderingsConsumed = if (dispatcher == COMPOSE_UI) 2 else 5
     )
   }
@@ -190,13 +199,13 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
-        dispatcher == COMPOSE_UI
-      ) {
-        2
-      } else {
-        3
-      },
+        if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+          dispatcher == COMPOSE_UI
+        ) {
+          2
+        } else {
+          3
+        },
       expectedRenderingsConsumed = if (dispatcher == COMPOSE_UI) 2 else 3
     )
   }
@@ -248,15 +257,15 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
       // update.) And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if ((
-          runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
-            runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
-          ) && dispatcher == COMPOSE_UI
-      ) {
-        2
-      } else {
-        3
-      },
+        if ((
+            runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
+              runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+            ) && dispatcher == COMPOSE_UI
+        ) {
+          2
+        } else {
+          3
+        },
       expectedRenderingsConsumed = 2
     )
   }
