@@ -2,6 +2,7 @@ import com.rickbusarow.kgx.libsCatalog
 import com.rickbusarow.kgx.version
 import com.squareup.workflow1.buildsrc.internal.javaTarget
 import com.squareup.workflow1.buildsrc.internal.javaTargetVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   // Must be applied before kotlin-android so the convention can detect that this is a benchmark.
@@ -22,14 +23,8 @@ android {
     targetCompatibility = javaTargetVersion
   }
 
-  kotlinOptions {
-    jvmTarget = javaTarget
-    freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-  }
-
   defaultConfig {
     minSdk = 28
-    targetSdk = libsCatalog.version("targetSdk").toInt()
 
     testInstrumentationRunner = "androidx.benchmark.junit4.AndroidBenchmarkRunner"
 
@@ -44,6 +39,10 @@ android {
       testInstrumentationRunnerArguments["androidx.benchmark.profiling.mode"] = "MethodTracing"
       testInstrumentationRunnerArguments["androidx.benchmark.output.enable"] = "true"
     }
+  }
+
+  testOptions {
+    targetSdk = libsCatalog.version("targetSdk").toInt()
   }
 
   testBuildType = "release"
@@ -64,6 +63,13 @@ android {
 
   namespace = "com.squareup.benchmark.runtime.benchmark"
   testNamespace = "$namespace.test"
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.fromTarget(javaTarget))
+    freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+  }
 }
 
 dependencies {

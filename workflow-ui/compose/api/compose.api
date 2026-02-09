@@ -28,7 +28,7 @@ public final class com/squareup/workflow1/ui/compose/RenderAsStateKt {
 
 public abstract interface class com/squareup/workflow1/ui/compose/ScreenComposableFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public abstract fun Content (Lcom/squareup/workflow1/ui/Screen;Landroidx/compose/runtime/Composer;I)V
-	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 	public abstract fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -38,7 +38,7 @@ public final class com/squareup/workflow1/ui/compose/ScreenComposableFactory$Def
 
 public abstract interface class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder {
 	public static final field Companion Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder$Companion;
-	public abstract fun getComposableFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+	public fun getComposableFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
 }
 
 public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {

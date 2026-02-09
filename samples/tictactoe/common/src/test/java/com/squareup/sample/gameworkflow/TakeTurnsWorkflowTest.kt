@@ -101,10 +101,10 @@ class TakeTurnsWorkflowTest {
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
       TakeTurnsProps.resumeGame(
         PlayerInfo("higgledy", "piggledy"),
-        output!!.lastTurn
+        output.lastTurn
       )
     ) {
-      assertThat(awaitNextRendering().gameState).isEqualTo(output!!.lastTurn)
+      assertThat(awaitNextRendering().gameState).isEqualTo(output.lastTurn)
     }
   }
 }

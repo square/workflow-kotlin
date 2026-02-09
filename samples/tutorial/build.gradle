@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   ext {
-    kotlin_version = '2.1.21'
+    kotlin_version = '2.3.10'
     workflow_version = "1.24.04"
 
     deps = [

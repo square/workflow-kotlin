@@ -229,7 +229,7 @@ internal class WorkflowInterceptorTest {
     )
 
     assertEquals(1, capturedDroppedActions!!.size)
-    assertEquals("TestAction", capturedDroppedActions!![0].debuggingName)
+    assertEquals("TestAction", capturedDroppedActions[0].debuggingName)
   }
 
   private val Workflow<*, *, *>.session: WorkflowSession

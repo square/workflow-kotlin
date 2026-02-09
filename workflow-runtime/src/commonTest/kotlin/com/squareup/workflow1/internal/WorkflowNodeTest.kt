@@ -1488,7 +1488,7 @@ internal class WorkflowNodeTest {
     node.cancel()
 
     assertEquals(1, capturedDroppedActions!!.size)
-    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("TestAction(action1)"))
+    assertTrue(capturedDroppedActions[0].debuggingName.startsWith("TestAction(action1)"))
   }
 
   @Test fun cancel_with_multiple_pending_actions_returns_all_in_order() {
@@ -1527,9 +1527,9 @@ internal class WorkflowNodeTest {
     node.cancel()
 
     assertEquals(3, capturedDroppedActions!!.size)
-    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("TestAction(action1)"))
-    assertTrue(capturedDroppedActions!![1].debuggingName.startsWith("TestAction(action2)"))
-    assertTrue(capturedDroppedActions!![2].debuggingName.startsWith("TestAction(action3)"))
+    assertTrue(capturedDroppedActions[0].debuggingName.startsWith("TestAction(action1)"))
+    assertTrue(capturedDroppedActions[1].debuggingName.startsWith("TestAction(action2)"))
+    assertTrue(capturedDroppedActions[2].debuggingName.startsWith("TestAction(action3)"))
   }
 
   @Test fun cancel_does_not_apply_pending_actions() {
@@ -1631,8 +1631,8 @@ internal class WorkflowNodeTest {
     node.cancel()
 
     assertEquals(workflow.identifier, capturedSession!!.identifier)
-    assertEquals("test-key", capturedSession!!.renderKey)
-    assertEquals(99, capturedSession!!.parent!!.sessionId)
+    assertEquals("test-key", capturedSession.renderKey)
+    assertEquals(99, capturedSession.parent!!.sessionId)
   }
 
   @Test fun cancel_with_event_handler_actions_returns_them() {
@@ -1677,8 +1677,8 @@ internal class WorkflowNodeTest {
 
     assertEquals(2, capturedDroppedActions!!.size)
     // Event handler actions have a specific format
-    assertTrue(capturedDroppedActions!![0].debuggingName.startsWith("eH: handler"))
-    assertTrue(capturedDroppedActions!![1].debuggingName.startsWith("eH: handler"))
+    assertTrue(capturedDroppedActions[0].debuggingName.startsWith("eH: handler"))
+    assertTrue(capturedDroppedActions[1].debuggingName.startsWith("eH: handler"))
   }
 
   private class TestSession(override val sessionId: Long = 0) : WorkflowSession {

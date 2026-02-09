@@ -110,7 +110,7 @@ internal class ViewLaunchWhenAttachedTest {
 
     // Action: detach view!
     performViewDetach()
-    assertThat(innerJob!!.isCancelled).isTrue()
+    assertThat(innerJob.isCancelled).isTrue()
   }
 
   @Test fun `launchWhenAttached launches when reattached`() = runTest {
@@ -160,7 +160,7 @@ internal class ViewLaunchWhenAttachedTest {
     (view.findViewTreeLifecycleOwner() as TestLifecycleOwner)
       .handleLifecycleEvent(ON_DESTROY)
 
-    assertThat(innerJob!!.isCancelled).isTrue()
+    assertThat(innerJob.isCancelled).isTrue()
   }
 
   @Test fun `launchWhenAttached includes view classname in coroutine name`() = runTest {
