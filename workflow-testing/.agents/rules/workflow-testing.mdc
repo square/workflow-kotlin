@@ -1,0 +1,13 @@
+---
+description: Workflow testing patterns and best practices
+globs: "*Test.kt, *Spec.kt"
+alwaysApply: false
+---
+
+# Workflow Testing Guidelines
+
+- Use `testRender` / `RenderTester` for fast unit tests of render logic.
+- Use `renderForTest` / `WorkflowTurbine` for integration tests with real workers/children.
+- Expect children and workers with `expectWorkflow` / `expectWorker` when using `testRender`.
+- Verify state transitions and outputs with `verifyAction` / `verifyActionResult`.
+- Do not use deprecated APIs like `WorkflowTestRuntime` or `launchForTesting*`.

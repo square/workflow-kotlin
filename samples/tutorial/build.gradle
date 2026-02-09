@@ -1,10 +1,16 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+  def rootProps = new Properties()
+  def rootPropsFile = file("../../gradle.properties")
+  if (rootPropsFile.exists()) {
+    rootPropsFile.withInputStream { rootProps.load(it) }
+  }
+
   ext {
     kotlin_version = '2.3.10'
-    workflow_version = "1.24.04"
+    // Use the most recent version so we keep the tutorial up-to-date!
+    workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.24.04"
 
     deps = [
         activityktx: 'androidx.activity:activity-ktx:1.8.2',
@@ -41,6 +47,10 @@ buildscript {
   }
 }
 
+plugins {
+  id 'ai-rules-extract'
+}
+
 subprojects {
   repositories {
     mavenLocal()
@@ -63,6 +73,61 @@ subprojects {
   }
 }
 
-task clean(type: Delete) {
+tasks.register("clean", Delete) {
   delete rootProject.buildDir
+}
+
+tasks.register("verifyAiRulesExtraction") {
+  dependsOn 'extractAiRules'
+  group = 'verification'
+  description = 'Verifies that AI rules and skills were correctly extracted from workflow JARs'
+
+  doLast {
+    // These are the minimum expected files from workflow-core (always transitively available)
+    def expectedRules = [
+      '.firebender/rules/workflow-core.mdc',
+      '.cursor/rules/workflow-core.mdc',
+      '.claude/rules/workflow-core.mdc',
+      '.firebender/rules/workflow-testing.mdc',
+      '.cursor/rules/workflow-testing.mdc',
+      '.claude/rules/workflow-testing.mdc',
+    ]
+
+    def expectedSkills = [
+      '.firebender/skills/create-workflow/SKILL.md',
+      '.cursor/skills/create-workflow/SKILL.md',
+      '.claude/skills/create-workflow/SKILL.md',
+      '.firebender/skills/workflow-testing/SKILL.md',
+      '.cursor/skills/workflow-testing/SKILL.md',
+      '.claude/skills/workflow-testing/SKILL.md',
+      '.firebender/skills/workflow-integration-testing/SKILL.md',
+      '.cursor/skills/workflow-integration-testing/SKILL.md',
+      '.claude/skills/workflow-integration-testing/SKILL.md',
+    ]
+    def expectedAgents = [
+      'AGENTS.md',
+    ]
+
+    def missing = []
+
+    (expectedRules + expectedSkills + expectedAgents).each { path ->
+      def f = file(path)
+      if (!f.exists()) {
+        missing << path
+      } else if (f.text.trim().isEmpty()) {
+        missing << "$path (empty)"
+      }
+    }
+
+    if (!missing.isEmpty()) {
+      throw new GradleException(
+        "AI rules extraction verification failed. Missing or empty files:\n" +
+        missing.collect { "  - $it" }.join('\n')
+      )
+    }
+
+    println "AI rules extraction verification passed!"
+    println "  Rules: ${expectedRules.size} verified"
+    println "  Skills: ${expectedSkills.size} verified"
+  }
 }

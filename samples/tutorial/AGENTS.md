@@ -1,9 +1,6 @@
-# Tutorial
+# Workflow Tutorial Introduction
 
-## Overview
-
-Oh hi! Looks like you want build some software with Workflows! It's a bit different from traditional
-Android development, so let's go through building a simple little To-Do app to get the basics down.
+This is a step by step tutorial for learning how to use Workflow.
 
 ## Layout
 
@@ -16,19 +13,6 @@ To help with the setup, we have created a few helper modules:
 - `tutorial-base`: This is the starting point to build out the tutorial.
 - `tutorial-final`: This is an example of the completed tutorial - could be used as a reference if
   you get stuck.
-
-## Getting started
-
-To get set up, launch Android Studio and open the `samples/tutorial` folder.
-
-If you plan to run `verifyAiRulesExtraction`, first publish the workflow
-artifacts locally so the tutorial can resolve the latest rules and skills:
-
-```sh
-../../gradlew publishToMavenLocal
-cd samples/tutorial
-./gradlew verifyAiRulesExtraction
-```
 
 ## Tutorial Steps
 

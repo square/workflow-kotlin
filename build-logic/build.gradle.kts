@@ -57,7 +57,7 @@ gradlePlugin {
       id = "published"
       implementationClass = "com.squareup.workflow1.buildsrc.PublishingConventionPlugin"
     }
-  }
+}
 }
 
 dependencies {
