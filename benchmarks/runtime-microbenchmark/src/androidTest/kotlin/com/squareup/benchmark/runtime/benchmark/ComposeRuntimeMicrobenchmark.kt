@@ -171,9 +171,9 @@ class ComposeRuntimeMicrobenchmark(
       props.value = testProps
       // Run the render pass.
       testScheduler.runCurrent()
-
-      assertEquals(expectedTestRendering, renderings.value.rendering)
     }
+
+    assertEquals(expectedTestRendering, renderings.value.rendering)
     workflowJob.cancel()
   }
 
@@ -222,9 +222,9 @@ class ComposeRuntimeMicrobenchmark(
 
       // Run the render pass.
       testScheduler.runCurrent()
-
-      assertEquals(expectedTestRendering, renderings.value.rendering)
     }
+
+    assertEquals(expectedTestRendering, renderings.value.rendering)
     workflowJob.cancel()
   }
 

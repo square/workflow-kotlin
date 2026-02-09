@@ -34,14 +34,14 @@ dependencyResolutionManagement {
 }
 
 include(
-  ":benchmarks:runtime-microbenchmark",
   ":benchmarks:dungeon-benchmark",
   ":benchmarks:performance-poetry:complex-benchmark",
   ":benchmarks:performance-poetry:complex-poetry",
+  ":benchmarks:runtime-microbenchmark",
   ":samples:compose-samples",
+  ":samples:containers:android",
   ":samples:containers:app-poetry",
   ":samples:containers:app-raven",
-  ":samples:containers:android",
   ":samples:containers:common",
   ":samples:containers:hello-back-button",
   ":samples:containers:poetry",
@@ -65,13 +65,13 @@ include(
   ":workflow-runtime",
   ":workflow-rx2",
   ":workflow-testing",
+  ":workflow-trace-viewer",
   ":workflow-tracing",
   ":workflow-tracing-papa",
-  ":workflow-trace-viewer",
   ":workflow-ui:compose",
   ":workflow-ui:compose-tooling",
-  ":workflow-ui:core-common",
   ":workflow-ui:core-android",
+  ":workflow-ui:core-common",
   ":workflow-ui:internal-testing-android",
   ":workflow-ui:internal-testing-compose",
   ":workflow-ui:radiography"
