@@ -18,7 +18,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -33,6 +32,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
@@ -55,11 +56,29 @@ import kotlin.coroutines.EmptyCoroutineContext
 public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
-  private val outputs: ReceiveChannel<OutputT>
+  private val outputs: ReceiveChannel<OutputT>,
+  private val testScheduler: TestCoroutineScheduler? = null,
 ) {
 
   private val renderings = Channel<RenderingT>(capacity = UNLIMITED)
   private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
+
+  /**
+   * Advance the test coroutine scheduler to drain all pending coroutines, simulating the
+   * "drain before next frame" behavior of AndroidUiDispatcher.Main in production.
+   *
+   * With a [StandardTestDispatcher], coroutines are not resumed automatically when dispatched.
+   * This method runs all pending coroutines so that the workflow runtime processes queued actions
+   * and produces new renderings.
+   *
+   * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
+   * and the [hasRendering]/[hasOutput]/[hasSnapshot] properties. You may also call it explicitly
+   * if you need to assert on side effects after sending an action without first awaiting a
+   * rendering.
+   */
+  public fun advanceRuntime() {
+    testScheduler?.advanceUntilIdle()
+  }
 
   internal fun collectFromWorkflowIn(scope: CoroutineScope) {
     // Handle cancellation before subscribing to flow in case the scope is cancelled already.
@@ -83,17 +102,29 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   /**
    * True if the workflow has emitted a new rendering that is ready to be consumed.
    */
-  public val hasRendering: Boolean get() = !renderings.isEmptyOrClosed
+  public val hasRendering: Boolean
+    get() {
+      advanceRuntime()
+      return !renderings.isEmptyOrClosed
+    }
 
   /**
    * True if the workflow has emitted a new snapshot that is ready to be consumed.
    */
-  public val hasSnapshot: Boolean get() = !snapshots.isEmptyOrClosed
+  public val hasSnapshot: Boolean
+    get() {
+      advanceRuntime()
+      return !snapshots.isEmptyOrClosed
+    }
 
   /**
    * True if the workflow has emitted a new output that is ready to be consumed.
    */
-  public val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
+  public val hasOutput: Boolean
+    get() {
+      advanceRuntime()
+      return !outputs.isEmptyOrClosed
+    }
 
   @OptIn(DelicateCoroutinesApi::class)
   private val ReceiveChannel<*>.isEmptyOrClosed get() = isEmpty || isClosedForReceive
@@ -116,7 +147,10 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public fun awaitNextRendering(
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
-  ): RenderingT = renderings.receiveBlocking(timeoutMs, skipIntermediate)
+  ): RenderingT {
+    advanceRuntime()
+    return renderings.receiveBlocking(timeoutMs, skipIntermediate)
+  }
 
   /**
    * Blocks until the workflow emits a snapshot, then returns it.
@@ -132,7 +166,10 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public fun awaitNextSnapshot(
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
-  ): TreeSnapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
+  ): TreeSnapshot {
+    advanceRuntime()
+    return snapshots.receiveBlocking(timeoutMs, skipIntermediate)
+  }
 
   /**
    * Blocks until the workflow emits an output, then returns it.
@@ -140,8 +177,10 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    * @param timeoutMs The maximum amount of time to wait for an output to be emitted. If null,
    * [DEFAULT_TIMEOUT_MS] will be used instead.
    */
-  public fun awaitNextOutput(timeoutMs: Long? = null): OutputT =
-    outputs.receiveBlocking(timeoutMs, drain = false)
+  public fun awaitNextOutput(timeoutMs: Long? = null): OutputT {
+    advanceRuntime()
+    return outputs.receiveBlocking(timeoutMs, drain = false)
+  }
 
   /**
    * @param drain If true, this function will consume all the values currently in the channel, and
@@ -266,7 +305,9 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
     is StartFromState -> null
   }
 
-  val workflowScope = CoroutineScope(Unconfined + context + uncaughtExceptionHandler)
+  val testDispatcher = StandardTestDispatcher()
+  val testScheduler = testDispatcher.scheduler
+  val workflowScope = CoroutineScope(testDispatcher + context + uncaughtExceptionHandler)
   val outputs = Channel<OutputT>(capacity = UNLIMITED)
   workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
     outputs.close(it)
@@ -280,8 +321,14 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
     interceptors = interceptors,
     runtimeConfig = testParams.runtimeConfig ?: JvmTestRuntimeConfigTools.getTestRuntimeConfig()
   ) { output -> outputs.send(output) }
-  val tester = WorkflowTestRuntime(propsFlow, renderingsAndSnapshots, outputs)
+  val tester = WorkflowTestRuntime(propsFlow, renderingsAndSnapshots, outputs, testScheduler)
   tester.collectFromWorkflowIn(workflowScope)
+
+  // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
+  // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
+  // This ensures the runtime loop is running and has produced the initial rendering before the
+  // test body begins.
+  testScheduler.advanceUntilIdle()
 
   return exceptionGuard.runRethrowingUncaught {
     unwrapCancellationCause {

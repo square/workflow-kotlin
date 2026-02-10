@@ -167,6 +167,7 @@ public final class com/squareup/workflow1/testing/WorkflowTestParamsKt {
 public final class com/squareup/workflow1/testing/WorkflowTestRuntime {
 	public static final field Companion Lcom/squareup/workflow1/testing/WorkflowTestRuntime$Companion;
 	public static final field DEFAULT_TIMEOUT_MS J
+	public final fun advanceRuntime ()V
 	public final fun awaitNextOutput (Ljava/lang/Long;)Ljava/lang/Object;
 	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun awaitNextRendering (Ljava/lang/Long;Z)Ljava/lang/Object;
