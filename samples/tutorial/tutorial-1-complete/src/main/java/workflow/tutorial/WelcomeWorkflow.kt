@@ -3,10 +3,11 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.Screen
 import workflow.tutorial.WelcomeWorkflow.Output
 import workflow.tutorial.WelcomeWorkflow.State
 
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, Screen>() {
 
   data class State(
     val prompt: String
@@ -22,7 +23,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): WelcomeScreen = WelcomeScreen(
     promptText = renderState.prompt,
     onLogInTapped = context.eventHandler("onLogInTapped") { name ->

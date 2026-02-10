@@ -170,7 +170,7 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   override fun render(
     renderProps: Props,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<EditProps, State, Output>
   ): TodoEditScreen = TodoEditScreen(
     title = renderState.editedTitle,
     note = renderState.editedNote,
@@ -214,7 +214,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, List<S
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, BackPressed>
   ): List<Screen> {
     val titles = renderState.todos.map { it.title }
     return listOf(
@@ -242,7 +242,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStack
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): BackStackScreen<*> {
       // …
 
@@ -332,7 +332,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, Back>
   ): List<Screen> {
     val titles = renderState.todos.map { it.title }
     return listOf(

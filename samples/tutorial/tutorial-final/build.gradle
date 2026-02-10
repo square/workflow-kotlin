@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 36
 
   defaultConfig {
     applicationId "workflow.tutorial"
@@ -33,7 +33,6 @@ dependencies {
   implementation deps.material
   implementation deps.viewmodelktx
   implementation deps.viewmodelsavedstate
-  implementation deps.material
   implementation deps.workflow.core_android
   implementation project(':tutorial-views')
 

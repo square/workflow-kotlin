@@ -477,29 +477,28 @@ Add another test to `RootNavigationWorkflowTests`.
 We will use another test helper that spins up a real instance of the workflow runtime,
 the same runtime that `renderWorkflowIn` uses.
 
-### WorkflowTester
+### WorkflowTurbine
 
 When you create an Android app using Workflow,
 you will probably use `renderWorkflowIn`,
 which starts a runtime to host your workflows in an androidx ViewModel.
-Under the hood, this method is an overload of lower-level `renderWorkflowIn` function
-that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings.
+Under the hood, this method runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings.
 When writing integration tests for workflows,
-you can use this core function directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)),
-or you can use `workflow-testing`'s `WorkflowTester`.
-The `WorkflowTester` starts a workflow and lets you request renderings and outputs manually
+you can use `workflow-testing`'s `renderForTestForStartWith` (or the more general `renderForTest`).
+This API uses [Turbine](https://github.com/cashapp/turbine) under the hood
+to start a workflow runtime and let you request renderings and outputs manually,
 so you can write tests that interact with the runtime from the outside.
 
 This will be a properly opaque test,
 as we can only test the behaviors from the rendering and will not be able to inspect the underlying states. This may be a useful test for validation when refactoring a tree of workflows
 to ensure they behave the same way.
 
-The main entry point to this API is to call `Workflow.launchForTestingFromStartWith()`
-and pass a lambda that implements your test logic.
+The main entry point to this API is to call `Workflow.renderForTestForStartWith()`
+and pass a suspend lambda that implements your test logic.
 
 ### RootNavigationWorkflow
 
-Let's use `launchForTestingFromStartWith` to write a general integration test for `RootWorkflow`:
+Let's use `renderForTestForStartWith` to write a general integration test for `RootWorkflow`:
 
 ```kotlin
 class RootNavigationWorkflowTest {
@@ -507,7 +506,7 @@ class RootNavigationWorkflowTest {
   // …
 
   @Test fun `app flow`() {
-    RootNavigationWorkflow.launchForTestingFromStartWith {
+    RootNavigationWorkflow.renderForTestForStartWith {
       // First rendering is just the welcome screen. Update the name.
       awaitNextRendering().let { rendering ->
         assertEquals(1, rendering.frames.size)

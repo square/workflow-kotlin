@@ -55,7 +55,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
   override fun render(
     renderProps: TodoProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<TodoProps, State, Back>
   ): List<Screen> {
     val todoListScreen = context.renderChild(
       TodoListWorkflow,

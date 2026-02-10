@@ -1,13 +1,14 @@
 package workflow.tutorial
 
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.ui.Screen
 import workflow.tutorial.TodoListWorkflow.ListProps
 import workflow.tutorial.TodoListWorkflow.Output
 import workflow.tutorial.TodoListWorkflow.Output.AddPressed
 import workflow.tutorial.TodoListWorkflow.Output.BackPressed
 import workflow.tutorial.TodoListWorkflow.Output.TodoSelected
 
-object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>() {
+object TodoListWorkflow : StatelessWorkflow<ListProps, Output, Screen>() {
 
   data class ListProps(
     val username: String,
@@ -22,7 +23,7 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
 
   override fun render(
     renderProps: ListProps,
-    context: RenderContext
+    context: RenderContext<ListProps, Output>
   ): TodoListScreen {
     val titles = renderProps.todos.map { it.title }
     return TodoListScreen(
