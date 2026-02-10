@@ -8,6 +8,8 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlin.reflect.KType
 
@@ -60,6 +62,10 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
   private var performingRender by threadLocalOf { false }
 
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  override fun toString(): String =
+    "RealRenderContext@${hashCode().toString(16)}(actionEnqueued=${(eventActionsChannel as? ReceiveChannel<*>)?.isEmpty})"
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     // Can't send actions from render thread during render pass.
