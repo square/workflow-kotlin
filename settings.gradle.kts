@@ -59,6 +59,8 @@ include(
   ":samples:tictactoe:app",
   ":samples:tictactoe:common",
   ":samples:todo-android:app",
+  ":samples:runtime-library:app",
+  ":samples:runtime-library:lib",
   ":workflow-config:config-android",
   ":workflow-config:config-jvm",
   ":workflow-core",
