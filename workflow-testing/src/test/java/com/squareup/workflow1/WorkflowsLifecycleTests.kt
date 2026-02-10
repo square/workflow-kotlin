@@ -96,6 +96,8 @@ class WorkflowsLifecycleTests(
         setState.invoke(current + 1)
       }
 
+      // Advance to process the queued action and render pass before asserting.
+      advanceRuntime()
       assertEquals(1, started, "Side Effect not started 1 time.")
     }
   }
@@ -111,6 +113,8 @@ class WorkflowsLifecycleTests(
         val (current, setState) = awaitNextRendering()
         setState.invoke(current + 1)
       }
+      // Advance to process the final queued action and render pass before asserting.
+      advanceRuntime()
       assertEquals(1, started, "Side Effect not started 1 time.")
       assertEquals(1, cancelled, "Side Effect not cancelled 1 time.")
     }
@@ -128,6 +132,8 @@ class WorkflowsLifecycleTests(
         setState.invoke(current + 1)
       }
 
+      // Advance to process the queued action and render pass before asserting.
+      advanceRuntime()
       assertEquals(1, started, "Child Session Workflow not started 1 time.")
     }
   }
@@ -182,6 +188,8 @@ class WorkflowsLifecycleTests(
         val (current, setState) = awaitNextRendering()
         setState.invoke(current + 1)
       }
+      // Advance to process the final queued action and render pass before asserting.
+      advanceRuntime()
       assertEquals(1, started, "Child Session Workflow not started 1 time.")
       assertEquals(1, cancelled, "Child Session Workflow not cancelled 1 time.")
     }
