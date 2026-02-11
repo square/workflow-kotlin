@@ -153,7 +153,7 @@ public final class com/squareup/workflow1/internal/ThrowablesKt {
 	public static synthetic fun requireNotNullWithKey$default (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/internal/Throwables_androidKt {
+public final class com/squareup/workflow1/internal/Throwables_jvmKt {
 	public static final fun withKey (Ljava/lang/Throwable;Ljava/lang/Object;)Ljava/lang/Throwable;
 }
 
