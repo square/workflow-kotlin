@@ -40,3 +40,6 @@ captures/
 
 # Kotlin Metadata
 .kotlin/
+
+# Claude
+.claude/*.local.*
