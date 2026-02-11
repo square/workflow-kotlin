@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,18 +37,22 @@ class WorkflowOperatorsTest {
     val childWorkflow = object : StateFlowWorkflow<String>("child", trigger) {}
     val mappedWorkflow = childWorkflow.mapRendering { "mapped: $it" }
 
-    runTest(UnconfinedTestDispatcher()) {
+    runTest(StandardTestDispatcher()) {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(mappedWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
         .onEach { renderings += it.rendering }
         .launchIn(this + workflowJob)
+      // Start the runtime loop and collector coroutines.
+      advanceUntilIdle()
       assertEquals(listOf("mapped: initial"), renderings)
 
       trigger.value = "foo"
+      advanceUntilIdle()
       assertEquals(listOf("mapped: initial", "mapped: foo"), renderings)
 
       trigger.value = "bar"
+      advanceUntilIdle()
       assertEquals(listOf("mapped: initial", "mapped: foo", "mapped: bar"), renderings)
 
       workflowJob.cancel()
@@ -66,12 +71,14 @@ class WorkflowOperatorsTest {
       ).toString()
     }
 
-    runTest(UnconfinedTestDispatcher()) {
+    runTest(StandardTestDispatcher()) {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
         .onEach { renderings += it.rendering }
         .launchIn(this + workflowJob)
+      // Start the runtime loop and collector coroutines.
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[rendering1: initial1, rendering2: initial2]"
@@ -80,6 +87,7 @@ class WorkflowOperatorsTest {
       )
 
       trigger1.value = "foo"
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[rendering1: initial1, rendering2: initial2]",
@@ -89,6 +97,7 @@ class WorkflowOperatorsTest {
       )
 
       trigger2.value = "bar"
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[rendering1: initial1, rendering2: initial2]",
@@ -114,12 +123,14 @@ class WorkflowOperatorsTest {
       ).toString()
     }
 
-    runTest(UnconfinedTestDispatcher()) {
+    runTest(StandardTestDispatcher()) {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
         .onEach { renderings += it.rendering }
         .launchIn(this + workflowJob)
+      // Start the runtime loop and collector coroutines.
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[initial1, rendering2: initial2]"
@@ -128,6 +139,7 @@ class WorkflowOperatorsTest {
       )
 
       trigger1.value = "foo"
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[initial1, rendering2: initial2]",
@@ -137,6 +149,7 @@ class WorkflowOperatorsTest {
       )
 
       trigger2.value = "bar"
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "[initial1, rendering2: initial2]",
@@ -163,12 +176,14 @@ class WorkflowOperatorsTest {
     }
     val props = MutableStateFlow(0)
 
-    runTest(UnconfinedTestDispatcher()) {
+    runTest(StandardTestDispatcher()) {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, props) {}
         .onEach { renderings += it.rendering }
         .launchIn(this + workflowJob)
+      // Start the runtime loop and collector coroutines.
+      advanceUntilIdle()
       assertEquals(
         listOf(
           "rendering1: initial"
@@ -178,6 +193,7 @@ class WorkflowOperatorsTest {
       assertEquals(1, childWorkflow.starts)
 
       trigger.value = "foo"
+      advanceUntilIdle()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
         listOf(
@@ -188,7 +204,9 @@ class WorkflowOperatorsTest {
       )
 
       props.value = 1
+      advanceUntilIdle()
       trigger.value = "bar"
+      advanceUntilIdle()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
         listOf(

@@ -203,6 +203,8 @@ class WorkflowsLifecycleTests(
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun childSessionWorkflowStartAndStoppedWhenHandledSynchronously() {
+    // Unfortunately we have to use the UnconfinedTestDispatcher here otherwise we'd only ever see
+    // one of the test states when we get around to advancing the test scheduler.
     val dispatcher = UnconfinedTestDispatcher()
     workflowWithChildSession.renderForTest(
       coroutineContext = dispatcher,
