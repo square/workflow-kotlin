@@ -6,10 +6,8 @@ public actual fun <T : Throwable> T.withKey(stackTraceKey: Any): T = apply {
     // Real class name to ensure that we are still "in project".
     realTop.className,
     "fakeMethodForCrashGrouping",
-    /* fileName = */
-    stackTraceKey.toString(),
-    /* lineNumber = */
-    stackTraceKey.hashCode()
+    /* fileName = */ stackTraceKey.toString(),
+    /* lineNumber = */ stackTraceKey.hashCode()
   )
   stackTrace = stackTrace.toMutableList().apply { add(0, fakeTop) }.toTypedArray()
 }

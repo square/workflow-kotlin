@@ -59,7 +59,13 @@ kotlin {
       }
     }
 
+    // Shared source set for JVM-based targets (Android and JVM)
+    val jvmCommon = create("jvmCommon") {
+      dependsOn(commonMain.get())
+    }
+
     androidMain {
+      dependsOn(jvmCommon)
       dependencies {
         // Add Android-specific dependencies here. Note that this source set depends on
         // commonMain by default and will correctly pull the Android artifacts of any KMP
@@ -71,6 +77,33 @@ kotlin {
 
         implementation(composeBom)
       }
+    }
+
+    jvmMain {
+      dependsOn(jvmCommon)
+    }
+
+    // Configure native/apple source sets hierarchy (replacing the default hierarchy template)
+    val nativeMain = maybeCreate("nativeMain").apply {
+      dependsOn(commonMain.get())
+    }
+
+    val appleMain = maybeCreate("appleMain").apply {
+      dependsOn(nativeMain)
+    }
+
+    val iosMain = maybeCreate("iosMain").apply {
+      dependsOn(appleMain)
+    }
+
+    // Individual iOS target source sets depend on iosMain
+    maybeCreate("iosArm64Main").apply { dependsOn(iosMain) }
+    maybeCreate("iosX64Main").apply { dependsOn(iosMain) }
+    maybeCreate("iosSimulatorArm64Main").apply { dependsOn(iosMain) }
+
+    // JS source set depends on commonMain
+    maybeCreate("jsMain").apply {
+      dependsOn(commonMain.get())
     }
 
     getByName("androidDeviceTest") {
