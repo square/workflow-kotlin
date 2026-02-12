@@ -2,6 +2,7 @@ package workflow.tutorial
 
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.TextController
 import workflow.tutorial.TodoEditWorkflow.Output
 import workflow.tutorial.TodoEditWorkflow.Output.DiscardChanges
@@ -9,7 +10,7 @@ import workflow.tutorial.TodoEditWorkflow.Output.SaveChanges
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.State
 
-object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
+object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, Screen>() {
 
   /** @param initialTodo The model passed from our parent to be edited. */
   data class EditProps(
@@ -49,7 +50,7 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   override fun render(
     renderProps: EditProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<EditProps, State, Output>
   ): TodoEditScreen = TodoEditScreen(
     title = renderState.editedTitle,
     note = renderState.editedNote,

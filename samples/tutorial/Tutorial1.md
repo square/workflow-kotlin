@@ -23,13 +23,15 @@ We'll start by making pair of `Workflow` and `Screen` classes to back the provid
 First let's make `WelcomeWorkflow` from the _Stateful Workflow_ template, adding it to the `tutorial-base` module:
 
 ![New Workflow menu item](images/new-workflow.png "Right click tutorial-base/kotlin+java/workflow.tutorial > New > Stateful Workflow")
-![New Workflow window](images/workflow-name.png "File name: Welcome Workflow; Props type: Unit; State type: State; Output type: Output: Rendering type: WelcomeScreen")
+![New Workflow window](images/workflow-name.png "File name: Welcome Workflow; Props type: Unit; State type: State; Output type: Output: Rendering type: Screen")
 
 The template does not create everything needed.
 Manually add placeholder `object`s for `State` and `Output`.
 
+Note that we use the generic `com.squareup.workflow1.ui.Screen` type, for now (see more on that below).
+
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, Screen>() {
 
   object State
   object Output
@@ -42,7 +44,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): Screen {
     TODO("Render")
   }
@@ -77,6 +79,9 @@ private fun welcomeScreenRunner(
   TODO("Update viewBinding from screen")
 }
 ```
+
+So while our Workflow rendering type is `com.squareup.workflow1.ui.Screen`, we can actually
+return a true `WelcomeScreen` (a sub-type) from render().
 
 ### `Screen`, `ScreenViewFactory`, and `ScreenViewRunner`
 
@@ -172,19 +177,20 @@ The core responsibility of a workflow is to provide a complete rendering / view 
 every time the related application state updates.
 
 Let's go into the `WelcomeWorkflow` now,
-and have it return a `WelcomeScreen` from the `render()` method.
+and have it return a `WelcomeScreen` from the `render()` method. Remember `WelcomeScreen` is a
+sub-type of `com.squareup.workflow1.ui.Screen`, so we still satisfy the type binding.
 
 While you're here, opt out of persistence by making `snapshotState` return `null`.
 
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, Screen>() {
 
   // …
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): WelcomeScreen = WelcomeScreen(
     promptText = "",
     onLogInTapped = {}
@@ -206,8 +212,8 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
 
 ### Setting up the Activity
 
-We have our `WelcomeWorkflow` rendering a `WelcomeScreen`
-which declares a `ScreenViewFactory` that knows how to display it.
+We have our `WelcomeWorkflow` rendering a `Screen` (we know will be `WelcomeScreen`)
+and our registry includes a `ScreenViewFactory` that knows how to display a `WelcomeScreen`.
 Now let's wire all this up to Android and show it on the screen!
 
 We're about to use functionality related to AndroidX `ViewModel`s,
@@ -235,16 +241,12 @@ class TutorialActivity : AppCompatActivity() {
 
     val model: TutorialViewModel by viewModels()
 
-    setContentView(
-      WorkflowLayout(this).apply {
-        take(lifecycle, model.renderings)
-      }
-    )
+    workflowContentView.take(lifecycle, model.renderings)
   }
 
   class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
     @OptIn(WorkflowExperimentalRuntime::class)
-    val renderings: Flow<Screen> by lazy {
+    val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = WelcomeWorkflow,
         scope = viewModelScope,
@@ -257,11 +259,15 @@ class TutorialActivity : AppCompatActivity() {
 ```
 
 > [!NOTE]
-> You'll see that we opt in to some "experimental" `runtimeConfig` options -- all of them, in fact.
-> These are optimizations that are in production use at Square.
-> They will not be labeled as experimental much longer,
-> and will soon be enabled by default.
-> In the meantime it is much easier to use them from the start than to turn them on down the road.
+> `workflowContentView` is an extension property on `Activity` that creates (or retrieves)
+> a `WorkflowLayout` and sets it as the content view automatically.
+> `renderWorkflowIn` starts the workflow runtime in the `ViewModel`'s scope and returns
+> a `StateFlow` of renderings that `WorkflowLayout.take` collects.
+> Note that `WorkflowLayout.take` uses the *Activity* lifecycle (as it's linked to the UI held
+> by the Activity). Whereas the runtime uses the *ViewModel*'s lifecycle- so it can survive
+> configuration changes, etc.
+> We opt into some "experimental" `runtimeConfig` options — all of them, in fact.
+> These are optimizations in production use at Square, and will soon be enabled by default.
 
 When the activity is started,
 it will start running the `WelcomeWorkflow` and display the Welcome Screen.
@@ -287,7 +293,7 @@ Let's add a `"Hello Workflow!"` message there
 to give us some confidence that this thing is working.
 
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, Screen>() {
 
   data class State(
     val prompt: String
@@ -303,7 +309,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): WelcomeScreen = WelcomeScreen(
     promptText = renderState.prompt,
     onLogInTapped = {}
@@ -376,14 +382,14 @@ You could also write:
 And let's make an `onLogInTapped` event handler that enqueues one of those `updateName` actions.
 
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, Screen>() {
 
   // …
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): WelcomeScreen = WelcomeScreen(
     promptText = renderState.prompt,
     onLogInTapped = { name ->
@@ -453,7 +459,7 @@ We'll use `RenderContext.eventHandler` to inline the `updateName` action.
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Output>
   ): WelcomeScreen = WelcomeScreen(
     promptText = renderState.prompt,
     onLogInTapped = context.eventHandler("onLogInTapped") { name ->

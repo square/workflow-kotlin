@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package workflow.tutorial
 
 import android.os.Bundle
@@ -9,10 +11,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.navigation.reportNavigation
-import com.squareup.workflow1.ui.renderWorkflowIn
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.Flow
 
 class TutorialActivity : AppCompatActivity() {
@@ -26,23 +28,10 @@ class TutorialActivity : AppCompatActivity() {
     // are created for configuration changes.
     val model: TutorialViewModel by viewModels()
 
-    setContentView(
-      WorkflowLayout(this).apply {
-        take(lifecycle, model.renderings)
-      }
-    )
+    workflowContentView.take(lifecycle, model.renderings)
   }
 
   class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
-
-    // We opt in to WorkflowExperimentalRuntime in order turn on all the
-    // optimizations controlled by the runtimeConfig.
-    //
-    // They are in production use at Square, will not be listed as
-    // experimental much longer, and will soon be enabled by default.
-    // In the meantime it is much easier to use them from the start
-    // than to turn them on down the road.
-    @OptIn(WorkflowExperimentalRuntime::class)
     val renderings: Flow<Screen> by lazy {
       renderWorkflowIn(
         workflow = RootNavigationWorkflow,

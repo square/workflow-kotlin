@@ -14,7 +14,8 @@ class TodoEditWorkflowTest {
     val props = EditProps(TodoModel(title = "Title", note = "Note"))
 
     TodoEditWorkflow.testRender(props)
-      .render { screen ->
+      .render { rendering ->
+        val screen = rendering as TodoEditScreen
         screen.title.textValue = "New title"
         screen.note.textValue = "New note"
         screen.onSavePressed()
@@ -28,7 +29,8 @@ class TodoEditWorkflowTest {
     val props = EditProps(TodoModel(title = "Title", note = "Note"))
 
     TodoEditWorkflow.testRender(props)
-      .render { screen ->
+      .render { rendering ->
+        val screen = rendering as TodoEditScreen
         screen.onBackPressed()
       }.verifyActionResult { _, output ->
         assertSame(DiscardChanges, output?.value)

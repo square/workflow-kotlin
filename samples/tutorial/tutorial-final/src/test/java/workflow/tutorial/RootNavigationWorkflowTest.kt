@@ -2,7 +2,7 @@ package workflow.tutorial
 
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.testing.expectWorkflow
-import com.squareup.workflow1.testing.launchForTestingFromStartWith
+import com.squareup.workflow1.testing.renderForTestForStartWith
 import com.squareup.workflow1.testing.testRender
 import workflow.tutorial.RootNavigationWorkflow.State.ShowingTodo
 import workflow.tutorial.RootNavigationWorkflow.State.ShowingWelcome
@@ -78,7 +78,7 @@ class RootNavigationWorkflowTest {
   // region Integration
 
   @Test fun `app flow`() {
-    RootNavigationWorkflow.launchForTestingFromStartWith {
+    RootNavigationWorkflow.renderForTestForStartWith {
       // First rendering is just the welcome screen. Update the name.
       awaitNextRendering().let { rendering ->
         assertEquals(1, rendering.frames.size)

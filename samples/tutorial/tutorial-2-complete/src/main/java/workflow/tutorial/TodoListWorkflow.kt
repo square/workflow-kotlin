@@ -3,11 +3,12 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.Screen
 import workflow.tutorial.TodoListWorkflow.BackPressed
 import workflow.tutorial.TodoListWorkflow.ListProps
 import workflow.tutorial.TodoListWorkflow.State
 
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, Screen>() {
 
   data class ListProps(val username: String)
 
@@ -38,7 +39,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoLi
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, BackPressed>
   ): TodoListScreen {
     val titles = renderState.todos.map { it.title }
     return TodoListScreen(

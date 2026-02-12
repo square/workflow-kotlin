@@ -44,7 +44,7 @@ Modify `State` data class to contain a placeholder parameter, to make the compil
 We can leave everything else as the default for now:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   data class State(val placeholder: String = "")
 
@@ -56,7 +56,7 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): TodoListScreen {
     return TodoListScreen()
   }
@@ -70,7 +70,7 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
 For now, let's just show this new screen instead of the login screen/workflow. Update the activity to show the `TodoListWorkflow`:
 
 ```kotlin
-  val renderings: Flow<Screen> by lazy {
+  val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = TodoListWorkflow,
       scope = viewModelScope,
@@ -89,7 +89,7 @@ The empty list is rather boring, so let's fill it in with some sample data for n
 Update the `State` type to include a list of todo model objects and change `initialState` to include a default one:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   data class TodoModel(
     val title: String,
@@ -147,14 +147,14 @@ private fun todoListScreenRunner(
 Finally, update `render` for `TodoListWorkflow` to send the titles of the todo models whenever the screen is updated:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   // …
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): TodoListScreen {
     val titles = renderState.todos.map { it.title }
 
@@ -199,7 +199,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, Unit, Nothing, Screen>() 
   override fun render(
     renderProps: Unit,
     renderState: Unit,
-    context: RenderContext
+    context: RenderContext<Unit, Unit, Nothing>
   ): Screen {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session if one is not already running.
@@ -223,7 +223,7 @@ But `WelcomeWorkflow`'s output type is currently a simple object: `object Output
 For now, delete the `Output` on `WelcomeWorkflow` and replace it with `Nothing`:
 
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
   // …
 }
 ```
@@ -235,7 +235,7 @@ The override for using `renderChild` on a child Workflow with `Nothing` as its o
   override fun render(
     renderProps: Unit,
     renderState: Unit,
-    context: RenderContext
+    context: RenderContext<Unit, Unit, Nothing>
   ): Screen {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session if one is not already running.
@@ -279,7 +279,7 @@ Start by defining the state that needs to be tracked at the root —
 specifically which screen we're showing, and the actions to log in and log out:
 
 ```kotlin
-object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>() {
+object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   sealed interface State {
     object ShowingWelcome : State
@@ -320,7 +320,7 @@ Change our `OutputT` type from `Output` to a new `data class LoggedIn`
 to be able to signal our parent:
 
 ```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, Screen>() {
 
   data class LoggedIn(val username: String)
 
@@ -350,7 +350,7 @@ Finally, map the output event from `WelcomeWorkflow` in `RootNavigationWorkflow`
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): WelcomeScreen {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session if one is not already running.
@@ -374,7 +374,7 @@ We'll update the `RootNavigationWorkflow` `render` method to show either the `We
 Temporarily define the `OutputT` of `TodoListWorkflow` as `Nothing` (we can only go forward!):
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 ```
 
 And update the `render` method of `RootNavigationWorkflow`:
@@ -387,7 +387,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): Screen {
     when (renderState) {
       // When the state is ShowingWelcome, delegate to the WelcomeWorkflow.
@@ -468,7 +468,7 @@ and use it to receive a `username` string.
 We will also need to update `TodoListScreen` to display it.
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, Screen>() {
 
   data class ListProps(val username: String)
 
@@ -484,7 +484,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, TodoListSc
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, BackPressed>
   ): TodoListScreen {
     val titles = renderState.todos.map { it.title }
 
@@ -524,7 +524,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): Screen {
     when (renderState) {
       // …
@@ -559,7 +559,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStack
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): BackStackScreen<*> {
     // We always render the welcomeScreen regardless of the current state.
     // It's either showing or else we may want to pop back to it.
@@ -603,7 +603,7 @@ At the same time, use workflow's handy `View.setBackHandler` function to respond
 > and Android's [predictive back gesture](https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture).
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, Screen>() {
 
   // ...
 
@@ -614,7 +614,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoLi
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, BackPressed>
   ): TodoListScreen {
     val titles = renderState.todos.map { it.title }
     return TodoListScreen(

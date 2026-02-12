@@ -26,7 +26,7 @@ object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStack
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): BackStackScreen<*> {
     // We always render the welcomeScreen regardless of the current state.
     // It's either showing or else we may want to pop back to it.

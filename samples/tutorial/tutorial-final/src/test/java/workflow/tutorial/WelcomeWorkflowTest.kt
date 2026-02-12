@@ -11,7 +11,8 @@ class WelcomeWorkflowTest {
     WelcomeWorkflow
       .testRender(props = Unit)
       // Simulate a log in button tap.
-      .render { screen ->
+      .render { rendering ->
+        val screen = rendering as WelcomeScreen
         screen.onLogInTapped("Ada")
       }
       // Validate that LoggedIn was sent.
@@ -22,7 +23,8 @@ class WelcomeWorkflowTest {
 
   @Test fun `failed log in`() {
     WelcomeWorkflow.testRender(props = Unit)
-      .render { screen ->
+      .render { rendering ->
+        val screen = rendering as WelcomeScreen
         // Simulate a log in button tap with an empty name.
         screen.onLogInTapped("")
       }
@@ -31,7 +33,8 @@ class WelcomeWorkflowTest {
         assertNull(output)
       }
       .testNextRender()
-      .render { screen ->
+      .render { rendering ->
+        val screen = rendering as WelcomeScreen
         // There is an error prompt.
         assertEquals("name required to log in", screen.promptText)
       }

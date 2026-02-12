@@ -55,7 +55,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, List<S
   override fun render(
     renderProps: ListProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ListProps, State, BackPressed>
   ): List<Screen> {
     val titles = renderState.todos.map { it.title }
     val todoListScreen = TodoListScreen(

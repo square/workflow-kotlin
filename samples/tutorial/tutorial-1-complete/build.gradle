@@ -4,10 +4,10 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 36
 
   defaultConfig {
-    applicationId "com.squareup.workflow.tutorial"
+    applicationId "workflow.tutorial"
     minSdk = 24
     targetSdk = 33
     versionCode 1
@@ -33,7 +33,6 @@ dependencies {
   implementation deps.material
   implementation deps.viewmodelktx
   implementation deps.viewmodelsavedstate
-  implementation deps.material
   implementation deps.workflow.core_android
   implementation project(':tutorial-views')
 }
