@@ -40,7 +40,7 @@ enum class BenchmarkRuntimeOptions(
 
 @OptIn(WorkflowExperimentalRuntime::class)
 @Burst
-class ComposeRuntimeMicrobenchmark(
+class WorkflowRuntimeMicrobenchmark(
   private val runtime: BenchmarkRuntimeOptions = NONE,
 ) {
 
