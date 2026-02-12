@@ -241,7 +241,7 @@ kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "k
 ktlint-core = { module = "com.pinterest.ktlint:ktlint-core", version.ref = "ktlint" }
 ktlint-gradle = { module = "com.rickbusarow.ktlint:ktlint-gradle-plugin", version.ref = "ktlint-gradle" }
 
-lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
+lanterna = "com.googlecode.lanterna:lanterna:3.1.3"
 
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito-core" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
