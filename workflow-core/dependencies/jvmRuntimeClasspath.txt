@@ -1,9 +1,9 @@
 com.squareup.okio:okio-jvm:3.3.0
 com.squareup.okio:okio:3.3.0
-org.jetbrains.kotlin:kotlin-bom:2.1.21
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.21
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.21
-org.jetbrains.kotlin:kotlin-stdlib:2.1.21
+org.jetbrains.kotlin:kotlin-bom:2.3.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.10
+org.jetbrains.kotlin:kotlin-stdlib:2.3.10
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.9.0
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0

@@ -14,7 +14,7 @@ public final class com/squareup/workflow1/ui/CompatibleKt {
 
 public abstract interface class com/squareup/workflow1/ui/Composite : com/squareup/workflow1/ui/Unwrappable {
 	public abstract fun asSequence ()Lkotlin/sequences/Sequence;
-	public abstract fun getUnwrapped ()Ljava/lang/Object;
+	public fun getUnwrapped ()Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/Composite$DefaultImpls {
@@ -152,10 +152,10 @@ public final class com/squareup/workflow1/ui/ViewRegistryKt {
 }
 
 public abstract interface class com/squareup/workflow1/ui/Wrapper : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Container {
-	public abstract fun asSequence ()Lkotlin/sequences/Sequence;
-	public abstract fun getCompatibilityKey ()Ljava/lang/String;
+	public fun asSequence ()Lkotlin/sequences/Sequence;
+	public fun getCompatibilityKey ()Ljava/lang/String;
 	public abstract fun getContent ()Ljava/lang/Object;
-	public abstract fun getUnwrapped ()Ljava/lang/Object;
+	public fun getUnwrapped ()Ljava/lang/Object;
 	public abstract fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 }
 

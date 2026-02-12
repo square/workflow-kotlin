@@ -37,7 +37,7 @@ androidx-tracing = "1.2.0"
 androidx-transition = "1.5.1"
 androidx-viewbinding = "8.1.2"
 
-burst = "2.5.0"
+burst = "2.11.0"
 
 detekt = "1.19.0"
 dokka = "2.0.0"
@@ -47,7 +47,7 @@ filekit-dialogs-compose = "0.10.0-beta03"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
-google-ksp = "2.1.21-2.0.2"
+google-ksp = "2.3.5"
 google-material = "1.4.0"
 
 groovy = "3.0.9"
@@ -59,7 +59,7 @@ kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
 # of loading the library versions from this file but should be the same.
-kotlin = "2.1.21"
+kotlin = "2.3.10"
 
 kotlinx-binary-compatibility = "0.18.1"
 kotlinx-coroutines = "1.9.0"

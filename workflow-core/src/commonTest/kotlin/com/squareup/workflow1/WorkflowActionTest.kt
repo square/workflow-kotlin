@@ -44,7 +44,7 @@ internal class WorkflowActionTest {
     assertEquals("state: state, props: props", state)
     assertNotNull(result)
     assertNotNull(result.output)
-    assertNull(result.output!!.value)
+    assertNull(result.output.value)
     assertTrue(result.stateChanged)
   }
 

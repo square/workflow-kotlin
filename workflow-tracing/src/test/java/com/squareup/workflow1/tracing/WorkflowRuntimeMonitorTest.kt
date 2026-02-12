@@ -593,8 +593,8 @@ internal class WorkflowRuntimeMonitorTest {
     val renderPassInfo = renderPassTracker.renderPassInfoReceived!!
     assertEquals(runtimeName, renderPassInfo.runnerName)
     assertTrue(renderPassInfo.renderCause is RenderCause.Callback)
-    assertEquals("testAction", (renderPassInfo.renderCause as RenderCause.Callback).actionName)
-    assertEquals("TestWorkflow", (renderPassInfo.renderCause as RenderCause.Callback).workflowName)
+    assertEquals("testAction", renderPassInfo.renderCause.actionName)
+    assertEquals("TestWorkflow", renderPassInfo.renderCause.workflowName)
     assertTrue(renderPassInfo.durationUptime.inWholeNanoseconds > 0)
   }
 

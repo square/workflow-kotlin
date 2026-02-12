@@ -36,7 +36,8 @@ public final class com/squareup/workflow1/ui/ParcelableTextController$CREATOR : 
 public abstract interface class com/squareup/workflow1/ui/ScreenViewFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewFactory$Companion;
 	public abstract fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
-	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 	public abstract fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -50,7 +51,7 @@ public final class com/squareup/workflow1/ui/ScreenViewFactory$DefaultImpls {
 
 public abstract interface class com/squareup/workflow1/ui/ScreenViewFactoryFinder {
 	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder$Companion;
-	public abstract fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
@@ -295,7 +296,7 @@ public final class com/squareup/workflow1/ui/navigation/LayeredDialogSessions$Sa
 public abstract interface class com/squareup/workflow1/ui/navigation/OverlayDialogFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactory$Companion;
 	public abstract fun buildDialog (Lcom/squareup/workflow1/ui/navigation/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
-	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 	public abstract fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -308,7 +309,7 @@ public final class com/squareup/workflow1/ui/navigation/OverlayDialogFactory$Def
 
 public abstract interface class com/squareup/workflow1/ui/navigation/OverlayDialogFactoryFinder {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactoryFinder$Companion;
-	public abstract fun getDialogFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/navigation/Overlay;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactory;
+	public fun getDialogFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/navigation/Overlay;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactory;
 }
 
 public final class com/squareup/workflow1/ui/navigation/OverlayDialogFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
