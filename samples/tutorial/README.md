@@ -21,6 +21,14 @@ To help with the setup, we have created a few helper modules:
 
 To get set up, launch Android Studio and open the `samples/tutorial` folder.
 
+If you plan to run `./gradlew verifyAiRulesExtraction`, first publish the
+workflow artifacts locally so the tutorial can resolve the latest rules and
+skills:
+
+```sh
+../../gradlew publishToMavenLocal
+```
+
 ## Tutorial Steps
 
 - [Tutorial 1](Tutorial1.md) - Single view backed by a workflow

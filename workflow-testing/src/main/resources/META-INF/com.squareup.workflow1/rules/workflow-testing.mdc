@@ -1,0 +1,13 @@
+---
+description: Workflow testing patterns and best practices
+globs: "*Test.kt, *Spec.kt"
+alwaysApply: false
+---
+
+# Workflow Testing Guidelines
+
+(Placeholder — to be filled with actual testing patterns)
+
+- Use `RenderTester` to test workflow render logic
+- Use `WorkflowTestRuntime` for integration-style tests
+- Test state transitions via action testing

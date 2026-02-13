@@ -46,6 +46,8 @@
 1. Back on your local machine, bump the version
    - **Kotlin:** Update the `VERSION_NAME` property in `gradle.properties` to the new
      snapshot version, e.g. `VERSION_NAME=0.2.0-SNAPSHOT`.
+   - **Kotlin:** Update the `LAST_PUBLISHED_VERSION_NAME` property in `gradle.properties` to the new
+     version you just published, e.g. `LAST_PUBLISHED_VERSION_NAME=0.1.0`.
 
 1. Commit the new snapshot version:
    ```bash

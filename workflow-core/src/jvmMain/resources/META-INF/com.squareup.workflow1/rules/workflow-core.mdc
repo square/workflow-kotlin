@@ -1,0 +1,15 @@
+---
+description: Square Workflow core patterns and conventions
+globs: "*.kt"
+alwaysApply: false
+---
+
+# Workflow Core Guidelines
+
+(Placeholder — to be filled with actual workflow patterns)
+
+- Use `StatelessWorkflow` for workflows that don't maintain internal state
+- Use `StatefulWorkflow` when the workflow needs to track state across renders
+- Define rendering types as data classes
+- Use `@WorkflowAction` for state mutations
+- Prefer sealed classes/interfaces for workflow output types
