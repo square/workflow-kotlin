@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "kotlin-lsp@claude-plugins-official": true
+  }
+}
