@@ -64,19 +64,19 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
 
   /**
-   * Advance the test coroutine scheduler to drain all pending coroutines, simulating the
-   * "drain before next frame" behavior of AndroidUiDispatcher.Main in production.
-   *
-   * With a [StandardTestDispatcher], coroutines are not resumed automatically when dispatched.
-   * This method runs all pending coroutines so that the workflow runtime processes queued actions
-   * and produces new renderings.
+   * Advances the [testScheduler] passed in for this [WorkflowTestRuntime].
    *
    * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
-   * and the [hasRendering]/[hasOutput]/[hasSnapshot] properties. You may also call it explicitly
-   * if you need to assert on side effects after sending an action without first awaiting a
-   * rendering.
+   * and the [hasRendering]/[hasOutput]/[hasSnapshot] properties. You only need to call this
+   * explicitly when you want to process pending actions when you are not already awaiting a
+   * rendering or output — for example, to assert on side effects triggered by an action that
+   * doesn't change state or produce output.
+   *
+   * With a non-immediate dispatcher (like [StandardTestDispatcher]), this drains all pending
+   * coroutines so the runtime processes queued actions. With an immediate dispatcher, this is
+   * effectively a no-op.
    */
-  public fun advanceRuntime() {
+  public fun awaitRuntimeSettled() {
     testScheduler?.advanceUntilIdle()
   }
 
@@ -104,7 +104,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    */
   public val hasRendering: Boolean
     get() {
-      advanceRuntime()
+      awaitRuntimeSettled()
       return !renderings.isEmptyOrClosed
     }
 
@@ -113,7 +113,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    */
   public val hasSnapshot: Boolean
     get() {
-      advanceRuntime()
+      awaitRuntimeSettled()
       return !snapshots.isEmptyOrClosed
     }
 
@@ -122,7 +122,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    */
   public val hasOutput: Boolean
     get() {
-      advanceRuntime()
+      awaitRuntimeSettled()
       return !outputs.isEmptyOrClosed
     }
 
@@ -148,7 +148,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
   ): RenderingT {
-    advanceRuntime()
+    awaitRuntimeSettled()
     return renderings.receiveBlocking(timeoutMs, skipIntermediate)
   }
 
@@ -167,7 +167,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
   ): TreeSnapshot {
-    advanceRuntime()
+    awaitRuntimeSettled()
     return snapshots.receiveBlocking(timeoutMs, skipIntermediate)
   }
 
@@ -178,7 +178,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    * [DEFAULT_TIMEOUT_MS] will be used instead.
    */
   public fun awaitNextOutput(timeoutMs: Long? = null): OutputT {
-    advanceRuntime()
+    awaitRuntimeSettled()
     return outputs.receiveBlocking(timeoutMs, drain = false)
   }
 
