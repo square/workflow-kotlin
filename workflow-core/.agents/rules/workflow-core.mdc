@@ -1,0 +1,17 @@
+---
+description: Square Workflow core patterns and conventions
+globs: "*.kt"
+alwaysApply: false
+---
+
+# Workflow Core Guidelines
+
+- Use `StatelessWorkflow` when rendering is a pure function of props.
+- Use `StatefulWorkflow` when internal state must persist across renders.
+- Prefer `context.eventHandler("name")` for UI events; avoid `actionSink.send`.
+- Use `action("name") { ... }` for standalone actions.
+- Never perform side effects in `render()`; use `runningWorker` or `runningSideEffect`.
+- In action/event handlers, use the `state` property from the `Updater` receiver, not `renderState`.
+- Call `setOutput(...)` at most once per action.
+- Use `Snapshot` only when state must survive process death; otherwise return `null`.
+- Define rendering types as data classes, typically implementing `Screen`.

@@ -1,3 +1,7 @@
+pluginManagement {
+  includeBuild '../../build-logic-ai-rules'
+}
+
 rootProject.name = 'Workflow Tutorial'
 include ':tutorial-base'
 include ':tutorial-1-complete'

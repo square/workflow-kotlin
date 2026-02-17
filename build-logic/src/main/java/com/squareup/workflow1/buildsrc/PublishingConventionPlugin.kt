@@ -1,7 +1,5 @@
 package com.squareup.workflow1.buildsrc
 
-import com.rickbusarow.kgx.libsCatalog
-import com.rickbusarow.kgx.pluginId
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
@@ -13,6 +11,8 @@ import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.api.tasks.Sync
+import org.gradle.language.jvm.tasks.ProcessResources
 
 class PublishingConventionPlugin : Plugin<Project> {
   override fun apply(target: Project) {
@@ -82,8 +82,42 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
     }
 
+    val syncAiRulesResources =
+      target.tasks.register("syncAiRulesResources", Sync::class.java) { sync ->
+        val outputDir = target.layout.buildDirectory.dir("generated/ai-rules-resources")
+        sync.into(outputDir)
+
+        sync.from(target.layout.projectDirectory.dir(".agents")) {
+          it.include("rules/**/*.mdc")
+          it.include("skills/**/SKILL.md")
+          it.into("META-INF/com.squareup.workflow1")
+        }
+
+        val moduleAgents = target.layout.projectDirectory.file("AGENTS.md").asFile
+        if (moduleAgents.exists()) {
+          sync.from(moduleAgents) {
+            it.into("META-INF/com.squareup.workflow1")
+          }
+        }
+
+        if (target.name == "workflow-core") {
+          val rootAgents = target.rootProject.layout.projectDirectory.file("AGENTS.md").asFile
+          if (rootAgents.exists()) {
+            sync.from(rootAgents) {
+              it.into("META-INF/com.squareup.workflow1")
+            }
+          }
+        }
+      }
+
+    target.tasks.withType(ProcessResources::class.java).configureEach { processResources ->
+      processResources.dependsOn(syncAiRulesResources)
+      processResources.from(syncAiRulesResources.map { it.destinationDir })
+    }
+
     target.tasks.withType(PublishToMavenRepository::class.java) {
       it.notCompatibleWithConfigurationCache("See https://github.com/gradle/gradle/issues/13468")
+      it.dependsOn(syncAiRulesResources)
     }
   }
 

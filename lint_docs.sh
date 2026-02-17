@@ -24,10 +24,15 @@ find . \
     -not -path $TUTORIALS_DIR/'*' \
     -not -path './compose/*' \
     -not -path './benchmarks/*' \
+    -not -path './build/*' \
+    -not -path './thoughts/*' \
     | xargs mdl --style $STYLE --ignore-front-matter \
 
 find $TUTORIALS_DIR \
     -name '*.md' \
+    -not -path $TUTORIALS_DIR'/.firebender/*' \
+    -not -path $TUTORIALS_DIR'/.cursor/*' \
+    -not -path $TUTORIALS_DIR'/.claude/*' \
     | xargs mdl --style $TUTORIALS_STYLE --ignore-front-matter \
 
 echo "Success."
