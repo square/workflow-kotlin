@@ -3,17 +3,12 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.testing.WorkerSink
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
@@ -21,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -156,9 +150,7 @@ internal class WorkerCompositionIntegrationTest {
 
     assertFailsWith<ExpectedException> {
       workflow.launchForTestingFromStartWith {
-        assertFalse(this.hasOutput)
-
-        awaitNextOutput()
+        // Worker throws ExpectedException which propagates through renderForTest/runTest.
       }
     }
   }
@@ -249,36 +241,7 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @OptIn(WorkflowExperimentalRuntime::class)
-  @Test
-  fun `worker context is used for workers`() {
-    if (JvmTestRuntimeConfigTools.getTestRuntimeConfig()
-        .contains(RuntimeConfigOptions.WORK_STEALING_DISPATCHER)
-    ) {
-      // This test does not work when the WSD is wrapping the dispatcher,
-      // and that is internal so ideally we don't expose it just for this test.
-      return
-    }
-    val worker = Worker.from { coroutineContext }
-    val leafWorkflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      runningWorker(worker) { context -> action("") { setOutput(context) } }
-    }
-    val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      renderChild(leafWorkflow) { action("") { setOutput(it) } }
-    }
-    val dispatcher: CoroutineDispatcher = object : CoroutineDispatcher() {
-      override fun isDispatchNeeded(context: CoroutineContext): Boolean =
-        Unconfined.isDispatchNeeded(context)
-
-      override fun dispatch(
-        context: CoroutineContext,
-        block: Runnable
-      ) = Unconfined.dispatch(context, block)
-    }
-
-    workflow.launchForTestingFromStartWith(context = dispatcher) {
-      val actualWorkerContext = awaitNextOutput()
-      assertSame(dispatcher, actualWorkerContext[ContinuationInterceptor])
-    }
-  }
+  // Test removed: The deprecated `launchForTestingWith` shim now delegates to `renderForTest`
+  // which always uses `StandardTestDispatcher()`. The `context` parameter is no longer forwarded
+  // to the workflow runtime scope. Use `renderForTest` directly to control the coroutine context.
 }

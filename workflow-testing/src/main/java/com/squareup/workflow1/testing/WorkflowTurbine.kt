@@ -15,6 +15,7 @@ import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromStat
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
 import com.squareup.workflow1.testing.WorkflowTurbine.Companion.WORKFLOW_TEST_DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -294,8 +295,17 @@ public class WorkflowTurbine<RenderingT, OutputT>(
   private val outputTurbine: ReceiveTurbine<OutputT>,
   private val testScheduler: TestCoroutineScheduler? = null,
 ) {
-  private var usedFirstRendering = false
-  private var usedFirstSnapshot = false
+  internal var usedFirstRendering = false
+  internal var usedFirstSnapshot = false
+
+  @OptIn(DelicateCoroutinesApi::class)
+  internal val renderingChannel get() = renderingTurbine.asChannel()
+
+  @OptIn(DelicateCoroutinesApi::class)
+  internal val snapshotChannel get() = snapshotTurbine.asChannel()
+
+  @OptIn(DelicateCoroutinesApi::class)
+  internal val outputChannel get() = outputTurbine.asChannel()
 
   /**
    * Advances the [testScheduler] passed in for this [WorkflowTurbine].

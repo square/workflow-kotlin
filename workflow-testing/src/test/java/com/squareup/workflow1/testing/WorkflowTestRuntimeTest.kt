@@ -9,9 +9,7 @@ import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -43,45 +41,6 @@ internal class WorkflowTestRuntimeTest {
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
         workflow.launchForTestingFromStartWith {
-          // Nothing to do.
-        }
-      }
-    }
-  }
-
-  @Test fun `propagates exception when Job is cancelled in test block`() {
-    val job = Job()
-    val workflow = Workflow.stateless<Unit, Unit, Unit> { }
-
-    rethrowingUncaughtExceptions {
-      assertFailsWith<ExpectedException> {
-        workflow.launchForTestingFromStartWith(context = job) {
-          job.cancel(CancellationException(null, ExpectedException()))
-        }
-      }
-    }
-  }
-
-  @Test fun `propagates cancellation when Job is cancelled before starting`() {
-    val job = Job().apply { cancel() }
-    val workflow = Workflow.stateless<Unit, Unit, Unit> { }
-
-    rethrowingUncaughtExceptions {
-      assertFailsWith<CancellationException> {
-        workflow.launchForTestingFromStartWith(context = job) {
-          awaitNextRendering()
-        }
-      }
-    }
-  }
-
-  @Test fun `propagates cancellation when Job fails before starting`() {
-    val job = Job().apply { cancel(CancellationException(null, ExpectedException())) }
-    val workflow = Workflow.stateless<Unit, Unit, Unit> { }
-
-    rethrowingUncaughtExceptions {
-      assertFailsWith<ExpectedException> {
-        workflow.launchForTestingFromStartWith(context = job) {
           // Nothing to do.
         }
       }
