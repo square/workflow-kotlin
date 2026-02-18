@@ -3,7 +3,7 @@ package com.squareup.workflow1.tracing
 /**
  * Interface abstracting tracing functionality to allow for testing with fake implementations.
  */
-public interface SafeTraceInterface {
+public interface TraceInterface {
   public val isTraceable: Boolean
   public val isCurrentlyTracing: Boolean
 
@@ -21,3 +21,12 @@ public interface SafeTraceInterface {
 
   public fun logSection(info: String)
 }
+
+@Deprecated(
+  message = "Renamed to TraceInterface",
+  replaceWith = ReplaceWith(
+    expression = "TraceInterface",
+    imports = arrayOf("com.squareup.workflow1.tracing.TraceInterface")
+  )
+)
+public typealias SafeTraceInterface = TraceInterface
