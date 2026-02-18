@@ -298,18 +298,18 @@ public class WorkflowTurbine<RenderingT, OutputT>(
   private var usedFirstSnapshot = false
 
   /**
-   * Advance the test coroutine scheduler to drain all pending coroutines, simulating the
-   * "drain before next frame" behavior of AndroidUiDispatcher.Main in production.
-   *
-   * With a [StandardTestDispatcher], coroutines are not resumed automatically when dispatched.
-   * This method runs all pending coroutines so that the workflow runtime processes queued actions
-   * and produces new renderings.
+   * Advances the [testScheduler] passed in for this [WorkflowTurbine].
    *
    * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
-   * and [skipRenderings]. You may also call it explicitly if you need to assert on side effects
-   * after sending an action without first awaiting a rendering.
+   * and [skipRenderings]. You only need to call this explicitly when you want to process pending
+   * actions without awaiting a rendering or output — for example, to assert on side effects
+   * triggered by an action that doesn't change state or produce output.
+   *
+   * With a non-immediate dispatcher (like [StandardTestDispatcher]), this drains all pending
+   * coroutines so the runtime processes queued actions. With an immediate dispatcher, this is
+   * effectively a no-op.
    */
-  public fun advanceRuntime() {
+  public fun awaitRuntimeSettled() {
     testScheduler?.advanceUntilIdle()
   }
 
@@ -324,7 +324,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstRendering = true
       return firstRendering
     }
-    advanceRuntime()
+    awaitRuntimeSettled()
     return renderingTurbine.awaitItem()
   }
 
@@ -334,7 +334,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    * @return the output.
    */
   public suspend fun awaitNextOutput(): OutputT {
-    advanceRuntime()
+    awaitRuntimeSettled()
     return outputTurbine.awaitItem()
   }
 
@@ -349,7 +349,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstSnapshot = true
       return firstSnapshot
     }
-    advanceRuntime()
+    awaitRuntimeSettled()
     return snapshotTurbine.awaitItem()
   }
 
@@ -362,7 +362,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
     }
 
     if (skippedCount > 0) {
-      advanceRuntime()
+      awaitRuntimeSettled()
       renderingTurbine.skipItems(skippedCount)
     }
   }
