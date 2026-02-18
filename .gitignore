@@ -43,6 +43,7 @@ captures/
 
 # Claude
 .claude/*.local.*
+CLAUDE.md
 
 # RPI
 thoughts/*
