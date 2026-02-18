@@ -167,12 +167,12 @@ public final class com/squareup/workflow1/testing/WorkflowTestParamsKt {
 public final class com/squareup/workflow1/testing/WorkflowTestRuntime {
 	public static final field Companion Lcom/squareup/workflow1/testing/WorkflowTestRuntime$Companion;
 	public static final field DEFAULT_TIMEOUT_MS J
-	public final fun awaitNextOutput (Ljava/lang/Long;)Ljava/lang/Object;
-	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun awaitNextRendering (Ljava/lang/Long;Z)Ljava/lang/Object;
-	public static synthetic fun awaitNextRendering$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Ljava/lang/Object;
-	public final fun awaitNextSnapshot (Ljava/lang/Long;Z)Lcom/squareup/workflow1/TreeSnapshot;
-	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Lcom/squareup/workflow1/TreeSnapshot;
+	public final fun awaitNextOutput (Ljava/lang/Long;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun awaitNextRendering (Ljava/lang/Long;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun awaitNextRendering$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun awaitNextSnapshot (Ljava/lang/Long;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun awaitRuntimeSettled ()V
 	public final fun getHasOutput ()Z
 	public final fun getHasRendering ()Z
@@ -184,16 +184,16 @@ public final class com/squareup/workflow1/testing/WorkflowTestRuntime$Companion 
 }
 
 public final class com/squareup/workflow1/testing/WorkflowTestRuntimeKt {
-	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public static final fun launchForTestingWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static final fun launchForTestingWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/testing/WorkflowTurbine {

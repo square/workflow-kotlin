@@ -109,6 +109,6 @@ class TakeTurnsWorkflowTest {
   }
 }
 
-private fun WorkflowTestRuntime<*, *, GamePlayScreen>.takeSquare(row: Int, col: Int) {
+private suspend fun WorkflowTestRuntime<*, *, GamePlayScreen>.takeSquare(row: Int, col: Int) {
   awaitNextRendering().onClick(row, col)
 }
