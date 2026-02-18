@@ -39,7 +39,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke()
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -61,7 +61,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("yay")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -83,7 +83,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -105,7 +105,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -127,7 +127,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -149,7 +149,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -171,7 +171,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -193,7 +193,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -217,7 +217,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -241,7 +241,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }
@@ -265,7 +265,7 @@ class StatefulWorkflowSafeEventHandlerTest {
     w.launchForTestingFromStateWith(Baker) {
       val first = awaitNextRendering()
       first.invoke("", "", "", "", "", "", "", "", "", "")
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       assertFailedCast()
     }
   }

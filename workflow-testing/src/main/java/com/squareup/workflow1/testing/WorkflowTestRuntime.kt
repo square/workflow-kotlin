@@ -48,8 +48,8 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    * coroutines so the runtime processes queued actions. With an immediate dispatcher, this is
    * effectively a no-op.
    */
-  public fun awaitRuntimeSettled() {
-    turbine.awaitRuntimeSettled()
+  public fun advanceUntilSettled() {
+    turbine.advanceUntilSettled()
   }
 
   /**
@@ -58,7 +58,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasRendering: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       return !turbine.usedFirstRendering || !turbine.renderingChannel.isEmpty
     }
 
@@ -68,7 +68,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasSnapshot: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       return !turbine.usedFirstSnapshot || !turbine.snapshotChannel.isEmpty
     }
 
@@ -78,7 +78,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasOutput: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       return !turbine.outputChannel.isEmpty
     }
 
