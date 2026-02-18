@@ -319,7 +319,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    * coroutines so the runtime processes queued actions. With an immediate dispatcher, this is
    * effectively a no-op.
    */
-  public fun awaitRuntimeSettled() {
+  public fun advanceUntilSettled() {
     testScheduler?.advanceUntilIdle()
   }
 
@@ -334,7 +334,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstRendering = true
       return firstRendering
     }
-    awaitRuntimeSettled()
+    advanceUntilSettled()
     return renderingTurbine.awaitItem()
   }
 
@@ -344,7 +344,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    * @return the output.
    */
   public suspend fun awaitNextOutput(): OutputT {
-    awaitRuntimeSettled()
+    advanceUntilSettled()
     return outputTurbine.awaitItem()
   }
 
@@ -359,7 +359,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
       usedFirstSnapshot = true
       return firstSnapshot
     }
-    awaitRuntimeSettled()
+    advanceUntilSettled()
     return snapshotTurbine.awaitItem()
   }
 
@@ -372,7 +372,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
     }
 
     if (skippedCount > 0) {
-      awaitRuntimeSettled()
+      advanceUntilSettled()
       renderingTurbine.skipItems(skippedCount)
     }
   }
