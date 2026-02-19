@@ -1,5 +1,13 @@
 pluginManagement {
-  includeBuild '../../build-logic-ai-rules'
+  // Include the root build for plugin resolution during local development.
+  // For standalone use, the plugin resolves from mavenLocal or Maven Central.
+  includeBuild '../..'
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
+    google()
+  }
 }
 
 rootProject.name = 'Workflow Tutorial'

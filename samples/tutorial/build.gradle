@@ -9,7 +9,9 @@ buildscript {
 
   ext {
     kotlin_version = '2.3.10'
-    // Use the most recent version so we keep the tutorial up-to-date!
+    // Use the last published version for dependencies (workflow-core, workflow-testing, etc.)
+    // so CI can resolve them from Maven Central. The ai-context plugin resolves via
+    // includeBuild in settings.gradle regardless of the version string here.
     workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.24.04"
 
     deps = [
@@ -48,7 +50,7 @@ buildscript {
 }
 
 plugins {
-  id 'ai-rules-extract'
+  id 'com.squareup.workflow1.ai-context' version "$workflow_version"
 }
 
 subprojects {
@@ -78,21 +80,12 @@ tasks.register("clean", Delete) {
 }
 
 tasks.register("verifyAiRulesExtraction") {
-  dependsOn 'extractAiRules'
+  dependsOn 'extractAiContext'
   group = 'verification'
   description = 'Verifies that AI rules and skills were correctly extracted from workflow JARs'
 
   doLast {
     // These are the minimum expected files from workflow-core (always transitively available)
-    def expectedRules = [
-      '.firebender/rules/workflow-core.mdc',
-      '.cursor/rules/workflow-core.mdc',
-      '.claude/rules/workflow-core.mdc',
-      '.firebender/rules/workflow-testing.mdc',
-      '.cursor/rules/workflow-testing.mdc',
-      '.claude/rules/workflow-testing.mdc',
-    ]
-
     def expectedSkills = [
       '.firebender/skills/create-workflow/SKILL.md',
       '.cursor/skills/create-workflow/SKILL.md',
@@ -110,7 +103,7 @@ tasks.register("verifyAiRulesExtraction") {
 
     def missing = []
 
-    (expectedRules + expectedSkills + expectedAgents).each { path ->
+    (expectedSkills + expectedAgents).each { path ->
       def f = file(path)
       if (!f.exists()) {
         missing << path
@@ -127,7 +120,6 @@ tasks.register("verifyAiRulesExtraction") {
     }
 
     println "AI rules extraction verification passed!"
-    println "  Rules: ${expectedRules.size} verified"
     println "  Skills: ${expectedSkills.size} verified"
   }
 }

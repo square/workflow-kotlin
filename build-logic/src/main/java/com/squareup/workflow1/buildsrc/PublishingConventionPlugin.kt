@@ -1,6 +1,7 @@
 package com.squareup.workflow1.buildsrc
 
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.GradlePlugin
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.KotlinMultiplatform
@@ -64,14 +65,25 @@ class PublishingConventionPlugin : Plugin<Project> {
         basePluginExtension.configure(AndroidSingleVariantLibrary(sourcesJar = true))
         target.setPublicationProperties(pomDescription, artifactId)
       }
-      target.pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+      target.pluginManager.withPlugin("java-gradle-plugin") {
         basePluginExtension.configure(
-          KotlinJvm(
+          GradlePlugin(
             javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"),
             sourcesJar = true
           )
         )
         target.setPublicationProperties(pomDescription, artifactId)
+      }
+      target.pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        if (!target.pluginManager.hasPlugin("java-gradle-plugin")) {
+          basePluginExtension.configure(
+            KotlinJvm(
+              javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"),
+              sourcesJar = true
+            )
+          )
+          target.setPublicationProperties(pomDescription, artifactId)
+        }
       }
       target.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         basePluginExtension.configure(
@@ -88,7 +100,6 @@ class PublishingConventionPlugin : Plugin<Project> {
         sync.into(outputDir)
 
         sync.from(target.layout.projectDirectory.dir(".agents")) {
-          it.include("rules/**/*.mdc")
           it.include("skills/**/SKILL.md")
           it.into("META-INF/com.squareup.workflow1")
         }
@@ -134,6 +145,9 @@ class PublishingConventionPlugin : Plugin<Project> {
         .configure(PublishingExtension::class.java) { publishingExtension ->
           publishingExtension.publications
             .filterIsInstance<MavenPublication>()
+            // Skip Gradle plugin marker publications — their coordinates are
+            // managed by the java-gradle-plugin and must not be overridden.
+            .filterNot { it.name.endsWith("PluginMarkerMaven") }
             .forEach { publication ->
 
               if (artifactIdOrNull != null) {

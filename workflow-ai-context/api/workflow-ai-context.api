@@ -1,0 +1,13 @@
+public abstract class com/squareup/workflow1/ai/context/AiContextExtractTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun extract ()V
+	public abstract fun getPreview ()Lorg/gradle/api/provider/Property;
+	public abstract fun getTools ()Lorg/gradle/api/provider/Property;
+}
+
+public final class com/squareup/workflow1/ai/context/AiContextPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+

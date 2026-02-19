@@ -1,5 +1,23 @@
 [
   {
+    "gradlePath": ":workflow-ai-context",
+    "group": "com.squareup.workflow1.ai-context",
+    "artifactId": "com.squareup.workflow1.ai-context.gradle.plugin",
+    "description": "Workflow AI Context",
+    "packaging": "pom",
+    "javaVersion": 8,
+    "publicationName": "ai-contextPluginMarkerMaven"
+  },
+  {
+    "gradlePath": ":workflow-ai-context",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ai-context",
+    "description": "Workflow AI Context",
+    "packaging": "jar",
+    "javaVersion": 8,
+    "publicationName": "pluginMaven"
+  },
+  {
     "gradlePath": ":workflow-core",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-core-iosarm64",
