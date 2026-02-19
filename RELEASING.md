@@ -17,7 +17,7 @@
    Takes about three minutes on an M3 Macbook Pro.
    (Note we exclude benchmarks, but you can check those too!)
    ```bash
-   ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x  :benchmarks:performance-poetry:complex-poetry:connectedDebugAndroidTest -x :samples:todo-android:app:connectedDebugAndroidTest
+   ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x  :benchmarks:performance-poetry:complex-poetry:connectedDebugAndroidTest -x :samples:todo-android:app:connectedDebugAndroidTest -x :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest
    ```
    NOTE: If you have any unexpected errors in the build or tests and they are related to non-jvm
    targets you may need to update your XCode or other iOS tools. See note in the workflow-core and
