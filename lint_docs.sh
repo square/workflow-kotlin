@@ -30,6 +30,8 @@ find . \
 
 find $TUTORIALS_DIR \
     -name '*.md' \
+    -not -name 'AGENTS.md' \
+    -not -name 'SKILL.md' \
     -not -path $TUTORIALS_DIR'/.firebender/*' \
     -not -path $TUTORIALS_DIR'/.cursor/*' \
     -not -path $TUTORIALS_DIR'/.claude/*' \
