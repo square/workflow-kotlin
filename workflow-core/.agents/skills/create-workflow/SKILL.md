@@ -248,8 +248,11 @@ context.runningSideEffect("trackScreen") {
 
 1. **Never perform side effects in `render()`** — `render` is called multiple times per state.
    Use `runningWorker` or `runningSideEffect`.
-2. **Don't capture `renderState` in lambdas** — In `eventHandler` and `action` blocks, use the
-   `state` property from the `Updater` receiver, not the `renderState` parameter.
+2. **Don't capture `renderState` in lambdas** — `renderState` is a snapshot from render time and
+   will be stale when the action fires. This includes **local variables derived from `renderState`**
+   (easy to miss!). Always read from `state` on the `Updater` receiver inside action/eventHandler
+   lambdas. For sealed state hierarchies, use `safeAction<SpecificState>("name")` which no-ops if
+   the state type has changed. See AGENTS.md "Common Pitfalls" for detailed examples.
 3. **Always provide `name` to `eventHandler`** — Required for Compose stability and debugging.
 4. **Use `setOutput()` to emit output** — Call at most once per action.
 5. **Return `null` from `snapshotState`** unless you need state persistence across process death.
