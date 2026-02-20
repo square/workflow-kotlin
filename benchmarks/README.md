@@ -123,3 +123,4 @@ You can run them from the IDE like any other test (recommended), or with this co
 ```
 
 We do not run benchmarks in CI, but we do validate that they compile by running them in "dry mode".
+To run them in dry mode yourself, add the flag `-Pandroidx.benchmark.dryRunMode.enable=true`.
