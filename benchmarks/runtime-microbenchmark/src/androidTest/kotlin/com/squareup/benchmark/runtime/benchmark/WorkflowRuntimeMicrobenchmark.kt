@@ -323,8 +323,11 @@ private class BenchmarkWorkflowRoot(
               props = LeafProps(
                 index = firstLeafIndex,
                 value =
-                  if (firstLeafIndex == 0) renderProps.firstLeafProps
-                  else renderProps.otherLeafProps
+                if (firstLeafIndex == 0) {
+                  renderProps.firstLeafProps
+                } else {
+                  renderProps.otherLeafProps
+                }
               )
             )
             leafRendering

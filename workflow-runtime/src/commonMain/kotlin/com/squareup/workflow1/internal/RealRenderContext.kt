@@ -65,7 +65,9 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override fun toString(): String =
-    "RealRenderContext@${hashCode().toString(16)}(actionEnqueued=${(eventActionsChannel as? ReceiveChannel<*>)?.isEmpty})"
+    "RealRenderContext@${hashCode().toString(
+      16
+    )}(actionEnqueued=${(eventActionsChannel as? ReceiveChannel<*>)?.isEmpty})"
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     // Can't send actions from render thread during render pass.
