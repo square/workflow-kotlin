@@ -239,8 +239,6 @@ MyWorkflow.renderForTest {
 
 ## Performance Best Practices
 
-> Full details: https://dev-guides.sqprod.co/square/docs/develop/android/performance/best-practices
-
 ### Render Rules
 
 - **`render()` must be idempotent** — no long-running operations, disk access, or extensive object
