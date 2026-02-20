@@ -75,7 +75,7 @@ kotlin {
         api(libs.androidx.compose.ui.android)
         api(libs.androidx.lifecycle.viewmodel.savedstate)
 
-        implementation(composeBom)
+        api(composeBom)
       }
     }
 
