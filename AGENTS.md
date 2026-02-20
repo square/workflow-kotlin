@@ -194,13 +194,94 @@ MyWorkflow.renderForTest {
 
 ## Common Pitfalls
 
-1. **Don't capture stale state** — In action lambdas, always use the `state` property from the
-   `Updater` receiver, never the `renderState` parameter from `render()`.
+1. **Don't capture stale state** — This is the most common and dangerous pitfall. The `renderState`
+   parameter (and any local variable derived from it) is a snapshot from render time. By the time an
+   action or eventHandler fires, the real state may have changed. **Always read from `state` on the
+   `Updater` receiver inside action/eventHandler lambdas.**
+
+   ```kotlin
+   // BAD — direct capture of renderState
+   onSave = context.eventHandler("onSave") {
+     state = renderState.copy(saving = true)  // STALE!
+   }
+
+   // BAD — indirect capture via local variable (easy to miss!)
+   val currentName = renderState.name
+   val isAdmin = renderState.role == Role.ADMIN
+   onSave = context.eventHandler("onSave") {
+     state = state.copy(savedName = currentName)  // STALE! currentName came from renderState
+   }
+
+   // GOOD — read from `state` on the Updater receiver
+   onSave = context.eventHandler("onSave") {
+     state = state.copy(saving = true)
+   }
+   ```
+
+   **With sealed state hierarchies**, use `safeAction` to safely narrow the state type — it no-ops
+   if the state has changed to a different subtype by the time the action fires:
+
+   ```kotlin
+   private fun onConfirm(item: Item) = safeAction<MyState.Editing>("onConfirm") { editingState ->
+     state = MyState.Confirmed(editingState.draft, item)
+   }
+   ```
+
+   **Rule of thumb**: if a variable was assigned from `renderState` (directly or transitively), it
+   must NOT be referenced inside an `action {}` or `eventHandler {}` lambda. Re-derive it from
+   `state` inside the lambda instead.
+
 2. **Don't perform side effects in `render()`** — `render` may be called multiple times for the
    same state. Use `runningWorker` or `runningSideEffect` instead.
 3. **Don't use `runBlocking`** — Use coroutines and Workers for async work.
 4. **Don't forget `name` on `eventHandler`** — Required for Compose stability and debugging.
 5. **Don't emit more than one output per action** — Call `setOutput()` at most once.
+
+## Performance Best Practices
+
+### Render Rules
+
+- **`render()` must be idempotent** — no long-running operations, disk access, or extensive object
+  creation.
+- **`snapshotState()` must not serialize** — return a lazy `Snapshot`; serialization happens only
+  when needed.
+- **One render per action** — populate all state data in `initialState()` to avoid unnecessary
+  intermediate render passes.
+- **Don't render children to inform parent state** — extract shared logic into helper classes or
+  `Scoped` objects accessible to both parent and child.
+- **Filter upstream signals at the source** — filter Worker streams before handling, not in the
+  output handler, to prevent unnecessary renders.
+- **Hoist shared state** — when multiple leaf workflows share state, manage it at the lowest common
+  ancestor and pass via props for a single render pass.
+
+### Worker & Action Rules
+
+- Only create Workers when state changes are expected.
+- Combine multiple Workers sharing the same source into a single Worker.
+- Avoid `Worker<Unit>` except for timers.
+- Use `combine()` / `combineTransform()` to consolidate multiple flow lookups into single-pass
+  state updates.
+- Prefer `SharedFlow` over `StateFlow` for one-time events (avoids automatic re-emission on
+  collection).
+
+### eventHandler Rules
+
+- Assign `eventHandler` directly to rendering callbacks only.
+- Use only when state changes are intended.
+- **Never nest `action()` calls within `eventHandler` lambdas.**
+
+### Compose Stability
+
+- Use stable types in renderings — prefer `ImmutableList` over `List`.
+- Don't pass `Lazy` delegates to composable functions.
+- Use `RenderContext#remember` to cache expensive view model computations when inputs are unchanged.
+
+### Dependency Injection
+
+- Use `dagger.Lazy<T>` for conditionally-used dependencies to defer expensive instantiation
+  (especially useful behind feature flags).
+- Use factories only for dependency injection, not stateful object construction — stateful objects
+  should be properties for runtime optimization compatibility.
 
 ## Naming Conventions
 
