@@ -142,7 +142,6 @@ public abstract class AiContextExtractTask : DefaultTask() {
     } else {
       logger.lifecycle("No files were written.")
     }
-
   }
 
   /**
