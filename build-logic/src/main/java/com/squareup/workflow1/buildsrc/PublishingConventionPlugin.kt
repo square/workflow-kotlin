@@ -118,6 +118,11 @@ class PublishingConventionPlugin : Plugin<Project> {
               it.into("META-INF/com.squareup.workflow1")
             }
           }
+          // Also bundle root-level skills (e.g., extracting-ai-context)
+          sync.from(target.rootProject.layout.projectDirectory.dir(".agents")) {
+            it.include("skills/**/SKILL.md")
+            it.into("META-INF/com.squareup.workflow1")
+          }
         }
       }
 
