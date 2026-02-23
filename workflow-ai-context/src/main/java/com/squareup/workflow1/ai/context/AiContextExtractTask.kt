@@ -28,13 +28,13 @@ public abstract class AiContextExtractTask : DefaultTask() {
   @get:Input
   @get:Option(
     option = "tools",
-    description = "Comma-separated tool names (default: firebender,cursor,claude)"
+    description = "Comma-separated agent names (default: amp)"
   )
   public abstract val tools: Property<String>
 
   init {
     preview.convention(false)
-    tools.convention("firebender,cursor,claude")
+    tools.convention("amp")
   }
 
   @TaskAction
@@ -49,7 +49,8 @@ public abstract class AiContextExtractTask : DefaultTask() {
       return
     }
 
-    val toolDirs = tools.get().split(",").map { ".${it.trim()}" }
+    val toolNames = tools.get().split(",").map { it.trim().lowercase() }
+    val toolDirs = toolNames.map { resolveSkillsDir(it) }.distinct()
     val outputDir = project.projectDir
 
     // Scan JARs for AI context entries
@@ -122,7 +123,7 @@ public abstract class AiContextExtractTask : DefaultTask() {
     if (skills.isNotEmpty()) {
       for ((relativePath, content) in skills) {
         for (toolDir in toolDirs) {
-          val targetFile = File(outputDir, "$toolDir/skills/$relativePath")
+          val targetFile = File(outputDir, "$toolDir/$relativePath")
           targetFile.parentFile.mkdirs()
           targetFile.writeBytes(content)
         }
@@ -142,11 +143,6 @@ public abstract class AiContextExtractTask : DefaultTask() {
       logger.lifecycle("No files were written.")
     }
 
-    // CLAUDE.md symlink guidance
-    logger.lifecycle("")
-    logger.lifecycle("Tip: To use this as CLAUDE.md, create a symlink:")
-    logger.lifecycle("  ln -sf AGENTS.md CLAUDE.md")
-    logger.lifecycle("  echo \"CLAUDE.md\" >> .gitignore")
   }
 
   /**
@@ -186,6 +182,37 @@ public abstract class AiContextExtractTask : DefaultTask() {
     internal const val AGENTS_INJECTION_SLUG = "workflow-kotlin-AGENTS-injection"
     internal const val AGENTS_INJECTION_START = "<!-- $AGENTS_INJECTION_SLUG:START -->"
     internal const val AGENTS_INJECTION_END = "<!-- $AGENTS_INJECTION_SLUG:END -->"
+
+    /**
+     * Standard agent-to-directory mappings following the Agent Skills specification.
+     * See https://agentskills.io and https://github.com/vercel-labs/skills
+     *
+     * Many agents share `.agents/skills/` as their standard directory.
+     * Using `amp` as the tool name covers all of them.
+     */
+    internal val AGENT_SKILLS_DIRS: Map<String, String> = mapOf(
+      // .agents/skills/ — universal standard
+      "amp" to ".agents/skills",
+      "cursor" to ".agents/skills",
+      "codex" to ".agents/skills",
+      "github-copilot" to ".agents/skills",
+      "gemini-cli" to ".agents/skills",
+      "opencode" to ".agents/skills",
+      // Agent-specific directories
+      "claude-code" to ".claude/skills",
+      "goose" to ".goose/skills",
+      "windsurf" to ".windsurf/skills",
+      "roo" to ".roo/skills",
+    )
+
+    /**
+     * Resolves a tool name to its skills directory path.
+     * Known agents use standard mappings; unknown names use `.{name}/skills` as fallback.
+     */
+    internal fun resolveSkillsDir(toolName: String): String {
+      return AGENT_SKILLS_DIRS[toolName.trim().lowercase()]
+        ?: ".${toolName.trim()}/skills"
+    }
 
     /**
      * Merges extracted AGENTS.md content into an existing file's text.
