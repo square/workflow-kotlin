@@ -1,4 +1,4 @@
-# Workflow AI Context
+# Module workflow-ai-context
 
 A Gradle plugin that extracts AI context (skills, `AGENTS.md`) from workflow-kotlin
 library JARs into the correct locations for your AI coding agent.
