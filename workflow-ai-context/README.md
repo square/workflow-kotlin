@@ -74,7 +74,7 @@ This does two things:
 
 1. **Extracts skills** to `.agents/skills/` — version-matched guides for creating
    workflows, writing tests, and managing AI context
-2. **Merges `AGENTS.md`** — injects workflow-kotlin guidance into your project's
+1. **Merges `AGENTS.md`** — injects workflow-kotlin guidance into your project's
    `AGENTS.md` using clearly delimited markers, preserving your existing content
 
 The default output directory (`.agents/skills/`) works out of the box for **Amp, Cursor,
