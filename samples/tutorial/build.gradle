@@ -12,7 +12,7 @@ buildscript {
     // Use the last published version for dependencies (workflow-core, workflow-testing, etc.)
     // so CI can resolve them from Maven Central. The ai-context plugin resolves via
     // includeBuild in settings.gradle regardless of the version string here.
-    workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.24.04"
+    workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.25.1"
 
     deps = [
         activityktx: 'androidx.activity:activity-ktx:1.8.2',
@@ -85,18 +85,17 @@ tasks.register("verifyAiRulesExtraction") {
   description = 'Verifies that AI rules and skills were correctly extracted from workflow JARs'
 
   doLast {
-    // These are the minimum expected files from workflow-core (always transitively available)
-    def expectedSkills = [
-      '.firebender/skills/create-workflow/SKILL.md',
-      '.cursor/skills/create-workflow/SKILL.md',
-      '.claude/skills/create-workflow/SKILL.md',
-      '.firebender/skills/workflow-testing/SKILL.md',
-      '.cursor/skills/workflow-testing/SKILL.md',
-      '.claude/skills/workflow-testing/SKILL.md',
-      '.firebender/skills/workflow-integration-testing/SKILL.md',
-      '.cursor/skills/workflow-integration-testing/SKILL.md',
-      '.claude/skills/workflow-integration-testing/SKILL.md',
+    // The ai-context plugin defaults to the `amp` tool, which extracts skills to `.agents/skills`.
+    // These are the minimum expected skills from workflow-core packaging.
+    def expectedSkillNames = [
+      'create-workflow',
+      'workflow-testing',
+      'workflow-integration-testing',
+      'extracting-ai-context',
     ]
+    def expectedSkills = expectedSkillNames.collect { skillName ->
+      ".agents/skills/${skillName}/SKILL.md"
+    }
     def expectedAgents = [
       'AGENTS.md',
     ]

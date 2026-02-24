@@ -199,27 +199,26 @@ jobs:
           build-root-directory: samples/tutorial
           restore-cache-key: main-build-artifacts
 
-# Enable this *after* we get a published version that is producing these artifacts.
-#  tutorial-ai-rules:
-#    name: Tutorial AI Rules Extraction
-#    runs-on: ubuntu-latest
-#    timeout-minutes: 20
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v6
-#
-#      - name: Publish workflow artifacts to Maven local
-#        uses: ./.github/actions/gradle-task
-#        with:
-#          task: publishToMavenLocal
-#          write-cache-key: main-build-artifacts
-#
-#      - name: Extract and verify AI rules
-#        uses: ./.github/actions/gradle-task
-#        with:
-#          task: verifyAiRulesExtraction
-#          build-root-directory: samples/tutorial
-#          restore-cache-key: main-build-artifacts
+  tutorial-ai-rules:
+    name: Tutorial AI Rules Extraction
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Publish workflow artifacts to Maven local
+        uses: ./.github/actions/gradle-task
+        with:
+          task: publishToMavenLocal
+          write-cache-key: main-build-artifacts
+
+      - name: Extract and verify AI rules
+        uses: ./.github/actions/gradle-task
+        with:
+          task: verifyAiRulesExtraction
+          build-root-directory: samples/tutorial
+          restore-cache-key: main-build-artifacts
 
   unit-tests:
     name: General Unit Tests (not KMP)
