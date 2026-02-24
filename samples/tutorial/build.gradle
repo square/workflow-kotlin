@@ -60,15 +60,6 @@ subprojects {
     mavenCentral()
   }
 
-  // Workaround: workflow-runtime-android:1.25.0 declares androidx.compose.ui:ui-android as an
-  // api dependency without a version (the Compose BOM was published as implementation scope).
-  // Adding the BOM here allows consumers to resolve the missing version.
-  plugins.withId("com.android.application") {
-    dependencies {
-      implementation platform('androidx.compose:compose-bom:2025.03.01')
-    }
-  }
-
   tasks.withType(KotlinCompile).configureEach {
     kotlinOptions {
       freeCompilerArgs += '-opt-in=kotlin.RequiresOptIn'
