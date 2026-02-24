@@ -161,11 +161,12 @@ org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.10
 org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.3.10
 org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.3.10
 org.jetbrains.kotlin:kotlin-native-utils:2.3.10
-org.jetbrains.kotlin:kotlin-reflect:2.0.21
+org.jetbrains.kotlin:kotlin-reflect:2.2.21
 org.jetbrains.kotlin:kotlin-serialization:2.3.10
+org.jetbrains.kotlin:kotlin-stdlib-common:2.3.10
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.10
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.10
-org.jetbrains.kotlin:kotlin-stdlib:2.0.21
+org.jetbrains.kotlin:kotlin-stdlib:2.2.21
 org.jetbrains.kotlin:kotlin-tooling-core:2.3.10
 org.jetbrains.kotlin:kotlin-util-io:2.3.10
 org.jetbrains.kotlin:kotlin-util-klib-metadata:2.3.10

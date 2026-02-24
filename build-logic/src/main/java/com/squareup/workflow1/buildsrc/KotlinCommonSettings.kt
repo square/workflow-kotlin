@@ -9,6 +9,7 @@ import com.squareup.workflow1.buildsrc.internal.javaLanguageVersion
 import com.squareup.workflow1.buildsrc.internal.javaTarget
 import com.squareup.workflow1.buildsrc.internal.kotlin
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.AbstractTestTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode.Strict
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
@@ -29,6 +30,12 @@ fun Project.kotlinCommonSettings(bomConfigurationName: String) {
     extension.jvmToolchain { toolChain ->
       toolChain.languageVersion.set(javaLanguageVersion)
     }
+  }
+
+  // Gradle 9 defaults failOnNoDiscoveredTests to true, but some modules have test source
+  // directories without actual test classes.
+  tasks.withType(AbstractTestTask::class.java).configureEach { testTask ->
+    testTask.failOnNoDiscoveredTests.set(false)
   }
 
   tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
