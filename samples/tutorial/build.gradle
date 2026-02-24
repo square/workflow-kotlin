@@ -12,7 +12,7 @@ buildscript {
     // Use the last published version for dependencies (workflow-core, workflow-testing, etc.)
     // so CI can resolve them from Maven Central. The ai-context plugin resolves via
     // includeBuild in settings.gradle regardless of the version string here.
-    workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.24.04"
+    workflow_version = rootProps.getProperty("LAST_PUBLISHED_VERSION_NAME") ?: "1.25.1"
 
     deps = [
         activityktx: 'androidx.activity:activity-ktx:1.8.2',
