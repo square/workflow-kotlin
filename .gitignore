@@ -47,3 +47,10 @@ CLAUDE.md
 
 # RPI
 thoughts/*
+
+# Tutorial Context (generated)
+samples/tutorial/AGENTS.md
+samples/tutorial/.agents
+samples/tutorial/.claude
+samples/tutorial/.cursor
+samples/tutorial/.firebender
