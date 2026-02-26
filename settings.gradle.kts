@@ -43,6 +43,7 @@ include(
   ":samples:containers:app-poetry",
   ":samples:containers:app-raven",
   ":samples:containers:common",
+  ":samples:containers:thingy",
   ":samples:containers:hello-back-button",
   ":samples:containers:poetry",
   ":samples:dungeon:app",
