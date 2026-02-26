@@ -130,7 +130,15 @@ public final class com/squareup/workflow1/tracing/RuntimeUpdates {
 	public final fun readAndClear ()Ljava/util/List;
 }
 
-public abstract interface class com/squareup/workflow1/tracing/SafeTraceInterface {
+public final class com/squareup/workflow1/tracing/SkipLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
+	public static final field INSTANCE Lcom/squareup/workflow1/tracing/SkipLogLine;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun log (Ljava/lang/StringBuilder;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/squareup/workflow1/tracing/TraceInterface {
 	public abstract fun beginAsyncSection (Ljava/lang/String;I)V
 	public abstract fun beginSection (Ljava/lang/String;)V
 	public abstract fun endAsyncSection (Ljava/lang/String;I)V
@@ -138,14 +146,6 @@ public abstract interface class com/squareup/workflow1/tracing/SafeTraceInterfac
 	public abstract fun isCurrentlyTracing ()Z
 	public abstract fun isTraceable ()Z
 	public abstract fun logSection (Ljava/lang/String;)V
-}
-
-public final class com/squareup/workflow1/tracing/SkipLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
-	public static final field INSTANCE Lcom/squareup/workflow1/tracing/SkipLogLine;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public fun log (Ljava/lang/StringBuilder;)V
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/tracing/UiUpdateLogLine : com/squareup/workflow1/tracing/RuntimeUpdateLogLine {
