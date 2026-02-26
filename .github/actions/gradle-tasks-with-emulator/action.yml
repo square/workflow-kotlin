@@ -64,7 +64,7 @@ runs:
 
     # Get the AVD if it's already cached.
     - name: AVD cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       id: restore-avd-cache
       with:
         path: |
@@ -75,7 +75,7 @@ runs:
     # If the AVD cache didn't exist, create an AVD
     - name: create AVD and generate snapshot for caching
       if: steps.restore-avd-cache.outputs.cache-hit != 'true'
-      uses: reactivecircus/android-emulator-runner@v2
+      uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2
       with:
         api-level: ${{ inputs.api-level }}
         arch: x86_64
@@ -91,7 +91,7 @@ runs:
     - name: cache new AVD before tests
       if: steps.restore-avd-cache.outputs.cache-hit != 'true'
       id: save-avd-cache
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |
           ~/.android/avd/*
@@ -101,7 +101,7 @@ runs:
     # Run the actual emulator tests.
     # At this point every task should be up-to-date and the AVD should be ready to go.
     - name: run tests
-      uses: reactivecircus/android-emulator-runner@v2
+      uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2
       with:
         api-level: ${{ inputs.api-level }}
         arch: x86_64
@@ -113,21 +113,21 @@ runs:
 
     - name: Upload Any Logs
       if: failure()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: log-upload
         path: ${{github.workspace}}/**/*.log
 
     - name: Upload Any Heap Dumps
       if: failure()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: hprof-upload
         path: ${{github.workspace}}/**/*.hprof
 
     - name: Upload Any Specified Files
       if: failure() && inputs.failure-path-upload != 'null'
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: specified-upload
         path: ${{github.workspace}}/${{inputs.failure-path-upload}}
