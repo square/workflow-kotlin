@@ -1,20 +1,22 @@
 package com.squareup.workflow1.traceviewer.util
 
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.FixedScale
-import androidx.compose.ui.unit.IntSize
-import com.squareup.workflow1.traceviewer.SandboxState
-import me.saket.telephoto.zoomable.rememberZoomableState
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.toSize
+import me.saket.telephoto.zoomable.ZoomableContentLocation
+import me.saket.telephoto.zoomable.ZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
 /**
@@ -26,51 +28,29 @@ import me.saket.telephoto.zoomable.zoomable
  */
 @Composable
 internal fun SandboxBackground(
-  appWindowSize: IntSize,
-  sandboxState: SandboxState,
+  zoomableState: ZoomableState,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit,
 ) {
-  val zoomableState = rememberZoomableState()
-
+  val focusRequester = remember { FocusRequester() }
+  LaunchedEffect(zoomableState) {
+    // Request focus to receive keyboard shortcuts.
+    focusRequester.requestFocus()
+  }
   Box(
     modifier
       .fillMaxSize()
-      .zoomable(state = zoomableState)
-      .pointerInput(Unit) {
-        // Panning capabilities: watches for drag gestures and applies the translation
-        detectDragGestures { _, translation ->
-          sandboxState.offset += translation
-        }
-      }
-      .pointerInput(appWindowSize) {
-        // Zooming capabilities: watches for any scroll events and immediately consumes changes.
-        // - This is AI generated.
-        awaitEachGesture {
-          val event = awaitPointerEvent()
-          if (event.type == PointerEventType.Scroll) {
-            val pointerInput = event.changes.first()
-            // Applies zoom factor based on the actual delta change rather than just the act of scrolling
-            // This helps to normalize mouse scrolling and touchpad scrolling, since touchpad will
-            // fire a lot more scroll events.
-            val factor = 1f + (-pointerInput.scrollDelta.y * 0.1f)
-            val minWindowSize = 0.3f
-            val maxWindowSize = 2f
-            val oldScale = (zoomableState.contentScale as? FixedScale)?.value ?: 1.0f
-            val newScale = (oldScale * factor).coerceIn(minWindowSize, maxWindowSize)
-
-            zoomableState.contentScale = FixedScale(newScale)
-            event.changes.forEach { it.consume() }
-          }
-        }
-      }
+      .focusRequester(focusRequester)
+      .zoomable(zoomableState)
   ) {
     Box(
       modifier = Modifier
-        .wrapContentSize(unbounded = true, align = Alignment.Center)
-        .graphicsLayer {
-          translationX = sandboxState.offset.x
-          translationY = sandboxState.offset.y
+        .wrapContentSize(unbounded = true, align = AbsoluteAlignment.TopLeft)
+        .onSizeChanged {
+          // TODO(saket): Modifier.zoomable() should automatically use its child's size by default.
+          zoomableState.setContentLocation(
+            ZoomableContentLocation.unscaledAndTopLeftAligned(it.toSize())
+          )
         }
     ) {
       content()
