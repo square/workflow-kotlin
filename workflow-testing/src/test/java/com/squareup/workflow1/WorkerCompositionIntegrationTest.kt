@@ -33,7 +33,6 @@ internal class WorkerCompositionIntegrationTest {
     workflow.launchForTestingFromStartWith(false) {
       assertFalse(started)
       sendProps(true)
-      advanceUntilSettled()
       assertTrue(started)
     }
   }
@@ -52,7 +51,6 @@ internal class WorkerCompositionIntegrationTest {
     workflow.launchForTestingFromStartWith(true) {
       assertFalse(cancelled)
       sendProps(false)
-      advanceUntilSettled()
       assertTrue(cancelled)
     }
   }
@@ -78,12 +76,10 @@ internal class WorkerCompositionIntegrationTest {
       assertEquals(0, stops)
 
       sendProps(Unit)
-      advanceUntilSettled()
       assertEquals(1, starts)
       assertEquals(0, stops)
 
       sendProps(Unit)
-      advanceUntilSettled()
       assertEquals(1, starts)
       assertEquals(0, stops)
     }
@@ -110,17 +106,14 @@ internal class WorkerCompositionIntegrationTest {
       assertEquals(0, stops)
 
       sendProps(true)
-      advanceUntilSettled()
       assertEquals(1, starts)
       assertEquals(0, stops)
 
       sendProps(false)
-      advanceUntilSettled()
       assertEquals(1, starts)
       assertEquals(1, stops)
 
       sendProps(true)
-      advanceUntilSettled()
       assertEquals(2, starts)
       assertEquals(1, stops)
     }

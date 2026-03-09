@@ -159,11 +159,9 @@ internal class WorkflowTestRuntimeTest {
         assertEquals(1, renders)
 
         sendProps(props)
-        advanceUntilSettled()
         assertEquals(1, renders)
 
         sendProps(props)
-        advanceUntilSettled()
         assertEquals(1, renders)
       }
     }
@@ -209,7 +207,6 @@ internal class WorkflowTestRuntimeTest {
       val firstError = assertFailsWith<ExpectedException> {
         workflow.launchForTestingFromStartWith(props = false) {
           sendProps(true)
-          advanceUntilSettled()
           throw ExpectedException("test body")
         }
       }
