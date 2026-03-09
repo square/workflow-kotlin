@@ -83,10 +83,18 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
     }
 
   /**
-   * Sends [input] to the workflow.
+   * Sends [input] to the workflow and advances the runtime so that it processes the new props.
+   *
+   * After calling this, the workflow will have rendered with the new props and any resulting
+   * actions will have been processed. You can immediately call [awaitNextRendering] or
+   * [hasRendering] without needing a separate [advanceUntilSettled] call.
+   *
+   * Note: if you trigger actions via callbacks on a rendering (not via [sendProps]), you still
+   * need to call [advanceUntilSettled] explicitly (or await a rendering/output) before asserting.
    */
   public fun sendProps(input: PropsT) {
     props.value = input
+    advanceUntilSettled()
   }
 
   /**
