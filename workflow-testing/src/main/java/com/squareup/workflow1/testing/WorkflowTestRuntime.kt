@@ -9,8 +9,10 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromState
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
@@ -248,11 +250,18 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
   block: suspend WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
 ): T {
   val propsFlow = MutableStateFlow(props)
+  val schedulerContext = when (testParams.deprecatedLaunchSchedulerMode) {
+    DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED -> UnconfinedTestDispatcher()
+    DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD -> StandardTestDispatcher()
+  }
+  // Strip Job from the caller's context so it doesn't interfere with the runtime scope's
+  // lifecycle management. Other context elements (names, coroutine names, etc.) are preserved.
+  val safeContext = context.minusKey(Job)
   var result: T? = null
   renderForTest(
     props = propsFlow,
     testParams = testParams,
-    coroutineContext = StandardTestDispatcher(),
+    coroutineContext = schedulerContext + safeContext,
   ) {
     val runtime = WorkflowTestRuntime(propsFlow, this)
     result = runtime.block()

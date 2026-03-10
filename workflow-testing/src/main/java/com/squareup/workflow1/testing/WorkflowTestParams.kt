@@ -14,6 +14,33 @@ import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.annotations.TestOnly
 
 /**
+ * Controls the coroutine dispatcher used by the deprecated `launchForTesting*` helpers.
+ *
+ * This exists to allow a phased migration away from the deprecated APIs. The default
+ * [LEGACY_UNCONFINED] preserves the pre-1.25.1 behavior where coroutines dispatched immediately,
+ * so existing tests continue to pass without changes. [VIRTUAL_TIME_STANDARD] opts in to the
+ * newer [kotlinx.coroutines.test.StandardTestDispatcher] behavior where coroutines must be
+ * explicitly advanced.
+ *
+ * This enum only affects the deprecated `launchForTesting*` functions. The recommended
+ * `renderForTest` API already accepts a `coroutineContext` parameter directly.
+ */
+public enum class DeprecatedLaunchSchedulerMode {
+  /**
+   * Uses [kotlinx.coroutines.test.UnconfinedTestDispatcher] — coroutines dispatch immediately.
+   * This matches the behavior of the deprecated APIs before the 1.25.1 migration to
+   * [kotlinx.coroutines.test.StandardTestDispatcher].
+   */
+  LEGACY_UNCONFINED,
+
+  /**
+   * Uses [kotlinx.coroutines.test.StandardTestDispatcher] — coroutines require explicit
+   * advancement via `advanceUntilSettled()` or similar scheduler control.
+   */
+  VIRTUAL_TIME_STANDARD
+}
+
+/**
  * Defines configuration for workflow testing infrastructure such as `testRender`, `testFromStart`.
  * and `test`.
  *
@@ -27,12 +54,20 @@ import org.jetbrains.annotations.TestOnly
  * @param runtimeConfig Runtime configuration to apply. If `null` we use
  * [JvmTestRuntimeConfigTools.getTestRuntimeConfig][com.squareup.workflow1.config.JvmTestRuntimeConfigTools.getTestRuntimeConfig]
  * instead.
+ * @param deprecatedLaunchSchedulerMode Controls which dispatcher the deprecated `launchForTesting*`
+ * helpers use. Defaults to [DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED] to preserve pre-1.25.1
+ * behavior. Set to [DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD] to opt in to virtual-time
+ * semantics. Has no effect on the recommended `renderForTest` API. Note: if the `context` parameter
+ * passed to a `launchForTesting*` function contains a dispatcher, that dispatcher takes precedence
+ * over the one selected by this mode.
  */
 @TestOnly
 public class WorkflowTestParams<out StateT>(
   public val startFrom: StartMode<StateT> = StartFresh,
   public val checkRenderIdempotence: Boolean = true,
-  public val runtimeConfig: RuntimeConfig? = null
+  public val runtimeConfig: RuntimeConfig? = null,
+  public val deprecatedLaunchSchedulerMode: DeprecatedLaunchSchedulerMode =
+    DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED
 ) {
   /**
    * Defines how to start the workflow for tests.
