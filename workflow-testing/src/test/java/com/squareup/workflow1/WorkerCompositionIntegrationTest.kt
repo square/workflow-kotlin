@@ -234,7 +234,6 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  // Test removed: The deprecated `launchForTestingWith` shim now delegates to `renderForTest`
-  // which always uses `StandardTestDispatcher()`. The `context` parameter is no longer forwarded
-  // to the workflow runtime scope. Use `renderForTest` directly to control the coroutine context.
+  // Note: The `context` parameter is now honored again (minus Job elements) via the
+  // DeprecatedLaunchSchedulerMode bridge. Use `renderForTest` directly for full context control.
 }
