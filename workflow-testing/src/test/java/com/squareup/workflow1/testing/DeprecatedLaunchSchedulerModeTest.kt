@@ -3,8 +3,8 @@
 
 package com.squareup.workflow1.testing
 
-import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.Worker
+import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
@@ -57,7 +57,12 @@ internal class DeprecatedLaunchSchedulerModeTest {
     val workflow = Workflow.stateful<Unit, String, String, Unit>(
       initialState = { "waiting" },
       render = { _, _ ->
-        runningWorker(Worker.from { delay(5_000); "done" }) {
+        runningWorker(
+          Worker.from {
+            delay(5_000)
+            "done"
+          }
+        ) {
           action("workerResult") { setOutput(it) }
         }
       }
@@ -111,7 +116,12 @@ internal class DeprecatedLaunchSchedulerModeTest {
     val workflow = Workflow.stateful<Unit, String, String, Unit>(
       initialState = { "waiting" },
       render = { _, _ ->
-        runningWorker(Worker.from { delay(5_000); "done" }) {
+        runningWorker(
+          Worker.from {
+            delay(5_000)
+            "done"
+          }
+        ) {
           action("workerResult") { setOutput(it) }
         }
       }
