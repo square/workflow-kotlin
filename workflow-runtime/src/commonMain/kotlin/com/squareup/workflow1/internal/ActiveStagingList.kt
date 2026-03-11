@@ -13,6 +13,9 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * At any time, to replace the active list with the staging list, call [commitStaging]
  * to swap the lists and clear the old active list. On commit, all items in the old active list will
  * be passed to the lambda passed to [commitStaging].
+ *
+ * @param identityOf Optional identity extractor used to maintain sidecar indexes for active and
+ * staging nodes. When null, only list-based operations are available.
  */
 internal class ActiveStagingList<T : InlineListNode<T>>(
   private val identityOf: ((T) -> Any?)? = null,
@@ -60,6 +63,9 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
 
   /**
    * Retains a node from active by [identity] or creates a new one, then stages it.
+   *
+   * This uses the identity index for O(1)-ish identity lookup, but still performs a list unlink
+   * operation to preserve list ordering semantics.
    *
    * This API is only available when [identityOf] is configured.
    */

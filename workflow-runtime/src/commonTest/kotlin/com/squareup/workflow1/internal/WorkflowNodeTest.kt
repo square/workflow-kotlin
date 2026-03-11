@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(com.squareup.workflow1.WorkflowExperimentalRuntime::class)
 
 package com.squareup.workflow1.internal
 
@@ -1435,6 +1436,7 @@ internal class WorkflowNodeTest {
       initialProps = Unit,
       snapshot = null,
       baseContext = Unconfined,
+      runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS),
       emitAppliedActionToParent = { it }
     )
 

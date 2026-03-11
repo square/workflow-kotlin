@@ -5,9 +5,11 @@ import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
@@ -86,6 +88,7 @@ import kotlin.coroutines.CoroutineContext
  * snapshots are extracted into this cache. Then, when those children are started for the
  * first time, they are also restored from their snapshots.
  */
+@OptIn(WorkflowExperimentalRuntime::class)
 internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
@@ -99,7 +102,10 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(identityOf = { it.id })
+  private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(
+    identityOf = if (indexedActiveStagingLists) { { it.id } } else null
+  )
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -128,19 +134,35 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     // Prevent duplicate workflows with the same key.
     workflowTracer.trace("CheckingUniqueMatches") {
-      requireWithKey(
-        !children.containsStagingIdentity(childId),
-        stackTraceKey = child.identifier
-      ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
+      if (indexedActiveStagingLists) {
+        requireWithKey(
+          !children.containsStagingIdentity(childId),
+          stackTraceKey = child.identifier
+        ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
+      } else {
+        children.forEachStaging {
+          requireWithKey(
+            !(it.matches(child, key, workflowTracer)),
+            stackTraceKey = child.identifier
+          ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
+        }
+      }
     }
 
     // Start tracking this case so we can be ready to render it.
     val stagedChild =
       workflowTracer.trace("RetainingChildren") {
-        children.retainOrCreateByIdentity(
-          identity = childId,
-          create = { createChildNode(child, props, childId, handler) }
-        )
+        if (indexedActiveStagingLists) {
+          children.retainOrCreateByIdentity(
+            identity = childId,
+            create = { createChildNode(child, props, childId, handler) }
+          )
+        } else {
+          children.retainOrCreate(
+            predicate = { it.matches(child, key, workflowTracer) },
+            create = { createChildNode(child, props, childId, handler) }
+          )
+        }
       }
     stagedChild.setHandler(handler)
     return stagedChild.render(child.asStatefulWorkflow(), props)

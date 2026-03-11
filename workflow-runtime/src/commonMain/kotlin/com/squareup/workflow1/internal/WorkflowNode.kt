@@ -7,6 +7,7 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.StatefulWorkflow
@@ -91,9 +92,16 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptor = interceptor,
     idCounter = idCounter
   )
-  private val sideEffects = ActiveStagingList<SideEffectNode>(identityOf = { it.key })
+  private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private val sideEffects = ActiveStagingList<SideEffectNode>(
+    identityOf = if (indexedActiveStagingLists) { { it.key } } else null
+  )
   private val remembered = ActiveStagingList<RememberedNode<*>>(
-    identityOf = { RememberIdentity(it.key, it.resultType, it.inputs) }
+    identityOf = if (indexedActiveStagingLists) {
+      { RememberIdentity(it.key, it.resultType, it.inputs) }
+    } else {
+      null
+    }
   )
   private var lastProps: PropsT = initialProps
   private var lastRendering: NullableInitBox<RenderingT> = NullableInitBox()
@@ -174,15 +182,27 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
-    // Prevent duplicate side effects with the same key.
-    requireWithKey(!sideEffects.containsStagingIdentity(key), key) {
-      "Expected side effect keys to be unique: \"$key\""
-    }
+    if (indexedActiveStagingLists) {
+      // Prevent duplicate side effects with the same key.
+      requireWithKey(!sideEffects.containsStagingIdentity(key), key) {
+        "Expected side effect keys to be unique: \"$key\""
+      }
 
-    sideEffects.retainOrCreateByIdentity(
-      identity = key,
-      create = { createSideEffectNode(key, sideEffect) }
-    )
+      sideEffects.retainOrCreateByIdentity(
+        identity = key,
+        create = { createSideEffectNode(key, sideEffect) }
+      )
+    } else {
+      // Prevent duplicate side effects with the same key.
+      sideEffects.forEachStaging {
+        requireWithKey(key != it.key, key) { "Expected side effect keys to be unique: \"$key\"" }
+      }
+
+      sideEffects.retainOrCreate(
+        predicate = { key == it.key },
+        create = { createSideEffectNode(key, sideEffect) }
+      )
+    }
   }
 
   override fun <ResultT> remember(
@@ -191,18 +211,36 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     vararg inputs: Any?,
     calculation: () -> ResultT
   ): ResultT {
-    val rememberIdentity = RememberIdentity(key, resultType, inputs)
-    requireWithKey(
-      !remembered.containsStagingIdentity(rememberIdentity),
-      stackTraceKey = key
-    ) {
-      "Expected unique combination of key, input types and result type: \"$key\""
-    }
+    val result = if (indexedActiveStagingLists) {
+      val rememberIdentity = RememberIdentity(key, resultType, inputs)
+      requireWithKey(
+        !remembered.containsStagingIdentity(rememberIdentity),
+        stackTraceKey = key
+      ) {
+        "Expected unique combination of key, input types and result type: \"$key\""
+      }
 
-    val result = remembered.retainOrCreateByIdentity(
-      identity = rememberIdentity,
-      create = { RememberedNode(key, resultType, inputs, calculation()) }
-    )
+      remembered.retainOrCreateByIdentity(
+        identity = rememberIdentity,
+        create = { RememberedNode(key, resultType, inputs, calculation()) }
+      )
+    } else {
+      remembered.forEachStaging {
+        requireWithKey(
+          key != it.key || resultType != it.resultType || !inputs.contentEquals(it.inputs),
+          stackTraceKey = key
+        ) {
+          "Expected unique combination of key, input types and result type: \"$key\""
+        }
+      }
+
+      remembered.retainOrCreate(
+        predicate = {
+          key == it.key && it.resultType == resultType && inputs.contentEquals(it.inputs)
+        },
+        create = { RememberedNode(key, resultType, inputs, calculation()) }
+      )
+    }
 
     @Suppress("UNCHECKED_CAST")
     return result.lastCalculated as ResultT

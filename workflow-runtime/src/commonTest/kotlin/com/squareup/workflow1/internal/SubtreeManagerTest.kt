@@ -1,9 +1,11 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(com.squareup.workflow1.WorkflowExperimentalRuntime::class)
 
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -150,7 +152,10 @@ internal class SubtreeManagerTest {
 
   @Test fun render_unique_children_does_not_trace_matches_when_identity_indexed() {
     val tracer = RecordingWorkflowTracer()
-    val manager = subtreeManagerForTest<String, String, String>(workflowTracer = tracer)
+    val manager = subtreeManagerForTest<String, String, String>(
+      workflowTracer = tracer,
+      runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS)
+    )
     val workflow = TestWorkflow()
 
     repeat(10) { index ->
@@ -324,10 +329,11 @@ internal class SubtreeManagerTest {
   private fun <P, S, O : Any> subtreeManagerForTest(
     snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null,
     workflowTracer: WorkflowTracer? = null,
+    runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   ) = SubtreeManager<P, S, O>(
     snapshotCache = snapshotCache,
     contextForChildren = context,
-    runtimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+    runtimeConfig = runtimeConfig,
     emitActionToParent = { action, childResult ->
       ActionApplied(WorkflowOutput(action), childResult.stateChanged)
     },
