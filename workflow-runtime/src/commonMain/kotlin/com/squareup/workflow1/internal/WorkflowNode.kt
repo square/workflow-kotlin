@@ -7,8 +7,8 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
@@ -94,7 +94,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   )
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
   private val sideEffects = ActiveStagingList<SideEffectNode>(
-    identityOf = if (indexedActiveStagingLists) { { it.key } } else null
+    identityOf = if (indexedActiveStagingLists) {
+      { it.key }
+    } else {
+      null
+    }
   )
   private val remembered = ActiveStagingList<RememberedNode<*>>(
     identityOf = if (indexedActiveStagingLists) {
