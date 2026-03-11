@@ -8,7 +8,7 @@ Document how the `workflow-runtime` internals currently work, then identify prac
 
 ## Sources Used
 
-- Slack discussion on `ActiveStagingList` identity checks and `forEachStaging` hot paths (`C07UHTZKAPJ`, thread `1741210422.360469`, Mar 5-6 2025).
+- Previous discussions on performance around `ActiveStagingList` identity checks and `forEachStaging` hot paths.
 - Runtime internals in `workflow-runtime`.
 - Event handler + `remember` implementation in `workflow-core`.
 - Existing tracing and benchmark infrastructure in `workflow-tracing` and `benchmarks`.
@@ -83,7 +83,7 @@ The sibling/remember/side-effect duplicate checks are all linear scans over stag
 - Side effect key uniqueness in `WorkflowNode.runningSideEffect` (`WorkflowNode.kt:175-183`).
 - Remember uniqueness (`key + resultType + inputs`) in `WorkflowNode.remember` (`WorkflowNode.kt:192-206`).
 
-This matches the Slack thread concern: repeated `forEachStaging` checks in hot render paths.
+This matches previous discussions on performance: repeated `forEachStaging` checks in hot render paths.
 
 ### 7. EventHandler + remember Coupling
 
@@ -103,13 +103,13 @@ Existing observability/perf infrastructure is already strong:
 - `benchmarks/runtime-microbenchmark` has targeted runtime microbenchmarks for tree updates and state/props churn (`benchmarks/runtime-microbenchmark/src/androidTest/kotlin/com/squareup/benchmark/runtime/benchmark/WorkflowRuntimeMicrobenchmark.kt`).
 - `benchmarks/performance-poetry` includes integration-style render-pass efficiency checks (`RenderPassTest.kt`, `RenderPassCountingInterceptor.kt`).
 
-## Slack Thread Context (Summary)
+## Previous Performance Discussions (Summary)
 
-The referenced thread centers on one specific hot section in child rendering:
+Previous discussions on performance centered on one specific hot section in child rendering:
 
 - Duplicate sibling key checking (`CheckingUniqueMatches`) scans staging children each `renderChild`.
 - Concern is that this pattern is also relevant to `remember`, which is hit by event handler creation.
-- Proposed direction in thread: treat identity as top-level abstraction and add set-backed lookup (potentially `LinkedHashSet` or sidecar set) while preserving ordering/reconciliation semantics.
+- Proposed direction in those discussions: treat identity as top-level abstraction and add set-backed lookup (potentially `LinkedHashSet` or sidecar set) while preserving ordering/reconciliation semantics.
 
 ## Optimization Project Candidates
 
@@ -147,7 +147,7 @@ Targeted wins:
 - Remove one full staging traversal in child/remember/side-effect paths.
 - Simplify call-site logic and reduce repeated predicate work.
 
-Rationale from Slack thread:
+Rationale from previous performance discussions:
 
 - The check and insertion happen adjacently today and can be unified.
 
