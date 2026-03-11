@@ -9,6 +9,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
@@ -145,6 +146,18 @@ internal class SubtreeManagerTest {
       "Expected keys to be unique for ${workflow.identifier}: key=\"foo\"",
       error.message
     )
+  }
+
+  @Test fun render_unique_children_does_not_trace_matches_when_identity_indexed() {
+    val tracer = RecordingWorkflowTracer()
+    val manager = subtreeManagerForTest<String, String, String>(workflowTracer = tracer)
+    val workflow = TestWorkflow()
+
+    repeat(10) { index ->
+      manager.render(workflow, "props-$index", key = "key-$index", handler = { fail() })
+    }
+
+    assertEquals(0, tracer.beginSections.count { it == "matches" })
   }
 
   @Test fun render_returns_child_rendering() {
@@ -309,7 +322,8 @@ internal class SubtreeManagerTest {
     } as ActionApplied<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(
-    snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null
+    snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null,
+    workflowTracer: WorkflowTracer? = null,
   ) = SubtreeManager<P, S, O>(
     snapshotCache = snapshotCache,
     contextForChildren = context,
@@ -317,6 +331,16 @@ internal class SubtreeManagerTest {
     emitActionToParent = { action, childResult ->
       ActionApplied(WorkflowOutput(action), childResult.stateChanged)
     },
-    workflowTracer = null
+    workflowTracer = workflowTracer
   )
+
+  private class RecordingWorkflowTracer : WorkflowTracer {
+    val beginSections = mutableListOf<String>()
+
+    override fun beginSection(label: String) {
+      beginSections += label
+    }
+
+    override fun endSection() = Unit
+  }
 }

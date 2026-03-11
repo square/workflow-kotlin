@@ -1423,6 +1423,30 @@ internal class WorkflowNodeTest {
     assertEquals(3, third)
   }
 
+  @Test fun remember_with_duplicate_identity_in_single_render_throws() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      remember("same", typeOf<String>(), "input") { "first" }
+      remember("same", typeOf<String>(), "input") { "second" }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = Unconfined,
+      emitAppliedActionToParent = { it }
+    )
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      node.render(stateful, Unit)
+    }
+    assertEquals(
+      "Expected unique combination of key, input types and result type: \"same\"",
+      error.message
+    )
+  }
+
   @Test fun cancel_with_no_pending_actions_returns_empty_list() {
     var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
     var capturedCause: CancellationException? = null

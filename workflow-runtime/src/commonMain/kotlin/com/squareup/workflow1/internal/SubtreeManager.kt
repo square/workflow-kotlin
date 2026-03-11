@@ -99,7 +99,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
+  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(identityOf = { it.id })
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -124,22 +124,22 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    val childId = child.id(key)
+
     // Prevent duplicate workflows with the same key.
     workflowTracer.trace("CheckingUniqueMatches") {
-      children.forEachStaging {
-        requireWithKey(
-          !(it.matches(child, key, workflowTracer)),
-          stackTraceKey = child.identifier
-        ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
-      }
+      requireWithKey(
+        !children.containsStagingIdentity(childId),
+        stackTraceKey = child.identifier
+      ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
     }
 
     // Start tracking this case so we can be ready to render it.
     val stagedChild =
       workflowTracer.trace("RetainingChildren") {
-        children.retainOrCreate(
-          predicate = { it.matches(child, key, workflowTracer) },
-          create = { createChildNode(child, props, key, handler) }
+        children.retainOrCreateByIdentity(
+          identity = childId,
+          create = { createChildNode(child, props, childId, handler) }
         )
       }
     stagedChild.setHandler(handler)
@@ -188,10 +188,9 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
-    key: String,
+    id: WorkflowNodeId,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT> {
-    val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
     fun acceptChildActionResult(actionResult: ActionApplied<ChildOutputT>): ActionProcessingResult {

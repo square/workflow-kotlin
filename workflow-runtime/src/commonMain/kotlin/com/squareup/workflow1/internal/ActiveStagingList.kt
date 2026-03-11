@@ -14,7 +14,9 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * to swap the lists and clear the old active list. On commit, all items in the old active list will
  * be passed to the lambda passed to [commitStaging].
  */
-internal class ActiveStagingList<T : InlineListNode<T>> {
+internal class ActiveStagingList<T : InlineListNode<T>>(
+  private val identityOf: ((T) -> Any?)? = null,
+) {
 
   /**
    * When not in the middle of a render pass, this list represents the active child workflows.
@@ -25,6 +27,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * and added to [staging].
    */
   private var active = InlineLinkedList<T>()
+  private var activeIdentities = identityOf?.let { mutableMapOf<Any?, T>() }
 
   /**
    * When not in the middle of a render pass, this list is empty.
@@ -34,6 +37,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * cleared.
    */
   private var staging = InlineLinkedList<T>()
+  private var stagingIdentities = identityOf?.let { mutableMapOf<Any?, T>() }
 
   /**
    * Looks for the first item matching [predicate] in the active list and moves it to the staging
@@ -44,8 +48,65 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
     create: () -> T
   ): T {
     val staged = active.removeFirst(predicate) ?: create()
+    val identity = identityOf?.invoke(staged)
+    require(stagingIdentities?.containsKey(identity) != true) {
+      "Expected identities to be unique in staging: \"$identity\""
+    }
+    activeIdentities?.remove(identity)
     staging += staged
+    stagingIdentities?.set(identity, staged)
     return staged
+  }
+
+  /**
+   * Retains a node from active by [identity] or creates a new one, then stages it.
+   *
+   * This API is only available when [identityOf] is configured.
+   */
+  inline fun retainOrCreateByIdentity(
+    identity: Any?,
+    create: () -> T,
+  ): T {
+    val identityOf = requireNotNull(identityOf) {
+      "identityOf must be configured to call retainOrCreateByIdentity"
+    }
+    require(stagingIdentities?.containsKey(identity) != true) {
+      "Expected identities to be unique in staging: \"$identity\""
+    }
+
+    val retained = activeIdentities?.remove(identity)
+    val staged = retained ?: create()
+    if (retained != null) {
+      check(active.removeFirst { it === retained } != null) {
+        "Expected retained node to still exist in active list."
+      }
+    }
+    require(identityOf(staged) == identity) {
+      "Expected retained identity \"${identityOf(staged)}\" to match requested identity \"$identity\""
+    }
+    staging += staged
+    stagingIdentities?.set(identity, staged)
+    return staged
+  }
+
+  /**
+   * Returns true if [identity] exists in the active list.
+   *
+   * This API is only available when [identityOf] is configured.
+   */
+  fun containsActiveIdentity(identity: Any?): Boolean {
+    check(identityOf != null) { "identityOf must be configured to query identities" }
+    return activeIdentities?.containsKey(identity) == true
+  }
+
+  /**
+   * Returns true if [identity] exists in the staging list.
+   *
+   * This API is only available when [identityOf] is configured.
+   */
+  fun containsStagingIdentity(identity: Any?): Boolean {
+    check(identityOf != null) { "identityOf must be configured to query identities" }
+    return stagingIdentities?.containsKey(identity) == true
   }
 
   /**
@@ -55,13 +116,22 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
   inline fun commitStaging(onRemove: (T) -> Unit) {
     // Any children left in the previous active list after the render finishes were not re-rendered
     // and must be torn down.
-    active.forEach(onRemove)
+    active.forEach { node ->
+      onRemove(node)
+      identityOf?.let { identityOf ->
+        activeIdentities?.remove(identityOf(node))
+      }
+    }
 
     // Swap the lists and clear the staging one.
     val newStaging = active
     active = staging
     staging = newStaging
+    val newStagingIdentities = activeIdentities
+    activeIdentities = stagingIdentities
+    stagingIdentities = newStagingIdentities
     staging.clear()
+    stagingIdentities?.clear()
   }
 
   /**

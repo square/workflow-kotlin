@@ -11,6 +11,7 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowTracer
@@ -53,6 +54,12 @@ class WorkflowRuntimeMicrobenchmark(
   private val treeShape: BenchmarkTreeShape = BenchmarkTreeShape.ShallowBushyTree,
   private val runtime: BenchmarkRuntimeOptions = NoOptimizations,
 ) {
+
+  private companion object {
+    const val WideSiblingCount = 250
+    const val RememberEntryCount = 250
+    const val StableHandlerCount = 250
+  }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
 
@@ -159,13 +166,92 @@ class WorkflowRuntimeMicrobenchmark(
     expectedTestRendering = treeShape.leafCount,
   )
 
+  @Test fun wideSiblingKeys_initialRenderAllChildren() = benchmarkPropsChange(
+    workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
+    setupProps = ShallowWideWorkflowRoot.Props(
+      renderFirstChild = false,
+      renderOtherChildren = false,
+    ),
+    testProps = ShallowWideWorkflowRoot.Props(
+      renderFirstChild = true,
+      renderOtherChildren = true,
+      firstChildProps = 1,
+      otherChildrenProps = 1,
+    ),
+    expectedSetupRendering = 0,
+    expectedTestRendering = WideSiblingCount,
+  )
+
+  @Test fun wideSiblingKeys_rerenderSingleSiblingByPropsChange() = benchmarkPropsChange(
+    workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
+    setupProps = ShallowWideWorkflowRoot.Props(
+      renderFirstChild = true,
+      renderOtherChildren = true,
+      firstChildProps = 1,
+      otherChildrenProps = 1,
+    ),
+    testProps = ShallowWideWorkflowRoot.Props(
+      renderFirstChild = true,
+      renderOtherChildren = true,
+      firstChildProps = 2,
+      otherChildrenProps = 1,
+    ),
+    expectedSetupRendering = WideSiblingCount,
+    expectedTestRendering = WideSiblingCount + 1,
+  )
+
+  @Test fun rememberManyEntries_sameInputs() = benchmarkPropsChange(
+    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
+    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+    testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 0),
+    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+    expectedTestRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+  )
+
+  @Test fun rememberManyEntries_changingInputs() = benchmarkPropsChange(
+    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
+    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+    testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 1),
+    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+    expectedTestRendering = rememberedRendering(baseValue = 2, entryCount = RememberEntryCount),
+  )
+
+  @Test fun rememberManyEntries_mixedInputTypes() = benchmarkPropsChange(
+    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount, mixedInputTypes = true),
+    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+    testProps = RememberHeavyWorkflow.Props(baseValue = 3, inputToken = 1),
+    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+    expectedTestRendering = rememberedRendering(baseValue = 3, entryCount = RememberEntryCount),
+  )
+
+  @Test fun stableHandlers_manyCallbacks_propChange() = benchmarkPropsChange(
+    workflow = StableHandlersWorkflow(handlerCount = StableHandlerCount),
+    setupProps = StableHandlersWorkflow.Props(salt = 0),
+    testProps = StableHandlersWorkflow.Props(salt = 1),
+    expectedSetupRendering = StableHandlerCount,
+    expectedTestRendering = StableHandlerCount + 1,
+  )
+
   private fun benchmarkWorkflowPropsChange(
     setupProps: BenchmarkWorkflowRoot.Props,
     testProps: BenchmarkWorkflowRoot.Props,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
+  ) = benchmarkPropsChange(
+    workflow = BenchmarkWorkflowRoot(treeShape = treeShape),
+    setupProps = setupProps,
+    testProps = testProps,
+    expectedSetupRendering = expectedSetupRendering,
+    expectedTestRendering = expectedTestRendering,
+  )
+
+  private fun <PropsT> benchmarkPropsChange(
+    workflow: Workflow<PropsT, Nothing, Int>,
+    setupProps: PropsT,
+    testProps: PropsT,
+    expectedSetupRendering: Int,
+    expectedTestRendering: Int,
   ) = runTest {
-    val workflow = BenchmarkWorkflowRoot(treeShape = treeShape)
     val props = MutableStateFlow(setupProps)
     val workflowJob = Job(parent = coroutineContext.job)
     val renderings = renderWorkflowIn(
@@ -453,4 +539,56 @@ private class ShallowWideWorkflowRoot(
 
     override fun snapshotState(state: Int): Snapshot? = null
   }
+}
+
+private class RememberHeavyWorkflow(
+  private val entryCount: Int,
+  private val mixedInputTypes: Boolean = false,
+) : StatelessWorkflow<RememberHeavyWorkflow.Props, Nothing, Int>() {
+  data class Props(
+    val baseValue: Int,
+    val inputToken: Int,
+  )
+
+  override fun render(
+    renderProps: Props,
+    context: RenderContext<Props, Nothing>
+  ): Int {
+    var rendering = 0
+    repeat(entryCount) { index ->
+      val input = if (mixedInputTypes && index % 2 == 0) {
+        "token-${renderProps.inputToken}"
+      } else {
+        renderProps.inputToken
+      }
+      rendering += context.remember("remember-$index", input) {
+        renderProps.baseValue + index
+      }
+    }
+    return rendering
+  }
+}
+
+private class StableHandlersWorkflow(
+  private val handlerCount: Int,
+) : StatelessWorkflow<StableHandlersWorkflow.Props, Nothing, Int>() {
+  data class Props(
+    val salt: Int,
+  )
+
+  override fun render(
+    renderProps: Props,
+    context: RenderContext<Props, Nothing>
+  ): Int {
+    var rendering = renderProps.salt
+    repeat(handlerCount) { index ->
+      context.eventHandler<Int>(name = "handler-$index", remember = true) { _ -> }
+      rendering += 1
+    }
+    return rendering
+  }
+}
+
+private fun rememberedRendering(baseValue: Int, entryCount: Int): Int {
+  return entryCount * baseValue + (entryCount * (entryCount - 1) / 2)
 }

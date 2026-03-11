@@ -91,8 +91,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptor = interceptor,
     idCounter = idCounter
   )
-  private val sideEffects = ActiveStagingList<SideEffectNode>()
-  private val remembered = ActiveStagingList<RememberedNode<*>>()
+  private val sideEffects = ActiveStagingList<SideEffectNode>(identityOf = { it.key })
+  private val remembered = ActiveStagingList<RememberedNode<*>>(
+    identityOf = { RememberIdentity(it.key, it.resultType, it.inputs) }
+  )
   private var lastProps: PropsT = initialProps
   private var lastRendering: NullableInitBox<RenderingT> = NullableInitBox()
   private val eventActionsChannel =
@@ -173,12 +175,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     // Prevent duplicate side effects with the same key.
-    sideEffects.forEachStaging {
-      requireWithKey(key != it.key, key) { "Expected side effect keys to be unique: \"$key\"" }
+    requireWithKey(!sideEffects.containsStagingIdentity(key), key) {
+      "Expected side effect keys to be unique: \"$key\""
     }
 
-    sideEffects.retainOrCreate(
-      predicate = { key == it.key },
+    sideEffects.retainOrCreateByIdentity(
+      identity = key,
       create = { createSideEffectNode(key, sideEffect) }
     )
   }
@@ -189,24 +191,43 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     vararg inputs: Any?,
     calculation: () -> ResultT
   ): ResultT {
-    remembered.forEachStaging {
-      requireWithKey(
-        key != it.key || resultType != it.resultType || !inputs.contentEquals(it.inputs),
-        stackTraceKey = key
-      ) {
-        "Expected unique combination of key, input types and result type: \"$key\""
-      }
+    val rememberIdentity = RememberIdentity(key, resultType, inputs)
+    requireWithKey(
+      !remembered.containsStagingIdentity(rememberIdentity),
+      stackTraceKey = key
+    ) {
+      "Expected unique combination of key, input types and result type: \"$key\""
     }
 
-    val result = remembered.retainOrCreate(
-      predicate = {
-        key == it.key && it.resultType == resultType && inputs.contentEquals(it.inputs)
-      },
+    val result = remembered.retainOrCreateByIdentity(
+      identity = rememberIdentity,
       create = { RememberedNode(key, resultType, inputs, calculation()) }
     )
 
     @Suppress("UNCHECKED_CAST")
     return result.lastCalculated as ResultT
+  }
+
+  private class RememberIdentity(
+    private val key: String,
+    private val resultType: KType,
+    private val inputs: Array<out Any?>,
+  ) {
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is RememberIdentity) return false
+
+      return key == other.key &&
+        resultType == other.resultType &&
+        inputs.contentEquals(other.inputs)
+    }
+
+    override fun hashCode(): Int {
+      var result = key.hashCode()
+      result = 31 * result + resultType.hashCode()
+      result = 31 * result + inputs.contentHashCode()
+      return result
+    }
   }
 
   /**
