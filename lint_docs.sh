@@ -8,33 +8,29 @@ set -ex
 
 STYLE=.markdownlint.rb
 
-TUTORIALS_DIR='./samples/tutorial'
-TUTORIALS_STYLE=.markdownlint-tutorials.rb
+# Intentionally opt-in only markdown files that are included in generated docs.
+# Keep this list aligned with modules included by root dokka generation.
+DOC_MARKDOWN_FILES=(
+  "workflow-core/README.md"
+  "workflow-runtime/README.md"
+  "workflow-rx2/README.md"
+  "workflow-testing/README.md"
+  "workflow-ui/compose/README.md"
+  "workflow-ui/radiography/README.md"
+)
 
-# CHANGELOG is an mkdocs redirect pointer, not valid markdown.
-# The benchmarks markdown file started failing on existing markdown that doesn't violate the failed
-# check, might be an mdl bug.
-find . \
-    -name '*.md' \
-    -not -name 'CHANGELOG.md' \
-    -not -name 'AGENTS.md' \
-    -not -name 'SKILL.md' \
-    -not -name 'RULES.md' \
-    -not -path './.github/*' \
-    -not -path $TUTORIALS_DIR/'*' \
-    -not -path './compose/*' \
-    -not -path './benchmarks/*' \
-    -not -path './build/*' \
-    -not -path './thoughts/*' \
-    | xargs mdl --style $STYLE --ignore-front-matter \
+DOC_FILES_TO_LINT=()
+for file in "${DOC_MARKDOWN_FILES[@]}"; do
+  if [ -f "$file" ]; then
+    DOC_FILES_TO_LINT+=("$file")
+  fi
+done
 
-find $TUTORIALS_DIR \
-    -name '*.md' \
-    -not -name 'AGENTS.md' \
-    -not -name 'SKILL.md' \
-    -not -path $TUTORIALS_DIR'/.firebender/*' \
-    -not -path $TUTORIALS_DIR'/.cursor/*' \
-    -not -path $TUTORIALS_DIR'/.claude/*' \
-    | xargs mdl --style $TUTORIALS_STYLE --ignore-front-matter \
+if [ ${#DOC_FILES_TO_LINT[@]} -eq 0 ]; then
+  echo "No opted-in markdown files found to lint."
+  exit 0
+fi
+
+mdl --style "$STYLE" --ignore-front-matter "${DOC_FILES_TO_LINT[@]}"
 
 echo "Success."
