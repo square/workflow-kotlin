@@ -82,7 +82,9 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
       }
     }
     require(identityOf(staged) == identity) {
-      "Expected retained identity \"${identityOf(staged)}\" to match requested identity \"$identity\""
+      "Expected retained identity \"${identityOf(
+        staged
+      )}\" to match requested identity \"$identity\""
     }
     staging += staged
     stagingIdentities?.set(identity, staged)

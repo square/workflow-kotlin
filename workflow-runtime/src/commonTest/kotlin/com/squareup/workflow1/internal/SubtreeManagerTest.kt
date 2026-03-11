@@ -9,8 +9,8 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
