@@ -105,6 +105,14 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   DRAIN_EXCLUSIVE_ACTIONS,
+
+  /**
+   * Enables identity-indexed lookups in runtime active/staging list instances used by child
+   * reconciliation, side effects, and remembered values. This avoids mandatory linear staging scans
+   * for uniqueness checks, while preserving existing ordering semantics.
+   */
+  @WorkflowExperimentalRuntime
+  INDEXED_ACTIVE_STAGING_LISTS,
   ;
 
   public companion object {

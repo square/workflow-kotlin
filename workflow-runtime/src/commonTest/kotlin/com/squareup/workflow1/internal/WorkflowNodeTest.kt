@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(com.squareup.workflow1.WorkflowExperimentalRuntime::class)
 
 package com.squareup.workflow1.internal
 
@@ -1421,6 +1422,31 @@ internal class WorkflowNodeTest {
 
     val third = node.render(stateful, "key2" to 3)
     assertEquals(3, third)
+  }
+
+  @Test fun remember_with_duplicate_identity_in_single_render_throws() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      remember("same", typeOf<String>(), "input") { "first" }
+      remember("same", typeOf<String>(), "input") { "second" }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = Unconfined,
+      runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS),
+      emitAppliedActionToParent = { it }
+    )
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      node.render(stateful, Unit)
+    }
+    assertEquals(
+      "Expected unique combination of key, input types and result type: \"same\"",
+      error.message
+    )
   }
 
   @Test fun cancel_with_no_pending_actions_returns_empty_list() {

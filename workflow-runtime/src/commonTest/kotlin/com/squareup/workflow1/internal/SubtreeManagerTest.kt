@@ -1,15 +1,18 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(com.squareup.workflow1.WorkflowExperimentalRuntime::class)
 
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
@@ -145,6 +148,21 @@ internal class SubtreeManagerTest {
       "Expected keys to be unique for ${workflow.identifier}: key=\"foo\"",
       error.message
     )
+  }
+
+  @Test fun render_unique_children_does_not_trace_matches_when_identity_indexed() {
+    val tracer = RecordingWorkflowTracer()
+    val manager = subtreeManagerForTest<String, String, String>(
+      workflowTracer = tracer,
+      runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS)
+    )
+    val workflow = TestWorkflow()
+
+    repeat(10) { index ->
+      manager.render(workflow, "props-$index", key = "key-$index", handler = { fail() })
+    }
+
+    assertEquals(0, tracer.beginSections.count { it == "matches" })
   }
 
   @Test fun render_returns_child_rendering() {
@@ -309,14 +327,26 @@ internal class SubtreeManagerTest {
     } as ActionApplied<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(
-    snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null
+    snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null,
+    workflowTracer: WorkflowTracer? = null,
+    runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   ) = SubtreeManager<P, S, O>(
     snapshotCache = snapshotCache,
     contextForChildren = context,
-    runtimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+    runtimeConfig = runtimeConfig,
     emitActionToParent = { action, childResult ->
       ActionApplied(WorkflowOutput(action), childResult.stateChanged)
     },
-    workflowTracer = null
+    workflowTracer = workflowTracer
   )
+
+  private class RecordingWorkflowTracer : WorkflowTracer {
+    val beginSections = mutableListOf<String>()
+
+    override fun beginSection(label: String) {
+      beginSections += label
+    }
+
+    override fun endSection() = Unit
+  }
 }

@@ -3,6 +3,10 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 internal class ActiveStagingListTest {
@@ -56,6 +60,71 @@ internal class ActiveStagingListTest {
     list.commitStaging { discardedItems += it.data }
 
     assertEquals(listOf("bar"), discardedItems)
+  }
+
+  @Test fun retainOrCreateByIdentity_with_matching_active_identity_moves_item() {
+    val list = ActiveStagingList<Node>(identityOf = { it.data })
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+    list.commitStaging { }
+
+    var createCalled = false
+    val node = list.retainOrCreateByIdentity(identity = "foo") {
+      createCalled = true
+      Node("should-not-create")
+    }
+
+    assertFalse(createCalled)
+    assertEquals("foo", node.data)
+    assertEquals(listOf("foo"), list.staging())
+    assertEquals(emptyList(), list.active())
+  }
+
+  @Test fun retainOrCreateByIdentity_throws_for_duplicate_staging_identity() {
+    val list = ActiveStagingList<Node>(identityOf = { it.data })
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      list.retainOrCreateByIdentity(identity = "foo") { Node("foo-2") }
+    }
+
+    assertEquals("Expected identities to be unique in staging: \"foo\"", error.message)
+  }
+
+  @Test fun indexed_identity_membership_tracks_active_and_staging_across_commit() {
+    val list = ActiveStagingList<Node>(identityOf = { it.data })
+
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+    assertTrue(list.containsStagingIdentity("foo"))
+    assertFalse(list.containsActiveIdentity("foo"))
+
+    list.commitStaging { }
+    assertFalse(list.containsStagingIdentity("foo"))
+    assertTrue(list.containsActiveIdentity("foo"))
+  }
+
+  @Test fun indexed_identity_removes_dropped_active_nodes_after_commit() {
+    val list = ActiveStagingList<Node>(identityOf = { it.data })
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+    val originalBar = list.retainOrCreateByIdentity(identity = "bar") { Node("bar") }
+    list.commitStaging { }
+
+    val dropped = mutableListOf<String>()
+    list.retainOrCreateByIdentity(identity = "foo") { fail("expected retain") }
+    list.commitStaging { dropped += it.data }
+
+    assertEquals(listOf("bar"), dropped)
+    assertTrue(list.containsActiveIdentity("foo"))
+    assertFalse(list.containsActiveIdentity("bar"))
+
+    var created = false
+    val bar = list.retainOrCreateByIdentity(identity = "bar") {
+      created = true
+      Node("bar")
+    }
+
+    assertTrue(created)
+    assertEquals("bar", bar.data)
+    assertNotSame(originalBar, bar)
   }
 
   private fun ActiveStagingList<Node>.active() =
