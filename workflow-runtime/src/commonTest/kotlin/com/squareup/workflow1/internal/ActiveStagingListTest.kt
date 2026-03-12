@@ -127,6 +127,32 @@ internal class ActiveStagingListTest {
     assertNotSame(originalBar, bar)
   }
 
+  @Test fun indexed_identity_scatter_backend_matches_stdlib_behavior() {
+    val list = ActiveStagingList(
+      identityOf = { node: Node -> node.data },
+      identityIndexImplementation = IdentityIndexImplementation.SCATTER_MAP,
+    )
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+    list.retainOrCreateByIdentity(identity = "bar") { Node("bar") }
+
+    val duplicateError = assertFailsWith<IllegalArgumentException> {
+      list.retainOrCreateByIdentity(identity = "foo") { Node("foo-2") }
+    }
+    assertEquals("Expected identities to be unique in staging: \"foo\"", duplicateError.message)
+
+    list.commitStaging { }
+    assertTrue(list.containsActiveIdentity("foo"))
+    assertTrue(list.containsActiveIdentity("bar"))
+
+    val dropped = mutableListOf<String>()
+    list.retainOrCreateByIdentity(identity = "foo") { fail("expected retain") }
+    list.commitStaging { dropped += it.data }
+
+    assertEquals(listOf("bar"), dropped)
+    assertTrue(list.containsActiveIdentity("foo"))
+    assertFalse(list.containsActiveIdentity("bar"))
+  }
+
   private fun ActiveStagingList<Node>.active() =
     mutableListOf<String>()
       .also { collector -> forEachActive { collector += it.data } }

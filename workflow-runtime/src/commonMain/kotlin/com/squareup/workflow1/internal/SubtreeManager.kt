@@ -6,6 +6,7 @@ import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
+import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -103,12 +104,19 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private val identityIndexImplementation =
+    if (runtimeConfig.contains(SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES)) {
+      IdentityIndexImplementation.SCATTER_MAP
+    } else {
+      IdentityIndexImplementation.STDLIB_MAP
+    }
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(
     identityOf = if (indexedActiveStagingLists) {
       { it.id }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
 
   /**

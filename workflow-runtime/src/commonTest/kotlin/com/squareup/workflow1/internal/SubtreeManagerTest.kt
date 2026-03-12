@@ -165,6 +165,24 @@ internal class SubtreeManagerTest {
     assertEquals(0, tracer.beginSections.count { it == "matches" })
   }
 
+  @Test fun render_unique_children_does_not_trace_matches_with_scatter_identity_backend() {
+    val tracer = RecordingWorkflowTracer()
+    val manager = subtreeManagerForTest<String, String, String>(
+      workflowTracer = tracer,
+      runtimeConfig = setOf(
+        RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS,
+        RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES,
+      )
+    )
+    val workflow = TestWorkflow()
+
+    repeat(10) { index ->
+      manager.render(workflow, "props-$index", key = "key-$index", handler = { fail() })
+    }
+
+    assertEquals(0, tracer.beginSections.count { it == "matches" })
+  }
+
   @Test fun render_returns_child_rendering() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()

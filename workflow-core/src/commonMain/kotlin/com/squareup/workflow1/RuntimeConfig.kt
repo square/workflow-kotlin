@@ -113,6 +113,15 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   INDEXED_ACTIVE_STAGING_LISTS,
+
+  /**
+   * Uses `androidx.collection.MutableScatterMap` for the identity sidecar indexes maintained by
+   * `ActiveStagingList` in runtime internals.
+   *
+   * This option only has an effect when [INDEXED_ACTIVE_STAGING_LISTS] is also enabled.
+   */
+  @WorkflowExperimentalRuntime
+  SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES,
   ;
 
   public companion object {

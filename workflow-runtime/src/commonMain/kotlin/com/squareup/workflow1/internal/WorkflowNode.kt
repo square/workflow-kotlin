@@ -10,6 +10,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
+import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -93,19 +94,27 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     idCounter = idCounter
   )
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private val identityIndexImplementation =
+    if (runtimeConfig.contains(SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES)) {
+      IdentityIndexImplementation.SCATTER_MAP
+    } else {
+      IdentityIndexImplementation.STDLIB_MAP
+    }
   private val sideEffects = ActiveStagingList<SideEffectNode>(
     identityOf = if (indexedActiveStagingLists) {
       { it.key }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
   private val remembered = ActiveStagingList<RememberedNode<*>>(
     identityOf = if (indexedActiveStagingLists) {
       { RememberIdentity(it.key, it.resultType, it.inputs) }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
   private var lastProps: PropsT = initialProps
   private var lastRendering: NullableInitBox<RenderingT> = NullableInitBox()

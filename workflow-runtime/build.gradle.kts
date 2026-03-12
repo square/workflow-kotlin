@@ -49,6 +49,7 @@ kotlin {
       dependencies {
         api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+        implementation(libs.androidx.collection)
       }
     }
 

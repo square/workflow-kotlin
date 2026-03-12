@@ -122,5 +122,32 @@ You can run them from the IDE like any other test (recommended), or with this co
 ./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest
 ```
 
+By default this module now sets `androidx.benchmark.iterations=500` for non-dry runs to reduce
+run-to-run variance. Override as needed:
+```bash
+./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest \
+  -Pandroidx.benchmark.iterations=800
+```
+
+To compare just the indexed runtime variants (both tree shapes), run one pass per runtime:
+```bash
+./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_ShallowBushyTree_IndexedStdlib,com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_SquareishTree_IndexedStdlib
+
+./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_ShallowBushyTree_IndexedScatter,com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_SquareishTree_IndexedScatter
+```
+
+For variance/normality analysis, pull the benchmark samples JSON from the device and analyze it:
+```bash
+# Pulls benchmarkData.json to .amp/in/artifacts/benchmark-runs/benchmark-data by default.
+benchmarks/runtime-microbenchmark/scripts/pull_benchmark_data.sh <optional-serial>
+
+# Analyze selected scenarios (normality, CoD R², model fit, runtime deltas).
+benchmarks/runtime-microbenchmark/scripts/analyze_benchmark_variance.py \
+  --input .amp/in/artifacts/benchmark-runs/benchmark-data \
+  --benchmark-filter 'wideSiblingKeys|rememberManyEntries|stableHandlers'
+```
+
 We do not run benchmarks in CI, but we do validate that they compile by running them in "dry mode".
 To run them in dry mode yourself, add the flag `-Pandroidx.benchmark.dryRunMode.enable=true`.
