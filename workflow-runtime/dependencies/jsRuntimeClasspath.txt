@@ -1,3 +1,7 @@
+androidx.annotation:annotation-js:1.9.1
+androidx.annotation:annotation:1.9.1
+androidx.collection:collection-js:1.5.0
+androidx.collection:collection:1.5.0
 com.squareup.okio:okio-js:3.3.0
 com.squareup.okio:okio:3.3.0
 org.jetbrains.kotlin:kotlin-bom:2.3.10
