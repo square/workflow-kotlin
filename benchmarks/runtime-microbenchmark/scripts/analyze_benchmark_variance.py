@@ -8,7 +8,7 @@ This script aggregates those samples across one or more files and reports:
 2. Normality metrics (Jarque-Bera p-value).
 3. Coefficient of derivation (R² from normal Q-Q fit).
 4. Simple model comparison (Normal vs LogNormal AIC).
-5. IndexedStdlib vs IndexedScatter deltas when both are present.
+5. Indexed backend deltas vs IndexedStdlib when both are present.
 """
 
 from __future__ import annotations
@@ -258,28 +258,32 @@ def _print_summary_table(summaries: list[StatsSummary]) -> None:
 
 
 def _print_runtime_deltas(summaries: list[StatsSummary]) -> None:
-    lookup = {(s.tree, s.benchmark, s.runtime): s for s in summaries}
-    keys = sorted({(s.tree, s.benchmark) for s in summaries})
+    grouped: dict[tuple[str, str], list[StatsSummary]] = {}
+    for summary in summaries:
+        grouped.setdefault((summary.tree, summary.benchmark), []).append(summary)
 
-    rows: list[tuple[str, str, float]] = []
-    for tree, benchmark in keys:
-        stdlib = lookup.get((tree, benchmark, "IndexedStdlib"))
-        scatter = lookup.get((tree, benchmark, "IndexedScatter"))
-        if stdlib is None or scatter is None:
+    rows: list[tuple[str, str, str, float]] = []
+    for (tree, benchmark), candidates in sorted(grouped.items()):
+        stdlib = next((s for s in candidates if s.runtime == "IndexedStdlib"), None)
+        if stdlib is None or stdlib.mean_ns == 0.0:
             continue
-        if stdlib.mean_ns == 0.0:
-            continue
-        delta_pct = ((scatter.mean_ns - stdlib.mean_ns) / stdlib.mean_ns) * 100.0
-        rows.append((tree, benchmark, delta_pct))
+
+        for candidate in sorted(candidates, key=lambda item: item.runtime):
+            if not candidate.runtime.startswith("Indexed"):
+                continue
+            if candidate.runtime == "IndexedStdlib":
+                continue
+            delta_pct = ((candidate.mean_ns - stdlib.mean_ns) / stdlib.mean_ns) * 100.0
+            rows.append((tree, benchmark, candidate.runtime, delta_pct))
 
     if not rows:
         return
 
-    print("\n# IndexedScatter Vs IndexedStdlib")
-    print("| Tree | Benchmark | Scatter Vs Stdlib Delta (mean ns) |")
-    print("|---|---|---:|")
-    for tree, benchmark, delta_pct in rows:
-        print(f"| {tree} | {benchmark} | {delta_pct:+.2f}% |")
+    print("\n# Indexed Backend Deltas Vs IndexedStdlib")
+    print("| Tree | Benchmark | Runtime | Delta Vs IndexedStdlib (mean ns) |")
+    print("|---|---|---|---:|")
+    for tree, benchmark, runtime, delta_pct in rows:
+        print(f"| {tree} | {benchmark} | {runtime} | {delta_pct:+.2f}% |")
 
 
 def main() -> None:

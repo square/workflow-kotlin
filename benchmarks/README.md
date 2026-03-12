@@ -135,6 +135,9 @@ To compare just the indexed runtime variants (both tree shapes), run one pass pe
   -Pandroid.testInstrumentationRunnerArguments.class=com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_ShallowBushyTree_IndexedStdlib,com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_SquareishTree_IndexedStdlib
 
 ./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_ShallowBushyTree_IndexedSimpleArrayMap,com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_SquareishTree_IndexedSimpleArrayMap
+
+./gradlew :benchmarks:runtime-microbenchmark:connectedReleaseAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_ShallowBushyTree_IndexedScatter,com.squareup.benchmark.runtime.benchmark.WorkflowRuntimeMicrobenchmark_SquareishTree_IndexedScatter
 ```
 
@@ -148,6 +151,9 @@ benchmarks/runtime-microbenchmark/scripts/analyze_benchmark_variance.py \
   --input .amp/in/artifacts/benchmark-runs/benchmark-data \
   --benchmark-filter 'wideSiblingKeys|rememberManyEntries|stableHandlers'
 ```
+
+The analyzer prints indexed backend deltas against `IndexedStdlib` for any runtime names matching
+`Indexed*`.
 
 We do not run benchmarks in CI, but we do validate that they compile by running them in "dry mode".
 To run them in dry mode yourself, add the flag `-Pandroidx.benchmark.dryRunMode.enable=true`.

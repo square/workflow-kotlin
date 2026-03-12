@@ -1,5 +1,7 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,6 +12,17 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 internal class ActiveStagingListTest {
+
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test fun identityIndexImplementation_prefers_scatter_when_multiple_backends_enabled() {
+    val implementation = setOf(
+      RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS,
+      RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES,
+      RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES,
+    ).identityIndexImplementation()
+
+    assertEquals(IdentityIndexImplementation.SCATTER_MAP, implementation)
+  }
 
   @Test fun retainOrCreate_on_empty_list_creates_new_item() {
     val list = ActiveStagingList<Node>()
@@ -131,6 +144,32 @@ internal class ActiveStagingListTest {
     val list = ActiveStagingList(
       identityOf = { node: Node -> node.data },
       identityIndexImplementation = IdentityIndexImplementation.SCATTER_MAP,
+    )
+    list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
+    list.retainOrCreateByIdentity(identity = "bar") { Node("bar") }
+
+    val duplicateError = assertFailsWith<IllegalArgumentException> {
+      list.retainOrCreateByIdentity(identity = "foo") { Node("foo-2") }
+    }
+    assertEquals("Expected identities to be unique in staging: \"foo\"", duplicateError.message)
+
+    list.commitStaging { }
+    assertTrue(list.containsActiveIdentity("foo"))
+    assertTrue(list.containsActiveIdentity("bar"))
+
+    val dropped = mutableListOf<String>()
+    list.retainOrCreateByIdentity(identity = "foo") { fail("expected retain") }
+    list.commitStaging { dropped += it.data }
+
+    assertEquals(listOf("bar"), dropped)
+    assertTrue(list.containsActiveIdentity("foo"))
+    assertFalse(list.containsActiveIdentity("bar"))
+  }
+
+  @Test fun indexed_identity_simple_array_map_backend_matches_stdlib_behavior() {
+    val list = ActiveStagingList(
+      identityOf = { node: Node -> node.data },
+      identityIndexImplementation = IdentityIndexImplementation.SIMPLE_ARRAY_MAP,
     )
     list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
     list.retainOrCreateByIdentity(identity = "bar") { Node("bar") }

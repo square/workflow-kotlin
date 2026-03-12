@@ -1,11 +1,28 @@
 package com.squareup.workflow1.internal
 
+import androidx.collection.SimpleArrayMap
 import androidx.collection.mutableScatterMapOf
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
 
 internal enum class IdentityIndexImplementation {
   STDLIB_MAP,
+  SIMPLE_ARRAY_MAP,
   SCATTER_MAP,
+}
+
+@OptIn(WorkflowExperimentalRuntime::class)
+internal fun RuntimeConfig.identityIndexImplementation(): IdentityIndexImplementation = when {
+  // Keep scatter as the highest precedence backend when multiple index flags are present
+  // (e.g. RuntimeConfigOptions.ALL).
+  contains(SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES) -> IdentityIndexImplementation.SCATTER_MAP
+  contains(SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES) ->
+    IdentityIndexImplementation.SIMPLE_ARRAY_MAP
+
+  else -> IdentityIndexImplementation.STDLIB_MAP
 }
 
 /**
@@ -54,6 +71,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
   private fun createIdentityIndex(): IdentityIndex<T>? = identityOf?.let {
     when (identityIndexImplementation) {
       IdentityIndexImplementation.STDLIB_MAP -> StdlibIdentityIndex()
+      IdentityIndexImplementation.SIMPLE_ARRAY_MAP -> SimpleArrayMapIdentityIndex()
       IdentityIndexImplementation.SCATTER_MAP -> ScatterIdentityIndex()
     }
   }
@@ -180,7 +198,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
     override fun remove(identity: Any?): T? = map.remove(identity)
 
     override fun set(identity: Any?, node: T) {
-      map[identity] = node
+      map.put(identity, node)
     }
 
     override fun clear() {
@@ -197,6 +215,22 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
 
     override fun set(identity: Any?, node: T) {
       map[identity] = node
+    }
+
+    override fun clear() {
+      map.clear()
+    }
+  }
+
+  private class SimpleArrayMapIdentityIndex<T> : IdentityIndex<T> {
+    private val map = SimpleArrayMap<Any?, T>()
+
+    override fun contains(identity: Any?): Boolean = map.containsKey(identity)
+
+    override fun remove(identity: Any?): T? = map.remove(identity)
+
+    override fun set(identity: Any?, node: T) {
+      map.put(identity, node)
     }
 
     override fun clear() {

@@ -325,6 +325,87 @@ Interpretation:
 - Since CV is comparable and confidence intervals are tight at 500 iterations, these directional
   differences are statistically robust enough to guide further design work.
 
+#### Extended Benchmark Results: SimpleArrayMap Candidate (Pixel 6, 2026-03-12)
+
+Measured with one dedicated 500-iteration targeted pass per indexed backend for both tree shapes:
+
+- `IndexedStdlib`
+- `IndexedScatter`
+- `IndexedSimpleArrayMap`
+
+Scenarios matched prior methodology:
+
+- `wideSiblingKeys*`
+- `rememberManyEntries*`
+- `stableHandlers_manyCallbacks_propChange`
+
+Key findings (category-level mean delta vs `IndexedStdlib`):
+
+- `IndexedScatter`:
+  - `wideSiblingKeys*`: **+17.04%**
+  - `rememberManyEntries*`: **+0.79%**
+  - `stableHandlers_manyCallbacks_propChange`: **+1.74%**
+- `IndexedSimpleArrayMap`:
+  - `wideSiblingKeys*`: **+9.07%**
+  - `rememberManyEntries*`: **+43.03%**
+  - `stableHandlers_manyCallbacks_propChange`: **+58.34%**
+
+Scenario-level highlights:
+
+- `IndexedSimpleArrayMap` only improved `wideSiblingKeys_initialRenderAllChildren` (roughly
+  **-4.75%** shallow / **-1.50%** squareish), and regressed all other targeted scenarios.
+- `IndexedScatter` remained the strongest non-stdlib backend, but still showed substantial wide-
+  sibling regressions (**+11.29%** to **+21.93%**) and only near-parity on remember/stable paths.
+
+Stability/normality checks stayed consistent with earlier methodology:
+
+- CV means were tightly clustered:
+  - `IndexedStdlib`: **4.67%** (max 5.54%)
+  - `IndexedScatter`: **4.72%** (max 6.60%)
+  - `IndexedSimpleArrayMap`: **4.34%** (max 5.63%)
+- Q-Q CoD (`R²`) remained high (roughly 0.96-0.99), with many scenarios still mildly non-normal
+  by Jarque-Bera.
+
+Conclusion from this expanded run:
+
+- `SimpleArrayMap` is a clear **no-go** as a general sidecar index backend for current runtime hot
+  paths.
+- `ScatterMap` remains a potentially useful specialized option, but does not currently beat stdlib
+  broadly enough to become the default.
+
+#### Linked-List Removal Assessment (Project 7 Follow-Up)
+
+Question: should we prototype removing intrusive linked lists from `ActiveStagingList` entirely?
+
+Candidate designs considered:
+
+1. **Dual array/object-list staging with identity→index maps**
+   - Keep active/staging swap semantics, but store nodes in dense arrays and remove retained nodes
+     via index swap-remove.
+   - Expected upside: removes the current post-index linear unlink (`active.removeFirst { it ===
+     retained }`) from indexed retain paths.
+   - Cost/risk: significantly more index bookkeeping (index updates on swap-remove, commit-time
+     consistency), plus new failure modes around stale index entries.
+2. **Single identity map with generation stamps**
+   - Mark nodes seen in current render, then sweep stale nodes at commit.
+   - Expected upside: no separate active/staging containers.
+   - Cost/risk: harder to preserve deterministic traversal order and current swap semantics without
+     reintroducing order side-structures.
+3. **Hybrid ordered container abstraction (array/list order + sidecar identity map)**
+   - Similar runtime behavior to today, but replaces intrusive node links with explicit container
+     internals.
+   - Expected upside: simpler node types, possible cache-locality improvements.
+   - Cost/risk: likely higher constant-factor overhead for small-N workflows unless carefully tuned.
+
+Worth prototyping?
+
+- **Not as a broad replacement project right now.** Current data does not show backend-only wins
+  large enough to justify a full structure rewrite risk.
+- **Potentially yes as a narrow spike** if we specifically target the indexed retain unlink hotspot
+  (the O(n) identity-hit removal step) behind a runtime flag and benchmark gate.
+- Any such spike must preserve existing correctness constraints: duplicate detection behavior,
+  deterministic child action traversal, and commit/cancellation semantics.
+
 ### Project 8: Action Drain/Conflation Heuristics Experiments
 
 Scope:

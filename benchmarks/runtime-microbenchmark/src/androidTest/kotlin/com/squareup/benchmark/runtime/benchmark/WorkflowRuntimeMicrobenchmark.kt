@@ -9,6 +9,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -42,6 +43,9 @@ enum class BenchmarkRuntimeOptions(
   NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
   IndexedStdlib(setOf(INDEXED_ACTIVE_STAGING_LISTS)),
+  IndexedSimpleArrayMap(
+    setOf(INDEXED_ACTIVE_STAGING_LISTS, SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES)
+  ),
   IndexedScatter(setOf(INDEXED_ACTIVE_STAGING_LISTS, SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES)),
 }
 
