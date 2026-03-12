@@ -142,9 +142,6 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
     // and must be torn down.
     active.forEach { node ->
       onRemove(node)
-      identityOf?.let { identityOf ->
-        activeIdentities?.remove(identityOf(node))
-      }
     }
 
     // Swap the lists and clear the staging one.
