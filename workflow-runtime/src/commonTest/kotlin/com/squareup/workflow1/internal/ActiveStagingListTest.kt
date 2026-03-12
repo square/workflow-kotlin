@@ -14,7 +14,8 @@ import kotlin.test.fail
 internal class ActiveStagingListTest {
 
   @OptIn(WorkflowExperimentalRuntime::class)
-  @Test fun identityIndexImplementation_prefers_scatter_when_multiple_backends_enabled() {
+  @Test
+  fun identityIndexImplementation_prefers_scatter_when_multiple_backends_enabled() {
     val implementation = setOf(
       RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS,
       RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES,
