@@ -6,9 +6,9 @@ import androidx.tracing.Trace
 import app.cash.burst.Burst
 import com.squareup.benchmark.runtime.benchmark.BenchmarkRuntimeOptions.NoOptimizations
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
