@@ -60,6 +60,10 @@ public enum class DeprecatedLaunchSchedulerMode {
  * semantics. Has no effect on the recommended `renderForTest` API. Note: if the `context` parameter
  * passed to a `launchForTesting*` function contains a dispatcher, that dispatcher takes precedence
  * over the one selected by this mode.
+ * @param autoAdvanceOnStartup Controls whether `renderForTest` and the deprecated
+ * `launchForTesting*` wrappers call `advanceUntilIdle()` before capturing the first rendering.
+ * Defaults to `true` for compatibility with existing tests. Set to `false` for interaction-first
+ * tests that need to assert against initial UI before time-based workers are advanced.
  */
 @TestOnly
 public class WorkflowTestParams<out StateT>(
@@ -67,8 +71,22 @@ public class WorkflowTestParams<out StateT>(
   public val checkRenderIdempotence: Boolean = true,
   public val runtimeConfig: RuntimeConfig? = null,
   public val deprecatedLaunchSchedulerMode: DeprecatedLaunchSchedulerMode =
-    DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED
+    DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED,
+  public val autoAdvanceOnStartup: Boolean = true
 ) {
+  public constructor(
+    startFrom: StartMode<StateT>,
+    checkRenderIdempotence: Boolean,
+    runtimeConfig: RuntimeConfig?,
+    deprecatedLaunchSchedulerMode: DeprecatedLaunchSchedulerMode,
+  ) : this(
+    startFrom = startFrom,
+    checkRenderIdempotence = checkRenderIdempotence,
+    runtimeConfig = runtimeConfig,
+    deprecatedLaunchSchedulerMode = deprecatedLaunchSchedulerMode,
+    autoAdvanceOnStartup = true,
+  )
+
   /**
    * Defines how to start the workflow for tests.
    *

@@ -138,4 +138,52 @@ internal class DeprecatedLaunchSchedulerModeTest {
       assertEquals("done", output)
     }
   }
+
+  @Test fun `virtual time mode - startup auto-advance is enabled by default`() {
+    val workflow = startupAdvanceWorkflow()
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD
+      )
+    ) {
+      assertEquals("installing", awaitNextRendering())
+    }
+  }
+
+  @Test fun `virtual time mode - startup auto-advance can be disabled`() {
+    val workflow = startupAdvanceWorkflow()
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD,
+        autoAdvanceOnStartup = false
+      )
+    ) {
+      assertEquals("prompt", awaitNextRendering())
+      advanceUntilSettled()
+      assertEquals("installing", awaitNextRendering())
+    }
+  }
+
+  private fun startupAdvanceWorkflow() = Workflow.stateful<Unit, String, Nothing, String>(
+    initialState = { "prompt" },
+    render = { _, state ->
+      if (state == "prompt") {
+        runningWorker(
+          Worker.from {
+            delay(5_000)
+            "installing"
+          }
+        ) {
+          action("timerFinished") {
+            this.state = it
+          }
+        }
+      }
+      state
+    }
+  )
 }

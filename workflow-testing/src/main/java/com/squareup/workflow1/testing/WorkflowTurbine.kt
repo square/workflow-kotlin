@@ -97,10 +97,12 @@ public fun <PropsT, StateT, OutputT, RenderingT>
       }
     )
 
-    // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
-    // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
-    // This ensures the runtime loop is running and waiting for actions before the test begins.
-    testScheduler.advanceUntilIdle()
+    if (testParams.autoAdvanceOnStartup) {
+      // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
+      // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
+      // This ensures the runtime loop is running and waiting for actions before the test begins.
+      testScheduler.advanceUntilIdle()
+    }
 
     val firstRendering = renderings.value.rendering
     val firstSnapshot = renderings.value.snapshot

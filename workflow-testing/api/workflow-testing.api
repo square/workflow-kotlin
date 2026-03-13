@@ -140,7 +140,9 @@ public final class com/squareup/workflow1/testing/WorkerTesterKt {
 public final class com/squareup/workflow1/testing/WorkflowTestParams {
 	public fun <init> ()V
 	public fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;ZLjava/util/Set;Lcom/squareup/workflow1/testing/DeprecatedLaunchSchedulerMode;)V
-	public synthetic fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;ZLjava/util/Set;Lcom/squareup/workflow1/testing/DeprecatedLaunchSchedulerMode;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;ZLjava/util/Set;Lcom/squareup/workflow1/testing/DeprecatedLaunchSchedulerMode;Z)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;ZLjava/util/Set;Lcom/squareup/workflow1/testing/DeprecatedLaunchSchedulerMode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAutoAdvanceOnStartup ()Z
 	public final fun getCheckRenderIdempotence ()Z
 	public final fun getDeprecatedLaunchSchedulerMode ()Lcom/squareup/workflow1/testing/DeprecatedLaunchSchedulerMode;
 	public final fun getRuntimeConfig ()Ljava/util/Set;
