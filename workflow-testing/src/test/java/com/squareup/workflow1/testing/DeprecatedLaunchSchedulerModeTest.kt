@@ -182,10 +182,9 @@ internal class DeprecatedLaunchSchedulerModeTest {
     ) {
       assertEquals("prompt", awaitNextRendering(advanceScheduler = false))
 
-      val timedOut = runCatching {
+      assertTimesOut {
         awaitNextRendering(timeoutMs = 100, advanceScheduler = false)
       }
-      assertTrue(timedOut.isFailure)
 
       assertEquals("installing", awaitNextRendering(advanceScheduler = true))
     }
@@ -217,10 +216,9 @@ internal class DeprecatedLaunchSchedulerModeTest {
     ) {
       assertEquals("waiting", awaitNextRendering(advanceScheduler = false))
 
-      val timedOut = runCatching {
+      assertTimesOut {
         awaitNextOutput(timeoutMs = 100, advanceScheduler = false)
       }
-      assertTrue(timedOut.isFailure)
 
       assertEquals("done", awaitNextOutput(advanceScheduler = true))
     }
@@ -296,4 +294,17 @@ internal class DeprecatedLaunchSchedulerModeTest {
       state
     }
   )
+
+  private suspend fun assertTimesOut(block: suspend () -> Unit) {
+    val failure = assertFailsWith<Throwable> {
+      block()
+    }
+    assertTrue(
+      failure.hasTimeoutCause(),
+      "Expected timeout-related failure, but got ${failure::class.simpleName}: ${failure.message}"
+    )
+  }
+
+  private fun Throwable.hasTimeoutCause(): Boolean =
+    generateSequence(this) { it.cause }.any { it is TimeoutCancellationException }
 }
