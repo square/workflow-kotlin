@@ -64,6 +64,12 @@ public enum class DeprecatedLaunchSchedulerMode {
  * `launchForTesting*` wrappers call `advanceUntilIdle()` before capturing the first rendering.
  * Defaults to `true` for compatibility with existing tests. Set to `false` for interaction-first
  * tests that need to assert against initial UI before time-based workers are advanced.
+ * @param autoAdvanceBeforeAwait Controls whether `awaitNextRendering`, `awaitNextOutput`, and
+ * `awaitNextSnapshot` automatically advance the test scheduler before waiting for the next item.
+ * Defaults to `true` for compatibility.
+ * @param autoAdvanceBeforeHasCheck Controls whether `hasRendering`, `hasOutput`, and `hasSnapshot`
+ * automatically advance the test scheduler before checking channel state. Defaults to `true` for
+ * compatibility.
  */
 @TestOnly
 public class WorkflowTestParams<out StateT>(
@@ -72,7 +78,9 @@ public class WorkflowTestParams<out StateT>(
   public val runtimeConfig: RuntimeConfig? = null,
   public val deprecatedLaunchSchedulerMode: DeprecatedLaunchSchedulerMode =
     DeprecatedLaunchSchedulerMode.LEGACY_UNCONFINED,
-  public val autoAdvanceOnStartup: Boolean = true
+  public val autoAdvanceOnStartup: Boolean = true,
+  public val autoAdvanceBeforeAwait: Boolean = true,
+  public val autoAdvanceBeforeHasCheck: Boolean = true
 ) {
   public constructor(
     startFrom: StartMode<StateT>,
@@ -85,6 +93,24 @@ public class WorkflowTestParams<out StateT>(
     runtimeConfig = runtimeConfig,
     deprecatedLaunchSchedulerMode = deprecatedLaunchSchedulerMode,
     autoAdvanceOnStartup = true,
+    autoAdvanceBeforeAwait = true,
+    autoAdvanceBeforeHasCheck = true,
+  )
+
+  public constructor(
+    startFrom: StartMode<StateT>,
+    checkRenderIdempotence: Boolean,
+    runtimeConfig: RuntimeConfig?,
+    deprecatedLaunchSchedulerMode: DeprecatedLaunchSchedulerMode,
+    autoAdvanceOnStartup: Boolean,
+  ) : this(
+    startFrom = startFrom,
+    checkRenderIdempotence = checkRenderIdempotence,
+    runtimeConfig = runtimeConfig,
+    deprecatedLaunchSchedulerMode = deprecatedLaunchSchedulerMode,
+    autoAdvanceOnStartup = autoAdvanceOnStartup,
+    autoAdvanceBeforeAwait = true,
+    autoAdvanceBeforeHasCheck = true,
   )
 
   /**

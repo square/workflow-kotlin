@@ -35,16 +35,20 @@ import kotlin.coroutines.EmptyCoroutineContext
 public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val turbine: WorkflowTurbine<RenderingT, OutputT>,
+  private val autoAdvanceBeforeAwait: Boolean,
+  private val autoAdvanceBeforeHasCheck: Boolean,
 ) {
 
   /**
    * Advances the test scheduler so that the runtime processes all pending actions.
    *
-   * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
-   * and the [hasRendering]/[hasOutput]/[hasSnapshot] properties. You only need to call this
-   * explicitly when you want to process pending actions when you are not already awaiting a
-   * rendering or output — for example, to assert on side effects triggered by an action that
-   * doesn't change state or produce output.
+   * This may be called automatically by [awaitNextRendering], [awaitNextOutput],
+   * [awaitNextSnapshot], and the [hasRendering]/[hasOutput]/[hasSnapshot] properties depending on
+   * [WorkflowTestParams.autoAdvanceBeforeAwait] and
+   * [WorkflowTestParams.autoAdvanceBeforeHasCheck]. You only need to call this explicitly when you
+   * want to process pending actions when you are not already awaiting a rendering or output — for
+   * example, to assert on side effects triggered by an action that doesn't change state or produce
+   * output.
    *
    * With a non-immediate dispatcher (like [StandardTestDispatcher]), this drains all pending
    * coroutines so the runtime processes queued actions. With an immediate dispatcher, this is
@@ -60,7 +64,9 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasRendering: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      advanceUntilSettled()
+      if (autoAdvanceBeforeHasCheck) {
+        advanceUntilSettled()
+      }
       return !turbine.usedFirstRendering || !turbine.renderingChannel.isEmpty
     }
 
@@ -70,7 +76,9 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasSnapshot: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      advanceUntilSettled()
+      if (autoAdvanceBeforeHasCheck) {
+        advanceUntilSettled()
+      }
       return !turbine.usedFirstSnapshot || !turbine.snapshotChannel.isEmpty
     }
 
@@ -80,7 +88,9 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   public val hasOutput: Boolean
     @OptIn(DelicateCoroutinesApi::class)
     get() {
-      advanceUntilSettled()
+      if (autoAdvanceBeforeHasCheck) {
+        advanceUntilSettled()
+      }
       return !turbine.outputChannel.isEmpty
     }
 
@@ -106,17 +116,19 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    * [WorkflowTestRuntime.DEFAULT_TIMEOUT_MS] will be used instead.
    * @param skipIntermediate If true, and the workflow has emitted multiple renderings, all but the
    * most recent one will be dropped.
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting.
    */
   public suspend fun awaitNextRendering(
     timeoutMs: Long? = null,
-    skipIntermediate: Boolean = true
+    skipIntermediate: Boolean = true,
+    advanceScheduler: Boolean = autoAdvanceBeforeAwait
   ): RenderingT {
     val block: suspend () -> RenderingT = {
-      var rendering = turbine.awaitNextRendering()
+      var rendering = turbine.awaitNextRendering(advanceScheduler = advanceScheduler)
       @OptIn(DelicateCoroutinesApi::class)
       if (skipIntermediate) {
         while (!turbine.renderingChannel.isEmpty) {
-          rendering = turbine.awaitNextRendering()
+          rendering = turbine.awaitNextRendering(advanceScheduler = advanceScheduler)
         }
       }
       rendering
@@ -131,17 +143,19 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    * [DEFAULT_TIMEOUT_MS] will be used instead.
    * @param skipIntermediate If true, and the workflow has emitted multiple snapshots, all but the
    * most recent one will be dropped.
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting.
    */
   public suspend fun awaitNextSnapshot(
     timeoutMs: Long? = null,
-    skipIntermediate: Boolean = true
+    skipIntermediate: Boolean = true,
+    advanceScheduler: Boolean = autoAdvanceBeforeAwait
   ): TreeSnapshot {
     val block: suspend () -> TreeSnapshot = {
-      var snapshot = turbine.awaitNextSnapshot()
+      var snapshot = turbine.awaitNextSnapshot(advanceScheduler = advanceScheduler)
       @OptIn(DelicateCoroutinesApi::class)
       if (skipIntermediate) {
         while (!turbine.snapshotChannel.isEmpty) {
-          snapshot = turbine.awaitNextSnapshot()
+          snapshot = turbine.awaitNextSnapshot(advanceScheduler = advanceScheduler)
         }
       }
       snapshot
@@ -154,12 +168,16 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    *
    * @param timeoutMs The maximum amount of time to wait for an output to be emitted. If null,
    * [DEFAULT_TIMEOUT_MS] will be used instead.
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting.
    */
-  public suspend fun awaitNextOutput(timeoutMs: Long? = null): OutputT {
+  public suspend fun awaitNextOutput(
+    timeoutMs: Long? = null,
+    advanceScheduler: Boolean = autoAdvanceBeforeAwait
+  ): OutputT {
     return if (timeoutMs != null) {
-      withTimeout(timeoutMs) { turbine.awaitNextOutput() }
+      withTimeout(timeoutMs) { turbine.awaitNextOutput(advanceScheduler = advanceScheduler) }
     } else {
-      turbine.awaitNextOutput()
+      turbine.awaitNextOutput(advanceScheduler = advanceScheduler)
     }
   }
 
@@ -263,7 +281,12 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
     testParams = testParams,
     coroutineContext = schedulerContext + safeContext,
   ) {
-    val runtime = WorkflowTestRuntime(propsFlow, this)
+    val runtime = WorkflowTestRuntime(
+      props = propsFlow,
+      turbine = this,
+      autoAdvanceBeforeAwait = testParams.autoAdvanceBeforeAwait,
+      autoAdvanceBeforeHasCheck = testParams.autoAdvanceBeforeHasCheck,
+    )
     result = runtime.block()
   }
   @Suppress("UNCHECKED_CAST")

@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -165,6 +166,115 @@ internal class DeprecatedLaunchSchedulerModeTest {
       assertEquals("prompt", awaitNextRendering())
       advanceUntilSettled()
       assertEquals("installing", awaitNextRendering())
+    }
+  }
+
+  @Test fun `virtual time mode - awaitNextRendering can skip scheduler advancement`() {
+    val workflow = startupAdvanceWorkflow()
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD,
+        autoAdvanceOnStartup = false,
+        autoAdvanceBeforeAwait = false
+      )
+    ) {
+      assertEquals("prompt", awaitNextRendering(advanceScheduler = false))
+
+      val timedOut = runCatching {
+        awaitNextRendering(timeoutMs = 100, advanceScheduler = false)
+      }
+      assertTrue(timedOut.isFailure)
+
+      assertEquals("installing", awaitNextRendering(advanceScheduler = true))
+    }
+  }
+
+  @Test fun `virtual time mode - awaitNextOutput can skip scheduler advancement`() {
+    val workflow = Workflow.stateful<Unit, String, String, String>(
+      initialState = { "waiting" },
+      render = { _, state ->
+        runningWorker(
+          Worker.from {
+            delay(5_000)
+            "done"
+          }
+        ) {
+          action("workerResult") { setOutput(it) }
+        }
+        state
+      }
+    )
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD,
+        autoAdvanceOnStartup = false,
+        autoAdvanceBeforeAwait = false
+      )
+    ) {
+      assertEquals("waiting", awaitNextRendering(advanceScheduler = false))
+
+      val timedOut = runCatching {
+        awaitNextOutput(timeoutMs = 100, advanceScheduler = false)
+      }
+      assertTrue(timedOut.isFailure)
+
+      assertEquals("done", awaitNextOutput(advanceScheduler = true))
+    }
+  }
+
+  @Test fun `virtual time mode - hasRendering does not auto-advance when disabled`() {
+    val workflow = startupAdvanceWorkflow()
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD,
+        autoAdvanceOnStartup = false,
+        autoAdvanceBeforeHasCheck = false
+      )
+    ) {
+      assertEquals("prompt", awaitNextRendering(advanceScheduler = false))
+      assertFalse(hasRendering)
+
+      advanceUntilSettled()
+      assertTrue(hasRendering)
+      assertEquals("installing", awaitNextRendering(advanceScheduler = false))
+    }
+  }
+
+  @Test fun `virtual time mode - hasOutput does not auto-advance when disabled`() {
+    val workflow = Workflow.stateful<Unit, Unit, String, Unit>(
+      initialState = { Unit },
+      render = { _, _ ->
+        runningWorker(
+          Worker.from {
+            delay(5_000)
+            "done"
+          }
+        ) {
+          action("workerResult") { setOutput(it) }
+        }
+      }
+    )
+
+    workflow.launchForTestingFromStartWith(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        deprecatedLaunchSchedulerMode = DeprecatedLaunchSchedulerMode.VIRTUAL_TIME_STANDARD,
+        autoAdvanceOnStartup = false,
+        autoAdvanceBeforeHasCheck = false
+      )
+    ) {
+      awaitNextRendering(advanceScheduler = false)
+      assertFalse(hasOutput)
+
+      advanceUntilSettled()
+      assertTrue(hasOutput)
+      assertEquals("done", awaitNextOutput(advanceScheduler = false))
     }
   }
 
