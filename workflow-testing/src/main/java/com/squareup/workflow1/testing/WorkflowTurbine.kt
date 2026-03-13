@@ -97,10 +97,12 @@ public fun <PropsT, StateT, OutputT, RenderingT>
       }
     )
 
-    // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
-    // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
-    // This ensures the runtime loop is running and waiting for actions before the test begins.
-    testScheduler.advanceUntilIdle()
+    if (testParams.autoAdvanceOnStartup) {
+      // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
+      // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
+      // This ensures the runtime loop is running and waiting for actions before the test begins.
+      testScheduler.advanceUntilIdle()
+    }
 
     val firstRendering = renderings.value.rendering
     val firstSnapshot = renderings.value.snapshot
@@ -130,7 +132,8 @@ public fun <PropsT, StateT, OutputT, RenderingT>
         renderingTurbine = renderingTurbine,
         snapshotTurbine = snapshotTurbine,
         outputTurbine = outputTurbine,
-        testScheduler = testScheduler
+        testScheduler = testScheduler,
+        autoAdvanceBeforeAwait = testParams.autoAdvanceBeforeAwait
       )
       workflowTurbine.testCase()
 
@@ -294,6 +297,7 @@ public class WorkflowTurbine<RenderingT, OutputT>(
   private val snapshotTurbine: ReceiveTurbine<TreeSnapshot>,
   private val outputTurbine: ReceiveTurbine<OutputT>,
   private val testScheduler: TestCoroutineScheduler? = null,
+  private val autoAdvanceBeforeAwait: Boolean = true,
 ) {
   internal var usedFirstRendering = false
   internal var usedFirstSnapshot = false
@@ -310,8 +314,9 @@ public class WorkflowTurbine<RenderingT, OutputT>(
   /**
    * Advances the [testScheduler] passed in for this [WorkflowTurbine].
    *
-   * This is called automatically by [awaitNextRendering], [awaitNextOutput], [awaitNextSnapshot],
-   * and [skipRenderings]. You only need to call this explicitly when you want to process pending
+   * This may be called automatically by [awaitNextRendering], [awaitNextOutput], and
+   * [awaitNextSnapshot] depending on each call's `advanceScheduler` argument. It is always used by
+   * [skipRenderings]. You only need to call this explicitly when you want to process pending
    * actions without awaiting a rendering or output — for example, to assert on side effects
    * triggered by an action that doesn't change state or produce output.
    *
@@ -327,24 +332,32 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    * Suspend waiting for the next rendering to be produced by the Workflow runtime. Note this includes
    * the first (synchronously made) rendering.
    *
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting for the next item.
    * @return the rendering.
    */
-  public suspend fun awaitNextRendering(): RenderingT {
+  public suspend fun awaitNextRendering(
+    advanceScheduler: Boolean = autoAdvanceBeforeAwait,
+  ): RenderingT {
     if (!usedFirstRendering) {
       usedFirstRendering = true
       return firstRendering
     }
-    advanceUntilSettled()
+    if (advanceScheduler) {
+      advanceUntilSettled()
+    }
     return renderingTurbine.awaitItem()
   }
 
   /**
    * Suspend waiting for the next output to be produced by the Workflow runtime.
    *
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting for the next item.
    * @return the output.
    */
-  public suspend fun awaitNextOutput(): OutputT {
-    advanceUntilSettled()
+  public suspend fun awaitNextOutput(advanceScheduler: Boolean = autoAdvanceBeforeAwait): OutputT {
+    if (advanceScheduler) {
+      advanceUntilSettled()
+    }
     return outputTurbine.awaitItem()
   }
 
@@ -352,14 +365,19 @@ public class WorkflowTurbine<RenderingT, OutputT>(
    * Suspend waiting for the next snapshot to be produced by the Workflow runtime. Note this includes
    * the first (synchronously made) snapshot.
    *
+   * @param advanceScheduler If true, call [advanceUntilSettled] before waiting for the next item.
    * @return the snapshot.
    */
-  public suspend fun awaitNextSnapshot(): TreeSnapshot {
+  public suspend fun awaitNextSnapshot(
+    advanceScheduler: Boolean = autoAdvanceBeforeAwait,
+  ): TreeSnapshot {
     if (!usedFirstSnapshot) {
       usedFirstSnapshot = true
       return firstSnapshot
     }
-    advanceUntilSettled()
+    if (advanceScheduler) {
+      advanceUntilSettled()
+    }
     return snapshotTurbine.awaitItem()
   }
 

@@ -3,10 +3,13 @@ package com.squareup.workflow1.testing
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
+import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
+import kotlinx.coroutines.delay
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -81,6 +84,53 @@ class WorkflowTurbineTest {
       // awaitNextSnapshot should return the same value
       assertEquals(firstSnapshot, awaitNextSnapshot())
       assertEquals("hello", firstSnapshot.readStringValue())
+    }
+  }
+
+  private object StartupAdvanceWorkflow : StatefulWorkflow<Unit, String, Nothing, String>() {
+    override fun initialState(props: Unit, snapshot: Snapshot?) = "prompt"
+
+    override fun snapshotState(state: String): Snapshot? = null
+
+    override fun render(
+      renderProps: Unit,
+      renderState: String,
+      context: RenderContext<Unit, String, Nothing>
+    ): String {
+      if (renderState == "prompt") {
+        context.runningWorker(
+          Worker.from {
+            delay(5_000)
+            "installing"
+          }
+        ) {
+          action("timerFinished") {
+            state = it
+          }
+        }
+      }
+      return renderState
+    }
+  }
+
+  @Test fun `renderForTest startup auto-advance is enabled by default`() {
+    StartupAdvanceWorkflow.renderForTest(
+      testParams = WorkflowTestParams(checkRenderIdempotence = false)
+    ) {
+      assertEquals("installing", awaitNextRendering())
+    }
+  }
+
+  @Test fun `renderForTest startup auto-advance can be disabled`() {
+    StartupAdvanceWorkflow.renderForTest(
+      testParams = WorkflowTestParams(
+        checkRenderIdempotence = false,
+        autoAdvanceOnStartup = false
+      )
+    ) {
+      assertEquals("prompt", awaitNextRendering())
+      advanceUntilSettled()
+      assertEquals("installing", awaitNextRendering())
     }
   }
 
