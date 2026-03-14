@@ -169,6 +169,8 @@ public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum 
 	public static final field INDEXED_ACTIVE_STAGING_LISTS Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field PARTIAL_TREE_RENDERING Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field RENDER_ONLY_WHEN_STATE_CHANGES Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field STABLE_EVENT_HANDLERS Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field WORK_STEALING_DISPATCHER Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;

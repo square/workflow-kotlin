@@ -103,12 +103,14 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private val identityIndexImplementation = runtimeConfig.identityIndexImplementation()
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(
     identityOf = if (indexedActiveStagingLists) {
       { it.id }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
 
   /**

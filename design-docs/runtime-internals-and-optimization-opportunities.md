@@ -228,6 +228,184 @@ Targeted wins:
 - Potentially lower overhead than default stdlib structures for small-object identity sets.
 - Better understanding of dependency and binary-size tradeoffs before deep refactors.
 
+### Project 7 Deep Dive: Collection Strategy Research (2026-03-12)
+
+This section captures focused research on collection alternatives after Project 1 landed (indexed
+active/staging behavior behind `INDEXED_ACTIVE_STAGING_LISTS`).
+
+#### Runtime-Specific Constraints To Preserve
+
+- `ActiveStagingList` uses two intrusive linked lists (`active`, `staging`) for ordering + swap-on-
+  commit semantics.
+- Sidecar index operations are currently membership check + key lookup + insert/remove (not full map
+  iteration) in `SubtreeManager` and `WorkflowNode`.
+- Deterministic traversal order still comes from the list, not from sidecar map iteration.
+- Current sidecar index type accepts `Any?` identity values.
+
+#### Candidate Families And Tradeoffs
+
+| Candidate | Fit For Runtime Internals | Benefits | Tradeoffs |
+| --- | --- | --- | --- |
+| Kotlin stdlib `MutableMap`/`MutableSet` (current Project 1 shape) | High | No new dependency, straightforward semantics across KMP targets, easy debugging and testability. | Higher per-entry/object overhead vs flatter hash tables in some runtimes. |
+| Kotlin stdlib `LinkedHashMap`/`LinkedHashSet` | Low-Medium | Deterministic map/set iteration order. | Extra per-entry link overhead with little value here because ordering is already owned by `InlineLinkedList`. |
+| AndroidX `MutableScatterMap` / `MutableScatterSet` | Medium-High | Flat hash-table design explicitly optimized for low allocation and cache-friendly operations; AndroidX release notes call out ongoing perf work for scatter collections. | New transitive dependency for `workflow-runtime` commonMain, non-`MutableMap` API surface, and potential null-key adaptation concerns depending on call site assumptions. |
+| AndroidX `SimpleArrayMap` / `ArraySet` | Low | Memory-efficient for tiny collections and no per-entry node objects. | Not ideal for larger or churn-heavy paths; AndroidX docs now steer toward scatter collections for better performance characteristics. |
+| AndroidX `OrderedScatterSet` | Low-Medium (set-only niche) | Preserves insertion order while staying in scatter family. | Does not solve indexed map lookup by itself, and adds ordering metadata we do not currently need for sidecar indexes. |
+| Compose-style specialized internal containers (`MutableVector`, wrappers) | Medium (pattern source) | Compose demonstrates pragmatic use of internal specialized collections + wrappers to keep hot paths fast. | `MutableVector`/array-backed structures are poor direct replacements for `InlineLinkedList` removal/swap behavior used by `ActiveStagingList`. |
+
+#### Upstream Evidence From Compose Multiplatform / AndroidX
+
+- Compose runtime commonMain already depends on AndroidX collection (`implementation("androidx.collection:collection:1.5.0")`) and uses scatter/object-list primitives in internals.
+- Compose runtime collection layer uses `MutableScatterMap`, `MutableScatterSet`, and
+  `MutableObjectList` in internal utilities such as `ScopeMap`, `MultiValueMap`, and
+  `ScatterSetWrapper`.
+- Compose continues to keep fast-path internals specialized while exposing standard collection
+  interfaces only at boundaries (wrapper/adaptor pattern).
+- AndroidX collection release notes confirm KMP support and ongoing scatter-collection performance
+  optimization; release notes also describe scatter collections as high-efficiency, low-allocation
+  alternatives.
+
+#### Recommendation
+
+1. Keep stdlib sidecar indexes as the default backend in `workflow-runtime` for now.
+2. Treat AndroidX scatter collections as the primary alternative worth prototyping (and the only
+   one with meaningful upside signal in this code path).
+3. Do not pursue `SimpleArrayMap`/`ArraySet` or `LinkedHashMap` as global replacements for current
+   sidecar indexes.
+4. Borrow Compose's pattern, not just its types: if we prototype scatter collections, keep them
+   internal and hide them behind a tiny backend interface so we can swap implementations without
+   touching `SubtreeManager`/`WorkflowNode` call sites.
+
+#### Suggested Prototype Shape (Project 7)
+
+1. Add an internal index-backend abstraction used by `ActiveStagingList` in indexed mode:
+   `contains`, `put`, `remove`, `clear`.
+2. Implement two backends:
+   - stdlib backend (`MutableMap<Any?, T>`) as control.
+   - AndroidX scatter backend (`MutableScatterMap<Any, T>`) with explicit null-identity handling
+     strategy if needed.
+3. Compare backends using Project 5 microbenchmarks already in repo (`wideSiblingKeys*`,
+   `rememberManyEntries*`, `stableHandlers_manyCallbacks*`).
+4. Add low-cardinality scenarios (1-8 identities) to catch regressions where constant factors
+   dominate.
+
+#### Go/No-Go Criteria For Adopting AndroidX Scatter Backend
+
+- Go if high-cardinality scenarios show meaningful median wins (target >=10-15%) with no low-N
+  regression above 5%.
+- Go only if behavior parity is maintained for duplicate detection, lifecycle cancellation, and
+  commit semantics.
+- No-go if wins are narrow to synthetic high-cardinality scenarios and add noticeable dependency/
+  complexity cost for mainstream workflow shapes.
+
+#### Benchmark Results (Pixel 6, 2026-03-12, 500 Iterations)
+
+Measured using targeted indexed scenarios for both tree shapes and both runtime configs:
+
+- `IndexedStdlib` and `IndexedScatter`
+- `wideSiblingKeys*`, `rememberManyEntries*`, `stableHandlers_manyCallbacks_propChange`
+- `androidx.benchmark.iterations=500`
+
+Key findings:
+
+- Category-level mean deltas (Scatter vs Stdlib):
+  - `wideSiblingKeys*`: **+10.43%** (scatter slower)
+  - `rememberManyEntries*`: **-4.15%** (scatter faster)
+  - `stableHandlers_manyCallbacks_propChange`: **-4.33%** (scatter faster)
+- Stability/variance was similar across backends:
+  - `IndexedStdlib`: CV mean **4.87%** (max 7.14%)
+  - `IndexedScatter`: CV mean **4.91%** (max 6.73%)
+- Most scenarios are mildly non-normal by Jarque-Bera at this sample size, but Q-Q fit CoD
+  (`R²`) stayed high (roughly 0.96-0.99), indicating near-normal shape with tail/skew effects.
+
+Interpretation:
+
+- The backend tradeoff is workload dependent, not noise: remember/stable-handler paths benefited
+  from scatter indexes, while wide sibling-key paths regressed.
+- Since CV is comparable and confidence intervals are tight at 500 iterations, these directional
+  differences are statistically robust enough to guide further design work.
+
+#### Extended Benchmark Results: SimpleArrayMap Candidate (Pixel 6, 2026-03-12)
+
+Measured with one dedicated 500-iteration targeted pass per indexed backend for both tree shapes:
+
+- `IndexedStdlib`
+- `IndexedScatter`
+- `IndexedSimpleArrayMap`
+
+Scenarios matched prior methodology:
+
+- `wideSiblingKeys*`
+- `rememberManyEntries*`
+- `stableHandlers_manyCallbacks_propChange`
+
+Key findings (category-level mean delta vs `IndexedStdlib`):
+
+- `IndexedScatter`:
+  - `wideSiblingKeys*`: **+17.04%**
+  - `rememberManyEntries*`: **+0.79%**
+  - `stableHandlers_manyCallbacks_propChange`: **+1.74%**
+- `IndexedSimpleArrayMap`:
+  - `wideSiblingKeys*`: **+9.07%**
+  - `rememberManyEntries*`: **+43.03%**
+  - `stableHandlers_manyCallbacks_propChange`: **+58.34%**
+
+Scenario-level highlights:
+
+- `IndexedSimpleArrayMap` only improved `wideSiblingKeys_initialRenderAllChildren` (roughly
+  **-4.75%** shallow / **-1.50%** squareish), and regressed all other targeted scenarios.
+- `IndexedScatter` remained the strongest non-stdlib backend, but still showed substantial wide-
+  sibling regressions (**+11.29%** to **+21.93%**) and only near-parity on remember/stable paths.
+
+Stability/normality checks stayed consistent with earlier methodology:
+
+- CV means were tightly clustered:
+  - `IndexedStdlib`: **4.67%** (max 5.54%)
+  - `IndexedScatter`: **4.72%** (max 6.60%)
+  - `IndexedSimpleArrayMap`: **4.34%** (max 5.63%)
+- Q-Q CoD (`R²`) remained high (roughly 0.96-0.99), with many scenarios still mildly non-normal
+  by Jarque-Bera.
+
+Conclusion from this expanded run:
+
+- `SimpleArrayMap` is a clear **no-go** as a general sidecar index backend for current runtime hot
+  paths.
+- `ScatterMap` remains a potentially useful specialized option, but does not currently beat stdlib
+  broadly enough to become the default.
+
+#### Linked-List Removal Assessment (Project 7 Follow-Up)
+
+Question: should we prototype removing intrusive linked lists from `ActiveStagingList` entirely?
+
+Candidate designs considered:
+
+1. **Dual array/object-list staging with identity→index maps**
+   - Keep active/staging swap semantics, but store nodes in dense arrays and remove retained nodes
+     via index swap-remove.
+   - Expected upside: removes the current post-index linear unlink (`active.removeFirst { it ===
+     retained }`) from indexed retain paths.
+   - Cost/risk: significantly more index bookkeeping (index updates on swap-remove, commit-time
+     consistency), plus new failure modes around stale index entries.
+2. **Single identity map with generation stamps**
+   - Mark nodes seen in current render, then sweep stale nodes at commit.
+   - Expected upside: no separate active/staging containers.
+   - Cost/risk: harder to preserve deterministic traversal order and current swap semantics without
+     reintroducing order side-structures.
+3. **Hybrid ordered container abstraction (array/list order + sidecar identity map)**
+   - Similar runtime behavior to today, but replaces intrusive node links with explicit container
+     internals.
+   - Expected upside: simpler node types, possible cache-locality improvements.
+   - Cost/risk: likely higher constant-factor overhead for small-N workflows unless carefully tuned.
+
+Worth prototyping?
+
+- **Not as a broad replacement project right now.** Current data does not show backend-only wins
+  large enough to justify a full structure rewrite risk.
+- **Potentially yes as a narrow spike** if we specifically target the indexed retain unlink hotspot
+  (the O(n) identity-hit removal step) behind a runtime flag and benchmark gate.
+- Any such spike must preserve existing correctness constraints: duplicate detection behavior,
+  deterministic child action traversal, and commit/cancellation semantics.
+
 ### Project 8: Action Drain/Conflation Heuristics Experiments
 
 Scope:

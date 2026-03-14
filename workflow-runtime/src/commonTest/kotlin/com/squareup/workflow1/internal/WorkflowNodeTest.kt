@@ -1449,6 +1449,62 @@ internal class WorkflowNodeTest {
     )
   }
 
+  @Test fun remember_with_duplicate_identity_in_single_render_throws_with_scatter_backend() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      remember("same", typeOf<String>(), "input") { "first" }
+      remember("same", typeOf<String>(), "input") { "second" }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = Unconfined,
+      runtimeConfig = setOf(
+        RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS,
+        RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES,
+      ),
+      emitAppliedActionToParent = { it }
+    )
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      node.render(stateful, Unit)
+    }
+    assertEquals(
+      "Expected unique combination of key, input types and result type: \"same\"",
+      error.message
+    )
+  }
+
+  @Test fun remember_with_duplicate_identity_in_single_render_throws_with_simple_array_map_backend() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      remember("same", typeOf<String>(), "input") { "first" }
+      remember("same", typeOf<String>(), "input") { "second" }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = Unconfined,
+      runtimeConfig = setOf(
+        RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS,
+        RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES,
+      ),
+      emitAppliedActionToParent = { it }
+    )
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      node.render(stateful, Unit)
+    }
+    assertEquals(
+      "Expected unique combination of key, input types and result type: \"same\"",
+      error.message
+    )
+  }
+
   @Test fun cancel_with_no_pending_actions_returns_empty_list() {
     var capturedDroppedActions: List<WorkflowAction<*, *, *>>? = null
     var capturedCause: CancellationException? = null

@@ -93,19 +93,22 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     idCounter = idCounter
   )
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
+  private val identityIndexImplementation = runtimeConfig.identityIndexImplementation()
   private val sideEffects = ActiveStagingList<SideEffectNode>(
     identityOf = if (indexedActiveStagingLists) {
       { it.key }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
   private val remembered = ActiveStagingList<RememberedNode<*>>(
     identityOf = if (indexedActiveStagingLists) {
       { RememberIdentity(it.key, it.resultType, it.inputs) }
     } else {
       null
-    }
+    },
+    identityIndexImplementation = identityIndexImplementation,
   )
   private var lastProps: PropsT = initialProps
   private var lastRendering: NullableInitBox<RenderingT> = NullableInitBox()

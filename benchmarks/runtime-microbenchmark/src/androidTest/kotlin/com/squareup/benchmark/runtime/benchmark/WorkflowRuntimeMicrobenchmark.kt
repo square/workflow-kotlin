@@ -7,6 +7,9 @@ import app.cash.burst.Burst
 import com.squareup.benchmark.runtime.benchmark.BenchmarkRuntimeOptions.NoOptimizations
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
+import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
+import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -29,6 +32,7 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.math.pow
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 
 /** The microbenchmarks take a while to run, so we only run with a subset of runtime configs. */
 @Suppress("unused")
@@ -38,6 +42,11 @@ enum class BenchmarkRuntimeOptions(
 ) {
   NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
+  IndexedStdlib(setOf(INDEXED_ACTIVE_STAGING_LISTS)),
+  IndexedSimpleArrayMap(
+    setOf(INDEXED_ACTIVE_STAGING_LISTS, SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES)
+  ),
+  IndexedScatter(setOf(INDEXED_ACTIVE_STAGING_LISTS, SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES)),
 }
 
 enum class BenchmarkTreeShape(
@@ -59,6 +68,7 @@ class WorkflowRuntimeMicrobenchmark(
     const val WideSiblingCount = 250
     const val RememberEntryCount = 250
     const val StableHandlerCount = 250
+    const val BenchmarkTestTimeoutMinutes = 10L
   }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
@@ -251,7 +261,7 @@ class WorkflowRuntimeMicrobenchmark(
     testProps: PropsT,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkTestTimeoutMinutes.minutes) {
     val props = MutableStateFlow(setupProps)
     val workflowJob = Job(parent = coroutineContext.job)
     val renderings = renderWorkflowIn(
@@ -284,7 +294,7 @@ class WorkflowRuntimeMicrobenchmark(
   private fun benchmarkWorkflowStateChange(
     testState: (setStateForChild: (index: Int, newState: Int) -> Unit) -> Unit,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkTestTimeoutMinutes.minutes) {
     val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
     val workflow = BenchmarkWorkflowRoot(
       treeShape = treeShape,

@@ -35,9 +35,12 @@ android {
       println("Running benchmarks in dry mode: emulator allowed, no measurements taken, no warmup.")
       testInstrumentationRunnerArguments["androidx.benchmark.dryRunMode.enable"] = "true"
     } else {
+      val benchmarkIterations =
+        (project.findProperty("androidx.benchmark.iterations") ?: "500").toString()
       // must be one of: 'None', 'StackSampling', or 'MethodTracing'
       testInstrumentationRunnerArguments["androidx.benchmark.profiling.mode"] = "MethodTracing"
       testInstrumentationRunnerArguments["androidx.benchmark.output.enable"] = "true"
+      testInstrumentationRunnerArguments["androidx.benchmark.iterations"] = benchmarkIterations
     }
   }
 

@@ -1,6 +1,29 @@
 package com.squareup.workflow1.internal
 
+import androidx.collection.SimpleArrayMap
+import androidx.collection.mutableScatterMapOf
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.RuntimeConfigOptions.SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+
+internal enum class IdentityIndexImplementation {
+  STDLIB_MAP,
+  SIMPLE_ARRAY_MAP,
+  SCATTER_MAP,
+}
+
+@OptIn(WorkflowExperimentalRuntime::class)
+internal fun RuntimeConfig.identityIndexImplementation(): IdentityIndexImplementation = when {
+  // Keep scatter as the highest precedence backend when multiple index flags are present
+  // (e.g. RuntimeConfigOptions.ALL).
+  contains(SCATTER_MAP_ACTIVE_STAGING_LIST_INDEXES) -> IdentityIndexImplementation.SCATTER_MAP
+  contains(SIMPLE_ARRAY_MAP_ACTIVE_STAGING_LIST_INDEXES) ->
+    IdentityIndexImplementation.SIMPLE_ARRAY_MAP
+
+  else -> IdentityIndexImplementation.STDLIB_MAP
+}
 
 /**
  * Switches between two lists and provides certain lookup and swapping operations.
@@ -16,9 +39,12 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  *
  * @param identityOf Optional identity extractor used to maintain sidecar indexes for active and
  * staging nodes. When null, only list-based operations are available.
+ * @param identityIndexImplementation Identity index backend used when [identityOf] is configured.
  */
 internal class ActiveStagingList<T : InlineListNode<T>>(
   private val identityOf: ((T) -> Any?)? = null,
+  private val identityIndexImplementation: IdentityIndexImplementation =
+    IdentityIndexImplementation.STDLIB_MAP,
 ) {
 
   /**
@@ -30,7 +56,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
    * and added to [staging].
    */
   private var active = InlineLinkedList<T>()
-  private var activeIdentities = identityOf?.let { mutableMapOf<Any?, T>() }
+  private var activeIdentities = createIdentityIndex()
 
   /**
    * When not in the middle of a render pass, this list is empty.
@@ -40,7 +66,15 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
    * cleared.
    */
   private var staging = InlineLinkedList<T>()
-  private var stagingIdentities = identityOf?.let { mutableMapOf<Any?, T>() }
+  private var stagingIdentities = createIdentityIndex()
+
+  private fun createIdentityIndex(): IdentityIndex<T>? = identityOf?.let {
+    when (identityIndexImplementation) {
+      IdentityIndexImplementation.STDLIB_MAP -> StdlibIdentityIndex()
+      IdentityIndexImplementation.SIMPLE_ARRAY_MAP -> SimpleArrayMapIdentityIndex()
+      IdentityIndexImplementation.SCATTER_MAP -> ScatterIdentityIndex()
+    }
+  }
 
   /**
    * Looks for the first item matching [predicate] in the active list and moves it to the staging
@@ -52,7 +86,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
   ): T {
     val staged = active.removeFirst(predicate) ?: create()
     val identity = identityOf?.invoke(staged)
-    require(stagingIdentities?.containsKey(identity) != true) {
+    require(stagingIdentities?.contains(identity) != true) {
       "Expected identities to be unique in staging: \"$identity\""
     }
     activeIdentities?.remove(identity)
@@ -76,7 +110,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
     val identityOf = requireNotNull(identityOf) {
       "identityOf must be configured to call retainOrCreateByIdentity"
     }
-    require(stagingIdentities?.containsKey(identity) != true) {
+    require(stagingIdentities?.contains(identity) != true) {
       "Expected identities to be unique in staging: \"$identity\""
     }
 
@@ -104,7 +138,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
    */
   fun containsActiveIdentity(identity: Any?): Boolean {
     check(identityOf != null) { "identityOf must be configured to query identities" }
-    return activeIdentities?.containsKey(identity) == true
+    return activeIdentities?.contains(identity) == true
   }
 
   /**
@@ -114,7 +148,7 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
    */
   fun containsStagingIdentity(identity: Any?): Boolean {
     check(identityOf != null) { "identityOf must be configured to query identities" }
-    return stagingIdentities?.containsKey(identity) == true
+    return stagingIdentities?.contains(identity) == true
   }
 
   /**
@@ -126,9 +160,6 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
     // and must be torn down.
     active.forEach { node ->
       onRemove(node)
-      identityOf?.let { identityOf ->
-        activeIdentities?.remove(identityOf(node))
-      }
     }
 
     // Swap the lists and clear the staging one.
@@ -151,4 +182,59 @@ internal class ActiveStagingList<T : InlineListNode<T>>(
    * Iterates over the staging list.
    */
   inline fun forEachStaging(block: (T) -> Unit) = staging.forEach(block)
+
+  internal interface IdentityIndex<T> {
+    fun contains(identity: Any?): Boolean
+    fun remove(identity: Any?): T?
+    fun set(identity: Any?, node: T)
+    fun clear()
+  }
+
+  private class StdlibIdentityIndex<T> : IdentityIndex<T> {
+    private val map = mutableMapOf<Any?, T>()
+
+    override fun contains(identity: Any?): Boolean = map.containsKey(identity)
+
+    override fun remove(identity: Any?): T? = map.remove(identity)
+
+    override fun set(identity: Any?, node: T) {
+      map.put(identity, node)
+    }
+
+    override fun clear() {
+      map.clear()
+    }
+  }
+
+  private class ScatterIdentityIndex<T> : IdentityIndex<T> {
+    private val map = mutableScatterMapOf<Any?, T>()
+
+    override fun contains(identity: Any?): Boolean = map.containsKey(identity)
+
+    override fun remove(identity: Any?): T? = map.remove(identity)
+
+    override fun set(identity: Any?, node: T) {
+      map[identity] = node
+    }
+
+    override fun clear() {
+      map.clear()
+    }
+  }
+
+  private class SimpleArrayMapIdentityIndex<T> : IdentityIndex<T> {
+    private val map = SimpleArrayMap<Any?, T>()
+
+    override fun contains(identity: Any?): Boolean = map.containsKey(identity)
+
+    override fun remove(identity: Any?): T? = map.remove(identity)
+
+    override fun set(identity: Any?, node: T) {
+      map.put(identity, node)
+    }
+
+    override fun clear() {
+      map.clear()
+    }
+  }
 }
