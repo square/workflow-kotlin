@@ -108,6 +108,7 @@ public class WorkflowRuntimeMonitor(
    * Note that if `session.parent == null` (this is the root workflow), then this is actually called
    * before [onRenderAndSnapshot] as the root workflow's node is created.
    */
+  @OptIn(ExperimentalStdlibApi::class)
   private fun onWorkflowStarted(
     session: WorkflowSession
   ) {

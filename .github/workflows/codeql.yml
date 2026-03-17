@@ -45,8 +45,11 @@ jobs:
         include:
           - language: actions
             build-mode: none
-          - language: java-kotlin
-            build-mode: autobuild
+          # Temporarily disable Java/Kotlin CodeQL analysis because current CodeQL releases,
+          # including nightly, do not support this repo's Kotlin 2.3.20 toolchain.
+          # TODO(1487): Re-enable this entry once CodeQL supports Kotlin 2.3.20.
+          # - language: java-kotlin
+          #   build-mode: autobuild
           - language: ruby
             build-mode: none
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
@@ -73,8 +76,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          # Nightly is required for now to support Kotlin 2.3.10. Once CodeQL stable supports it, we
-          # can remove this.
+          # Nightly is required to support bleeding-edge Kotlin versions.
           tools: nightly
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.

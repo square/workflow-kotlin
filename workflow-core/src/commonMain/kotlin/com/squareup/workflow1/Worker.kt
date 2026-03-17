@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
-import kotlin.experimental.ExperimentalTypeInference
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KType
@@ -174,9 +173,8 @@ public interface Worker<out OutputT> {
      * Note: If your worker just needs to perform side effects and doesn't need to emit anything,
      * do not use a [Worker] but instead call [BaseRenderContext::runningSideEffect]
      */
-    @OptIn(ExperimentalTypeInference::class)
     public inline fun <reified OutputT> create(
-      @BuilderInference noinline block: suspend FlowCollector<OutputT>.() -> Unit
+      noinline block: suspend FlowCollector<OutputT>.() -> Unit
     ): Worker<OutputT> = flow(block).asWorker()
 
     /**

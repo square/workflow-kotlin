@@ -8,7 +8,7 @@ buildscript {
   }
 
   ext {
-    kotlin_version = '2.3.10'
+    kotlin_version = '2.3.20'
     // Use the last published version for dependencies (workflow-core, workflow-testing, etc.)
     // so CI can resolve them from Maven Central. The ai-context plugin resolves via
     // includeBuild in settings.gradle regardless of the version string here.
