@@ -230,9 +230,36 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
   block: suspend WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStateWith(
+  props = props,
+  initialState = initialState,
+  testParams = WorkflowTestParams(),
+  context = context,
+  block = block,
+)
+
+/**
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
+ * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
+ * is not called. Instead, the workflow is started from the given [initialState].
+ *
+ * The [startFrom][WorkflowTestParams.startFrom] value in [testParams] is ignored. This function
+ * always starts from [initialState].
+ *
+ * All workflow-related coroutines are cancelled when the block exits.
+ */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
+@TestOnly
+public fun <T, PropsT, StateT, OutputT, RenderingT>
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
+  props: PropsT,
+  initialState: StateT,
+  testParams: WorkflowTestParams<StateT>,
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: suspend WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
 ): T = launchForTestingWith(
   props,
-  WorkflowTestParams(StartFromState(initialState)),
+  testParams.withStartState(initialState),
   context,
   block
 )
@@ -251,7 +278,43 @@ public fun <StateT, OutputT, RenderingT>
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
   block: suspend WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
-): Unit = launchForTestingFromStateWith(Unit, initialState, context, block)
+): Unit = launchForTestingFromStateWith(
+  initialState = initialState,
+  testParams = WorkflowTestParams(),
+  context = context,
+  block = block,
+)
+
+/**
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
+ * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
+ * is not called. Instead, the workflow is started from the given [initialState].
+ *
+ * The [startFrom][WorkflowTestParams.startFrom] value in [testParams] is ignored. This function
+ * always starts from [initialState].
+ *
+ * All workflow-related coroutines are cancelled when the block exits.
+ */
+@Deprecated("Use renderForTest and WorkflowTurbine instead.")
+@TestOnly
+public fun <StateT, OutputT, RenderingT>
+  StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
+  initialState: StateT,
+  testParams: WorkflowTestParams<StateT>,
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: suspend WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
+): Unit = launchForTestingFromStateWith(Unit, initialState, testParams, context, block)
+
+private fun <StateT> WorkflowTestParams<StateT>.withStartState(initialState: StateT): WorkflowTestParams<StateT> =
+  WorkflowTestParams(
+    startFrom = StartFromState(initialState),
+    checkRenderIdempotence = checkRenderIdempotence,
+    runtimeConfig = runtimeConfig,
+    deprecatedLaunchSchedulerMode = deprecatedLaunchSchedulerMode,
+    autoAdvanceOnStartup = autoAdvanceOnStartup,
+    autoAdvanceBeforeAwait = autoAdvanceBeforeAwait,
+    autoAdvanceBeforeHasCheck = autoAdvanceBeforeHasCheck,
+  )
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.

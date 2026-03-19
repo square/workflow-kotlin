@@ -167,6 +167,49 @@ internal class WorkflowTestRuntimeTest {
     }
   }
 
+  @Test fun `fromStateWith props overload forwards testParams`() {
+    var renderCount = 0
+    val workflow = Workflow.stateful<String, Int, Nothing, Int>(
+      initialState = { _, _ -> fail("Should start from explicit initialState") },
+      render = { props, state ->
+        renderCount++
+        state + props.length
+      },
+      snapshot = { null }
+    )
+
+    workflow.launchForTestingFromStateWith(
+      props = "abc",
+      initialState = 10,
+      testParams = WorkflowTestParams(checkRenderIdempotence = false)
+    ) {
+      assertEquals(13, awaitNextRendering())
+    }
+
+    assertEquals(1, renderCount)
+  }
+
+  @Test fun `fromStateWith unit overload forwards testParams`() {
+    var renderCount = 0
+    val workflow = Workflow.stateful<Unit, Int, Nothing, Int>(
+      initialState = { _, _ -> fail("Should start from explicit initialState") },
+      render = { _, state ->
+        renderCount++
+        state
+      },
+      snapshot = { null }
+    )
+
+    workflow.launchForTestingFromStateWith(
+      initialState = 77,
+      testParams = WorkflowTestParams(checkRenderIdempotence = false)
+    ) {
+      assertEquals(77, awaitNextRendering())
+    }
+
+    assertEquals(1, renderCount)
+  }
+
   @Test fun `detects render side effects`() {
     var renderCount = 0
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
