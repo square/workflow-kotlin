@@ -1,53 +1,22 @@
 package com.squareup.workflow1.tracing.papa
 
-import com.squareup.workflow1.tracing.SafeTraceInterface
+import com.squareup.workflow1.tracing.FakeTrace
+import com.squareup.workflow1.tracing.TraceInterface
 
-/**
- * Fake implementation of [SafeTraceInterface] for testing purposes.
- * Records all trace calls for verification in tests.
- */
-class FakeSafeTrace(
-  override val isTraceable: Boolean = true,
-  override val isCurrentlyTracing: Boolean = true
-) : SafeTraceInterface {
-
-  data class TraceCall(
-    val type: String,
-    val label: String? = null,
-    val name: String? = null,
-    val cookie: Int? = null
+@Deprecated(
+  message = "Renamed to FakeTrace and moved to com.squareup.workflow1.tracing package",
+  replaceWith = ReplaceWith(
+    expression = "FakeTrace",
+    imports = arrayOf("com.squareup.workflow1.tracing.FakeTrace")
   )
+)
+class FakeSafeTrace(
+  isTraceable: Boolean = true,
+  isCurrentlyTracing: Boolean = true
+) : TraceInterface by FakeTrace(isTraceable, isCurrentlyTracing) {
+  private val delegate = FakeTrace(isTraceable, isCurrentlyTracing)
 
-  private val _traceCalls = mutableListOf<TraceCall>()
-  val traceCalls: List<TraceCall> get() = _traceCalls.toList()
-
-  fun clearTraceCalls() {
-    _traceCalls.clear()
-  }
-
-  override fun beginSection(label: String) {
-    _traceCalls.add(TraceCall("beginSection", label = label))
-  }
-
-  override fun endSection() {
-    _traceCalls.add(TraceCall("endSection"))
-  }
-
-  override fun beginAsyncSection(
-    name: String,
-    cookie: Int
-  ) {
-    _traceCalls.add(TraceCall("beginAsyncSection", name = name, cookie = cookie))
-  }
-
-  override fun endAsyncSection(
-    name: String,
-    cookie: Int
-  ) {
-    _traceCalls.add(TraceCall("endAsyncSection", name = name, cookie = cookie))
-  }
-
-  override fun logSection(info: String) {
-    _traceCalls.add(TraceCall("logSection", label = info))
-  }
+  // These aren't part of TraceInterface
+  val traceCalls: List<FakeTrace.TraceCall> get() = delegate.traceCalls
+  fun clearTraceCalls() = delegate.clearTraceCalls()
 }
