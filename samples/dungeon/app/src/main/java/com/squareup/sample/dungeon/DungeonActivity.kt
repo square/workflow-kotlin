@@ -3,6 +3,8 @@ package com.squareup.sample.dungeon
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.squareup.workflow1.ui.compose.withComposeInteropSupport
+import com.squareup.workflow1.ui.withEnvironment
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.map
@@ -17,6 +19,11 @@ class DungeonActivity : AppCompatActivity() {
     val model: TimeMachineModel by viewModels { component.timeMachineModelFactory }
 
     workflowContentView
-      .take(lifecycle, model.renderings.map { it.withRegistry(component.viewRegistry) })
+      .take(
+        lifecycle,
+        model.renderings.map {
+          it.withRegistry(component.viewRegistry)
+            .withEnvironment { it.withComposeInteropSupport() }
+        })
   }
 }

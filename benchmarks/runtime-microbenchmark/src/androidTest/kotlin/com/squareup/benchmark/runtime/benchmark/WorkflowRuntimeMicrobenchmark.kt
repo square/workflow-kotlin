@@ -16,6 +16,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
+import com.squareup.workflow1.internal.compose.runtime.setGlobalSnapshotManagerSendApplyImmediately
 import com.squareup.workflow1.remember
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.renderWorkflowIn
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.pow
@@ -38,6 +41,7 @@ enum class BenchmarkRuntimeOptions(
 ) {
   NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
+  Compose(RuntimeOptions.COMPOSE_RUNTIME_ONLY.runtimeConfig),
 }
 
 enum class BenchmarkTreeShape(
@@ -62,6 +66,14 @@ class WorkflowRuntimeMicrobenchmark(
   }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
+
+  @Before fun setUp() {
+    setGlobalSnapshotManagerSendApplyImmediately(true)
+  }
+
+  @After fun tearDown() {
+    setGlobalSnapshotManagerSendApplyImmediately(false)
+  }
 
   @Test fun initialRenderAllChildren() = benchmarkWorkflowPropsChange(
     setupProps = BenchmarkWorkflowRoot.Props(

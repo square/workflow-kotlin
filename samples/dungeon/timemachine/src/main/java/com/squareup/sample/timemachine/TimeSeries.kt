@@ -78,4 +78,7 @@ internal class TimeSeries<T>(
       else -> data[leftIndex]
     }.first
   }
+
+  override fun toString(): String =
+    "TimeSeries(size=${data.size}, duration=$duration, last=${data.lastOrNull()})"
 }
