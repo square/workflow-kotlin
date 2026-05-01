@@ -19,6 +19,9 @@ plugins {
 }
 ```
 
+The default destination is the project where the plugin is applied: skills go to
+`.agents/skills/`, and workflow-kotlin guidance is merged into `AGENTS.md`.
+
 ## Quick Start
 
 Run the extraction task — this is the primary command:
@@ -62,6 +65,28 @@ Common options:
 | Roo Code | `roo` | `.roo/skills/` |
 
 Multiple agents: `--tools=amp,claude-code,goose`
+
+### Custom Project Layouts
+
+If the consuming project keeps AI context somewhere else, configure the plugin:
+
+```kotlin
+aiContext {
+  // Base directory for relative skills directories.
+  outputDirectory.set(layout.projectDirectory)
+
+  // File that receives the workflow-kotlin AGENTS.md injection block.
+  agentsFile.set(layout.projectDirectory.file("AGENTS.md"))
+
+  // Standard agent mappings. Defaults to listOf("amp"), which writes .agents/skills/.
+  tools.set(listOf("amp", "claude-code"))
+
+  // Exact skills directories for custom layouts. Overrides tools when set.
+  skillsDirectories.set(listOf(".agents/skills", ".claude/skills"))
+}
+```
+
+Use `--preview` before writing files when adopting the plugin in an existing repository.
 
 ## What Gets Extracted
 

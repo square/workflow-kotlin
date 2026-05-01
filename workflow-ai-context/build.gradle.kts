@@ -16,6 +16,7 @@ gradlePlugin {
 }
 
 dependencies {
+  testImplementation(gradleTestKit())
   testImplementation(libs.junit)
   testImplementation(libs.kotlin.test.core)
   testImplementation(libs.kotlin.test.jdk)

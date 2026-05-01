@@ -1,7 +1,18 @@
+public abstract class com/squareup/workflow1/ai/context/AiContextExtension {
+	public fun <init> ()V
+	public abstract fun getAgentsFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getOutputDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getSkillsDirectories ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getTools ()Lorg/gradle/api/provider/ListProperty;
+}
+
 public abstract class com/squareup/workflow1/ai/context/AiContextExtractTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
 	public final fun extract ()V
+	public abstract fun getAgentsFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getOutputDirectory ()Lorg/gradle/api/file/DirectoryProperty;
 	public abstract fun getPreview ()Lorg/gradle/api/provider/Property;
+	public abstract fun getSkillsDirectories ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getTools ()Lorg/gradle/api/provider/Property;
 }
 

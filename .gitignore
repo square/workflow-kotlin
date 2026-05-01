@@ -52,5 +52,6 @@ thoughts/*
 samples/tutorial/AGENTS.md
 samples/tutorial/.agents
 samples/tutorial/.claude
-samples/tutorial/.cursor
-samples/tutorial/.firebender
+samples/tutorial/.goose
+samples/tutorial/.roo
+samples/tutorial/.windsurf
