@@ -1,6 +1,5 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
-import androidx.appcompat.app.AppCompatActivity
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
@@ -38,9 +37,8 @@ class PerformancePoetryComponent(
     browserIsLoading.combine(poemIsLoading) { one, two -> one || two }
   )
 
-  fun poetryModelFactory(owner: AppCompatActivity): PoetryModel.Factory =
+  fun poetryModelFactory(): PoetryModel.Factory =
     PoetryModel.Factory(
-      owner,
       loadingGatekeeperForPoems,
       workflowInterceptor,
       runtimeConfig

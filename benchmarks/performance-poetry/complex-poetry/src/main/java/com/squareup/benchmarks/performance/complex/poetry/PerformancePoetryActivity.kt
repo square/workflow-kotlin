@@ -7,11 +7,12 @@ import android.os.Looper
 import android.view.Choreographer
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.savedstate.SavedStateRegistryOwner
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor
@@ -86,7 +87,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
 
     val component =
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)
-    val model: PoetryModel by viewModels { component.poetryModelFactory(this) }
+    val model: PoetryModel by viewModels { component.poetryModelFactory() }
 
     val instrumentedRenderings = if (simulatedPerfConfig.traceFrameLatency) {
       model.renderings.onEach { screen ->
@@ -270,19 +271,22 @@ class PoetryModel(
   }
 
   class Factory(
-    owner: SavedStateRegistryOwner,
     private val workflow: MaybeLoadingGatekeeperWorkflow<Pair<Pair<Int, Int>, List<Poem>>>,
     private val workflowInterceptor: WorkflowInterceptor?,
     private val runtimeConfig: RuntimeConfig
-  ) : AbstractSavedStateViewModelFactory(owner, null) {
+  ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
-      key: String,
       modelClass: Class<T>,
-      handle: SavedStateHandle
+      extras: CreationExtras
     ): T {
       if (modelClass == PoetryModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return PoetryModel(handle, workflow, workflowInterceptor, runtimeConfig) as T
+        return PoetryModel(
+          extras.createSavedStateHandle(),
+          workflow,
+          workflowInterceptor,
+          runtimeConfig
+        ) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")
