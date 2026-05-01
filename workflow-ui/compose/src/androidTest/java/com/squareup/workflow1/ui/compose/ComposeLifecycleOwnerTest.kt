@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -33,10 +34,11 @@ class ComposeLifecycleOwnerTest {
       parentLifecycle.currentState = RESUMED
       childLifecycleOwner = rememberChildLifecycleOwner(parentLifecycle)
       CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) {
+        val currentState by childLifecycleOwner.lifecycle.currentStateAsState()
         // let's assert right away as things are composing, because we want to ensure that
         // the lifecycle is in the correct state as soon as possible & not just after composition
         // has finished
-        assertThat(childLifecycleOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.RESUMED)
+        assertThat(currentState).isEqualTo(Lifecycle.State.RESUMED)
       }
     }
 
@@ -59,10 +61,11 @@ class ComposeLifecycleOwnerTest {
       CompositionLocalProvider(
         LocalLifecycleOwner provides childLifecycleOwner
       ) {
+        val currentState by childLifecycleOwner.lifecycle.currentStateAsState()
         // let's assert right away as things are composing, because we want to ensure that
         // the lifecycle is in the correct state as soon as possible & not just after composition
         // has finished
-        assertThat(childLifecycleOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.CREATED)
+        assertThat(currentState).isEqualTo(Lifecycle.State.CREATED)
       }
     }
 
