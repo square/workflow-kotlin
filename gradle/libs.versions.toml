@@ -16,7 +16,7 @@ androidx-cardview = "1.0.0"
 androidx-collection = "1.5.0"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
 androidx-compose-bom = "2025.03.01"
-androidx-constraintlayout = "2.1.4"
+androidx-constraintlayout = "2.2.1"
 androidx-core = "1.13.1"
 androidx-fragment = "1.8.5"
 androidx-gridlayout = "1.0.0"
