@@ -99,9 +99,9 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
     }
 
-    val syncAiRulesResources =
-      target.tasks.register("syncAiRulesResources", Sync::class.java) { sync ->
-        val outputDir = target.layout.buildDirectory.dir("generated/ai-rules-resources")
+    val syncAiContextResources =
+      target.tasks.register("syncAiContextResources", Sync::class.java) { sync ->
+        val outputDir = target.layout.buildDirectory.dir("generated/ai-context-resources")
         sync.into(outputDir)
 
         sync.from(target.layout.projectDirectory.dir(".agents")) {
@@ -132,13 +132,13 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
 
     target.tasks.withType(ProcessResources::class.java).configureEach { processResources ->
-      processResources.dependsOn(syncAiRulesResources)
-      processResources.from(syncAiRulesResources.map { it.destinationDir })
+      processResources.dependsOn(syncAiContextResources)
+      processResources.from(syncAiContextResources.map { it.destinationDir })
     }
 
     target.tasks.withType(PublishToMavenRepository::class.java) {
       it.notCompatibleWithConfigurationCache("See https://github.com/gradle/gradle/issues/13468")
-      it.dependsOn(syncAiRulesResources)
+      it.dependsOn(syncAiContextResources)
     }
   }
 

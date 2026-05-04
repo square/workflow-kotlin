@@ -7,6 +7,7 @@ import com.squareup.workflow1.ai.context.AiContextExtractTask.Companion.AGENTS_I
 import com.squareup.workflow1.ai.context.AiContextExtractTask.Companion.SKILLS_PREFIX
 import com.squareup.workflow1.ai.context.AiContextExtractTask.Companion.mergeAgentsMd
 import com.squareup.workflow1.ai.context.AiContextExtractTask.Companion.scanJar
+import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -124,8 +125,69 @@ internal class AiContextExtractTaskTest {
 
   // endregion
 
+  // region plugin functional tests
+
+  @Test fun `extractAiContext writes agents and skills from classpath archives`() {
+    val projectDir = tmpDir.newFolder("consumer-project")
+    writeConsumerBuild(projectDir)
+    createTestJar(
+      File(projectDir, "libs/workflow-context.jar"),
+      AGENTS_FILE to "# Workflow Guidance",
+      "${SKILLS_PREFIX}create-workflow/SKILL.md" to "# Create Workflow"
+    )
+
+    runGradle(projectDir, "extractAiContext")
+
+    assertThat(File(projectDir, "AGENTS.md").readText()).isEqualTo(
+      "$AGENTS_INJECTION_START\n# Workflow Guidance\n$AGENTS_INJECTION_END\n"
+    )
+    assertThat(File(projectDir, ".agents/skills/create-workflow/SKILL.md").readText())
+      .isEqualTo("# Create Workflow")
+  }
+
+  @Test fun `extractAiContext supports configured agents file and skills directories`() {
+    val projectDir = tmpDir.newFolder("configured-consumer-project")
+    writeConsumerBuild(
+      projectDir,
+      """
+      aiContext {
+        outputDirectory.set(layout.projectDirectory.dir("ai-output"))
+        agentsFile.set(layout.projectDirectory.file(".github/copilot-instructions.md"))
+        skillsDirectories.set(['team/skills', '.custom-agent/skills'])
+      }
+      """.trimIndent()
+    )
+    createTestJar(
+      File(projectDir, "libs/workflow-context.jar"),
+      AGENTS_FILE to "# Workflow Guidance",
+      "${SKILLS_PREFIX}workflow-testing/SKILL.md" to "# Workflow Testing"
+    )
+
+    runGradle(projectDir, "extractAiContext")
+
+    assertThat(File(projectDir, ".github/copilot-instructions.md").readText()).isEqualTo(
+      "$AGENTS_INJECTION_START\n# Workflow Guidance\n$AGENTS_INJECTION_END\n"
+    )
+    assertThat(File(projectDir, "ai-output/team/skills/workflow-testing/SKILL.md").readText())
+      .isEqualTo("# Workflow Testing")
+    assertThat(
+      File(projectDir, "ai-output/.custom-agent/skills/workflow-testing/SKILL.md").readText()
+    ).isEqualTo("# Workflow Testing")
+  }
+
+  // endregion
+
   private fun createTestJar(vararg entries: Pair<String, String>): File {
     val jarFile = File(tmpDir.root, "test-${entries.hashCode()}.jar")
+    createTestJar(jarFile, *entries)
+    return jarFile
+  }
+
+  private fun createTestJar(
+    jarFile: File,
+    vararg entries: Pair<String, String>,
+  ): File {
+    jarFile.parentFile.mkdirs()
     JarOutputStream(jarFile.outputStream()).use { jos ->
       for ((path, content) in entries) {
         jos.putNextEntry(JarEntry(path))
@@ -134,5 +196,37 @@ internal class AiContextExtractTaskTest {
       }
     }
     return jarFile
+  }
+
+  private fun writeConsumerBuild(
+    projectDir: File,
+    aiContextConfiguration: String = "",
+  ) {
+    File(projectDir, "settings.gradle").writeText("")
+    File(projectDir, "build.gradle").writeText(
+      """
+      plugins {
+        id 'java'
+        id 'com.squareup.workflow1.ai-context'
+      }
+
+      dependencies {
+        implementation files('libs/workflow-context.jar')
+      }
+
+      $aiContextConfiguration
+      """.trimIndent()
+    )
+  }
+
+  private fun runGradle(
+    projectDir: File,
+    vararg arguments: String,
+  ) {
+    GradleRunner.create()
+      .withProjectDir(projectDir)
+      .withArguments(arguments.toList() + "--stacktrace")
+      .withPluginClasspath()
+      .build()
   }
 }

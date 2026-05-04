@@ -62,6 +62,30 @@ plugins {
 The plugin requires workflow-kotlin dependencies on your classpath (e.g., `workflow-core`,
 `workflow-testing`) — it scans those JARs for bundled AI context.
 
+By default, the task writes generated skills next to the applied project in `.agents/skills/`
+and merges workflow-kotlin guidance into `AGENTS.md` in that same directory. This matches the
+Agent Skills standard and works for projects that use root `AGENTS.md` as their main agent
+instruction file.
+
+If your repository keeps agent context somewhere else, configure the plugin explicitly:
+
+```kotlin
+aiContext {
+  // Base directory for relative skills directories. Defaults to the project directory.
+  outputDirectory.set(layout.projectDirectory)
+
+  // File that receives the workflow-kotlin AGENTS.md injection block.
+  agentsFile.set(layout.projectDirectory.file("AGENTS.md"))
+
+  // Standard agent mappings. Defaults to listOf("amp"), which writes .agents/skills/.
+  tools.set(listOf("amp", "claude-code"))
+
+  // Use exact skills directories when your repo has a custom agent layout.
+  // Relative paths are resolved from outputDirectory. When set, this overrides tools.
+  skillsDirectories.set(listOf(".agents/skills", ".claude/skills"))
+}
+```
+
 ## Usage
 
 ### Extract AI Context
@@ -110,6 +134,20 @@ Supported agents:
 | Roo Code | `roo` | `.roo/skills/` |
 
 Unknown agent names fall back to `.{name}/skills/`.
+
+### Choosing Output Locations
+
+The plugin uses conservative defaults instead of auto-detecting every possible agent setup:
+
+- Skills default to `.agents/skills/`, because that is the shared Agent Skills location used by
+  Amp, Codex, Cursor, GitHub Copilot, Gemini CLI, and OpenCode.
+- `AGENTS.md` defaults to the project directory where the plugin is applied, because it is the
+  broadest cross-agent instruction file and can preserve project-specific content around the
+  injected workflow-kotlin block.
+- If a project already standardizes on another guidance file or keeps generated context under a
+  dedicated directory, set `agentsFile` and `skillsDirectories` directly.
+- Run `./gradlew extractAiContext --preview` before writing files when adopting the plugin in an
+  existing repository.
 
 ### Update After a Version Bump
 

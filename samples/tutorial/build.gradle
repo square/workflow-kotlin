@@ -79,10 +79,10 @@ tasks.register("clean", Delete) {
   delete rootProject.buildDir
 }
 
-tasks.register("verifyAiRulesExtraction") {
+tasks.register("verifyAiContextExtraction") {
   dependsOn 'extractAiContext'
   group = 'verification'
-  description = 'Verifies that AI rules and skills were correctly extracted from workflow JARs'
+  description = 'Verifies that AI context and skills were correctly extracted from workflow JARs'
 
   doLast {
     // The ai-context plugin defaults to the `amp` tool, which extracts skills to `.agents/skills`.
@@ -113,12 +113,12 @@ tasks.register("verifyAiRulesExtraction") {
 
     if (!missing.isEmpty()) {
       throw new GradleException(
-        "AI rules extraction verification failed. Missing or empty files:\n" +
+        "AI context extraction verification failed. Missing or empty files:\n" +
         missing.collect { "  - $it" }.join('\n')
       )
     }
 
-    println "AI rules extraction verification passed!"
+    println "AI context extraction verification passed!"
     println "  Skills: ${expectedSkills.size} verified"
   }
 }

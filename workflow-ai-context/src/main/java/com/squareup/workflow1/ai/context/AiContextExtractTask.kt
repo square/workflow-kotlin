@@ -1,8 +1,12 @@
 package com.squareup.workflow1.ai.context
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import java.io.File
@@ -28,9 +32,18 @@ public abstract class AiContextExtractTask : DefaultTask() {
   @get:Input
   @get:Option(
     option = "tools",
-    description = "Comma-separated agent names (default: amp)"
+    description = "Comma-separated agent names used to derive standard skills directories"
   )
   public abstract val tools: Property<String>
+
+  @get:Internal
+  public abstract val outputDirectory: DirectoryProperty
+
+  @get:Internal
+  public abstract val agentsFile: RegularFileProperty
+
+  @get:Input
+  public abstract val skillsDirectories: ListProperty<String>
 
   init {
     preview.convention(false)
@@ -49,9 +62,19 @@ public abstract class AiContextExtractTask : DefaultTask() {
       return
     }
 
-    val toolNames = tools.get().split(",").map { it.trim().lowercase() }
-    val toolDirs = toolNames.map { resolveSkillsDir(it) }.distinct()
-    val outputDir = project.projectDir
+    val configuredSkillDirs = skillsDirectories.get()
+      .map { it.trim() }
+      .filter { it.isNotEmpty() }
+    val toolNames = tools.get().split(",")
+      .map { it.trim().lowercase() }
+      .filter { it.isNotEmpty() }
+    val skillDirCandidates = if (configuredSkillDirs.isNotEmpty()) {
+      configuredSkillDirs
+    } else {
+      toolNames.map { resolveSkillsDir(it) }
+    }
+    val skillDirs = skillDirCandidates.distinct()
+    val outputDir = outputDirectory.get().asFile
 
     // Scan JARs for AI context entries
     val agentsContent = mutableListOf<String>()
@@ -73,11 +96,11 @@ public abstract class AiContextExtractTask : DefaultTask() {
     }
 
     // Determine AGENTS.md action
-    val agentsFile = File(outputDir, "AGENTS.md")
+    val targetAgentsFile = agentsFile.get().asFile
     val agentsAction = when {
       agentsContent.isEmpty() -> null
-      !agentsFile.exists() -> "Will create new file"
-      agentsFile.readText().let {
+      !targetAgentsFile.exists() -> "Will create new file"
+      targetAgentsFile.readText().let {
         it.contains(AGENTS_INJECTION_START) && it.contains(AGENTS_INJECTION_END)
       } -> "Will update existing injection block"
       else -> "Will append to existing file"
@@ -95,12 +118,12 @@ public abstract class AiContextExtractTask : DefaultTask() {
           "Will update existing injection block" -> "Update the injection block in"
           else -> "Append workflow-kotlin context to"
         }
-        logger.lifecycle("  - $verb AGENTS.md with workflow-kotlin guidance")
+        logger.lifecycle("  - $verb ${displayPath(targetAgentsFile)}")
       }
       if (skills.isNotEmpty()) {
         val skillNames = skills.map { it.first.substringBefore("/") }.distinct()
         logger.lifecycle(
-          "  - Add ${skillNames.size} skills to ${toolDirs.joinToString(", ")} directories:"
+          "  - Add ${skillNames.size} skills to ${skillDirs.joinToString(", ")} directories:"
         )
         for (skill in skillNames) {
           logger.lifecycle("      $skill")
@@ -111,19 +134,19 @@ public abstract class AiContextExtractTask : DefaultTask() {
 
     // Write AGENTS.md
     if (agentsContent.isNotEmpty()) {
-      val existing = if (agentsFile.exists()) agentsFile.readText() else ""
+      val existing = if (targetAgentsFile.exists()) targetAgentsFile.readText() else ""
       val newContent = mergeAgentsMd(existing, agentsContent)
-      agentsFile.parentFile.mkdirs()
-      agentsFile.writeText(newContent)
-      logger.lifecycle("  Updated: AGENTS.md")
+      targetAgentsFile.parentFile.mkdirs()
+      targetAgentsFile.writeText(newContent)
+      logger.lifecycle("  Updated: ${displayPath(targetAgentsFile)}")
     }
 
     // Write skills
     var skillsCount = 0
     if (skills.isNotEmpty()) {
       for ((relativePath, content) in skills) {
-        for (toolDir in toolDirs) {
-          val targetFile = File(outputDir, "$toolDir/$relativePath")
+        for (skillDir in skillDirs) {
+          val targetFile = outputDir.resolve(skillDir).resolve(relativePath)
           targetFile.parentFile.mkdirs()
           targetFile.writeBytes(content)
         }
@@ -172,6 +195,14 @@ public abstract class AiContextExtractTask : DefaultTask() {
         }
       }
       .distinct()
+  }
+
+  private fun displayPath(file: File): String {
+    return try {
+      file.toRelativeString(project.projectDir)
+    } catch (_: IllegalArgumentException) {
+      file.path
+    }
   }
 
   internal companion object {
