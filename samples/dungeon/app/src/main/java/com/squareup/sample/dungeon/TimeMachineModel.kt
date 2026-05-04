@@ -1,10 +1,11 @@
 package com.squareup.sample.dungeon
 
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.savedstate.SavedStateRegistryOwner
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
@@ -30,17 +31,15 @@ class TimeMachineModel(
   }
 
   class Factory(
-    owner: SavedStateRegistryOwner,
     private val workflow: TimeMachineAppWorkflow,
-  ) : AbstractSavedStateViewModelFactory(owner, null) {
+  ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
-      key: String,
       modelClass: Class<T>,
-      handle: SavedStateHandle
+      extras: CreationExtras
     ): T {
       if (modelClass == TimeMachineModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return TimeMachineModel(handle, workflow) as T
+        return TimeMachineModel(extras.createSavedStateHandle(), workflow) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

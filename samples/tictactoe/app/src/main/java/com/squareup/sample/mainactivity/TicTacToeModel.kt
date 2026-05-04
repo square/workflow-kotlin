@@ -2,11 +2,12 @@
 
 package com.squareup.sample.mainactivity
 
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.savedstate.SavedStateRegistryOwner
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
@@ -37,17 +38,15 @@ class TicTacToeModel(
   suspend fun waitForExit() = running.join()
 
   class Factory(
-    owner: SavedStateRegistryOwner,
     private val workflow: TicTacToeWorkflow,
-  ) : AbstractSavedStateViewModelFactory(owner, null) {
+  ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
-      key: String,
       modelClass: Class<T>,
-      handle: SavedStateHandle
+      extras: CreationExtras
     ): T {
       if (modelClass == TicTacToeModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return TicTacToeModel(handle, workflow) as T
+        return TicTacToeModel(extras.createSavedStateHandle(), workflow) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

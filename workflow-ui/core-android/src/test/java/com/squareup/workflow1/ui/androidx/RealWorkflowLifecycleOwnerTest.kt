@@ -143,12 +143,16 @@ internal class RealWorkflowLifecycleOwnerTest {
   }
 
   @Test fun `lifecycle stays destroyed after parent destroyed`() {
-    ensureParentLifecycle().currentState = RESUMED
+    val destroyedParent = ensureParentLifecycle()
+    destroyedParent.currentState = RESUMED
     makeViewAttached()
 
-    ensureParentLifecycle().currentState = DESTROYED
-    ensureParentLifecycle().currentState = RESUMED
+    destroyedParent.currentState = DESTROYED
+    assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
 
+    parentLifecycle = null
+    ensureParentLifecycle().currentState = RESUMED
+    makeViewAttached()
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 

@@ -23,7 +23,7 @@ class TicTacToeActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
 
     val component: TicTacToeComponent by viewModels()
-    val model: TicTacToeModel by viewModels { component.ticTacToeModelFactory(this) }
+    val model: TicTacToeModel by viewModels { component.ticTacToeModelFactory() }
 
     idlingResource = component.idlingResource
 

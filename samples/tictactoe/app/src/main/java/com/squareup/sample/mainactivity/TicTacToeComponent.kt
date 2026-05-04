@@ -1,6 +1,5 @@
 package com.squareup.sample.mainactivity
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
@@ -54,8 +53,8 @@ class TicTacToeComponent : ViewModel() {
 
   private val ticTacToeWorkflow = TicTacToeWorkflow(authWorkflow(), gameWorkflow())
 
-  fun ticTacToeModelFactory(owner: AppCompatActivity): TicTacToeModel.Factory =
-    TicTacToeModel.Factory(owner, ticTacToeWorkflow)
+  fun ticTacToeModelFactory(): TicTacToeModel.Factory =
+    TicTacToeModel.Factory(ticTacToeWorkflow)
 
   companion object {
     init {
