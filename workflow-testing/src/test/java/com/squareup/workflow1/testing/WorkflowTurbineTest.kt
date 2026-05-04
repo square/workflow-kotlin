@@ -9,11 +9,19 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * Tests for WorkflowTurbine to verify that awaitNextRendering, awaitNextOutput, and
@@ -133,6 +141,71 @@ class WorkflowTurbineTest {
       assertEquals("installing", awaitNextRendering())
     }
   }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `default teardown waits for runtime cancellation cleanup`() {
+    val dispatcher = StandardTestDispatcher()
+    val cleanupStarted = CompletableDeferred<Unit>()
+    var cleanupFinished = false
+
+    workflowWithCancellationCleanup(cleanupStarted) {
+      delay(1)
+      cleanupFinished = true
+    }.renderForTest(
+      coroutineContext = dispatcher
+    ) {
+      cleanupStarted.await()
+      assertFalse(cleanupFinished)
+    }
+
+    assertTrue(cleanupFinished)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `cancel teardown returns without awaiting runtime cancellation cleanup`() {
+    val dispatcher = StandardTestDispatcher()
+    val cleanupStarted = CompletableDeferred<Unit>()
+    val cleanupCanFinish = CompletableDeferred<Unit>()
+    var cleanupFinished = false
+
+    workflowWithCancellationCleanup(cleanupStarted) {
+      cleanupCanFinish.await()
+      cleanupFinished = true
+    }.renderForTest(
+      coroutineContext = dispatcher,
+      teardown = WorkflowRuntimeTeardown.Cancel
+    ) {
+      cleanupStarted.await()
+    }
+
+    assertFalse(cleanupFinished)
+    cleanupCanFinish.complete(Unit)
+    dispatcher.scheduler.advanceUntilIdle()
+    assertTrue(cleanupFinished)
+  }
+
+  private fun workflowWithCancellationCleanup(
+    cleanupStarted: CompletableDeferred<Unit>,
+    cleanup: suspend () -> Unit,
+  ): StatefulWorkflow<Unit, Unit, Nothing, Unit> =
+    Workflow.stateful<Unit, Nothing, Unit>(
+      initialState = Unit,
+      render = {
+        runningSideEffect("cleanup") {
+          cleanupStarted.complete(Unit)
+          try {
+            awaitCancellation()
+          } finally {
+            withContext(NonCancellable) {
+              cleanup()
+            }
+          }
+        }
+        Unit
+      }
+    )
 
   // Workflow that can increment state
   private object IncrementWorkflow : StatefulWorkflow<Unit, Int, Nothing, Pair<Int, () -> Unit>>() {

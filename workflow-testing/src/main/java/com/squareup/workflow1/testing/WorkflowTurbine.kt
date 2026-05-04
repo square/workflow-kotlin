@@ -17,7 +17,8 @@ import com.squareup.workflow1.testing.WorkflowTurbine.Companion.WORKFLOW_TEST_DE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,8 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -44,6 +47,10 @@ import kotlin.time.Duration.Companion.milliseconds
  * A [testTimeout] may be specified to override the default [WORKFLOW_TEST_DEFAULT_TIMEOUT_MS] for
  * any particular test. This is the max amount of time the test could spend waiting on a rendering.
  *
+ * [WorkflowRuntimeTeardown.CancelAndAwait] means `renderForTest` will not return until the workflow
+ * runtime has been cancelled and cancellation cleanup has either completed or timed out. This is the
+ * default so callers can run external teardown checks after this function returns.
+ *
  * This will start the Workflow runtime (with params as passed) rooted at whatever Workflow
  * it is called on and then create a [WorkflowTurbine] for its renderings and run [testCase] on that.
  * [testCase] can thus drive the test scenario and assert against renderings.
@@ -56,6 +63,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     props: StateFlow<PropsT>,
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -81,69 +89,112 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     // We use a sub-scope so that we can cancel the Workflow runtime when we are done with it so that
     // tests don't all have to do that themselves.
     val workflowRuntimeScope = CoroutineScope(coroutineContext)
+    val runtimeJob = workflowRuntimeScope.coroutineContext[Job]
+      ?: error("Workflow runtime scope must have a Job")
 
-    val outputsChannel = Channel<OutputT>(Channel.UNLIMITED)
+    var testFailure: Throwable? = null
+    try {
+      val outputsChannel = Channel<OutputT>(Channel.UNLIMITED)
 
-    val renderings = renderWorkflowIn(
-      workflow = workflow,
-      props = props,
-      scope = workflowRuntimeScope,
-      initialSnapshot = initialSnapshot,
-      interceptors = interceptors,
-      runtimeConfig = runtimeConfig,
-      onOutput = { output ->
-        outputsChannel.send(output)
-        onOutput(output)
-      }
-    )
-
-    if (testParams.autoAdvanceOnStartup) {
-      // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
-      // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
-      // This ensures the runtime loop is running and waiting for actions before the test begins.
-      testScheduler.advanceUntilIdle()
-    }
-
-    val firstRendering = renderings.value.rendering
-    val firstSnapshot = renderings.value.snapshot
-
-    // Share the RenderingAndSnapshot flow so multiple subscribers can collect from it
-    // Use workflowRuntimeScope so it's cancelled when the workflow is cancelled
-    val sharedRenderings = renderings.drop(1)
-      .shareIn(
+      val renderings = renderWorkflowIn(
+        workflow = workflow,
+        props = props,
         scope = workflowRuntimeScope,
-        started = SharingStarted.Eagerly,
-        replay = 0
+        initialSnapshot = initialSnapshot,
+        interceptors = interceptors,
+        runtimeConfig = runtimeConfig,
+        onOutput = { output ->
+          outputsChannel.send(output)
+          onOutput(output)
+        }
       )
 
-    // Use turbineScope to test multiple flows
-    turbineScope {
-      // Map the shared flow to extract renderings and snapshots separately
-      val renderingTurbine = sharedRenderings.map { it.rendering }
-        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "renderings")
-      val snapshotTurbine = sharedRenderings.map { it.snapshot }
-        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "snapshots")
-      val outputTurbine = outputsChannel.receiveAsFlow()
-        .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "outputs")
+      if (testParams.autoAdvanceOnStartup) {
+        // Advance the scheduler to start the runtime loop coroutine. With StandardTestDispatcher,
+        // scope.launch {} dispatches but doesn't start the coroutine until the scheduler is advanced.
+        // This ensures the runtime loop is running and waiting for actions before the test begins.
+        testScheduler.advanceUntilIdle()
+      }
 
-      val workflowTurbine = WorkflowTurbine(
-        firstRendering = firstRendering,
-        firstSnapshot = firstSnapshot,
-        renderingTurbine = renderingTurbine,
-        snapshotTurbine = snapshotTurbine,
-        outputTurbine = outputTurbine,
-        testScheduler = testScheduler,
-        autoAdvanceBeforeAwait = testParams.autoAdvanceBeforeAwait
-      )
-      workflowTurbine.testCase()
+      val firstRendering = renderings.value.rendering
+      val firstSnapshot = renderings.value.snapshot
 
-      // Cancel all turbines
-      renderingTurbine.cancel()
-      snapshotTurbine.cancel()
-      outputTurbine.cancel()
+      // Share the RenderingAndSnapshot flow so multiple subscribers can collect from it
+      // Use workflowRuntimeScope so it's cancelled when the workflow is cancelled
+      val sharedRenderings = renderings.drop(1)
+        .shareIn(
+          scope = workflowRuntimeScope,
+          started = SharingStarted.Eagerly,
+          replay = 0
+        )
+
+      // Use turbineScope to test multiple flows
+      turbineScope {
+        // Map the shared flow to extract renderings and snapshots separately
+        val renderingTurbine = sharedRenderings.map { it.rendering }
+          .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "renderings")
+        val snapshotTurbine = sharedRenderings.map { it.snapshot }
+          .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "snapshots")
+        val outputTurbine = outputsChannel.receiveAsFlow()
+          .testIn(backgroundScope, timeout = testTimeout.milliseconds, name = "outputs")
+
+        try {
+          val workflowTurbine = WorkflowTurbine(
+            firstRendering = firstRendering,
+            firstSnapshot = firstSnapshot,
+            renderingTurbine = renderingTurbine,
+            snapshotTurbine = snapshotTurbine,
+            outputTurbine = outputTurbine,
+            testScheduler = testScheduler,
+            autoAdvanceBeforeAwait = testParams.autoAdvanceBeforeAwait
+          )
+          workflowTurbine.testCase()
+        } finally {
+          renderingTurbine.cancel()
+          snapshotTurbine.cancel()
+          outputTurbine.cancel()
+        }
+      }
+    } catch (t: Throwable) {
+      testFailure = t
+      throw t
+    } finally {
+      val teardownFailure = runCatching {
+        runtimeJob.cancelForTest(teardown, testScheduler)
+      }.exceptionOrNull()
+
+      if (teardownFailure != null) {
+        if (testFailure != null) {
+          testFailure.addSuppressed(teardownFailure)
+        } else {
+          throw teardownFailure
+        }
+      }
     }
+  }
+}
 
-    workflowRuntimeScope.cancel()
+private suspend fun Job.cancelForTest(
+  teardown: WorkflowRuntimeTeardown,
+  testScheduler: TestCoroutineScheduler,
+) {
+  cancel()
+  when (teardown) {
+    WorkflowRuntimeTeardown.Cancel -> Unit
+
+    is WorkflowRuntimeTeardown.CancelAndAwait -> withContext(NonCancellable) {
+      if (teardown.drainSchedulerAfterCancel) {
+        testScheduler.advanceUntilIdle()
+      }
+
+      withTimeout(teardown.timeout) {
+        join()
+      }
+
+      if (teardown.drainSchedulerAfterCancel) {
+        testScheduler.advanceUntilIdle()
+      }
+    }
   }
 }
 
@@ -156,6 +207,7 @@ public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTest(
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -163,6 +215,7 @@ public fun <StateT, OutputT, RenderingT>
   props = MutableStateFlow(Unit).asStateFlow(),
   testParams = testParams,
   coroutineContext = coroutineContext,
+  teardown = teardown,
   onOutput = onOutput,
   testTimeout = testTimeout,
   testCase = testCase
@@ -176,6 +229,7 @@ public fun <StateT, OutputT, RenderingT>
  * @param props StateFlow of props to send to the workflow.
  * @param testParams Test configuration parameters. See [WorkflowTestParams] for details.
  * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param teardown How to cancel and optionally await workflow runtime cleanup.
  * @param onOutput Callback for workflow outputs.
  * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
  * @param testCase The test code to run with access to the [WorkflowTurbine].
@@ -186,16 +240,18 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
 ): Unit = asStatefulWorkflow().renderForTest(
-  props,
-  testParams,
-  coroutineContext,
-  onOutput,
-  testTimeout,
-  testCase
+  props = props,
+  testParams = testParams,
+  coroutineContext = coroutineContext,
+  teardown = teardown,
+  onOutput = onOutput,
+  testTimeout = testTimeout,
+  testCase = testCase
 )
 
 /**
@@ -208,6 +264,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -216,6 +273,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
   testParams = testParams,
   coroutineContext = coroutineContext,
   interceptors = interceptors,
+  teardown = teardown,
   onOutput = onOutput,
   testTimeout = testTimeout,
   testCase = testCase
@@ -230,6 +288,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
  * @param props StateFlow of props to send to the workflow.
  * @param initialState The state to start the workflow from.
  * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param teardown How to cancel and optionally await workflow runtime cleanup.
  * @param onOutput Callback for workflow outputs.
  * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
  * @param testCase The test code to run with access to the [WorkflowTurbine].
@@ -240,6 +299,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     props: StateFlow<PropsT>,
     initialState: StateT,
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -247,6 +307,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   props = props,
   testParams = WorkflowTestParams(startFrom = StartFromState(initialState)),
   coroutineContext = coroutineContext,
+  teardown = teardown,
   onOutput = onOutput,
   testTimeout = testTimeout,
   testCase = testCase
@@ -258,6 +319,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *
  * @param initialState The state to start the workflow from.
  * @param coroutineContext Optional [CoroutineContext] to use for the test.
+ * @param teardown How to cancel and optionally await workflow runtime cleanup.
  * @param onOutput Callback for workflow outputs.
  * @param testTimeout Maximum time to wait for workflow operations in milliseconds.
  * @param testCase The test code to run with access to the [WorkflowTurbine].
@@ -267,6 +329,7 @@ public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
     initialState: StateT,
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -274,6 +337,7 @@ public fun <StateT, OutputT, RenderingT>
   props = MutableStateFlow(Unit).asStateFlow(),
   initialState = initialState,
   coroutineContext = coroutineContext,
+  teardown = teardown,
   onOutput = onOutput,
   testTimeout = testTimeout,
   testCase = testCase
