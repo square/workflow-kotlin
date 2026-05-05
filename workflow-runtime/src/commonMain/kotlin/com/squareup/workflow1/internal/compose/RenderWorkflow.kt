@@ -40,29 +40,30 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   // The lifetime of the workflow session is tied to the workflow.identifier, but we don't key on it
   // here since it's already keyed from ComposeRenderContext.
 
-  // TODO Skipping without restarting doesn't work, since we have no way to know whether the state
-  //  changed and we need to recompose anyway. I think the only way to get this information is
-  //  from the changed parameter that the compiler generates for this composable, but we don't
-  //  have any way to access that.
-  // TODO Skipping *with* restarting seems to work, but it requires allocating a composable lambda
-  //  for the content and the trampolining is weird, so I'm leaving it disabled while I iron out
-  //  the rest of the kinks.
-  // // Skip re-rendering when possible but force recompose when new props or output handler are
-  // passed.
-  // rememberSkippableComposable(props, onOutput) {
-  // rememberSkippableAndRestartableComposable(props, onOutput) {
+  // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
+  // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
+  // call to the producer lambda within the same restart group.
+  //
+  // Notes on the previous TODOs (now resolved by enabling this path):
+  //  - Plain "skipping without restarting" can't work for us: we have no access to the compiler-
+  //    generated $changed parameter, so we can't tell whether stale-but-equal keys mean we should
+  //    skip. The restartable variant sidesteps this by giving each call its own restart group whose
+  //    invalidation is what we already drive from action application.
+  //  - The "trampolining" cost is one captured composable lambda per renderWorkflow call. The
+  //    benchmark deltas justify that allocation.
+  return rememberSkippableAndRestartableComposable(key1 = props, key2 = onOutput) {
+    val baseContext = rememberComposeRenderContext(
+      workflow = workflow,
+      props = props,
+      onOutput = onOutput,
+      config = config,
+      parentSession = parentSession,
+      renderKey = renderKey,
+    )
 
-  val baseContext = rememberComposeRenderContext(
-    workflow = workflow,
-    props = props,
-    onOutput = onOutput,
-    config = config,
-    parentSession = parentSession,
-    renderKey = renderKey,
-  )
-
-  // TODO this feels weird to have outside the context, should it be moved in too? Should this whole
-  //  function be moved into the context? I think unit tests will be the only real forcing function,
-  //  so let's write some tests and see how it works.
-  return baseContext.renderSelf(props)
+    // TODO this feels weird to have outside the context, should it be moved in too? Should this
+    //  whole function be moved into the context? I think unit tests will be the only real forcing
+    //  function, so let's write some tests and see how it works.
+    baseContext.renderSelf(props)
+  }
 }
