@@ -32,6 +32,7 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.math.pow
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 
 /** The microbenchmarks take a while to run, so we only run with a subset of runtime configs. */
 @Suppress("unused")
@@ -63,6 +64,11 @@ class WorkflowRuntimeMicrobenchmark(
     const val WideSiblingCount = 250
     const val RememberEntryCount = 250
     const val StableHandlerCount = 250
+
+    // The default 1m runTest timeout fires for the slowest combinations on physical devices,
+    // surfacing as UncompletedCoroutinesError instead of a real benchmark result. The benchmark
+    // body itself is bounded by `measureRepeated` so this just lets it finish.
+    val BenchmarkRunTestTimeout = 10.minutes
   }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
@@ -263,7 +269,7 @@ class WorkflowRuntimeMicrobenchmark(
     testProps: PropsT,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkRunTestTimeout) {
     val props = MutableStateFlow(setupProps)
     val workflowJob = Job(parent = coroutineContext.job)
     val renderings = renderWorkflowIn(
@@ -296,7 +302,7 @@ class WorkflowRuntimeMicrobenchmark(
   private fun benchmarkWorkflowStateChange(
     testState: (setStateForChild: (index: Int, newState: Int) -> Unit) -> Unit,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkRunTestTimeout) {
     val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
     val workflow = BenchmarkWorkflowRoot(
       treeShape = treeShape,
