@@ -144,27 +144,7 @@ class WorkflowTurbineTest {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  fun `default teardown waits for runtime cancellation cleanup`() {
-    val dispatcher = StandardTestDispatcher()
-    val cleanupStarted = CompletableDeferred<Unit>()
-    var cleanupFinished = false
-
-    workflowWithCancellationCleanup(cleanupStarted) {
-      delay(1)
-      cleanupFinished = true
-    }.renderForTest(
-      coroutineContext = dispatcher
-    ) {
-      cleanupStarted.await()
-      assertFalse(cleanupFinished)
-    }
-
-    assertTrue(cleanupFinished)
-  }
-
-  @OptIn(ExperimentalCoroutinesApi::class)
-  @Test
-  fun `cancel teardown returns without awaiting runtime cancellation cleanup`() {
+  fun `default teardown returns without awaiting runtime cancellation cleanup`() {
     val dispatcher = StandardTestDispatcher()
     val cleanupStarted = CompletableDeferred<Unit>()
     val cleanupCanFinish = CompletableDeferred<Unit>()
@@ -174,8 +154,7 @@ class WorkflowTurbineTest {
       cleanupCanFinish.await()
       cleanupFinished = true
     }.renderForTest(
-      coroutineContext = dispatcher,
-      teardown = WorkflowRuntimeTeardown.Cancel
+      coroutineContext = dispatcher
     ) {
       cleanupStarted.await()
     }
@@ -183,6 +162,27 @@ class WorkflowTurbineTest {
     assertFalse(cleanupFinished)
     cleanupCanFinish.complete(Unit)
     dispatcher.scheduler.advanceUntilIdle()
+    assertTrue(cleanupFinished)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `cancel and await teardown waits for runtime cancellation cleanup`() {
+    val dispatcher = StandardTestDispatcher()
+    val cleanupStarted = CompletableDeferred<Unit>()
+    var cleanupFinished = false
+
+    workflowWithCancellationCleanup(cleanupStarted) {
+      delay(1)
+      cleanupFinished = true
+    }.renderForTest(
+      coroutineContext = dispatcher,
+      teardown = WorkflowRuntimeTeardown.CancelAndAwait()
+    ) {
+      cleanupStarted.await()
+      assertFalse(cleanupFinished)
+    }
+
     assertTrue(cleanupFinished)
   }
 
