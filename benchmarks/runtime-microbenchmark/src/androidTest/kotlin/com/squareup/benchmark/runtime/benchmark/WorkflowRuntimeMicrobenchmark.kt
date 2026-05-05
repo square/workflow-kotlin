@@ -21,6 +21,7 @@ import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.renderWorkflowIn
 import kotlin.math.pow
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +59,11 @@ class WorkflowRuntimeMicrobenchmark(
     const val WideSiblingCount = 250
     const val RememberEntryCount = 250
     const val StableHandlerCount = 250
+
+    // The default 1m runTest timeout fires for the slowest combinations on physical devices,
+    // surfacing as UncompletedCoroutinesError instead of a real benchmark result. The benchmark
+    // body itself is bounded by `measureRepeated` so this just lets it finish.
+    val BenchmarkRunTestTimeout = 10.minutes
   }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
@@ -274,80 +280,82 @@ class WorkflowRuntimeMicrobenchmark(
     testProps: PropsT,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
-  ) = runTest {
-    val props = MutableStateFlow(setupProps)
-    val workflowJob = Job(parent = coroutineContext.job)
-    val renderings =
-      renderWorkflowIn(
-        workflow = workflow,
-        props = props,
-        scope = this + workflowJob,
-        runtimeConfig = runtime.runtimeConfig,
-        workflowTracer = SystemTracer,
-        onOutput = {},
-      )
+  ) =
+    runTest(timeout = BenchmarkRunTestTimeout) {
+      val props = MutableStateFlow(setupProps)
+      val workflowJob = Job(parent = coroutineContext.job)
+      val renderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          props = props,
+          scope = this + workflowJob,
+          runtimeConfig = runtime.runtimeConfig,
+          workflowTracer = SystemTracer,
+          onOutput = {},
+        )
 
-    benchmarkRule.measureRepeated {
-      runWithMeasurementDisabled {
-        // Clear the workflow tree.
-        props.value = setupProps
+      benchmarkRule.measureRepeated {
+        runWithMeasurementDisabled {
+          // Clear the workflow tree.
+          props.value = setupProps
+          testScheduler.advanceUntilIdle()
+          assertEquals(expectedSetupRendering, renderings.value.rendering)
+        }
+
+        // Writing a new props value schedules the render pass that will set everything up.
+        props.value = testProps
+        // Run the render pass.
         testScheduler.advanceUntilIdle()
-        assertEquals(expectedSetupRendering, renderings.value.rendering)
       }
 
-      // Writing a new props value schedules the render pass that will set everything up.
-      props.value = testProps
-      // Run the render pass.
-      testScheduler.advanceUntilIdle()
+      assertEquals(expectedTestRendering, renderings.value.rendering)
+      workflowJob.cancel()
     }
-
-    assertEquals(expectedTestRendering, renderings.value.rendering)
-    workflowJob.cancel()
-  }
 
   private fun benchmarkWorkflowStateChange(
     testState: (setStateForChild: (index: Int, newState: Int) -> Unit) -> Unit,
     expectedTestRendering: Int,
-  ) = runTest {
-    val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
-    val workflow = BenchmarkWorkflowRoot(treeShape = treeShape, actionSinks = actionSinks)
-    val props = MutableStateFlow(BenchmarkWorkflowRoot.Props())
-    val workflowJob = Job(parent = coroutineContext.job)
-    val renderings =
-      renderWorkflowIn(
-        workflow = workflow,
-        props = props,
-        scope = this + workflowJob,
-        runtimeConfig = runtime.runtimeConfig,
-        workflowTracer = SystemTracer,
-        onOutput = {},
-      )
+  ) =
+    runTest(timeout = BenchmarkRunTestTimeout) {
+      val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
+      val workflow = BenchmarkWorkflowRoot(treeShape = treeShape, actionSinks = actionSinks)
+      val props = MutableStateFlow(BenchmarkWorkflowRoot.Props())
+      val workflowJob = Job(parent = coroutineContext.job)
+      val renderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          props = props,
+          scope = this + workflowJob,
+          runtimeConfig = runtime.runtimeConfig,
+          workflowTracer = SystemTracer,
+          onOutput = {},
+        )
 
-    val resetStateAction = action<Any?, Int, Nothing>("resetState") { this.state = 0 }
+      val resetStateAction = action<Any?, Int, Nothing>("resetState") { this.state = 0 }
 
-    benchmarkRule.measureRepeated {
-      runWithMeasurementDisabled {
-        // Clear the workflow tree.
-        actionSinks.forEachIndexed { index, sink -> sink!!.send(resetStateAction) }
-        testScheduler.advanceUntilIdle()
-        assertEquals(0, renderings.value.rendering)
+      benchmarkRule.measureRepeated {
+        runWithMeasurementDisabled {
+          // Clear the workflow tree.
+          actionSinks.forEachIndexed { index, sink -> sink!!.send(resetStateAction) }
+          testScheduler.advanceUntilIdle()
+          assertEquals(0, renderings.value.rendering)
 
-        // We don't care about measuring the actual sending of actions into the sinks. The render
-        // won't actually happen until we advance the test scheduler below.
-        testState { index, newState ->
-          actionSinks[index]!!.send(
-            action<Any?, Int, Nothing>("setState") { this.state = newState }
-          )
+          // We don't care about measuring the actual sending of actions into the sinks. The render
+          // won't actually happen until we advance the test scheduler below.
+          testState { index, newState ->
+            actionSinks[index]!!.send(
+              action<Any?, Int, Nothing>("setState") { this.state = newState }
+            )
+          }
         }
+
+        // Run the render pass.
+        testScheduler.advanceUntilIdle()
+        assertEquals(expectedTestRendering, renderings.value.rendering)
       }
 
-      // Run the render pass.
-      testScheduler.advanceUntilIdle()
-      assertEquals(expectedTestRendering, renderings.value.rendering)
+      workflowJob.cancel()
     }
-
-    workflowJob.cancel()
-  }
 }
 
 private object SystemTracer : WorkflowTracer {
