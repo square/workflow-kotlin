@@ -9,11 +9,13 @@ import kotlin.time.Duration.Companion.seconds
 public sealed interface WorkflowRuntimeTeardown {
   /**
    * Cancel the workflow runtime and return without waiting for cancellation cleanup to complete.
+   * This is the default `renderForTest` behavior.
    */
   public data object Cancel : WorkflowRuntimeTeardown
 
   /**
-   * Cancel the workflow runtime and wait for cancellation cleanup to complete.
+   * Cancel the workflow runtime and wait for cancellation cleanup to complete. Pass this to
+   * `renderForTest` when a test needs to observe effects that happen during runtime cancellation.
    *
    * @param timeout The maximum time to wait for the runtime job to complete after cancellation.
    * @param drainSchedulerAfterCancel Whether to drain the test scheduler after cancelling the

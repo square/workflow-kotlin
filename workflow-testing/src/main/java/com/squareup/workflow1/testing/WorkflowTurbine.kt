@@ -47,9 +47,9 @@ import kotlin.time.Duration.Companion.milliseconds
  * A [testTimeout] may be specified to override the default [WORKFLOW_TEST_DEFAULT_TIMEOUT_MS] for
  * any particular test. This is the max amount of time the test could spend waiting on a rendering.
  *
- * [WorkflowRuntimeTeardown.CancelAndAwait] means `renderForTest` will not return until the workflow
- * runtime has been cancelled and cancellation cleanup has either completed or timed out. This is the
- * default so callers can run external teardown checks after this function returns.
+ * By default, `renderForTest` cancels the workflow runtime and returns without waiting for
+ * cancellation cleanup. Pass [WorkflowRuntimeTeardown.CancelAndAwait] to wait until cancellation
+ * cleanup has either completed or timed out.
  *
  * This will start the Workflow runtime (with params as passed) rooted at whatever Workflow
  * it is called on and then create a [WorkflowTurbine] for its renderings and run [testCase] on that.
@@ -63,7 +63,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     props: StateFlow<PropsT>,
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
-    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -207,7 +207,7 @@ public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTest(
     testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
-    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -240,7 +240,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -264,7 +264,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+  teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
   testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -299,7 +299,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     props: StateFlow<PropsT>,
     initialState: StateT,
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
-    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
@@ -329,7 +329,7 @@ public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.renderForTestFromStateWith(
     initialState: StateT,
     coroutineContext: CoroutineContext = StandardTestDispatcher(),
-    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+    teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
     onOutput: suspend (OutputT) -> Unit = {},
     testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
     testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit
