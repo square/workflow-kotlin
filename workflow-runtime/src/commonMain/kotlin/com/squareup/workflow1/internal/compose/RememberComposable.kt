@@ -329,17 +329,19 @@ internal fun <R> rememberSkippableComposableImpl(
   // region Update cache
   // Cache the return value in case we skipped above. Composer APIs require always reading the value
   // first, and then calling updateRememberedValue the first time or optionally on subsequent
-  // recompositions.
+  // recompositions. Identity comparison is intentional: the values cached here may be workflow
+  // renderings whose `equals` is allowed to throw or have side effects, so we must never call
+  // `equals` on them. Skipping decisions are already driven by composer.changed() on the keys
+  // above; the only remaining job here is "did the producer run? if so, take its output".
   val oldValue = composer.rememberedValue()
   val returnValue =
-    if (oldValue === Composer.Empty || (newValue !== Composer.Empty && newValue != oldValue)) {
-      // Update the cache.
-      if (newValue === Composer.Empty) error("No new value was calculated.")
+    if (newValue === Composer.Empty) {
+      // Producer was skipped, return from the cache.
+      oldValue
+    } else {
+      // Producer ran, update the cache and return its new value.
       composer.updateRememberedValue(newValue)
       newValue
-    } else {
-      // Producer was skipped (or returned the same value), return from the cache.
-      oldValue
     }
   // endregion
 
@@ -399,26 +401,28 @@ internal fun <R> rememberSkippableAndRestartableComposableImpl(
   // region Update cache
   // Cache the return value in case we skipped above. Composer APIs require always reading the value
   // first, and then calling updateRememberedValue the first time or optionally on subsequent
-  // recompositions.
+  // recompositions. Identity comparison is intentional: the values cached here may be workflow
+  // renderings whose `equals` is allowed to throw or have side effects, so we must never call
+  // `equals` on them. Skipping decisions are already driven by composer.changed() on the keys
+  // above; the only remaining job here is "did the producer run? if so, take its output".
   val oldValue = composer.rememberedValue()
   val returnValue =
-    if (oldValue === Composer.Empty || (newValue !== Composer.Empty && newValue != oldValue)) {
-      // Update the cache.
-      if (newValue === Composer.Empty) error("No new value was calculated.")
+    if (newValue === Composer.Empty) {
+      // Producer was skipped, return from the cache.
+      oldValue
+    } else {
+      // Producer ran, update the cache and return its new value.
       composer.updateRememberedValue(newValue)
 
       // When we're recomposed directly, we obviously can't return returnValue to the original
-      // caller, so
-      // just invalidate it instead. It will eventually recompose after we're done in the same
-      // frame, and
-      // when it does so it should hit the cache (unless the caller passes a new producer).
+      // caller,
+      // so just invalidate it instead. It will eventually recompose after we're done in the same
+      // frame,
+      // and when it does so it should hit the cache (unless the caller passes a new producer).
       if (invalidateCallerOnNewValue) {
         callerRecomposeScope.invalidate()
       }
       newValue
-    } else {
-      // Producer was skipped (or returned the same value), return from the cache.
-      oldValue
     }
   // endregion
 
