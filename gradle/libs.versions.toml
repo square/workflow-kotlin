@@ -6,7 +6,7 @@ compileSdk = "36"
 minSdk = "24"
 targetSdk = "33"
 
-jdk-target = "21"
+jdk-target = "11"
 jdk-toolchain = "21"
 
 androidx-activity = "1.8.2"
