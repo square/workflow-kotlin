@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION") // rememberSaveable(key = …) deprecation; cleanup tracked separately.
+
 package com.squareup.workflow1.ui.compose
 
 import androidx.annotation.VisibleForTesting

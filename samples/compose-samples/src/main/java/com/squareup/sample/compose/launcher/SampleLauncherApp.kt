@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION") // ContextCompat.startActivity overload deprecation; sample code.
+
 package com.squareup.sample.compose.launcher
 
 import android.content.Intent

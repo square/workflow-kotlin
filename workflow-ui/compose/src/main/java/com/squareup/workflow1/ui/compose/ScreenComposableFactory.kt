@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION") // LocalSavedStateRegistryOwner moved; migration tracked separately.
+
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
