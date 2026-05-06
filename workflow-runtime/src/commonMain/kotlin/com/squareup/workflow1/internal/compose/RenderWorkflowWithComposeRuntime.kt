@@ -40,6 +40,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import okio.ByteString
 
+/**
+ * This is the entry point into the entire Compose-based workflow runtime. It owns the Compose
+ * runtime that manages the workflow tree.
+ */
 @OptIn(ExperimentalComposeRuntimeApi::class)
 internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
