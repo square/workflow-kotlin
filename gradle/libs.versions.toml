@@ -6,8 +6,8 @@ compileSdk = "36"
 minSdk = "24"
 targetSdk = "33"
 
-jdk-target = "1.8"
-jdk-toolchain = "17"
+jdk-target = "11"
+jdk-toolchain = "21"
 
 androidx-activity = "1.8.2"
 androidx-appcompat = "1.7.1"
