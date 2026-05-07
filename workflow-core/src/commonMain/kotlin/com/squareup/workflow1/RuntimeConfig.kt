@@ -101,7 +101,8 @@ public enum class RuntimeConfigOptions {
   @WorkflowExperimentalRuntime INDEXED_ACTIVE_STAGING_LISTS,
 
   /** Replaces the traditional Workflow runtime with the Compose runtime. */
-  @WorkflowExperimentalRuntime COMPOSE_RUNTIME;
+  @WorkflowExperimentalRuntime COMPOSE_RUNTIME,
+  @WorkflowExperimentalRuntime COMPOSE_RUNTIME_SKIPPING;
 
   public companion object {
     /**
@@ -377,7 +378,10 @@ public enum class RuntimeConfigOptions {
           WORK_STEALING_DISPATCHER,
         )
       ),
-      COMPOSE_RUNTIME_ONLY(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
+      COMPOSE_RUNTIME_NON_SKIPPING(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
+      COMPOSE_RUNTIME_SKIPPING(
+        setOf(RuntimeConfigOptions.COMPOSE_RUNTIME, RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING)
+      ),
 
       /**
        * Always contains all [RuntimeConfigOptions]. Other values in this enum may happen to contain
