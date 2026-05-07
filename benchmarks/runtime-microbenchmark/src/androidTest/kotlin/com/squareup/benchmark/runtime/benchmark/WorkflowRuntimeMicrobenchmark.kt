@@ -4,7 +4,6 @@ import androidx.benchmark.junit4.BenchmarkRule
 import androidx.benchmark.junit4.measureRepeated
 import androidx.tracing.Trace
 import app.cash.burst.Burst
-import com.squareup.benchmark.runtime.benchmark.BenchmarkRuntimeOptions.NoOptimizations
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.Sink
@@ -39,9 +38,10 @@ import kotlin.test.assertEquals
 enum class BenchmarkRuntimeOptions(
   val runtimeConfig: RuntimeConfig
 ) {
-  NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
+  // NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
-  Compose(RuntimeOptions.COMPOSE_RUNTIME_ONLY.runtimeConfig),
+  ComposeNoSkip(RuntimeOptions.COMPOSE_RUNTIME_NON_SKIPPING.runtimeConfig),
+  ComposeSkipping(RuntimeOptions.COMPOSE_RUNTIME_SKIPPING.runtimeConfig),
 }
 
 enum class BenchmarkTreeShape(
@@ -56,7 +56,7 @@ enum class BenchmarkTreeShape(
 @Burst
 class WorkflowRuntimeMicrobenchmark(
   private val treeShape: BenchmarkTreeShape = BenchmarkTreeShape.ShallowBushyTree,
-  private val runtime: BenchmarkRuntimeOptions = NoOptimizations,
+  private val runtime: BenchmarkRuntimeOptions = BenchmarkRuntimeOptions.AllOptimizations,
 ) {
 
   private companion object {
