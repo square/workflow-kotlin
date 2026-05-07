@@ -119,6 +119,9 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   COMPOSE_RUNTIME,
+
+  @WorkflowExperimentalRuntime
+  COMPOSE_RUNTIME_SKIPPING,
   ;
 
   public companion object {
@@ -481,7 +484,13 @@ public enum class RuntimeConfigOptions {
         )
       ),
 
-      COMPOSE_RUNTIME_ONLY(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
+      COMPOSE_RUNTIME_NON_SKIPPING(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
+      COMPOSE_RUNTIME_SKIPPING(
+        setOf(
+          RuntimeConfigOptions.COMPOSE_RUNTIME,
+          RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING
+        )
+      ),
 
       /**
        * Always contains all [RuntimeConfigOptions]. Other values in this enum may happen to contain
