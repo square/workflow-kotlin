@@ -71,6 +71,60 @@ public class ActionDroppedLogLine(
 }
 
 /**
+ * The monitor saw a worker output action but did not see the corresponding output handler action
+ * before another runtime boundary was reached.
+ */
+internal class StaleWorkerOutputLogLine(
+  val pendingWorkerName: String,
+  val detectionPoint: String,
+  val nextActionName: String?,
+  val nextWorkflowName: String?,
+  val renderIncomingCauses: List<RenderCause>,
+  val previousRenderCause: RenderCause?,
+) : RuntimeUpdateLogLine {
+  override fun log(builder: StringBuilder) {
+    builder
+      .append("STALE WORKER OUTPUT: R(")
+      .append(pendingWorkerName)
+      .append(") at ")
+      .append(detectionPoint)
+
+    if (nextActionName != null || nextWorkflowName != null) {
+      builder.append(" before ")
+      nextActionName?.let {
+        builder
+          .append("A(")
+          .append(it)
+          .append(")")
+      }
+      nextWorkflowName?.let {
+        builder
+          .append("/W(")
+          .append(it)
+          .append(")")
+      }
+    }
+    builder.append('\n')
+
+    builder.append("  renderIncomingCauses = ")
+    if (renderIncomingCauses.isEmpty()) {
+      builder.append("(empty)")
+    } else {
+      renderIncomingCauses.forEachIndexed { index, cause ->
+        if (index > 0) builder.append(", ")
+        builder.append(cause)
+      }
+    }
+    builder.append('\n')
+
+    builder
+      .append("  previousRenderCause = ")
+      .append(previousRenderCause ?: "(none)")
+      .append('\n')
+  }
+}
+
+/**
  * The Workflow runtime has applied an action.
  */
 public class ActionAppliedLogLine(
