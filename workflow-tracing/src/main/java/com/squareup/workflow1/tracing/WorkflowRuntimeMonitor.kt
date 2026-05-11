@@ -74,6 +74,24 @@ public class WorkflowRuntimeMonitor(
     runtimeUpdates.logUpdate(event)
   }
 
+  private fun logStaleWorkerOutput(
+    detectionPoint: String,
+    nextActionName: String? = null,
+    nextWorkflowName: String? = null,
+  ) {
+    val pendingWorkerName = workerIncomingName ?: return
+    runtimeUpdates.logUpdate(
+      StaleWorkerOutputLogLine(
+        pendingWorkerName = pendingWorkerName,
+        detectionPoint = detectionPoint,
+        nextActionName = nextActionName,
+        nextWorkflowName = nextWorkflowName,
+        renderIncomingCauses = renderIncomingCauses.toList(),
+        previousRenderCause = previousRenderCause,
+      )
+    )
+  }
+
   /**
    * Called the first time any Workflow is rendered - which starts its 'session'.
    * @see [WorkflowSession] for more information on the lifecycle of a session.
@@ -306,11 +324,13 @@ public class WorkflowRuntimeMonitor(
       }
 
       RuntimeSettled -> {
+        logStaleWorkerOutput(detectionPoint = "RuntimeSettled")
         runtimeLoopListener?.onRuntimeLoopSettled(
           configSnapshot,
           runtimeUpdates
         )
         currentActionHandlingChangedState = false
+        workerIncomingName = null
         renderIncomingCauses.clear()
       }
     }
@@ -419,8 +439,17 @@ public class WorkflowRuntimeMonitor(
         // This is non-null when we are applying the action from the Worker Output handler, in that
         // case it is equal to the name of the underlying Worker workflow, which is the type of the
         // worker.
-        val workerLogName: String? = workerIncomingName
+        var workerLogName: String? = workerIncomingName
         if (actionType is QueuedAction) {
+          if (workerIncomingName != null) {
+            logStaleWorkerOutput(
+              detectionPoint = "QueuedAction",
+              nextActionName = actionName,
+              nextWorkflowName = workflowName,
+            )
+            workerIncomingName = null
+            workerLogName = null
+          }
           val newRenderingCause: RenderCause = if (isWorkerQueuedAction) {
             workerIncomingName = workflowName
             WaitingForOutput(workflowName)
@@ -433,9 +462,12 @@ public class WorkflowRuntimeMonitor(
           workerIncomingName != null
         ) {
           // WaitingForOutput should be the last cause added.
+          val renderIncomingCausesSnapshot = renderIncomingCauses.toList()
           val lastCause = renderIncomingCauses.removeLastOrNull()
-          check(lastCause!! is WaitingForOutput) {
-            "Expecting to receive action handling for worker output. Instead $lastCause."
+          check(lastCause is WaitingForOutput) {
+            "Expecting to receive action handling for worker output. Instead $lastCause. " +
+              "pendingWorker=$workerIncomingName, action=A($actionName)/W($workflowName), " +
+              "renderIncomingCauses=$renderIncomingCausesSnapshot"
           }
           // This is the real output handler action from the runningWorker call, thus the more
           // 'recognizable' cause of the render pass.

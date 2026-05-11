@@ -17,6 +17,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.tracing.RenderCause.RootCreation
 import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
@@ -316,6 +317,59 @@ internal class WorkflowRuntimeMonitorTest {
     assertTrue(fakeRuntimeTracer.onRuntimeUpdateEnhancedCalled)
     assertTrue(fakeRuntimeLoopListener.onRuntimeLoopSettledCalled)
     assertTrue(monitor.renderIncomingCauses.isEmpty())
+  }
+
+  @Test
+  fun `RuntimeSettled logs and clears stale worker output`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val interceptor = monitor.createMonitoringInterceptor(rootSession)
+
+    interceptor.queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
+      .applyTo("props", "state")
+
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    val staleLogLines =
+      runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+        .filterIsInstance<StaleWorkerOutputLogLine>()
+    assertEquals(1, staleLogLines.size)
+    assertEquals("RuntimeSettled", staleLogLines.single().detectionPoint)
+    assertTrue(staleLogLines.single().renderIncomingCauses.single() is RenderCause.WaitingForOutput)
+
+    interceptor.queuedAction("callbackAction").applyTo("props", "state")
+    interceptor.cascadeAction(testWorkflow, "parentHandler").applyTo("props", "state")
+  }
+
+  @Test
+  fun `queued callback logs and clears stale worker output`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName = runtimeName,
+      runtimeLoopListener = runtimeListener
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val interceptor = monitor.createMonitoringInterceptor(rootSession)
+
+    interceptor.queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
+      .applyTo("props", "state")
+    interceptor.queuedAction("callbackAction").applyTo("props", "state")
+    interceptor.cascadeAction(testWorkflow, "parentHandler").applyTo("props", "state")
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    val staleLogLines =
+      runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+        .filterIsInstance<StaleWorkerOutputLogLine>()
+    assertEquals(1, staleLogLines.size)
+    assertEquals("QueuedAction", staleLogLines.single().detectionPoint)
+    assertEquals("callbackAction", staleLogLines.single().nextActionName)
+    assertTrue(staleLogLines.single().renderIncomingCauses.single() is RenderCause.WaitingForOutput)
   }
 
   @Test
@@ -841,6 +895,57 @@ internal class WorkflowRuntimeMonitorTest {
     assertEquals("firstAction", droppedLogLines[0].actionName)
     assertEquals("secondAction", droppedLogLines[1].actionName)
     assertEquals("thirdAction", droppedLogLines[2].actionName)
+  }
+
+  private fun WorkflowRuntimeMonitor.createMonitoringInterceptor(
+    rootSession: WorkflowSession
+  ): RenderContextInterceptor<String, String, String> {
+    val testScope = TestScope()
+
+    onSessionStarted(testScope, rootSession)
+    currentRenderCause = RootCreation(runtimeName, "TestWorkflow")
+
+    lateinit var interceptor: RenderContextInterceptor<String, String, String>
+    onRender(
+      renderProps = "props",
+      renderState = "state",
+      context = TestBaseRenderContext(),
+      proceed = { _, _, receivedInterceptor ->
+        interceptor = receivedInterceptor!!
+        "rendered"
+      },
+      session = rootSession
+    )
+    renderIncomingCauses.clear()
+    return interceptor
+  }
+
+  private fun RenderContextInterceptor<String, String, String>.queuedAction(
+    actionName: String
+  ): WorkflowAction<String, String, String> {
+    lateinit var interceptedAction: WorkflowAction<String, String, String>
+    onActionSent(TestAction(actionName)) { action ->
+      interceptedAction = action
+    }
+    return interceptedAction
+  }
+
+  private fun RenderContextInterceptor<String, String, String>.cascadeAction(
+    testWorkflow: TestWorkflow,
+    actionName: String
+  ): WorkflowAction<String, String, String> {
+    lateinit var interceptedAction: WorkflowAction<String, String, String>
+    onRenderChild(
+      child = testWorkflow,
+      childProps = "childProps",
+      key = "child",
+      handler = { TestAction(actionName) },
+      proceed = { _, _, _, handler ->
+        interceptedAction = handler("childOutput")
+        "childRendering"
+      }
+    )
+    return interceptedAction
   }
 
   // Test helper classes
