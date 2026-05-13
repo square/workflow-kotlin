@@ -1,7 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.COMPOSE_RUNTIME_ONLY
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.COMPOSE_RUNTIME_SKIPPING
 import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,7 +26,7 @@ import org.junit.Before
 @OptIn(WorkflowExperimentalRuntime::class, ExperimentalCoroutinesApi::class)
 // @Burst
 class WorkflowRuntimeMultithreadingStressTest() {
-  private val runtime: RuntimeOptions = COMPOSE_RUNTIME_ONLY
+  private val runtime: RuntimeOptions = COMPOSE_RUNTIME_SKIPPING
 
   @Before
   fun setUp() {
