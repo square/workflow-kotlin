@@ -198,33 +198,39 @@ private class RealSynchronizedMolecule(
     }
 
     // Synchronously recompose any invalidated composables, if any, and update lastResult.
-    val frameRequest = tryGetFrameRequest()
+    var frameRequest = tryGetFrameRequest()
     if (frameRequest == null) {
       if (!lastResult.isInitialized) {
         error("Expected initial composition to synchronously request initial frame.")
       }
     } else {
-      // Hard-code unchanging frame time since there's no actual frame time code shouldn't rely on
-      // this value.
-      val frameResult = frameRequest.execute(0L)
+      do {
+        // Hard-code unchanging frame time since there's no actual frame time code shouldn't rely on
+        // this value.
+        val frameResult = frameRequest!!.execute(0L)
 
-      // If the composition threw an exception, re-throw it ourselves now instead of waiting for the
-      // scope to get it, since lastResult may have not been initialized in this case and we'd throw
-      // below and get suppressed.
-      frameResult.exceptionOrNull()?.let {
-        // This exception has the stack trace inside the composables, but FrameRequest already adds
-        // a suppressed exception on it that includes the stack trace of this recomposeWithContent
-        // call.
-        throw it
-      }
+        // If the composition threw an exception, re-throw it ourselves now instead of waiting for the
+        // scope to get it, since lastResult may have not been initialized in this case and we'd throw
+        // below and get suppressed.
+        frameResult.exceptionOrNull()?.let {
+          // This exception has the stack trace inside the composables, but FrameRequest already adds
+          // a suppressed exception on it that includes the stack trace of this recomposeWithContent
+          // call.
+          throw it
+        }
 
-      // If the composition threw an exception, we want it to cancel the coroutine scope before
-      // getOrThrow below does so.
-      recomposeDispatcher.advanceUntilIdle()
+        // If the composition threw an exception, we want it to cancel the coroutine scope before
+        // getOrThrow below does so.
+        recomposeDispatcher.advanceUntilIdle()
+
+        // Note: If any RecomposeScope was explicitly invalidated during composition, there will be
+        // another frame request waiting here.
+        frameRequest = tryGetFrameRequest()
+      } while (frameRequest != null)
     }
 
     @Suppress("UNCHECKED_CAST")
-    return lastResult.getOrThrow() as R
+    return (lastResult.getOrThrow() as R)
   }
 
   @OptIn(ExperimentalStdlibApi::class)

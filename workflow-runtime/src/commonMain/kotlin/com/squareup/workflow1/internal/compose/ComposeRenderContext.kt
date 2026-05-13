@@ -67,7 +67,8 @@ internal class ComposeRenderContext<P, O, R> private constructor(
   override val renderKey: String,
 ) : BaseRenderContext<P, Any?, O>,
   Sink<WorkflowAction<P, Any?, O>>,
-  WorkflowSession {
+  WorkflowSession,
+  RecomposeScope by recomposeScope {
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
   private val state: PeekableMutableState<Any?>
@@ -181,7 +182,8 @@ internal class ComposeRenderContext<P, O, R> private constructor(
         onOutput = childOnOutput,
         config = config,
         parentSession = this,
-        renderKey = key
+        renderKey = key,
+        recomposeScope = this,
       )
     }
 
@@ -230,7 +232,9 @@ internal class ComposeRenderContext<P, O, R> private constructor(
     applyActionLock.withLock {
       val oldState = state.value
       val (newState, applied) = action.applyTo(lastProps, oldState)
-      state.setWithInvalidator(newState, invalidator = { recomposeScope.invalidate() })
+      state.setWithInvalidator(newState, invalidator = {
+        recomposeScope.invalidate()
+      })
 
       // Propagate the output up the workflow tree. Propagation doesn't touch our state but still
       // should be part of the critical section: For an intermediate node, while it's propagating
@@ -259,6 +263,16 @@ internal class ComposeRenderContext<P, O, R> private constructor(
     }
   }
 
+  private class JoinedRecomposeScope(
+    private val scope1: RecomposeScope,
+    private val scope2: RecomposeScope,
+  ) : RecomposeScope {
+    override fun invalidate() {
+      scope1.invalidate()
+      scope2.invalidate()
+    }
+  }
+
   companion object {
     /**
      * Hard-coded group key used for all groups that are created by [ComposeRenderContext]s.
@@ -278,19 +292,17 @@ internal class ComposeRenderContext<P, O, R> private constructor(
       config: WorkflowComposableRuntimeConfig,
       parentSession: WorkflowSession?,
       renderKey: String,
+      callerRecomposeScope: RecomposeScope,
     ): ComposeRenderContext<P, O, R> {
       val workflowScope = rememberCoroutineScope()
-      // The only reason we put the scope in a state is because if we just capture it directly
-      // inside the rememberSaveable lambda, for some reason compose starts freaking out, groups get
-      // removed for no reason and the RecomposeScope becomes invalid.
-      // TODO find a less gross way to do this.
-      val recomposeScope by rememberUpdatedState(currentRecomposeScope)
+      // When state changes, invalidate as much as possible in one go to reduce trampolining.
+      val joinedRecomposeScope = JoinedRecomposeScope(callerRecomposeScope, currentRecomposeScope)
       val renderContext: ComposeRenderContext<P, O, R> = rememberSaveable(
         saver = Saver(
           initialProps = props,
           workflow = workflow,
           workflowScope = workflowScope,
-          recomposeScope = recomposeScope,
+          recomposeScope = joinedRecomposeScope,
           config = config,
           parentSession = parentSession,
           renderKey = renderKey,
@@ -299,7 +311,7 @@ internal class ComposeRenderContext<P, O, R> private constructor(
         ComposeRenderContext(
           initialProps = props,
           workflow = workflow,
-          recomposeScope = recomposeScope,
+          recomposeScope = joinedRecomposeScope,
           workflowScope = workflowScope,
           config = config,
           parent = parentSession,

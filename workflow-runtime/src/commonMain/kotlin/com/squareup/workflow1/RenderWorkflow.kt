@@ -162,6 +162,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       interceptor = chainedInterceptor,
       workflowTracer = workflowTracer,
       onOutput = onOutput,
+      runtimeConfig = runtimeConfig,
     )
   }
 
