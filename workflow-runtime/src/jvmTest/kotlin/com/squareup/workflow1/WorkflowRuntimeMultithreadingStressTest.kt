@@ -1,7 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.COMPOSE_RUNTIME_ONLY
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.COMPOSE_RUNTIME_SKIPPING
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,7 @@ import kotlin.test.assertEquals
 // @Burst
 class WorkflowRuntimeMultithreadingStressTest(
 ) {
-  private val runtime: RuntimeOptions = COMPOSE_RUNTIME_ONLY
+  private val runtime: RuntimeOptions = COMPOSE_RUNTIME_SKIPPING
 
   @Before
   fun setUp() {
