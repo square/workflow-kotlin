@@ -19,11 +19,17 @@ import kotlinx.coroutines.CoroutineScope
  * Tests should call [close] in a `finally` (or via a deferred cleanup) to dispose the underlying
  * recomposer.
  */
-internal class TestComposition(scope: CoroutineScope) {
+internal class TestComposition<R>(
+  scope: CoroutineScope,
+  content: @Composable () -> R
+) {
   private var recomposeRequests: Int = 0
-  private val molecule: SynchronizedMolecule = run {
+  private val molecule = run {
     enableImmediateApplyForTests()
-    scope.launchSynchronizedMolecule(onNeedsRecomposition = { recomposeRequests++ })
+    scope.launchSynchronizedMolecule(
+      onNeedsRecomposition = { recomposeRequests++ },
+      content = content
+    )
   }
 
   /** Number of times the molecule has signaled that recomposition is needed. */
@@ -32,7 +38,7 @@ internal class TestComposition(scope: CoroutineScope) {
   /** Mirrors [SynchronizedMolecule.needsRecomposition]. */
   val needsRecomposition: Boolean get() = molecule.needsRecomposition
 
-  fun <R> recompose(content: @Composable () -> R): R = molecule.recomposeWithContent(content)
+  fun recompose(): R = molecule.recompose()
 
   fun close() {
     molecule.close()

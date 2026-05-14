@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal.compose
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeRuntimeApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -21,7 +20,6 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.compose.TraceLabels.PerformSave
 import com.squareup.workflow1.internal.compose.TraceLabels.Recompose
-import com.squareup.workflow1.internal.compose.runtime.SynchronizedMolecule
 import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
 import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.parse
@@ -67,7 +65,9 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
 
   // Explicitly store this lambda in a val so it doesn't get re-allocated every time, causing
   // recomposeWithContent to recompose unnecessarily.
-  val content: @Composable () -> RenderingT = {
+  val molecule = scope.launchSynchronizedMolecule(
+    onNeedsRecomposition = { recomposeRequests.trySend(Unit) },
+  ) {
     val currentProps by props.collectAsState()
     withCompositionLocals(LocalSaveableStateRegistry provides saveableStateRegistry) {
       renderWorkflow(
@@ -81,14 +81,14 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
     }
   }
 
-  fun SynchronizedMolecule.recompose(): RenderingAndSnapshot<RenderingT> {
+  fun recomposeAndTakeSnapshot(): RenderingAndSnapshot<RenderingT> {
     var rendering: RenderingT
     workflowTracer.trace(Recompose) {
-      rendering = recomposeWithContent(content)
+      rendering = molecule.recompose()
       // I think this can only happen on the initial compose – otherwise we've got a backwards write
       // or something.
       while (recomposeRequests.tryReceive().isSuccess) {
-        rendering = recomposeWithContent(content)
+        rendering = molecule.recompose()
       }
     }
 
@@ -104,10 +104,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
     return RenderingAndSnapshot(rendering, snapshot = treeSnapshot)
   }
 
-  val molecule = scope.launchSynchronizedMolecule(
-    onNeedsRecomposition = { recomposeRequests.trySend(Unit) }
-  )
-  val initialRenderingAndSnapshot = molecule.recompose()
+  val initialRenderingAndSnapshot = recomposeAndTakeSnapshot()
   val renderingsAndSnapshots = MutableStateFlow(initialRenderingAndSnapshot)
 
   interceptor.onRuntimeUpdate(RenderingProduced)
@@ -135,7 +132,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
             }
 
             // First send the new rendering, to comply with workflow expectations.
-            renderingsAndSnapshots.value = molecule.recompose()
+            renderingsAndSnapshots.value = recomposeAndTakeSnapshot()
             interceptor.onRuntimeUpdate(RenderingProduced)
             interceptor.onRuntimeUpdate(RuntimeSettled)
 
@@ -148,7 +145,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflowWithComposeRuntimeIn(
           }
         }
         recomposeRequests.onReceive {
-          renderingsAndSnapshots.value = molecule.recompose()
+          renderingsAndSnapshots.value = recomposeAndTakeSnapshot()
           interceptor.onRuntimeUpdate(RenderingProduced)
           interceptor.onRuntimeUpdate(RuntimeSettled)
         }

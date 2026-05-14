@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal.compose.runtime
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,7 +10,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 internal class SynchronizedMoleculeTest {
 
@@ -20,32 +18,25 @@ internal class SynchronizedMoleculeTest {
   }
 
   @Test fun first_recompose_runs_content_and_returns_its_value() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
+    val molecule = backgroundScope.launchSynchronizedMolecule(
+      onNeedsRecomposition = {},
+      content = { 42 }
+    )
     try {
-      val result = molecule.recomposeWithContent { 42 }
+      val result = molecule.recompose()
       assertEquals(42, result)
     } finally {
       molecule.close()
     }
   }
 
-  @Test fun recomposeWithContent_returns_latest_value_for_each_call() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
-    try {
-      // Each call gets a fresh content lambda. The molecule's internal `content` field is
-      // backed by mutableStateOf, so each new lambda triggers a recomposition.
-      assertEquals(1, molecule.recomposeWithContent { 1 })
-      assertEquals(2, molecule.recomposeWithContent { 2 })
-      assertEquals(3, molecule.recomposeWithContent { 3 })
-    } finally {
-      molecule.close()
-    }
-  }
-
   @Test fun needsRecomposition_is_false_when_nothing_changed() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
+    val molecule = backgroundScope.launchSynchronizedMolecule(
+      onNeedsRecomposition = {},
+      content = { "noop" }
+    )
     try {
-      molecule.recomposeWithContent { "noop" }
+      molecule.recompose()
       assertFalse(molecule.needsRecomposition)
     } finally {
       molecule.close()
@@ -53,38 +44,44 @@ internal class SynchronizedMoleculeTest {
   }
 
   @Test fun second_recompose_picks_up_state_changes_made_between_calls() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
+    var state by mutableStateOf("first")
+    val molecule = backgroundScope.launchSynchronizedMolecule(
+      onNeedsRecomposition = {},
+      content = { state })
     try {
-      var state by mutableStateOf("first")
-      val content: @Composable () -> String = { state }
-      assertEquals("first", molecule.recomposeWithContent(content))
+      assertEquals("first", molecule.recompose())
       state = "second"
-      assertEquals("second", molecule.recomposeWithContent(content))
+      assertEquals("second", molecule.recompose())
     } finally {
       molecule.close()
     }
   }
 
   @Test fun close_makes_needsRecomposition_return_false() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
-    molecule.recomposeWithContent { Unit }
+    val molecule = backgroundScope.launchSynchronizedMolecule(
+      onNeedsRecomposition = {},
+      content = {}
+    )
+    // molecule.recompose()
     molecule.close()
     assertFalse(molecule.needsRecomposition)
   }
 
   @Test fun composition_throwing_propagates_from_recomposeWithContent() = runTest {
-    val molecule = backgroundScope.launchSynchronizedMolecule(onNeedsRecomposition = {})
-    try {
-      molecule.recomposeWithContent { Unit }
-      val state = mutableStateOf(false)
-      val content: @Composable () -> Int = {
-        if (state.value) error("oops")
+    var state by mutableStateOf(false)
+    val molecule = backgroundScope.launchSynchronizedMolecule(
+      onNeedsRecomposition = {},
+      content = {
+        if (state) error("oops")
         0
       }
-      molecule.recomposeWithContent(content)
-      state.value = true
+    )
+    try {
+      molecule.recompose()
+      molecule.recompose()
+      state = true
       assertFailsWith<IllegalStateException> {
-        molecule.recomposeWithContent(content)
+        molecule.recompose()
       }
     } finally {
       molecule.close()
