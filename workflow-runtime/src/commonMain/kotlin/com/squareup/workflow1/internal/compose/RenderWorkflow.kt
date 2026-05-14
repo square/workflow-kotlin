@@ -57,7 +57,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
   // call to the producer lambda within the same restart group.
   return if (COMPOSE_RUNTIME_SKIPPING in config.runtimeConfig) {
-    return renderWorkflowRestartableImpl(
+    renderWorkflowRestartableImpl(
       workflow = workflow,
       props = props,
       onOutput = onOutput as ((Any?) -> Unit)?,
@@ -75,16 +75,23 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
     )
       as RenderingT
   } else {
-    renderWorkflowImpl(
-      workflow as Workflow<Any?, Any?, Any?>,
-      props,
-      onOutput as ((Any?) -> Unit)?,
-      config,
-      parentSession,
-      renderKey,
-      recomposeScope,
-    )
-      as RenderingT
+    val renderContext =
+      renderWorkflowImpl(
+        workflow as Workflow<Any?, Any?, Any?>,
+        props,
+        onOutput as ((Any?) -> Unit)?,
+        config,
+        parentSession,
+        renderKey,
+        recomposeScope,
+      )
+    renderContext.renderSelf(
+      props = props,
+      onOutput = onOutput,
+      didPropsChange = null,
+      didOnOutputChange = null,
+      composer = currentComposer,
+    ) as RenderingT
   }
 }
 
@@ -98,22 +105,16 @@ private val renderWorkflowImpl =
     parentSession: WorkflowSession?,
     renderKey: String,
     recomposeScope: RecomposeScope,
-  ): Any? {
-    val baseContext =
-      rememberComposeRenderContext(
-        workflow = workflow,
-        props = props,
-        onOutput = onOutput,
-        config = config,
-        parentSession = parentSession,
-        renderKey = renderKey,
-        callerRecomposeScope = recomposeScope,
-      )
-
-    // TODO this feels weird to have outside the context, should it be moved in too? Should this
-    //  whole function be moved into the context? I think unit tests will be the only real forcing
-    //  function, so let's write some tests and see how it works.
-    return baseContext.renderSelf(props)
+  ): ComposeRenderContext<Any?, Any?, Any?> {
+    return rememberComposeRenderContext(
+      workflow = workflow,
+      props = props,
+      onOutput = onOutput,
+      config = config,
+      parentSession = parentSession,
+      renderKey = renderKey,
+      callerRecomposeScope = recomposeScope,
+    )
   }
 
 @Suppress("USELESS_CAST", "UNCHECKED_CAST")
@@ -130,7 +131,7 @@ private val renderWorkflowImplComposable =
       RecomposeScope,
       Composer,
       Int,
-    ) -> Any?
+    ) -> ComposeRenderContext<Any?, Any?, Any?>
 
 @Suppress("UNCHECKED_CAST")
 private fun renderWorkflowRestartableImpl(
@@ -179,7 +180,7 @@ private fun renderWorkflowRestartableImpl(
   if ((dirty and 0b010_010_011) == 0b010_010_010 && composer.skipping) {
     composer.skipToGroupEnd()
   } else {
-    newValue =
+    val renderContext =
       renderWorkflowImplComposable(
         workflow,
         props,
@@ -194,6 +195,16 @@ private fun renderWorkflowRestartableImpl(
         // TODO remember if props/onOutput changed from above logic, pass those flags.
         // TODO use this value to avoid re-comparing inside this function.
         0b010_010_010_000_000_000,
+      )
+
+    newValue =
+      renderContext.renderSelf(
+        props = props,
+        onOutput = onOutput,
+        // Reuse the change information we already calculated so we don't have to call equals again.
+        didPropsChange = (dirty and 0b100_000) != 0,
+        didOnOutputChange = (dirty and 0b100_000_000) != 0,
+        composer = composer,
       )
   }
 
@@ -241,7 +252,8 @@ private fun renderWorkflowRestartableImpl(
       invalidateCallerOnNewValue = true,
       callerRecomposeScope = callerRecomposeScope,
       composer = composer,
-      changed = changed,
+      // Set bits indicating that none of workflow, props, nor onOutput changed.
+      changed = changed or 0b010_010_010,
     )
   }
   return returnValue
