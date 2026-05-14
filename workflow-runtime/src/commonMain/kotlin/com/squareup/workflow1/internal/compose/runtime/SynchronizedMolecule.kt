@@ -5,9 +5,6 @@ import androidx.compose.runtime.Composition
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.internal.Lock
@@ -28,15 +25,20 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
  * Creates a [launchSynchronizedMolecule] that will run its recomposition loop and effects in this
- * [CoroutineScope]. [onNeedsRecomposition] must ensure that
- * [SynchronizedMolecule.recomposeWithContent] is eventually called.
+ * [CoroutineScope]. [onNeedsRecomposition] must ensure that [SynchronizedMolecule.recompose] is
+ * eventually called.
  *
  * See [SynchronizedMolecule] for more information.
  */
-internal fun CoroutineScope.launchSynchronizedMolecule(
-  onNeedsRecomposition: () -> Unit
-): SynchronizedMolecule =
-  RealSynchronizedMolecule(scope = this, onNeedsRecomposition = onNeedsRecomposition)
+internal fun <R> CoroutineScope.launchSynchronizedMolecule(
+  onNeedsRecomposition: () -> Unit,
+  content: @Composable () -> R,
+): SynchronizedMolecule<R> =
+  RealSynchronizedMolecule(
+    scope = this,
+    onNeedsRecomposition = onNeedsRecomposition,
+    content = content,
+  )
 
 /**
  * A self-contained Compose runtime (like Molecule) that is driven by explicitly telling it when to
@@ -46,12 +48,12 @@ internal fun CoroutineScope.launchSynchronizedMolecule(
  *
  * Create an instance of this interface by calling [launchSynchronizedMolecule] and passing the
  * [CoroutineScope] used to run recomposition and effects, as well as a function to schedule a call
- * to [recomposeWithContent] when composition state is changed. When you're ready to compose the
- * initial content, call [recomposeWithContent]: this will compose the composable passed to it and
- * the compose runtime will start observing state changes. When state is changed, the scheduling
- * function passed to [launchSynchronizedMolecule] will be called, but the composition will not be
- * recomposed until [recomposeWithContent] is called again. The scheduling function will never be
- * called more than once before the next call to [recomposeWithContent].
+ * to [recompose] when composition state is changed. When you're ready to compose the initial
+ * content, call [recompose]: this will compose the composable passed to it and the compose runtime
+ * will start observing state changes. When state is changed, the scheduling function passed to
+ * [launchSynchronizedMolecule] will be called, but the composition will not be recomposed until
+ * [recompose] is called again. The scheduling function will never be called more than once before
+ * the next call to [recompose].
  *
  * To check if composition state has changed imperatively, check [needsRecomposition].
  *
@@ -72,11 +74,11 @@ internal fun CoroutineScope.launchSynchronizedMolecule(
  * underlying dispatcher but allows us to explicitly advance for the recompose loop, and by
  * advancing it any time the recomposer reports pending work but hasn't requested a frame yet.
  */
-internal interface SynchronizedMolecule {
+internal interface SynchronizedMolecule<R> {
 
   /**
-   * Returns true if the last composable passed to [recomposeWithContent] needs to be recomposed due
-   * to some state that it read being changed.
+   * Returns true if the last composable passed to [recompose] needs to be recomposed due to some
+   * state that it read being changed.
    *
    * May start returning true before `onNeedsRecomposition` is called if the underlying dispatcher
    * hasn't had a chance to request a frame yet.
@@ -84,27 +86,29 @@ internal interface SynchronizedMolecule {
   val needsRecomposition: Boolean
 
   /**
-   * Performs a recomposition with the given [content] and returns its result.
+   * Recomposes the composable passed to [launchSynchronizedMolecule] if necessary returns the
+   * latest result.
    *
    * If the composition throws an exception, the exception will be thrown directly from this method.
    * The composition task will be cancelled but will not get the exception directly. This method
    * will immediately throw if called again after failure.
    */
-  fun <R> recomposeWithContent(content: @Composable () -> R): R
+  fun recompose(): R
 
   /**
    * Stop observing composition state (calling `onNeedsRecomposition`). After calling this, it is an
-   * error to call [recomposeWithContent] again, and [needsRecomposition] will always return false.
+   * error to call [recompose] again, and [needsRecomposition] will always return false.
    *
    * You don't need to call this if the coroutine scope is cancelled.
    */
   fun close()
 }
 
-private class RealSynchronizedMolecule(
+private class RealSynchronizedMolecule<R>(
   scope: CoroutineScope,
   private val onNeedsRecomposition: () -> Unit,
-) : SynchronizedMolecule, MonotonicFrameClock {
+  private val content: @Composable () -> R,
+) : SynchronizedMolecule<R>, MonotonicFrameClock {
 
   private val recompositionParentJob = Job(parent = scope.coroutineContext.job)
   private val scope = scope + recompositionParentJob
@@ -121,8 +125,8 @@ private class RealSynchronizedMolecule(
   private val recomposeDispatcher = WorkStealingDispatcher(Dispatchers.Unconfined)
   private val recomposer: Recomposer = Recomposer(effectCoroutineContext = scope.coroutineContext)
   private val composition: Composition = Composition(UnitApplier, recomposer)
-  private var content: (@Composable () -> Any?)? by mutableStateOf(null)
   private var lastResult: NullableInitBox<Any?> = NullableInitBox()
+  private var compositionLaunched = false
 
   /** Used to synchronize access to [frameRequest]. */
   private val lock = Lock()
@@ -131,7 +135,7 @@ private class RealSynchronizedMolecule(
 
   /**
    * Used to stop [withFrameNanos] from calling [onNeedsRecomposition] when the frame is being
-   * requested inside of [recomposeWithContent].
+   * requested inside of [recompose].
    */
   // TODO this should be a ThreadLocal since withFrameNanos can be called from any thread but
   //  it should only be true from the thread calling recomposeWithContent.
@@ -146,25 +150,8 @@ private class RealSynchronizedMolecule(
       return frameRequest != null
     }
 
-  init {
-    // setContent will synchronously perform the first recomposition before returning, which is why
-    // we leave contentAfterInitial null for now: we don't want it to be called until we're actually
-    // inside tryPerformRecompose.
-    // We also need to set the composition content before calling startComposition so it doesn't
-    // need to suspend to wait for it.
-    // contentAfterInitial isn't snapshot state but that's fine, since when the recomposer is
-    // started it will always recompose, childNode will be non-null by then, and it will never
-    // change again.
-    composition.setContent {
-      content?.let { content ->
-        val result = content()
-        SideEffect { this.lastResult = NullableInitBox(result) }
-      }
-    }
-  }
-
   @OptIn(InternalCoroutinesApi::class)
-  override fun <R> recomposeWithContent(content: @Composable () -> R): R {
+  override fun recompose(): R {
     if (recompositionParentJob.isCancelled) {
       throw IllegalStateException(
         "recomposeWithContent called after composition coroutine scope was cancelled",
@@ -172,17 +159,15 @@ private class RealSynchronizedMolecule(
       )
     }
 
-    // Update content in a snapshot to ensure it is applied before we ask for a frame.
-    // Snapshot.withMutableSnapshot {
-    // TODO get rid of this entirely, only allow content to be specified in constructor. This is a
-    //  useless state write for our one use case and slow.
-    this.content = content
-    // }
     Snapshot.sendApplyNotifications()
 
-    if (!lastResult.isInitialized) {
-      // Initial request kicks off the recompose loop. This should synchronously request a frame.
+    if (!compositionLaunched) {
+      compositionLaunched = true
       launchComposition()
+      composition.setContent {
+        val result = content()
+        SideEffect { this.lastResult = NullableInitBox(result) }
+      }
     }
 
     // Synchronously recompose any invalidated composables, if any, and update lastResult.
