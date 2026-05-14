@@ -3,13 +3,12 @@
 package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composer
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeRuntimeApi
 import androidx.compose.runtime.ExplicitGroupsComposable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.RecomposeScope
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
@@ -31,7 +30,6 @@ import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
-import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.Lock
@@ -47,7 +45,6 @@ import com.squareup.workflow1.trace
 import com.squareup.workflow1.traceNoFinally
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineScope
-import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KType
 
@@ -71,13 +68,10 @@ internal class ComposeRenderContext<P, O, R> private constructor(
   RecomposeScope by recomposeScope {
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
-  private val state: PeekableMutableState<Any?>
   private val applyActionLock = Lock()
   private var trapdoor: Trapdoor? by threadLocalOf { null }
 
-  // Render params from last render pass that are only used by actions, and don't need to be states.
-  @Volatile private var onOutput: ((O) -> Unit)? = null
-  @Volatile private var lastProps = initialProps
+  private val state: WorkflowSnapshotState
 
   override val actionSink: Sink<WorkflowAction<P, Any?, O>> get() = this
 
@@ -111,16 +105,43 @@ internal class ComposeRenderContext<P, O, R> private constructor(
         workflowScope = workflowScope,
       )
     }
-    state = PeekableMutableState(initialState)
+    state = WorkflowSnapshotState(
+      props = initialProps,
+      onOutput = null,
+      state = initialState
+    )
   }
 
-  @Composable
-  fun renderSelf(props: P): R = withTrapdoor {
-    interceptedWorkflow.render(
+  @Suppress("UNCHECKED_CAST")
+  fun renderSelf(
+    props: P,
+    onOutput: ((Any?) -> Unit)?,
+    didPropsChange: Boolean?,
+    didOnOutputChange: Boolean?,
+    composer: Composer,
+  ): R {
+    trapdoor = Trapdoor(composer)
+    val currentState = state.updateAndGetState(
+      props,
+      onOutput,
+      didPropsChange = didPropsChange,
+      didOnOutputChange = didOnOutputChange
+    ) { oldProps, oldState ->
+      workflowTracer.traceNoFinally(OnPropsChanged) {
+        interceptedWorkflow.onPropsChanged(
+          old = oldProps as P,
+          new = props,
+          state = oldState
+        )
+      }
+    }
+    return interceptedWorkflow.render(
       renderProps = props,
-      renderState = state.value,
+      renderState = currentState,
       context = RenderContext(this, interceptedWorkflow)
-    )
+    ).also {
+      trapdoor = null
+    }
   }
 
   override fun send(value: WorkflowAction<P, Any?, O>) {
@@ -190,32 +211,6 @@ internal class ComposeRenderContext<P, O, R> private constructor(
   private fun requireTrapdoor(operationName: String): Trapdoor =
     trapdoor ?: error("Cannot perform $operationName on RenderContext outside of render pass.")
 
-  // Since we need to manually deal with props diffing ourselves, tell compose not to generate its
-  // own checking code which would result in redundant .equals() calls.
-  @Suppress("ComposableNaming")
-  @NonRestartableComposable
-  @Composable
-  private fun updatePropsAndOutput(
-    props: P,
-    onOutput: ((O) -> Unit)?,
-  ) {
-    // Use the slot table to detect props changes.
-    Trapdoor.runIfValueChanged(props) { oldProps ->
-      workflowTracer.traceNoFinally(OnPropsChanged) {
-        @Suppress("UNCHECKED_CAST")
-        state.value = interceptedWorkflow.onPropsChanged(
-          old = oldProps,
-          new = props,
-          state = state.value
-        )
-      }
-    }
-    SideEffect {
-      this.lastProps = props
-      this.onOutput = onOutput
-    }
-  }
-
   private fun onDisposed() {
     config.workflowInterceptor?.onSessionCancelled<P, Any?, O>(
       cause = null,
@@ -230,25 +225,15 @@ internal class ComposeRenderContext<P, O, R> private constructor(
     check(trapdoor == null) { "Cannot send to action sink from render pass." }
     // Send can be called from any thread so wrap non-atomic reads/writes in a critical section.
     applyActionLock.withLock {
-      val oldState = state.value
-      val (newState, applied) = action.applyTo(lastProps, oldState)
-      state.setWithInvalidator(newState, invalidator = {
-        recomposeScope.invalidate()
-      })
-
-      // Propagate the output up the workflow tree. Propagation doesn't touch our state but still
-      // should be part of the critical section: For an intermediate node, while it's propagating
-      // an action from one part of its subtree, if another action comes in from a different part
-      // of the subtree, the second action won't propagate until the first one is done. If we
-      // moved this out of the lock, then the propagations of two actions from two subtrees could
-      // be interleaved to their common ancestors.
-      onOutput?.let { onOutput ->
-        applied.output?.value?.let(onOutput)
-      }
+      @Suppress("UNCHECKED_CAST")
+      state.applyAction(
+        action as WorkflowAction<Any?, Any?, Any?>,
+        onNewState = { recomposeScope.invalidate() }
+      )
     }
   }
 
-  private fun snapshot(): Snapshot? = interceptedWorkflow.snapshotState(state.value)
+  private fun snapshot(): Snapshot? = interceptedWorkflow.snapshotState(state.peekState())
 
   // No need for the overhead of groups, this is only used in a very specific way when we're already
   // thinking about groups.
@@ -319,7 +304,6 @@ internal class ComposeRenderContext<P, O, R> private constructor(
           snapshot = null,
         )
       }
-      renderContext.updatePropsAndOutput(props, onOutput)
 
       // Values remembered by rememberSaveable don't get RememberObserver callbacks so we need to
       // use an effect for it.

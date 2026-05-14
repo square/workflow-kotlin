@@ -2,7 +2,10 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
@@ -404,6 +407,185 @@ internal class RenderWorkflowTest(
       assertEquals(40, test.recompose(content))
       expectedRenderCount += if (isSkipping) 3 else 9
       assertEquals(expectedRenderCount, renderCount)
+    } finally {
+      test.close()
+    }
+  }
+
+  @Test fun `props equals only called once when rerendered from state change`() = runTest {
+    // Non-skipping code path isn't optimized for this.
+    if (RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING !in skippingConfig.runtimeConfig) {
+      return@runTest
+    }
+    val test = TestComposition(backgroundScope)
+
+    var propsEqualsCount = 0
+
+    class Props {
+      override fun equals(other: Any?): Boolean {
+        propsEqualsCount++
+        return other === this
+      }
+    }
+
+    try {
+      var capturedSink: Sink<WorkflowAction<Props, Int, Nothing>>? = null
+      val workflow = object : StatefulWorkflow<Props, Int, Nothing, Int>() {
+        override fun initialState(
+          props: Props,
+          snapshot: Snapshot?
+        ): Int = 0
+
+        override fun render(
+          renderProps: Props,
+          renderState: Int,
+          context: RenderContext<Props, Int, Nothing>
+        ): Int {
+          capturedSink = context.actionSink
+          return renderState
+        }
+
+        override fun snapshotState(state: Int): Snapshot? = null
+      }
+      val content = @Composable {
+        renderWorkflow(
+          workflow = workflow,
+          props = Props(),
+          onOutput = null,
+          config = skippingConfig,
+          parentSession = null,
+          renderKey = "",
+        )
+      }
+
+      assertEquals(0, test.recompose(content))
+      assertEquals(0, propsEqualsCount)
+
+      capturedSink!!.send(action("setStateTo3") { state = 3 })
+
+      assertEquals(3, test.recompose(content))
+      assertEquals(1, propsEqualsCount)
+    } finally {
+      test.close()
+    }
+  }
+
+  @Test fun `props equals only called once when rerendered with props change`() = runTest {
+    // Non-skipping code path isn't optimized for this.
+    if (RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING !in skippingConfig.runtimeConfig) {
+      return@runTest
+    }
+    val test = TestComposition(backgroundScope)
+
+    var propsEqualsCount = 0
+
+    class Props {
+      override fun equals(other: Any?): Boolean {
+        propsEqualsCount++
+        return other === this
+      }
+    }
+
+    try {
+      // Don't store props in a state since MutableState rights do their own equals check.
+      var props = Props()
+      var recomposeTrigger by mutableIntStateOf(0)
+      val workflow = object : StatefulWorkflow<Props, Int, Nothing, Int>() {
+        override fun initialState(
+          props: Props,
+          snapshot: Snapshot?
+        ): Int = 0
+
+        override fun render(
+          renderProps: Props,
+          renderState: Int,
+          context: RenderContext<Props, Int, Nothing>
+        ): Int {
+          return renderState
+        }
+
+        override fun snapshotState(state: Int): Snapshot? = null
+      }
+      val content = @Composable {
+        recomposeTrigger
+        renderWorkflow(
+          workflow = workflow,
+          props = props,
+          onOutput = null,
+          config = skippingConfig,
+          parentSession = null,
+          renderKey = "",
+        )
+      }
+
+      assertEquals(0, test.recompose(content))
+      assertEquals(0, propsEqualsCount)
+
+      props = Props()
+      recomposeTrigger++
+
+      assertEquals(0, test.recompose(content))
+      assertEquals(1, propsEqualsCount)
+    } finally {
+      test.close()
+    }
+  }
+  @Test fun `props equals only called once when rerendered without props change`() = runTest {
+    // Non-skipping code path isn't optimized for this.
+    if (RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING !in skippingConfig.runtimeConfig) {
+      return@runTest
+    }
+
+    val test = TestComposition(backgroundScope)
+
+    var propsEqualsCount = 0
+
+    class Props {
+      override fun equals(other: Any?): Boolean {
+        propsEqualsCount++
+        return other === this
+      }
+    }
+
+    try {
+      // Don't store props in a state since MutableState rights do their own equals check.
+      val props = Props()
+      var recomposeTrigger by mutableIntStateOf(0)
+      val workflow = object : StatefulWorkflow<Props, Int, Nothing, Int>() {
+        override fun initialState(
+          props: Props,
+          snapshot: Snapshot?
+        ): Int = 0
+
+        override fun render(
+          renderProps: Props,
+          renderState: Int,
+          context: RenderContext<Props, Int, Nothing>
+        ): Int {
+          return renderState
+        }
+
+        override fun snapshotState(state: Int): Snapshot? = null
+      }
+      val content = @Composable {
+        recomposeTrigger
+        renderWorkflow(
+          workflow = workflow,
+          props = props,
+          onOutput = null,
+          config = skippingConfig,
+          parentSession = null,
+          renderKey = "",
+        )
+      }
+
+      assertEquals(0, test.recompose(content))
+      assertEquals(0, propsEqualsCount)
+
+      recomposeTrigger++
+
+      assertEquals(0, test.recompose(content))
+      assertEquals(1, propsEqualsCount)
     } finally {
       test.close()
     }
