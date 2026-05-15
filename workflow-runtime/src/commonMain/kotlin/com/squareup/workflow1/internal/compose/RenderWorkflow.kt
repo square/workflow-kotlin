@@ -79,7 +79,6 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       renderWorkflowImpl(
         workflow as Workflow<Any?, Any?, Any?>,
         props,
-        onOutput as ((Any?) -> Unit)?,
         config,
         parentSession,
         renderKey,
@@ -87,7 +86,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       )
     renderContext.renderSelf(
       props = props,
-      onOutput = onOutput,
+      onOutput = onOutput as ((Any?) -> Unit)?,
       didPropsChange = null,
       didOnOutputChange = null,
       composer = currentComposer,
@@ -100,7 +99,6 @@ private val renderWorkflowImpl =
   fun(
     workflow: Workflow<Any?, Any?, Any?>,
     props: Any?,
-    onOutput: ((Any?) -> Unit)?,
     config: WorkflowComposableRuntimeConfig,
     parentSession: WorkflowSession?,
     renderKey: String,
@@ -109,7 +107,6 @@ private val renderWorkflowImpl =
     return rememberComposeRenderContext(
       workflow = workflow,
       props = props,
-      onOutput = onOutput,
       config = config,
       parentSession = parentSession,
       renderKey = renderKey,
@@ -124,7 +121,6 @@ private val renderWorkflowImplComposable =
     (
       Workflow<*, *, *>,
       Any?,
-      ((Any?) -> Unit)?,
       WorkflowComposableRuntimeConfig,
       WorkflowSession?,
       String,
@@ -184,7 +180,6 @@ private fun renderWorkflowRestartableImpl(
       renderWorkflowImplComposable(
         workflow,
         props,
-        onOutput,
         config,
         parentSession,
         renderKey,

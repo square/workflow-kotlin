@@ -273,7 +273,6 @@ private constructor(
     fun <P, O, R> rememberComposeRenderContext(
       workflow: Workflow<P, O, R>,
       props: P,
-      onOutput: ((O) -> Unit)?,
       config: WorkflowComposableRuntimeConfig,
       parentSession: WorkflowSession?,
       renderKey: String,
