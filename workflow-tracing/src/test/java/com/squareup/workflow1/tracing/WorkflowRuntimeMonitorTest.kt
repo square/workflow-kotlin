@@ -17,8 +17,10 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
+import com.squareup.workflow1.tracing.ActionAppliedLogLine.WorkflowActionLogType.RENDERING_CALLBACK
 import com.squareup.workflow1.tracing.RenderCause.RootCreation
 import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +33,7 @@ import kotlin.reflect.KType
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -47,6 +50,11 @@ internal class WorkflowRuntimeMonitorTest {
     val monitor = WorkflowRuntimeMonitor(runtimeName)
     assertNotNull(monitor)
     assertEquals(runtimeName, monitor.runtimeName)
+    assertEquals(
+      WorkflowRuntimeMonitor.DEFAULT_MAX_LOG_LINE_LENGTH,
+      monitor.maxLogLineLength
+    )
+    assertFalse(monitor.crashOnLogLineOverflow)
   }
 
   @Test
@@ -55,10 +63,14 @@ internal class WorkflowRuntimeMonitorTest {
       runtimeName = runtimeName,
       workflowRuntimeTracers = listOf(fakeRuntimeTracer),
       renderPassTracker = fakeRenderPassTracker,
-      runtimeLoopListener = fakeRuntimeLoopListener
+      runtimeLoopListener = fakeRuntimeLoopListener,
+      maxLogLineLength = 2048,
+      crashOnLogLineOverflow = true
     )
     assertNotNull(monitor)
     assertEquals(runtimeName, monitor.runtimeName)
+    assertEquals(2048, monitor.maxLogLineLength)
+    assertTrue(monitor.crashOnLogLineOverflow)
   }
 
   @Test
@@ -411,7 +423,157 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.addRuntimeUpdate(logLine)
     monitor.onRuntimeUpdate(RuntimeSettled)
 
-    assertContains(runtimeListener.runtimeUpdatesReceived!!.readAndClear(), logLine)
+    val received = runtimeListener.runtimeUpdatesReceived!!.readAndClear().single()
+    assertTrue(received is UiUpdateLogLine)
+    assertEquals(logLine.note, received.note)
+  }
+
+  @Test
+  fun `oversized runtime update log line is truncated when overflow crash is disabled`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName,
+      runtimeLoopListener = runtimeListener,
+      maxLogLineLength = 32,
+      crashOnLogLineOverflow = false
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+
+    monitor.onSessionStarted(TestScope(), rootSession)
+    monitor.addRuntimeUpdate(UiUpdateLogLine("x".repeat(128)))
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    val logLine = runtimeListener.runtimeUpdatesReceived!!.readAndClear().single()
+    val builder = StringBuilder()
+
+    logLine.log(builder)
+
+    val log = builder.toString()
+    assertEquals(32, log.length)
+    assertTrue(log.startsWith("UI UPDATE: "))
+    assertTrue(log.endsWith("${Typography.ellipsis}\n"))
+  }
+
+  @Test
+  fun `configured log limits do not mutate added log lines`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName,
+      runtimeLoopListener = runtimeListener,
+      maxLogLineLength = 32,
+      crashOnLogLineOverflow = false
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+    val logLine = UiUpdateLogLine("x".repeat(128))
+
+    monitor.onSessionStarted(TestScope(), rootSession)
+    monitor.addRuntimeUpdate(logLine)
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    val received = runtimeListener.runtimeUpdatesReceived!!.readAndClear().single()
+    val limitedBuilder = StringBuilder()
+    val originalBuilder = StringBuilder()
+
+    received.log(limitedBuilder)
+    logLine.log(originalBuilder)
+
+    assertEquals(32, limitedBuilder.length)
+    assertTrue(limitedBuilder.endsWith("${Typography.ellipsis}\n"))
+    assertTrue(originalBuilder.length > 32)
+    assertFalse(originalBuilder.endsWith("${Typography.ellipsis}\n"))
+  }
+
+  @Test
+  fun `fixed runtime update markers keep their concrete types under small limits`() {
+    val runtimeUpdates = RuntimeUpdates(
+      maxLogLineLength = 1,
+      crashOnLogLineOverflow = false
+    )
+
+    runtimeUpdates.logUpdate(RenderLogLine)
+    runtimeUpdates.logUpdate(SkipLogLine)
+
+    val updates = runtimeUpdates.readAndClear()
+    assertTrue(updates[0] is RenderLogLine)
+    assertTrue(updates[1] is SkipLogLine)
+  }
+
+  @Test
+  fun `oversized action log line is truncated with final newline preserved`() {
+    val logLine = ActionAppliedLogLine(
+      type = RENDERING_CALLBACK,
+      name = "W(TestWorkflow)",
+      actionName = "testAction",
+      propsOrNull = "props-" + "p".repeat(2048),
+      oldState = "old-" + "o".repeat(2048),
+      newState = "new-" + "n".repeat(2048),
+      outputOrNull = WorkflowOutput("output-" + "x".repeat(2048)),
+      outputReceivedString = null,
+    ).withLogLimits(
+      maxLogLineLength = 64,
+      crashOnLogLineOverflow = false
+    )
+    val builder = StringBuilder()
+
+    logLine.log(builder)
+
+    val log = builder.toString()
+    assertEquals(64, log.length)
+    assertTrue(log.endsWith("${Typography.ellipsis}\n"))
+  }
+
+  @Test
+  fun `oversized runtime update log line crashes when overflow crash is enabled`() {
+    val runtimeListener = TestWorkflowRuntimeLoopListener()
+    val monitor = WorkflowRuntimeMonitor(
+      runtimeName,
+      runtimeLoopListener = runtimeListener,
+      maxLogLineLength = 32,
+      crashOnLogLineOverflow = true
+    )
+    val testWorkflow = TestWorkflow()
+    val rootSession = testWorkflow.createRootSession()
+
+    monitor.onSessionStarted(TestScope(), rootSession)
+    monitor.addRuntimeUpdate(UiUpdateLogLine("x".repeat(128)))
+    monitor.onRuntimeUpdate(RuntimeSettled)
+
+    val logLine = runtimeListener.runtimeUpdatesReceived!!.readAndClear().single()
+
+    val error = assertFailsWith<IllegalStateException> {
+      logLine.log(StringBuilder())
+    }
+    assertContains(error.message!!, "UiUpdateLogLine")
+    assertContains(error.message!!, "maxLogLineLength=32")
+    assertContains(error.message!!, "actualLength=140")
+  }
+
+  @Test
+  fun `ActionAppliedLogLine truncates oversized output and state fields`() {
+    val oversizedOutput = "output-" + "o".repeat(2048)
+    val oversizedState = "state-" + "s".repeat(2048)
+    val stateLoggable = TestLoggable(oversizedState)
+    val logLine = ActionAppliedLogLine(
+      type = RENDERING_CALLBACK,
+      name = "W(TestWorkflow)",
+      actionName = "testAction",
+      propsOrNull = null,
+      oldState = stateLoggable,
+      newState = stateLoggable,
+      outputOrNull = WorkflowOutput(TestLoggable(oversizedOutput)),
+      outputReceivedString = null,
+    )
+    val builder = StringBuilder()
+
+    logLine.log(builder)
+
+    val log = builder.toString()
+    assertFalse(log.contains(oversizedOutput))
+    assertFalse(log.contains(oversizedState))
+    assertContains(log, oversizedOutput.wfEllipsizeEnd(1024))
+    assertContains(log, oversizedState.wfEllipsizeEnd(1024))
   }
 
   @Test
@@ -1050,6 +1212,12 @@ internal class WorkflowRuntimeMonitorTest {
     }
 
     override val debuggingName: String = name
+  }
+
+  private class TestLoggable(
+    private val value: String,
+  ) : Loggable {
+    override fun toLogString(): String = value
   }
 
   private class TestWorkflowRuntimeTracer : WorkflowRuntimeTracer() {

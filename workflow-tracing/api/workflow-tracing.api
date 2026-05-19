@@ -173,12 +173,17 @@ public abstract interface class com/squareup/workflow1/tracing/WorkflowRuntimeLo
 }
 
 public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor : com/squareup/workflow1/WorkflowInterceptor, com/squareup/workflow1/tracing/RuntimeTraceContext {
+	public static final field Companion Lcom/squareup/workflow1/tracing/WorkflowRuntimeMonitor$Companion;
+	public static final field DEFAULT_MAX_LOG_LINE_LENGTH I
 	public field configSnapshot Lcom/squareup/workflow1/tracing/ConfigSnapshot;
 	public fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;IZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lcom/squareup/workflow1/tracing/WorkflowRenderPassTracker;Lcom/squareup/workflow1/tracing/WorkflowRuntimeLoopListener;IZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun addRuntimeUpdate (Lcom/squareup/workflow1/tracing/RuntimeUpdateLogLine;)V
 	public fun getConfigSnapshot ()Lcom/squareup/workflow1/tracing/ConfigSnapshot;
+	public final fun getCrashOnLogLineOverflow ()Z
 	public fun getCurrentRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
+	public final fun getMaxLogLineLength ()I
 	public fun getPreviousRenderCause ()Lcom/squareup/workflow1/tracing/RenderCause;
 	public fun getRenderIncomingCauses ()Ljava/util/List;
 	public fun getRuntimeName ()Ljava/lang/String;
@@ -210,6 +215,9 @@ public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$ActionT
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/tracing/WorkflowRuntimeMonitor$Companion {
 }
 
 public abstract class com/squareup/workflow1/tracing/WorkflowRuntimeTracer : com/squareup/workflow1/WorkflowInterceptor {

@@ -47,7 +47,38 @@ public class WorkflowRuntimeMonitor(
   private val workflowRuntimeTracers: List<WorkflowRuntimeTracer> = emptyList(),
   private val renderPassTracker: WorkflowRenderPassTracker? = null,
   private val runtimeLoopListener: WorkflowRuntimeLoopListener? = null,
+  /**
+   * Maximum length for a single log line produced by [RuntimeUpdateLogLine.log].
+   * When a log line exceeds this length it will be truncated using [wfEllipsizeEnd].
+   * Set to [Int.MAX_VALUE] to disable truncation.
+   */
+  public val maxLogLineLength: Int = DEFAULT_MAX_LOG_LINE_LENGTH,
+  /**
+   * When true, throws an [IllegalStateException] if a log line exceeds [maxLogLineLength]
+   * instead of silently truncating.
+   */
+  public val crashOnLogLineOverflow: Boolean = false,
 ) : WorkflowInterceptor, RuntimeTraceContext {
+
+  public constructor(
+    runtimeName: String,
+    workflowRuntimeTracers: List<WorkflowRuntimeTracer>,
+    renderPassTracker: WorkflowRenderPassTracker?,
+    runtimeLoopListener: WorkflowRuntimeLoopListener?,
+  ) : this(
+    runtimeName = runtimeName,
+    workflowRuntimeTracers = workflowRuntimeTracers,
+    renderPassTracker = renderPassTracker,
+    runtimeLoopListener = runtimeLoopListener,
+    maxLogLineLength = DEFAULT_MAX_LOG_LINE_LENGTH,
+    crashOnLogLineOverflow = false
+  )
+
+  init {
+    require(maxLogLineLength > 0) {
+      "maxLogLineLength must be greater than 0."
+    }
+  }
 
   private val chainedWorkflowRuntimeTracer: WorkflowRuntimeTracer = workflowRuntimeTracers
     .chained().apply {
@@ -55,7 +86,10 @@ public class WorkflowRuntimeMonitor(
     }
 
   private var workerIncomingName: String? = null
-  private val runtimeUpdates = RuntimeUpdates()
+  private val runtimeUpdates = RuntimeUpdates(
+    maxLogLineLength = maxLogLineLength,
+    crashOnLogLineOverflow = crashOnLogLineOverflow
+  )
 
   private val rendering: Boolean
     get() = currentRenderCause != null
@@ -396,6 +430,7 @@ public class WorkflowRuntimeMonitor(
     ): CR {
       return proceed(child, childProps, key) { output ->
         val childOutputString = getWfLogString(output)
+          .wfEllipsizeEnd(MAX_LOG_FIELD_LENGTH)
         val delegateAction = handler(output)
         val actionName = delegateAction.toLoggingShortName()
         RuntimeMonitoringAction(
@@ -559,5 +594,9 @@ public class WorkflowRuntimeMonitor(
     public class CascadeAction(
       val childOutputString: String,
     ) : ActionType
+  }
+
+  public companion object {
+    public const val DEFAULT_MAX_LOG_LINE_LENGTH: Int = 4096
   }
 }
