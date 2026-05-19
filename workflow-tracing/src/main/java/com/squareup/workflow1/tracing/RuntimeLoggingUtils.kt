@@ -158,6 +158,57 @@ public fun String.wfEllipsizeEnd(maxLength: Int): String {
   }
 }
 
+internal fun StringBuilder.appendWfLogString(
+  log: Any?,
+  maxLength: Int,
+) {
+  require(maxLength > 0)
+  append(getWfLogString(log).wfEllipsizeEnd(maxLength))
+}
+
+internal fun StringBuilder.wfEllipsizeEndInPlace(
+  startIndex: Int,
+  maxLength: Int,
+) {
+  require(maxLength > 0)
+  require(startIndex >= 0 && startIndex <= length)
+
+  if (maxLength == Int.MAX_VALUE || length - startIndex <= maxLength) return
+
+  var endIndex = startIndex + maxLength - 1
+  while (endIndex > startIndex && this[endIndex - 1].isWhitespace()) {
+    endIndex--
+  }
+  setLength(endIndex)
+  append(Typography.ellipsis)
+}
+
+internal fun StringBuilder.wfEllipsizeEndInPlacePreservingFinalNewline(
+  startIndex: Int,
+  maxLength: Int,
+) {
+  require(maxLength > 0)
+  require(startIndex >= 0 && startIndex <= length)
+
+  if (maxLength == Int.MAX_VALUE || length - startIndex <= maxLength) return
+
+  val preserveFinalNewline = length > startIndex && this[length - 1] == '\n' && maxLength > 1
+  if (!preserveFinalNewline) {
+    wfEllipsizeEndInPlace(
+      startIndex = startIndex,
+      maxLength = maxLength
+    )
+    return
+  }
+
+  setLength(length - 1)
+  wfEllipsizeEndInPlace(
+    startIndex = startIndex,
+    maxLength = maxLength - 1
+  )
+  append('\n')
+}
+
 /**
  * Removes the string from kotlin.jvm.internal.Reflection#REFLECTION_NOT_AVAILABLE
  */
