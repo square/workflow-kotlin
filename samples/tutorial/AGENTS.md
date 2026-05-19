@@ -119,7 +119,7 @@ required `name` parameter:
 override fun render(renderProps: MyProps, renderState: MyState, context: RenderContext): MyScreen {
   return MyScreen(
     onClicked = context.eventHandler("onClicked") {
-      state = renderState.copy(loading = true)
+      state = state.copy(loading = true)
     },
     onItemSelected = context.eventHandler("onItemSelected") { item: Item ->
       setOutput(MyOutput.Selected(item))
