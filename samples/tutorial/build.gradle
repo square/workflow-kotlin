@@ -26,7 +26,7 @@ buildscript {
         ],
         material: 'com.google.android.material:material:1.11.0',
         recyclerview: 'androidx.recyclerview:recyclerview:1.4.0',
-        viewbinding: 'androidx.databinding:viewbinding:8.1.2',
+        viewbinding: 'androidx.databinding:viewbinding:8.13.2',
         viewmodelktx: 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2',
         viewmodelsavedstate: 'androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.2',
         workflow: [
