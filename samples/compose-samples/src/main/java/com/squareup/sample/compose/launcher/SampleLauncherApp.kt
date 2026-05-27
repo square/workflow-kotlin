@@ -38,7 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
-import androidx.core.content.ContextCompat.startActivity
 import com.squareup.sample.compose.R
 
 @Composable fun SampleLauncherApp() {
@@ -145,7 +144,7 @@ private fun launchSample(
       it.height.toInt()
     ).toBundle()
   }
-  startActivity(context, intent, options)
+  context.startActivity(intent, options)
 }
 
 private fun Modifier.disableTouchInput(): Modifier =
