@@ -131,9 +131,7 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   onOutput: suspend (OutputT) -> Unit,
   snapshotKey: String? = null
 ): State<RenderingT> {
-  val snapshotState = rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) {
-    mutableStateOf(null)
-  }
+  val snapshotState = rememberTreeSnapshotState(snapshotKey)
   val updatedOnOutput by rememberUpdatedState(onOutput)
 
   // We can't use DisposableEffect because it won't run until the composition is successfully
@@ -165,6 +163,28 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
 
   return state.rendering
 }
+
+@Composable
+private fun rememberTreeSnapshotState(
+  snapshotKey: String?
+): MutableState<TreeSnapshot?> {
+  return if (snapshotKey == null) {
+    rememberSaveable(stateSaver = TreeSnapshotSaver) {
+      mutableStateOf(null)
+    }
+  } else {
+    rememberTreeSnapshotStateWithKey(snapshotKey)
+  }
+}
+
+@Suppress("DEPRECATION")
+@Composable
+private fun rememberTreeSnapshotStateWithKey(
+  snapshotKey: String
+): MutableState<TreeSnapshot?> =
+  rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) {
+    mutableStateOf(null)
+  }
 
 /**
  * State hoisted out of [renderAsState].
