@@ -1,6 +1,6 @@
 [versions]
 
-agpVersion = "8.11.1"
+agpVersion = "8.13.2"
 
 compileSdk = "36"
 minSdk = "24"
