@@ -34,7 +34,7 @@ androidx-test-junit-ext = "1.3.0"
 androidx-test-runner = "1.5.2"
 androidx-test-truth-ext = "1.7.0"
 androidx-tracing = "1.3.0"
-androidx-transition = "1.5.1"
+androidx-transition = "1.7.0"
 androidx-viewbinding = "8.13.2"
 
 burst = "2.12.2"
