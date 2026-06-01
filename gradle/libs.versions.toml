@@ -96,7 +96,7 @@ skiko = "0.9.4"
 telephoto = "0.16.0"
 timber = "5.0.1"
 truth = "1.4.5"
-turbine = "1.0.0"
+turbine = "1.2.1"
 vanniktech-publish = "0.32.0"
 
 [plugins]
