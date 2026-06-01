@@ -150,9 +150,9 @@ public fun <PropsT, StateT, OutputT, RenderingT>
           )
           workflowTurbine.testCase()
         } finally {
-          renderingTurbine.cancel()
-          snapshotTurbine.cancel()
-          outputTurbine.cancel()
+          renderingTurbine.cancelAndIgnoreRemainingEvents()
+          snapshotTurbine.cancelAndIgnoreRemainingEvents()
+          outputTurbine.cancelAndIgnoreRemainingEvents()
         }
       }
     } catch (t: Throwable) {

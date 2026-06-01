@@ -379,6 +379,15 @@ class WorkflowTurbineTest {
     }
   }
 
+  @Test fun `renderForTest ignores unconsumed events on teardown`() {
+    OutputWorkflow.renderForTest {
+      val (_, emit) = awaitNextRendering()
+
+      emit()
+      advanceUntilSettled()
+    }
+  }
+
   @Test fun `all three await methods work together independently`() {
     OutputWorkflow.renderForTest {
       // Get first rendering
