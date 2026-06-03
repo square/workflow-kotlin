@@ -1,5 +1,5 @@
-app.cash.turbine:turbine-jvm:1.0.0
-app.cash.turbine:turbine:1.0.0
+app.cash.turbine:turbine-jvm:1.2.1
+app.cash.turbine:turbine:1.2.1
 com.squareup.okio:okio-jvm:3.3.0
 com.squareup.okio:okio:3.3.0
 org.jetbrains.kotlin:kotlin-bom:2.3.21
