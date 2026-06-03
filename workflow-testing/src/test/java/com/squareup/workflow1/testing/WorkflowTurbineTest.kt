@@ -203,7 +203,6 @@ class WorkflowTurbineTest {
             }
           }
         }
-        Unit
       }
     )
 

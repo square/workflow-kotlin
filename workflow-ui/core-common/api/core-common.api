@@ -156,6 +156,7 @@ public abstract interface class com/squareup/workflow1/ui/Wrapper : com/squareup
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public abstract fun getContent ()Ljava/lang/Object;
 	public fun getUnwrapped ()Ljava/lang/Object;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public abstract fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 }
 
@@ -313,6 +314,9 @@ public abstract interface class com/squareup/workflow1/ui/navigation/Overlay {
 
 public abstract interface class com/squareup/workflow1/ui/navigation/ScreenOverlay : com/squareup/workflow1/ui/Wrapper, com/squareup/workflow1/ui/navigation/Overlay {
 	public abstract fun getContent ()Lcom/squareup/workflow1/ui/Screen;
+	public synthetic fun getContent ()Ljava/lang/Object;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 	public abstract fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/ScreenOverlay;
 }
 

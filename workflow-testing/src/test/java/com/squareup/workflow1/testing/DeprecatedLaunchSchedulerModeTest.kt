@@ -246,7 +246,7 @@ internal class DeprecatedLaunchSchedulerModeTest {
 
   @Test fun `virtual time mode - hasOutput does not auto-advance when disabled`() {
     val workflow = Workflow.stateful<Unit, Unit, String, Unit>(
-      initialState = { Unit },
+      initialState = {},
       render = { _, _ ->
         runningWorker(
           Worker.from {
