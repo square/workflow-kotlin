@@ -1425,7 +1425,7 @@ internal class WorkflowNodeTest {
   }
 
   @Test fun remember_with_duplicate_identity_in_single_render_throws() {
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
       remember("same", typeOf<String>(), "input") { "first" }
       remember("same", typeOf<String>(), "input") { "second" }
     }
