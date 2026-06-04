@@ -16,7 +16,7 @@ buildscript {
 
     deps = [
         activityktx: 'androidx.activity:activity-ktx:1.13.0',
-        agp: "com.android.tools.build:gradle:8.11.1",
+        agp: "com.android.tools.build:gradle:8.13.2",
         appcompat: 'androidx.appcompat:appcompat:1.7.1',
         constraintlayout: 'androidx.constraintlayout:constraintlayout:2.2.1',
         kotlin: [
