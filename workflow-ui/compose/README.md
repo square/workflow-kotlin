@@ -251,7 +251,7 @@ val contactUiFactory = ScreenComposableFactory<ContactScreen> { screen ->
 }
 ```
 
----
+----
 
 #### Previewing Compose-based (and non-Compose!) UI Factories
 
