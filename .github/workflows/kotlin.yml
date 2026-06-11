@@ -619,7 +619,6 @@ jobs:
         uses: ./.github/actions/gradle-task
         with:
           task: jsBrowserTest
-          restore-cache-key: main-build-artifacts
           failure-path-upload: '**/build/reports/tests/*[tT]est'
           failure-upload-name: 'kmp-js-unit-tests-report'
 
