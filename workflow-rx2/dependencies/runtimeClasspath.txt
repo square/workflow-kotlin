@@ -1,10 +1,7 @@
-com.squareup.okio:okio-jvm:3.3.0
-com.squareup.okio:okio:3.3.0
+com.squareup.okio:okio-jvm:3.17.0
+com.squareup.okio:okio:3.17.0
 io.reactivex.rxjava2:rxjava:2.2.21
 org.jetbrains.kotlin:kotlin-bom:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-common:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib:2.4.0
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2

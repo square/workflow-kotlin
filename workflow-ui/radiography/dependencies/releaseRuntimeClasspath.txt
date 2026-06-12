@@ -65,11 +65,10 @@ androidx.transition:transition:1.7.0
 androidx.versionedparcelable:versionedparcelable:1.1.1
 com.google.guava:listenablefuture:1.0
 com.squareup.curtains:curtains:1.2.2
-com.squareup.okio:okio-jvm:3.3.0
-com.squareup.okio:okio:3.3.0
+com.squareup.okio:okio-jvm:3.17.0
+com.squareup.okio:okio:3.17.0
 com.squareup.radiography:radiography:2.4.1
 org.jetbrains.kotlin:kotlin-bom:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-common:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib:2.4.0

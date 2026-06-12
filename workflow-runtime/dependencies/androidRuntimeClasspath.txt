@@ -60,12 +60,9 @@ androidx.startup:startup-runtime:1.1.1
 androidx.tracing:tracing:1.0.0
 androidx.versionedparcelable:versionedparcelable:1.1.1
 com.google.guava:listenablefuture:1.0
-com.squareup.okio:okio-jvm:3.3.0
-com.squareup.okio:okio:3.3.0
+com.squareup.okio:okio-jvm:3.17.0
+com.squareup.okio:okio:3.17.0
 org.jetbrains.kotlin:kotlin-bom:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-common:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib:2.4.0
 org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
