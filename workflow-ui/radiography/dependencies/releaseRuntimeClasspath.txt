@@ -67,10 +67,8 @@ com.google.guava:listenablefuture:1.0
 com.squareup.curtains:curtains:1.2.2
 com.squareup.okio:okio-jvm:3.17.0
 com.squareup.okio:okio:3.17.0
-com.squareup.radiography:radiography:2.4.1
+com.squareup.radiography:radiography:2.9
 org.jetbrains.kotlin:kotlin-bom:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0
 org.jetbrains.kotlin:kotlin-stdlib:2.4.0
 org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
