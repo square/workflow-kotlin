@@ -264,7 +264,7 @@ class WorkflowRuntimeMicrobenchmark(
     )
 
     benchmarkRule.measureRepeated {
-      runWithTimingDisabled {
+      runWithMeasurementDisabled {
         // Clear the workflow tree.
         props.value = setupProps
         testScheduler.advanceUntilIdle()
@@ -306,7 +306,7 @@ class WorkflowRuntimeMicrobenchmark(
     }
 
     benchmarkRule.measureRepeated {
-      runWithTimingDisabled {
+      runWithMeasurementDisabled {
         // Clear the workflow tree.
         actionSinks.forEachIndexed { index, sink ->
           sink!!.send(resetStateAction)
