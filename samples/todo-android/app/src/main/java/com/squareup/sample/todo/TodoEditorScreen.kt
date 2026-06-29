@@ -74,5 +74,5 @@ private class Runner(
 
 private fun View.showSoftKeyboard() {
   val inputMethodManager = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-  inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+  inputMethodManager.showSoftInput(this, 0)
 }
