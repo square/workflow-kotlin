@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
@@ -44,7 +43,7 @@ kotlin {
   }
   if (targets == "kmp" || targets == "android") {
     @Suppress("UnstableApiUsage")
-    androidLibrary {
+    android {
       namespace = "com.squareup.workflow1.android"
       testNamespace = "$namespace.test"
 

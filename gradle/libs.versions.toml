@@ -1,8 +1,8 @@
 [versions]
 
-agpVersion = "8.13.2"
+agpVersion = "9.1.1"
 
-compileSdk = "36"
+compileSdk = "37"
 minSdk = "24"
 targetSdk = "33"
 
