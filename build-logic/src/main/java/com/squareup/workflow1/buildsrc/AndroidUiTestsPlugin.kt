@@ -36,6 +36,7 @@ class AndroidUiTestsPlugin : Plugin<Project> {
 
       androidTestImplementation(target.libsCatalog.library("androidx-test-espresso-core"))
       androidTestImplementation(target.libsCatalog.library("androidx-test-junit"))
+      androidTestImplementation(target.libsCatalog.library("squareup-leakcanary-objectwatcher-android"))
       addProvider<MinimalExternalModuleDependency, ExternalModuleDependency>(
         "androidTestImplementation",
         target.libsCatalog.library("squareup-leakcanary-instrumentation")

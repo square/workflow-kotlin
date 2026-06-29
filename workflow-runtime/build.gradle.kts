@@ -113,6 +113,7 @@ kotlin {
 
         implementation(libs.androidx.test.espresso.core)
         implementation(libs.androidx.test.junit)
+        implementation(libs.squareup.leakcanary.objectwatcher.android)
         implementation(
           "com.squareup.leakcanary:leakcanary-android-instrumentation:" +
             libs.versions.squareup.leakcanary.get()
