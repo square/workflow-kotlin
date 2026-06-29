@@ -18,6 +18,12 @@ class AndroidSampleAppPlugin : Plugin<Project> {
 
       @Suppress("UnstableApiUsage")
       testedExtension.buildFeatures.viewBinding = true
+
+      // LeakCanary 3 requires API 26 resources. Keep this scoped to sample apps so published
+      // artifacts can continue to use the shared library minSdk.
+      testedExtension.defaultConfig { defaultConfig ->
+        defaultConfig.minSdk = maxOf(defaultConfig.minSdk ?: 1, 26)
+      }
     }
 
     target.extensions.configure(BaseAppModuleExtension::class.java) { appExtension ->

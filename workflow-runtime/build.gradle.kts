@@ -113,7 +113,16 @@ kotlin {
 
         implementation(libs.androidx.test.espresso.core)
         implementation(libs.androidx.test.junit)
-        implementation(libs.squareup.leakcanary.instrumentation)
+        implementation(libs.squareup.leakcanary.objectwatcher.android)
+        implementation(
+          "com.squareup.leakcanary:leakcanary-android-instrumentation:" +
+            libs.versions.squareup.leakcanary.get()
+        ) {
+          exclude(
+            group = "com.squareup.leakcanary",
+            module = "leakcanary-android-core"
+          )
+        }
         implementation(libs.truth)
 
         implementation(libs.androidx.activity.ktx)

@@ -1,10 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:tools="http://schemas.android.com/tools">
 
   <uses-sdk
       tools:overrideLibrary="com.squareup.leakcanary,com.squareup.leakcanary.android.test,com.squareup.leakcanary.core,com.squareup.leakcanary.fragments.androidx,com.squareup.leakcanary.instrumentation,com.squareup.leakcanary.objectwatcher,com.squareup.leakcanary.objectwatcher.core,com.squareup.leakcanary.plumber,com.squareup.leakcanary.plumber.core,com.squareup.leakcanary.release,com.squareup.leakcanary.utils" />
-
-  <application>
-    <activity android:name="androidx.activity.ComponentActivity"/>
-  </application>
 </manifest>

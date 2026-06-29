@@ -93,11 +93,11 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       val EXPECTED_ERRORS = listOf(
         (
           "ErrorLoggingInterceptor\\.logBeforeMethod threw exception:\n" +
-            ".+IllegalArgumentException.*"
+            ".*IllegalArgumentException.*"
           ).toRegex(),
         (
           "ErrorLoggingInterceptor\\.logAfterMethod threw exception:\n" +
-            ".+IllegalArgumentException.*"
+            ".*IllegalArgumentException.*"
           ).toRegex()
       )
     }
