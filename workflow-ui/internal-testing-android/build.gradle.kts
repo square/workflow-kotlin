@@ -29,9 +29,6 @@ dependencies {
   api(project(":workflow-ui:core-common"))
 
   implementation(libs.androidx.lifecycle.common)
-  implementation(libs.squareup.leakcanary.instrumentation)
-  implementation(libs.squareup.leakcanary.objectwatcher.android)
-
   testImplementation(libs.hamcrest)
   testImplementation(libs.robolectric)
   testImplementation(libs.robolectric.annotations)

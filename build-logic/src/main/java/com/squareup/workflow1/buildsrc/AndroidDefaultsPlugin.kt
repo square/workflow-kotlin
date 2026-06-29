@@ -51,3 +51,12 @@ class AndroidDefaultsPlugin : Plugin<Project> {
     }
   }
 }
+
+internal fun TestedExtension.useLeakCanaryMinSdkOverrideManifest(
+  target: Project,
+  sourceSetName: String,
+) {
+  sourceSets.getByName(sourceSetName).manifest.srcFile(
+    target.rootProject.file("build-logic/leakcanary-min-sdk-override/AndroidManifest.xml")
+  )
+}
