@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 
@@ -25,7 +26,9 @@ internal fun UploadFile(
 ) {
   val launcher = rememberFilePickerLauncher(
     type = FileKitType.File(listOf("json", "txt")),
-    title = "Select Workflow Trace File"
+    dialogSettings = FileKitDialogSettings(
+      title = "Select Workflow Trace File"
+    )
   ) {
     resetOnFileSelect(it)
   }
