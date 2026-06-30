@@ -6,6 +6,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import com.squareup.cycler.DataSource
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
@@ -83,13 +84,13 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
   }
 
   /**
-   * Converts this [DisplayBoardsListScreen] into a [List] by lazily wrapping it in a
+   * Converts this [DisplayBoardsListScreen] into a [DataSource] by lazily wrapping it in a
    * [BoardItem] to associate it with the [ViewEnvironment] and selection event handler from the
    * rendering.
    */
   private fun DisplayBoardsListScreen.toDataSource(
     viewEnvironment: ViewEnvironment
-  ): List<BoardItem> = object : AbstractList<BoardItem>() {
+  ): DataSource<BoardItem> = object : AbstractList<BoardItem>() {
     override val size: Int get() = boards.size
 
     override fun get(index: Int): BoardItem = BoardItem(
@@ -97,7 +98,7 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
       viewEnvironment = viewEnvironment,
       onClicked = { onBoardSelected(index) }
     )
-  }
+  }.toDataSource()
 
   companion object : ScreenViewFactory<DisplayBoardsListScreen> by fromLayout(
     R.layout.boards_list_layout,
