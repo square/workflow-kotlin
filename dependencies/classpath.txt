@@ -97,7 +97,7 @@ com.vanniktech:nexus:0.32.0
 commons-codec:commons-codec:1.11
 commons-io:commons-io:2.16.1
 commons-logging:commons-logging:1.2
-io.github.java-diff-utils:java-diff-utils:4.12
+io.github.java-diff-utils:java-diff-utils:4.17
 io.grpc:grpc-api:1.69.1
 io.grpc:grpc-context:1.69.1
 io.grpc:grpc-core:1.69.1
