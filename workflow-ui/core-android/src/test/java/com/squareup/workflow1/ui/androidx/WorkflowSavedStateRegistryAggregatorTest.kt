@@ -7,7 +7,9 @@ import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.State.RESUMED
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
@@ -316,6 +318,123 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     aggregator.detachFromParentRegistry()
   }
 
+  // https://github.com/square/workflow-kotlin/issues/570 / Compose 1.9.5 runDetachLifecycle
+  // teardown crash: WorkflowLifecycleOwner lifecycles advance in a depth-first cascade during
+  // window attach, so a child's lifecycle (and its lifecycle-driven consumers, like a nested
+  // ComposeView's composition) can advance before the aggregator's restore observer on the
+  // parent lifecycle ever fires. The child registry must nonetheless be restored -- with its
+  // real saved state -- by the time its lifecycle leaves INITIALIZED.
+  @Test fun `child advancing before parent ON_CREATE is restored just in time with saved state`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    // Parent registry is restored (contains real state for our child), but its lifecycle is
+    // still INITIALIZED -- exactly the state observed in the failing scenario.
+    val parent = stateRegistryOf(
+      "parentKey" to bundleOf(
+        "childKey" to stateRegistryOf(
+          "key" to bundleOf("data" to "value")
+        ).saveToBundle()
+      )
+    )
+
+    val childLifecycle = SimpleLifecycleOwner()
+    val childView = View(ApplicationProvider.getApplicationContext()).apply {
+      setViewTreeLifecycleOwner(childLifecycle)
+    }
+    aggregator.installChildRegistryOwnerOn(childView, "childKey")
+    aggregator.attachToParentRegistry("parentKey", parent)
+    assertThat(childView.savedStateRegistry.isRestored).isFalse()
+
+    // Simulate the depth-first attach cascade reaching the child before the parent's own
+    // ON_CREATE dispatch reaches the aggregator's observer.
+    childLifecycle.lifecycleRegistry.currentState = RESUMED
+
+    val childOwner = childView.findViewTreeSavedStateRegistryOwner()!!
+    assertThat(childOwner.savedStateRegistry.isRestored).isTrue()
+    assertThat(childOwner.lifecycle.currentState).isEqualTo(RESUMED)
+    val childState = childOwner.savedStateRegistry.consumeRestoredStateForKey("key")!!
+    assertThat(childState.getString("data")).isEqualTo("value")
+  }
+
+  @Test fun `child owner lifecycle stays INITIALIZED until restored`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    val parent = SimpleStateRegistry().apply {
+      stateRegistryController.performRestore(null)
+    }
+
+    val childLifecycle = SimpleLifecycleOwner()
+    val childView = View(ApplicationProvider.getApplicationContext()).apply {
+      setViewTreeLifecycleOwner(childLifecycle)
+    }
+    aggregator.installChildRegistryOwnerOn(childView, "childKey")
+    aggregator.attachToParentRegistry("parentKey", parent)
+
+    val childOwner = childView.findViewTreeSavedStateRegistryOwner()!!
+    assertThat(childOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.INITIALIZED)
+
+    // Restoring the aggregator restores the child, but its lifecycle only follows its
+    // delegate's.
+    parent.lifecycleRegistry.currentState = RESUMED
+    assertThat(childOwner.savedStateRegistry.isRestored).isTrue()
+    assertThat(childOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.INITIALIZED)
+
+    childLifecycle.lifecycleRegistry.currentState = RESUMED
+    assertThat(childOwner.lifecycle.currentState).isEqualTo(RESUMED)
+  }
+
+  @Test fun `child advancing with no attached parent restores empty without throwing`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    val childLifecycle = SimpleLifecycleOwner()
+    val childView = View(ApplicationProvider.getApplicationContext()).apply {
+      setViewTreeLifecycleOwner(childLifecycle)
+    }
+    aggregator.installChildRegistryOwnerOn(childView, "childKey")
+
+    // There is nowhere to restore from, but the lifecycle is advancing now: the contract
+    // ("restored before CREATED") must still hold.
+    childLifecycle.lifecycleRegistry.currentState = RESUMED
+
+    val childOwner = childView.findViewTreeSavedStateRegistryOwner()!!
+    assertThat(childOwner.savedStateRegistry.isRestored).isTrue()
+    assertThat(childOwner.savedStateRegistry.consumeRestoredStateForKey("key")).isNull()
+    assertThat(childOwner.lifecycle.currentState).isEqualTo(RESUMED)
+  }
+
+  @Test fun `pruned child advancing late does not consume replacement's saved state`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    val childALifecycle = SimpleLifecycleOwner()
+    val childViewA = View(ApplicationProvider.getApplicationContext()).apply {
+      setViewTreeLifecycleOwner(childALifecycle)
+    }
+    aggregator.installChildRegistryOwnerOn(childViewA, "childKey")
+    val childOwnerA = childViewA.findViewTreeSavedStateRegistryOwner()!!
+    aggregator.saveAndPruneChildRegistryOwner("childKey")
+
+    val childViewB = View(ApplicationProvider.getApplicationContext()).apply {
+      setViewTreeLifecycleOwner(SimpleLifecycleOwner())
+    }
+    aggregator.installChildRegistryOwnerOn(childViewB, "childKey")
+    val childOwnerB = childViewB.findViewTreeSavedStateRegistryOwner()!!
+
+    // The pruned child's lifecycle advances after its replacement was installed. It must be
+    // restored (to uphold the savedstate contract), but only ever empty -- the saved state
+    // under "childKey" belongs to its replacement.
+    childALifecycle.lifecycleRegistry.currentState = RESUMED
+    assertThat(childOwnerA.savedStateRegistry.isRestored).isTrue()
+
+    val parent = stateRegistryOf(
+      "parentKey" to bundleOf(
+        "childKey" to stateRegistryOf(
+          "key" to bundleOf("data" to "value")
+        ).saveToBundle()
+      )
+    )
+    aggregator.attachToParentRegistry("parentKey", parent)
+    parent.lifecycleRegistry.currentState = RESUMED
+
+    val childState = childOwnerB.savedStateRegistry.consumeRestoredStateForKey("key")!!
+    assertThat(childState.getString("data")).isEqualTo("value")
+  }
+
   /**
    * Creates a [SimpleStateRegistry] that is seeded with [pairs], where each key
    * in the pair is the state registry key passed to
@@ -345,6 +464,13 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     pairs.forEach { (key, string) ->
       putString(key, string)
     }
+  }
+
+  /** A [LifecycleOwner] whose state the test can drive directly. */
+  private class SimpleLifecycleOwner : LifecycleOwner {
+    val lifecycleRegistry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle
+      get() = lifecycleRegistry
   }
 
   private class SimpleStateRegistry : SavedStateRegistryOwner {
