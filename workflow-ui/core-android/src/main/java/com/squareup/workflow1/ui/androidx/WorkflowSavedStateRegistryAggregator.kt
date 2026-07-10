@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -99,18 +98,23 @@ public class WorkflowSavedStateRegistryAggregator {
       // We don't care about the lifecycle anymore, we've got what we need.
       source.lifecycle.removeObserver(this)
 
-      val restoredState: Bundle?
-      try {
-        restoredState =
-          // These properties are guaranteed to be non-null because this observer is only registered
-          // while attached, and these properties are always non-null while attached.
-          parentRegistryOwner!!.savedStateRegistry.consumeRestoredStateForKey(parentKey!!)
-      } catch (e: IllegalStateException) {
-        // Exception thrown by SavedStateRegistryOwner is pretty useless.
-        throw IllegalStateException("Error consuming $parentKey from $parentRegistryOwner", e)
-          .withKey(parentKey.orEmpty())
-      }
-      restoreFromBundle(restoredState)
+      restoreFromBundle(consumeFromParent())
+    }
+  }
+
+  /**
+   * Consumes this aggregator's state from the attached parent registry. Only legal while
+   * attached and once the parent registry itself has been restored.
+   */
+  private fun consumeFromParent(): Bundle? {
+    return try {
+      // These properties are guaranteed to be non-null because this method is only called
+      // while attached, and these properties are always non-null while attached.
+      parentRegistryOwner!!.savedStateRegistry.consumeRestoredStateForKey(parentKey!!)
+    } catch (e: IllegalStateException) {
+      // Exception thrown by SavedStateRegistryOwner is pretty useless.
+      throw IllegalStateException("Error consuming $parentKey from $parentRegistryOwner", e)
+        .withKey(parentKey.orEmpty())
     }
   }
 
@@ -193,7 +197,9 @@ public class WorkflowSavedStateRegistryAggregator {
    * with its [LifecycleOwner]. (Use [WorkflowLifecycleOwner] to ensure
    * one is properly installed.)
    *
-   * **This method must be called before [view] is attached to a window.**
+   * **This method must be called on the main thread, before [view] is attached to a window.**
+   * (It observes [view]'s `ViewTreeLifecycleOwner` lifecycle, and
+   * [androidx.lifecycle.LifecycleRegistry] requires observer registration on the main thread.)
    *
    * Clean up requirements after making this call are nuanced. There is no need
    * to remove the [SavedStateRegistryOwner] from the [view] itself, but this
@@ -230,7 +236,7 @@ public class WorkflowSavedStateRegistryAggregator {
       "Expected $view($key) to have a ViewTreeLifecycleOwner. " +
         "Use WorkflowLifecycleOwner to fix that."
     }
-    val registryOwner = KeyedSavedStateRegistryOwner(key, lifecycleOwner)
+    val registryOwner = KeyedSavedStateRegistryOwner(key, lifecycleOwner, ::restoreChildNow)
     children.put(key, registryOwner)?.let {
       throw IllegalArgumentException("$key is already in use, it cannot be used to register $view")
         .withKey(key)
@@ -243,7 +249,56 @@ public class WorkflowSavedStateRegistryAggregator {
         ).withKey(key)
       }
     view.setViewTreeSavedStateRegistryOwner(registryOwner)
+    // Registered only after the child is in [children], so that if the lifecycle is already
+    // past INITIALIZED the resulting synchronous restoreChildNow call finds the child.
+    registryOwner.installObserver()
     restoreIfOwnerReady(registryOwner)
+  }
+
+  /**
+   * Called by a [child] whose lifecycle is about to leave `INITIALIZED` while its registry has
+   * not been restored yet. Restoration must happen now: as soon as the child's lifecycle moves,
+   * lifecycle-driven consumers (e.g. Compose UI's `DisposableSaveableStateRegistry`, created the
+   * moment a `ComposeView` under [child]'s view composes) will read the child's registry, and
+   * androidx throws if it is unrestored.
+   *
+   * This situation arises because [WorkflowLifecycleOwner] lifecycles advance in a synchronous
+   * depth-first cascade during window-attach, and lifecycle observer dispatch order follows
+   * registration order: a descendant's consumers can run before this aggregator's own
+   * [lifecycleObserver] receives the parent `ON_CREATE` that would normally have restored
+   * everything first (see https://github.com/square/workflow-kotlin/issues/570 and UISA-95).
+   *
+   * If this aggregator hasn't been restored yet, it first tries to restore itself synchronously
+   * from the parent registry. That is legal whenever the parent registry itself has been
+   * restored — [androidx.savedstate.SavedStateRegistry.consumeRestoredStateForKey] only requires
+   * the parent's *registry* to be restored, not its lifecycle to be `CREATED`. The parent is
+   * always restored by this point in practice: lifecycles advance strictly top-down, so every
+   * ancestor's lifecycle reached `CREATED` before [child]'s did, which (inductively, via this
+   * same mechanism one level up) restored every ancestor registry on the way down.
+   */
+  private fun restoreChildNow(child: KeyedSavedStateRegistryOwner) {
+    if (!isRestored && parentRegistryOwner?.savedStateRegistry?.isRestored == true) {
+      // Our own ON_CREATE observer hasn't fired yet, but the parent registry already has our
+      // state. Restore ourselves now instead of waiting out the rest of the dispatch cascade.
+      parentRegistryOwner?.lifecycle?.removeObserver(lifecycleObserver)
+      restoreFromBundle(consumeFromParent())
+    }
+
+    // restoreFromBundle above restores every unrestored child, including this one.
+    if (child.savedStateRegistry.isRestored) return
+
+    val states = states
+    if (states != null && children[child.key] === child) {
+      child.controller.performRestore(states.remove(child.key))
+    } else {
+      // Either this aggregator has no restored state to draw from (its own restoration is
+      // still pending), or the child has already been pruned. There is no state available for
+      // this child, and its lifecycle is advancing now, so the only way to uphold the
+      // savedstate contract is to restore it empty. Note that consuming from [states] here
+      // would be wrong for a pruned child: its saved state must remain available for the
+      // replacement view that will be installed under the same key.
+      child.controller.performRestore(null)
+    }
   }
 
   /**
@@ -277,6 +332,10 @@ public class WorkflowSavedStateRegistryAggregator {
   private fun restoreIfOwnerReady(
     child: KeyedSavedStateRegistryOwner
   ) {
+    // The child may already have been restored by restoreChildNow, if its lifecycle was
+    // already advancing when it was installed.
+    if (child.savedStateRegistry.isRestored) return
+
     doIfRestored { states ->
       val state = states.remove(child.key)
       child.controller.performRestore(state)
@@ -314,11 +373,9 @@ public class WorkflowSavedStateRegistryAggregator {
     restoredState?.keySet()?.forEach { key ->
       states!! += key to restoredState.getBundle(key)!!
     }
-    children.values.forEach {
-      // We're only allowed to restore from an INITIALIZED state, but this callback can also be
-      // invoked while the owner is already CREATED, at least on API 32.
-      // https://github.com/square/workflow-kotlin/issues/570
-      if (it.lifecycle.currentState == INITIALIZED) restoreIfOwnerReady(it)
-    }
+    // Any child whose lifecycle already advanced was restored at that moment by
+    // restoreChildNow; restoreIfOwnerReady skips those. Everything else is restored here.
+    // See https://github.com/square/workflow-kotlin/issues/570.
+    children.values.forEach { restoreIfOwnerReady(it) }
   }
 }
