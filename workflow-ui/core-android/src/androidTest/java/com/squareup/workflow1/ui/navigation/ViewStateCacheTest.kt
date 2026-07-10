@@ -85,10 +85,14 @@ internal class ViewStateCacheTest {
     firstView.viewState = "hello world"
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
+    cache.updateOnMain(
+      retainedRenderings = emptyList(),
+      oldHolderMaybe = null,
+      newHolder = firstView
+    )
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(
+    cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
       newHolder = secondView
@@ -99,7 +103,7 @@ internal class ViewStateCacheTest {
 
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = createTestView(firstRendering, id = 1)
-    cache.update(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
+    cache.updateOnMain(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
 
     // Check that the state was restored.
     assertThat(firstViewRestored.viewState).isEqualTo("hello world")
@@ -117,10 +121,14 @@ internal class ViewStateCacheTest {
     firstView.viewState = "hello world"
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
+    cache.updateOnMain(
+      retainedRenderings = emptyList(),
+      oldHolderMaybe = null,
+      newHolder = firstView
+    )
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(
+    cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
       newHolder = secondView
@@ -130,7 +138,7 @@ internal class ViewStateCacheTest {
     val firstViewRestored = createTestView(firstRendering, id = 1, crashOnRestore = true)
     firstViewRestored.viewState = "should not be clobbered"
 
-    cache.update(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
+    cache.updateOnMain(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
     // We didn't crash, that's already a good sign.
 
     // Check that the "hard coded" view state is in tact due to the swallowed exception.
@@ -146,13 +154,17 @@ internal class ViewStateCacheTest {
     val secondView = createTestView(secondRendering)
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
+    cache.updateOnMain(
+      retainedRenderings = emptyList(),
+      oldHolderMaybe = null,
+      newHolder = firstView
+    )
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(
+    cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
       newHolder = secondView
@@ -170,7 +182,7 @@ internal class ViewStateCacheTest {
       ScreenViewHolder<NamedScreen<*>>(EMPTY, firstViewRestored) { _, _ -> }.also {
         it.show(firstRendering, viewEnvironment)
       }
-    cache.update(
+    cache.updateOnMain(
       listOf(firstRendering),
       oldHolderMaybe = secondView,
       newHolder = firstHolderRestored
@@ -191,17 +203,25 @@ internal class ViewStateCacheTest {
     firstView.viewState = "hello world"
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
+    cache.updateOnMain(
+      retainedRenderings = emptyList(),
+      oldHolderMaybe = null,
+      newHolder = firstView
+    )
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(listOf(firstRendering), oldHolderMaybe = firstView, newHolder = secondView)
+    cache.updateOnMain(listOf(firstRendering), oldHolderMaybe = firstView, newHolder = secondView)
 
     // Nothing should read this value again, but clear it to make sure.
     firstView.viewState = "ignored"
 
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = createTestView(firstRendering)
-    cache.update(listOf(firstRendering), oldHolderMaybe = secondView, newHolder = firstViewRestored)
+    cache.updateOnMain(
+      listOf(firstRendering),
+      oldHolderMaybe = secondView,
+      newHolder = firstViewRestored
+    )
 
     // Check that the state was NOT restored.
     assertThat(firstViewRestored.viewState).isEqualTo("")
@@ -217,6 +237,22 @@ internal class ViewStateCacheTest {
       fail("Expected exception.")
     } catch (e: IllegalArgumentException) {
       assertThat(e.message).contains("Duplicate entries not allowed")
+    }
+  }
+
+  /**
+   * [ViewStateCache.update] installs a [com.squareup.workflow1.ui.androidx.KeyedSavedStateRegistryOwner]
+   * on the incoming view, which observes the view's lifecycle -- and
+   * [androidx.lifecycle.LifecycleRegistry] requires observers to be registered on the main
+   * thread, just as production callers (container views) always do.
+   */
+  private fun ViewStateCache.updateOnMain(
+    retainedRenderings: Collection<NamedScreen<*>>,
+    oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+    newHolder: ScreenViewHolder<NamedScreen<*>>
+  ) {
+    instrumentation.runOnMainSync {
+      update(retainedRenderings, oldHolderMaybe, newHolder)
     }
   }
 
