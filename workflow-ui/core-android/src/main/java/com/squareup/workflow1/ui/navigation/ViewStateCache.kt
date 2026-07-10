@@ -55,6 +55,11 @@ internal constructor(
   }
 
   /**
+   * **This method must be called on the main thread, before [newHolder]'s view is attached
+   * to a window.** It installs a [SavedStateRegistryOwner] on that view via
+   * [WorkflowSavedStateRegistryAggregator.installChildRegistryOwnerOn], which registers a
+   * lifecycle observer.
+   *
    * @param retainedRenderings the renderings to be considered hidden after this update. Any
    * associated view state will be retained in the cache, possibly to be restored to the view
    * of [newHolder] on a succeeding call to his method. Any other cached view state will be dropped.

@@ -49,7 +49,7 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
  * the aggregator's own restoration observer ever fires. To close that race, when [lifecycleOwner]
  * delivers `ON_CREATE` and this owner has not been restored yet, it synchronously asks the
  * aggregator to restore it *now* via [onRestoreNeeded] — before the local lifecycle advances and
- * any downstream consumer can see the registry. [installObserverOn] is called by the aggregator
+ * any downstream consumer can see the registry. [installObserver] is called by the aggregator
  * before the view can possibly attach, so this observer is always registered — and thus always
  * dispatched — ahead of any consumer's.
  *
@@ -83,6 +83,9 @@ internal class KeyedSavedStateRegistryOwner internal constructor(
       // legal because localLifecycle is INITIALIZED until we advance it below.
       if (event == ON_CREATE && !savedStateRegistry.isRestored) {
         onRestoreNeeded(this@KeyedSavedStateRegistryOwner)
+        check(savedStateRegistry.isRestored) {
+          "onRestoreNeeded contract violation: registry for key '$key' was not restored"
+        }
       }
       localLifecycle.handleLifecycleEvent(event)
       if (event == ON_DESTROY) {

@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.androidx
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -297,6 +298,16 @@ public class WorkflowSavedStateRegistryAggregator {
       // savedstate contract is to restore it empty. Note that consuming from [states] here
       // would be wrong for a pruned child: its saved state must remain available for the
       // replacement view that will be installed under the same key.
+      val reason = if (states == null) {
+        "this aggregator (parent key '$parentKey') has not been restored yet"
+      } else {
+        "the child is no longer registered with this aggregator (already pruned?)"
+      }
+      Log.d(
+        "Workflow",
+        "WorkflowSavedStateRegistryAggregator restoring child '${child.key}' with no state " +
+          "because $reason. Any state saved under this key is not available."
+      )
       child.controller.performRestore(null)
     }
   }
