@@ -51,6 +51,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.common)
   implementation(libs.androidx.lifecycle.compose)
   implementation(libs.androidx.lifecycle.core)
+  implementation(libs.androidx.savedstate.compose)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.squareup.okio)
 
