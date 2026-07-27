@@ -52,7 +52,7 @@ google-material = "1.4.0"
 
 groovy = "3.0.9"
 jUnit = "4.13.2"
-java-diff-utils = "4.12"
+java-diff-utils = "4.17"
 javaParser = "3.24.0"
 jetbrains-compose-plugin = "1.7.3"
 kgx = "0.1.12"
