@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.ComponentDialog
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -30,7 +31,8 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 internal class DialogIntegrationTest {
-  @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
+  @get:Rule
+  val scenarioRule = ActivityScenarioRule(DialogIntegrationTestActivity::class.java)
   private val scenario get() = scenarioRule.scenario
 
   private data class ContentRendering(val name: String) :
@@ -82,6 +84,25 @@ internal class DialogIntegrationTest {
 
     assertThat(latestDialog).isNotNull()
     assertThat(latestDialog!!.isShowing).isTrue()
+  }
+
+  @Test fun dialogTouchNotifiesHostingActivityOfUserInteraction() {
+    val screen = BodyAndOverlaysScreen(
+      ContentRendering("body"),
+      listOf(DialogRendering("dialog", ContentRendering("content")))
+    )
+
+    scenario.onActivity { activity ->
+      activity.workflowContentView.show(screen)
+    }
+    onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
+    scenario.onActivity { it.userInteractionCount = 0 }
+
+    onView(withText("content")).inRoot(isDialog()).perform(click())
+
+    scenario.onActivity { activity ->
+      assertThat(activity.userInteractionCount).isEqualTo(1)
+    }
   }
 
   /** https://github.com/square/workflow-kotlin/issues/825 */
@@ -176,5 +197,14 @@ internal class DialogIntegrationTest {
 
     scenario.moveToState(DESTROYED)
     assertThat(latestDialog?.isShowing).isFalse()
+  }
+}
+
+internal class DialogIntegrationTestActivity : ComponentActivity() {
+  var userInteractionCount = 0
+
+  override fun onUserInteraction() {
+    super.onUserInteraction()
+    userInteractionCount++
   }
 }

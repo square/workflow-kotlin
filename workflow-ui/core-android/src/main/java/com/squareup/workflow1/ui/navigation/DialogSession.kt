@@ -1,5 +1,8 @@
 package com.squareup.workflow1.ui.navigation
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -106,18 +109,39 @@ internal class DialogSession(
     val dialog = holder.dialog
 
     dialog.window?.let { window ->
+      val activity = dialog.context.activityOrNull()
       val realWindowCallback = window.callback
       window.callback = object : Callback by realWindowCallback {
         override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+          if (event.action == MotionEvent.ACTION_DOWN) {
+            activity?.onUserInteraction()
+          }
           return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
         }
 
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+          activity?.onUserInteraction()
+
           // Consume all events if we've been told to do so.
           if (!allowEvents) return true
 
           // Allow the usual handling, including the usual call to Dialog.onBackPressed.
           return realWindowCallback.dispatchKeyEvent(event)
+        }
+
+        override fun dispatchKeyShortcutEvent(event: KeyEvent): Boolean {
+          activity?.onUserInteraction()
+          return realWindowCallback.dispatchKeyShortcutEvent(event)
+        }
+
+        override fun dispatchTrackballEvent(event: MotionEvent): Boolean {
+          activity?.onUserInteraction()
+          return realWindowCallback.dispatchTrackballEvent(event)
+        }
+
+        override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+          activity?.onUserInteraction()
+          return realWindowCallback.dispatchGenericMotionEvent(event)
         }
       }
     }
@@ -290,4 +314,10 @@ internal class DialogSession(
       override fun newArray(size: Int): Array<KeyAndBundle?> = arrayOfNulls(size)
     }
   }
+}
+
+private tailrec fun Context.activityOrNull(): Activity? = when (this) {
+  is Activity -> this
+  is ContextWrapper -> baseContext.activityOrNull()
+  else -> null
 }
