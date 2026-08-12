@@ -73,7 +73,7 @@ material = "1.14.0"
 mockito-core = "3.12.4"
 mockito-kotlin = "3.2.0"
 
-mockk = "1.13.9"
+mockk = "1.14.11"
 robolectric = "4.10.3"
 
 rxjava2-android = "2.1.1"
