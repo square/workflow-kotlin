@@ -15,7 +15,7 @@ androidx-benchmark = "1.4.1"
 androidx-cardview = "1.0.0"
 androidx-collection = "1.6.0"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidx-compose-bom = "2025.03.01"
+androidx-compose-bom = "2025.11.01"
 androidx-constraintlayout = "2.2.1"
 androidx-core = "1.18.0"
 androidx-fragment = "1.8.9"
@@ -43,6 +43,7 @@ detekt = "1.19.0"
 dokka = "2.0.0"
 dependencyGuard = "0.5.0"
 # Any version above 0.10.0-beta03 requires Compose 1.8.0 or higher, beta03 is 1.7.3 or higher.
+# Now that we're on Compose 1.9, this is free to be bumped.
 filekit-dialogs-compose = "0.10.0-beta03"
 
 google-accompanist = "0.18.0"
@@ -54,7 +55,7 @@ groovy = "3.0.9"
 jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
-jetbrains-compose-plugin = "1.7.3"
+jetbrains-compose-plugin = "1.9.3"
 kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
@@ -92,7 +93,8 @@ squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.3"
 squareup-workflow = "1.0.0"
 
-skiko = "0.9.4"
+# Keep in sync with the skiko version used by jetbrains-compose-plugin.
+skiko = "0.9.22.2"
 telephoto = "0.16.0"
 timber = "5.0.1"
 truth = "1.4.5"
