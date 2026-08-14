@@ -127,8 +127,7 @@ internal class RenderAsStateTest {
           scope = scope,
           props = Unit,
           interceptors = emptyList(),
-          onOutput = {},
-          snapshotKey = SNAPSHOT_KEY
+          onOutput = {}
         ).value
       }
     }
@@ -143,11 +142,12 @@ internal class RenderAsStateTest {
 
     composeRule.runOnIdle {
       val savedValues = savedStateRegistry.performSave()
-      println("saved keys: ${savedValues.keys}")
-      // Relying on the int key across all runtimes is brittle, so use an explicit key.
+
+      // rememberSaveable generates its key from the call site's position in the composition, so
+      // the test can't know it. renderAsState saves exactly one value, so just take that one.
       @Suppress("UNCHECKED_CAST")
       val snapshot =
-        ByteString.of(*((savedValues.getValue(SNAPSHOT_KEY).single() as State<ByteArray>).value))
+        ByteString.of(*((savedValues.values.single().single() as State<ByteArray>).value))
       println("snapshot: ${snapshot.base64()}")
       assertThat(snapshot).isEqualTo(EXPECTED_SNAPSHOT)
     }
@@ -155,9 +155,16 @@ internal class RenderAsStateTest {
 
   @Test fun restoresSnapshot() {
     val workflow = SnapshottingWorkflow()
-    val restoreValues =
-      mapOf(SNAPSHOT_KEY to listOf(mutableStateOf(EXPECTED_SNAPSHOT.toByteArray())))
-    val savedStateRegistry = SaveableStateRegistry(restoreValues) { true }
+    // rememberSaveable generates its key from the call site's position in the composition, so the
+    // test can't seed the restore map with the right key. renderAsState restores exactly one
+    // value, so hand it the snapshot whatever key it asks for.
+    val savedStateRegistry = object : SaveableStateRegistry by SaveableStateRegistry(
+      restoredValues = emptyMap(),
+      canBeSaved = { true }
+    ) {
+      override fun consumeRestored(key: String): Any =
+        mutableStateOf(EXPECTED_SNAPSHOT.toByteArray())
+    }
     lateinit var rendering: SnapshottedRendering
 
     composeRule.setContent {
@@ -167,8 +174,7 @@ internal class RenderAsStateTest {
           scope = rememberCoroutineScope(),
           props = Unit,
           interceptors = emptyList(),
-          onOutput = {},
-          snapshotKey = "workflow-snapshot"
+          onOutput = {}
         ).value
       }
     }
@@ -205,6 +211,48 @@ internal class RenderAsStateTest {
 
     composeRule.runOnIdle {
       assertThat(rendering.string).isEqualTo("foo")
+    }
+  }
+
+  /**
+   * Multiple runtimes in the same composition each save and restore their own snapshot, rather
+   * than sharing or clobbering each other's.
+   */
+  @Test fun savesAndRestoresSnapshotsOfSiblingRuntimesIndependently() {
+    val stateRestorationTester = StateRestorationTester(composeRule)
+    val workflow = SnapshottingWorkflow()
+    lateinit var firstRendering: SnapshottedRendering
+    lateinit var secondRendering: SnapshottedRendering
+    val scope = TestScope()
+
+    stateRestorationTester.setContent {
+      firstRendering = workflow.renderAsState(
+        scope = scope,
+        props = Unit,
+        interceptors = emptyList(),
+        onOutput = {},
+      ).value
+      secondRendering = workflow.renderAsState(
+        scope = scope,
+        props = Unit,
+        interceptors = emptyList(),
+        onOutput = {},
+      ).value
+    }
+
+    composeRule.runOnIdle {
+      firstRendering.updateString("first")
+      secondRendering.updateString("second")
+    }
+
+    // Move along workflow before saving state!
+    scope.advanceUntilIdle()
+
+    stateRestorationTester.emulateSavedInstanceStateRestore()
+
+    composeRule.runOnIdle {
+      assertThat(firstRendering.string).isEqualTo("first")
+      assertThat(secondRendering.string).isEqualTo("second")
     }
   }
 
@@ -353,8 +401,6 @@ internal class RenderAsStateTest {
   }
 
   private companion object {
-    const val SNAPSHOT_KEY = "workflow-snapshot"
-
     /** Golden value from [savesSnapshot]. */
     val EXPECTED_SNAPSHOT = "AAAABwAAAANmb28AAAAA".decodeBase64()!!
   }

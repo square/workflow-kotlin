@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui.compose
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
@@ -11,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -116,11 +114,6 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
   onOutput: suspend (OutputT) -> Unit
 ): State<RenderingT> = renderAsState(this, scope, props, interceptors, runtimeConfig, onOutput)
 
-/**
- * @param snapshotKey Allows tests to pass in a custom key to use to save/restore the snapshot from
- * the [LocalSaveableStateRegistry]. If null, will use the default key based on source location.
- */
-@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -128,10 +121,11 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   props: PropsT,
   interceptors: List<WorkflowInterceptor>,
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  onOutput: suspend (OutputT) -> Unit,
-  snapshotKey: String? = null
+  onOutput: suspend (OutputT) -> Unit
 ): State<RenderingT> {
-  val snapshotState = rememberTreeSnapshotState(snapshotKey)
+  val snapshotState = rememberSaveable(stateSaver = TreeSnapshotSaver) {
+    mutableStateOf<TreeSnapshot?>(null)
+  }
   val updatedOnOutput by rememberUpdatedState(onOutput)
 
   // We can't use DisposableEffect because it won't run until the composition is successfully
@@ -163,28 +157,6 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
 
   return state.rendering
 }
-
-@Composable
-private fun rememberTreeSnapshotState(
-  snapshotKey: String?
-): MutableState<TreeSnapshot?> {
-  return if (snapshotKey == null) {
-    rememberSaveable(stateSaver = TreeSnapshotSaver) {
-      mutableStateOf(null)
-    }
-  } else {
-    rememberTreeSnapshotStateWithKey(snapshotKey)
-  }
-}
-
-@Suppress("DEPRECATION")
-@Composable
-private fun rememberTreeSnapshotStateWithKey(
-  snapshotKey: String
-): MutableState<TreeSnapshot?> =
-  rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) {
-    mutableStateOf(null)
-  }
 
 /**
  * State hoisted out of [renderAsState].
