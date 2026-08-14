@@ -10,7 +10,6 @@ import androidx.compose.runtime.ExplicitGroupsComposable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -59,15 +58,14 @@ private constructor(
   snapshot: Snapshot?,
   initialProps: P,
   private val workflowScope: CoroutineScope,
-  private val recomposeScope: RecomposeScope,
+  private val parentRecomposeScope: RecomposeScope,
   private val config: WorkflowComposableRuntimeConfig,
   override val parent: WorkflowSession?,
   override val renderKey: String,
 ) :
-  BaseRenderContext<P, Any?, O>,
-  Sink<WorkflowAction<P, Any?, O>>,
-  WorkflowSession,
-  RecomposeScope by recomposeScope {
+  BaseRenderContext<P, Any?, O>, Sink<WorkflowAction<P, Any?, O>>, WorkflowSession, RecomposeScope {
+
+  private var recomposeScope: RecomposeScope? = null
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
   private val applyActionLock = Lock()
@@ -120,7 +118,7 @@ private constructor(
 
   @Suppress("UNCHECKED_CAST")
   fun renderSelf(
-    props: P,
+    props: Any?,
     onOutput: ((Any?) -> Unit)?,
     didPropsChange: Boolean?,
     didOnOutputChange: Boolean?,
@@ -135,12 +133,16 @@ private constructor(
         didOnOutputChange = didOnOutputChange,
       ) { oldProps, oldState ->
         workflowTracer.traceNoFinally(OnPropsChanged) {
-          interceptedWorkflow.onPropsChanged(old = oldProps as P, new = props, state = oldState)
+          interceptedWorkflow.onPropsChanged(
+            old = oldProps as P,
+            new = props as P,
+            state = oldState,
+          )
         }
       }
     return interceptedWorkflow
       .render(
-        renderProps = props,
+        renderProps = props as P,
         renderState = currentState,
         context = RenderContext(this, interceptedWorkflow),
       )
@@ -208,6 +210,21 @@ private constructor(
         )
       }
 
+  /**
+   * Updates the innermost recompose scope for this context. This must be called with the recompose
+   * scope from inside the workflow's restartable group or [invalidate] won't actually trigger a
+   * re-render.
+   */
+  fun updateRecomposeScope(recomposeScope: RecomposeScope) {
+    this.recomposeScope = recomposeScope
+  }
+
+  override fun invalidate() {
+    // When state changes, invalidate as much as possible in one go to reduce trampolining.
+    parentRecomposeScope.invalidate()
+    recomposeScope!!.invalidate()
+  }
+
   private fun requireTrapdoor(operationName: String): Trapdoor =
     trapdoor ?: error("Cannot perform $operationName on RenderContext outside of render pass.")
 
@@ -226,10 +243,7 @@ private constructor(
     // Send can be called from any thread so wrap non-atomic reads/writes in a critical section.
     applyActionLock.withLock {
       @Suppress("UNCHECKED_CAST")
-      state.applyAction(
-        action as WorkflowAction<Any?, Any?, Any?>,
-        onNewState = { recomposeScope.invalidate() },
-      )
+      state.applyAction(action as WorkflowAction<Any?, Any?, Any?>, onNewState = this::invalidate)
     }
   }
 
@@ -248,16 +262,6 @@ private constructor(
     }
   }
 
-  private class JoinedRecomposeScope(
-    private val scope1: RecomposeScope,
-    private val scope2: RecomposeScope,
-  ) : RecomposeScope {
-    override fun invalidate() {
-      scope1.invalidate()
-      scope2.invalidate()
-    }
-  }
-
   companion object {
     /**
      * Hard-coded group key used for all groups that are created by [ComposeRenderContext]s. All
@@ -272,32 +276,30 @@ private constructor(
     @Composable
     fun <P, O, R> rememberComposeRenderContext(
       workflow: Workflow<P, O, R>,
-      props: P,
+      initialProps: P,
       config: WorkflowComposableRuntimeConfig,
       parentSession: WorkflowSession?,
       renderKey: String,
       callerRecomposeScope: RecomposeScope,
     ): ComposeRenderContext<P, O, R> {
       val workflowScope = rememberCoroutineScope()
-      // When state changes, invalidate as much as possible in one go to reduce trampolining.
-      val joinedRecomposeScope = JoinedRecomposeScope(callerRecomposeScope, currentRecomposeScope)
       val renderContext: ComposeRenderContext<P, O, R> =
         rememberSaveable(
           saver =
             Saver(
-              initialProps = props,
+              initialProps = initialProps,
               workflow = workflow,
               workflowScope = workflowScope,
-              recomposeScope = joinedRecomposeScope,
+              parentRecomposeScope = callerRecomposeScope,
               config = config,
               parentSession = parentSession,
               renderKey = renderKey,
             )
         ) {
           ComposeRenderContext(
-            initialProps = props,
+            initialProps = initialProps,
             workflow = workflow,
-            recomposeScope = joinedRecomposeScope,
+            parentRecomposeScope = callerRecomposeScope,
             workflowScope = workflowScope,
             config = config,
             parent = parentSession,
@@ -318,7 +320,7 @@ private constructor(
     private val initialProps: P,
     private val workflow: Workflow<P, O, R>,
     private val workflowScope: CoroutineScope,
-    private val recomposeScope: RecomposeScope,
+    private val parentRecomposeScope: RecomposeScope,
     private val config: WorkflowComposableRuntimeConfig,
     private val parentSession: WorkflowSession?,
     private val renderKey: String,
@@ -329,7 +331,7 @@ private constructor(
         initialProps = initialProps,
         workflowScope = workflowScope,
         snapshot = value,
-        recomposeScope = recomposeScope,
+        parentRecomposeScope = parentRecomposeScope,
         config = config,
         parent = parentSession,
         renderKey = renderKey,

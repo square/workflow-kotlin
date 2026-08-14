@@ -2,6 +2,7 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
+import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.currentRecomposeScope
@@ -39,7 +40,6 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
  */
 @Suppress("UNCHECKED_CAST")
 @OptIn(WorkflowExperimentalRuntime::class)
-// @ExplicitGroupsComposable
 @Composable
 internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -52,91 +52,57 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
 ): RenderingT {
   // The lifetime of the workflow session is tied to the workflow.identifier, but we don't key on it
   // here since it's already keyed from ComposeRenderContext.
+  val renderContext =
+    rememberComposeRenderContext(
+      workflow = workflow,
+      initialProps = props,
+      config = config,
+      parentSession = parentSession,
+      renderKey = renderKey,
+      callerRecomposeScope = recomposeScope,
+    )
 
   // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
   // call to the producer lambda within the same restart group.
   return if (COMPOSE_RUNTIME_SKIPPING in config.runtimeConfig) {
-    renderWorkflowRestartableImpl(
-      workflow = workflow,
-      props = props,
-      onOutput = onOutput as ((Any?) -> Unit)?,
-      config = config,
-      parentSession = parentSession,
-      renderKey = renderKey,
-      invalidateCallerOnNewValue = false,
-      // Note: If this is recomposeScope, we'll invalidate the entire path up the tree and recompose
-      // in one go. If it's currentRecomposeScope, we'll trampoline. Benchmarks show that doing a
-      // single recompose pass is roughly twice as fast as trampolining in some cases, so we do that
-      // as an optimization.
-      callerRecomposeScope = recomposeScope,
-      composer = currentComposer,
-      changed = 0,
+    renderWorkflowRestartable(
+      props,
+      onOutput as ((Any?) -> Unit)?,
+      renderContext,
+      false,
+      recomposeScope,
     )
       as RenderingT
   } else {
-    val renderContext =
-      renderWorkflowImpl(
-        workflow as Workflow<Any?, Any?, Any?>,
-        props,
-        config,
-        parentSession,
-        renderKey,
-        recomposeScope,
-      )
+    renderContext.updateRecomposeScope(currentRecomposeScope)
     renderContext.renderSelf(
       props = props,
       onOutput = onOutput as ((Any?) -> Unit)?,
       didPropsChange = null,
       didOnOutputChange = null,
       composer = currentComposer,
-    ) as RenderingT
+    )
   }
 }
 
-private val renderWorkflowImpl =
-  @Composable
-  fun(
-    workflow: Workflow<Any?, Any?, Any?>,
-    props: Any?,
-    config: WorkflowComposableRuntimeConfig,
-    parentSession: WorkflowSession?,
-    renderKey: String,
-    recomposeScope: RecomposeScope,
-  ): ComposeRenderContext<Any?, Any?, Any?> {
-    return rememberComposeRenderContext(
-      workflow = workflow,
-      props = props,
-      config = config,
-      parentSession = parentSession,
-      renderKey = renderKey,
-      callerRecomposeScope = recomposeScope,
-    )
-  }
-
-@Suppress("USELESS_CAST", "UNCHECKED_CAST")
-private val renderWorkflowImplComposable =
-  renderWorkflowImpl
-    as
-    (
-      Workflow<*, *, *>,
-      Any?,
-      WorkflowComposableRuntimeConfig,
-      WorkflowSession?,
-      String,
-      RecomposeScope,
-      Composer,
-      Int,
-    ) -> ComposeRenderContext<Any?, Any?, Any?>
-
+/**
+ * Exposes [renderWorkflowRestartableImpl] as a composable function, to get the compiler to wire up
+ * the `changed` flags.
+ */
 @Suppress("UNCHECKED_CAST")
+private val renderWorkflowRestartable =
+  ::renderWorkflowRestartableImpl
+    as
+    @Composable
+    (Any?, ((Any?) -> Unit)?, ComposeRenderContext<*, *, *>, Boolean, RecomposeScope) -> Any?
+
+@OptIn(InternalComposeApi::class)
+@Suppress("NAME_SHADOWING")
 private fun renderWorkflowRestartableImpl(
-  workflow: Workflow<*, *, *>,
   props: Any?,
   onOutput: ((Any?) -> Unit)?,
-  config: WorkflowComposableRuntimeConfig,
-  parentSession: WorkflowSession?,
-  renderKey: String,
+  renderContext: ComposeRenderContext<*, *, *>,
   invalidateCallerOnNewValue: Boolean,
   callerRecomposeScope: RecomposeScope,
   composer: Composer,
@@ -158,47 +124,49 @@ private fun renderWorkflowRestartableImpl(
   // Key chosen "randomly" by mashing on my keyboard.
   composer.startReplaceGroup(-895982)
 
+  // The changed parameter is a bit set. Each parameter gets 3 bits, starting with the LSB for the
+  // first parameter. In each set of three:
+  //   - the LSB is ignored (for now),
+  //   - the middle bit being set (0b010) means the arg is already known to NOT have changed since
+  //     the last call, and
+  //   - the MSB being set (0b100) means the arg is known TO HAVE definitely changed since the last
+  //     call.
+  // If no bits are set, that means the caller hasn't told us (probably doesn't know) whether the
+  // arg has changed, so we need to ask the composer to check for us.
+  // The least-significant bit of the parameter is special: if it's set that means force recompose
+  // no matter what. This is used when the function is invalidated explicitly, and no parameters or
+  // state (composer.skipping) have changed.
+  // Note that it *is* possible for both bits to be set (0b110). I'm not sure what this means
+  // exactly, but we can infer from the generated code that Compose treats it as meaning it's
+  // skippable.
+  //
   // Many parameters to this function will never change between recompositions so we don't need to
   // check them here.
-  val arg1 = workflow
-  val arg2 = props
-  val arg3 = onOutput
   var dirty = changed
   if ((changed and 0b110) == 0) {
-    dirty = changed or (if (composer.changed(arg1)) 0b100 else 0b010)
+    dirty = dirty or (if (composer.changed(props)) 0b100 else 0b010)
   }
   if ((changed and 0b110_000) == 0) {
-    dirty = dirty or (if (composer.changed(arg2)) 0b100_000 else 0b010_000)
+    dirty = dirty or (if (composer.changed(onOutput)) 0b100_000 else 0b010_000)
   }
-  if ((changed and 0b110_000_000) == 0) {
-    dirty = dirty or (if (composer.changed(arg3)) 0b100_000_000 else 0b010_000_000)
-  }
-  if ((dirty and 0b010_010_011) == 0b010_010_010 && composer.skipping) {
+  // We only check props and onOutput since the other parameters cannot change in a composition.
+
+  if ((dirty and 0b010_011) == 0b010_010 && composer.skipping) {
     composer.skipToGroupEnd()
   } else {
-    val renderContext =
-      renderWorkflowImplComposable(
-        workflow,
-        props,
-        config,
-        parentSession,
-        renderKey,
-        callerRecomposeScope,
-        composer,
-        // changed: We can tell it exactly what changed. Each group of three corresponds to a param,
-        // with the rightmost group being the first parameter (workflow).
-        // TODO remember if props/onOutput changed from above logic, pass those flags.
-        // TODO use this value to avoid re-comparing inside this function.
-        0b010_010_010_000_000_000,
-      )
+    // This is inlined from currentRecomposeScope, since we can't call that composable property
+    // from here.
+    val recomposeScope = composer.recomposeScope!!
+    renderContext.updateRecomposeScope(recomposeScope)
+    composer.recordUsed(recomposeScope)
 
     newValue =
       renderContext.renderSelf(
         props = props,
         onOutput = onOutput,
         // Reuse the change information we already calculated so we don't have to call equals again.
-        didPropsChange = (dirty and 0b100_000) != 0,
-        didOnOutputChange = (dirty and 0b100_000_000) != 0,
+        didPropsChange = (dirty and 0b010) != 0b010,
+        didOnOutputChange = (dirty and 0b010_000) != 0b010_000,
         composer = composer,
       )
   }
@@ -216,7 +184,7 @@ private fun renderWorkflowRestartableImpl(
   val oldValue = composer.rememberedValue()
   val returnValue =
     if (oldValue !== Composer.Empty && (newValue === Composer.Empty || newValue === oldValue)) {
-      // Producer was skipped, return from the cache.
+      // Producer was skipped, or ran but returned the same instance, return from the cache.
       oldValue
     } else {
       // Producer ran, update the cache and return its new value.
@@ -234,21 +202,23 @@ private fun renderWorkflowRestartableImpl(
     }
   // endregion
 
+  // TODO This lambda allocation happens every time this workflow is re-rendered. I suspect this is
+  //  part of the reason why rerendering large swaths of the tree is inefficient, including first
+  //  render. But it's required for restartability. We could try making it a no-op everywhere except
+  //  the root node, since we're already invalidating all the way up the tree every time anyway.
   composer.endRestartGroup()?.updateScope { composer, changed ->
     // This lambda is called when producer is invalidated. The lambda must create a restartable
     // group with the same key to preserve positional identity.
     renderWorkflowRestartableImpl(
-      workflow = workflow,
       props = props,
       onOutput = onOutput,
-      config = config,
-      parentSession = parentSession,
-      renderKey = renderKey,
+      renderContext = renderContext,
       invalidateCallerOnNewValue = true,
       callerRecomposeScope = callerRecomposeScope,
       composer = composer,
-      // Set bits indicating that none of workflow, props, nor onOutput changed.
-      changed = changed or 0b010_010_010,
+      // Set bits indicating that all parameters are known not to have changed. Note that we only
+      // look at the first 2 sets, so we don't need to specify anything else.
+      changed = changed or 0b010_010,
     )
   }
   return returnValue
