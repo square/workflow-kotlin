@@ -6,8 +6,15 @@ compileSdk = "36"
 minSdk = "24"
 targetSdk = "33"
 
+# The bytecode version published to consumers.
 jdk-target = "11"
+# The JDK used to compile the libraries, via a Gradle toolchain. Matches android-register's compile
+# JDK. Gradle forks this JDK for compilation, so it does not constrain the daemon's JDK.
 jdk-toolchain = "21"
+# The JDK used to compile build-logic. Unlike the above, this *does* constrain the daemon: build-logic
+# is on the buildscript classpath, so the daemon must be able to load its bytecode. Keep it at the
+# floor Gradle and AGP already require (17) so the build works on a stock JDK 17 environment.
+jdk-buildLogic = "17"
 
 androidx-activity = "1.11.0"
 androidx-appcompat = "1.7.1"
