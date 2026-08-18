@@ -81,5 +81,7 @@ dependencies {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.toolchain.get()))
+  // Deliberately not jdk-toolchain: build-logic is on the buildscript classpath, so the Gradle
+  // daemon loads these classes directly and can't read bytecode newer than its own JDK.
+  toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.buildLogic.get()))
 }
