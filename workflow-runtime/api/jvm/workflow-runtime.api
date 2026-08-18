@@ -82,6 +82,7 @@ public abstract interface class com/squareup/workflow1/WorkflowInterceptor$Rende
 	public fun onActionSent (Lcom/squareup/workflow1/WorkflowAction;Lkotlin/jvm/functions/Function1;)V
 	public fun onRemember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
 	public fun onRenderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
+	public fun onRenderWorkflowIndirectly (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/RenderingHandle;
 	public fun onRunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 }
 
@@ -89,6 +90,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInter
 	public static fun onActionSent (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/WorkflowAction;Lkotlin/jvm/functions/Function1;)V
 	public static fun onRemember (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
 	public static fun onRenderChild (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
+	public static fun onRenderWorkflowIndirectly (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/RenderingHandle;
 	public static fun onRunningSideEffect (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 }
 

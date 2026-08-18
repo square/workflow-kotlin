@@ -87,6 +87,38 @@ public interface BaseRenderContext<PropsT, StateT, OutputT> {
   ): ChildRenderingT
 
   /**
+   * Like [renderChild], but instead of returning the child's rendering it returns an opaque
+   * [RenderingHandle] that the view layer knows how to display.
+   *
+   * Use this when this workflow doesn't actually care about the _value_ of the child's rendering,
+   * and only needs somewhere to put it – e.g. a backstack container or a modal manager. Since the
+   * parent never sees the rendering, the runtime is free to update it without re-rendering the
+   * parent (or any of its ancestors). Note that the runtime does not perform that optimization
+   * yet – for now this function is only a promise about what the parent may observe – but code
+   * written against this API will benefit from it automatically once it lands.
+   *
+   * Everything else works exactly like [renderChild]: the child is started, kept alive, and torn
+   * down on the same schedule, and its outputs are delivered to [handler].
+   *
+   * The same [RenderingHandle] instance is returned for every render pass of the same child
+   * session. Rendering a different workflow, or the same workflow with a different [key], starts a
+   * new session and so returns a new handle.
+   *
+   * Note that this function is not parameterized on the child's rendering type – see
+   * [RenderingHandle] for why.
+   *
+   * @param key An optional string key that is used to distinguish between workflows of the same
+   * type.
+   */
+  @WorkflowExperimentalApi
+  public fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+    child: Workflow<ChildPropsT, ChildOutputT, *>,
+    props: ChildPropsT,
+    key: String = "",
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): RenderingHandle
+
+  /**
    * Ensures [sideEffect] is running with the given [key].
    *
    * The first render pass in which this method is called, [sideEffect] will be launched in a new
@@ -208,6 +240,41 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
+
+/**
+ * Convenience alias of [BaseRenderContext.renderWorkflowIndirectly] for workflows that don't take
+ * props.
+ */
+@WorkflowExperimentalApi
+public fun <PropsT, StateT, OutputT, ChildOutputT>
+  BaseRenderContext<PropsT, StateT, OutputT>.renderWorkflowIndirectly(
+  child: Workflow<Unit, ChildOutputT, *>,
+  key: String = "",
+  handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+): RenderingHandle = renderWorkflowIndirectly(child, Unit, key, handler)
+
+/**
+ * Convenience alias of [BaseRenderContext.renderWorkflowIndirectly] for workflows that don't emit
+ * output.
+ */
+@WorkflowExperimentalApi
+public fun <PropsT, ChildPropsT, StateT, OutputT>
+  BaseRenderContext<PropsT, StateT, OutputT>.renderWorkflowIndirectly(
+  child: Workflow<ChildPropsT, Nothing, *>,
+  props: ChildPropsT,
+  key: String = ""
+): RenderingHandle = renderWorkflowIndirectly(child, props, key) { noAction() }
+
+/**
+ * Convenience alias of [BaseRenderContext.renderWorkflowIndirectly] for children that don't take
+ * props or emit output.
+ */
+@WorkflowExperimentalApi
+public fun <PropsT, StateT, OutputT>
+  BaseRenderContext<PropsT, StateT, OutputT>.renderWorkflowIndirectly(
+  child: Workflow<Unit, Nothing, *>,
+  key: String = ""
+): RenderingHandle = renderWorkflowIndirectly(child, Unit, key) { noAction() }
 
 /**
  * Ensures a [LifecycleWorker] is running. Since [worker] can't emit anything,

@@ -1,10 +1,12 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +31,14 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
     ): ChildRenderingT
+
+    @WorkflowExperimentalApi
+    fun <ChildPropsT, ChildOutputT> renderIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    ): RenderingHandle
   }
 
   interface SideEffectRunner {
@@ -90,6 +100,19 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
       "renderChild(${child.identifier})"
     }
     return renderer.render(child, props, key, handler)
+  }
+
+  @WorkflowExperimentalApi
+  override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+    child: Workflow<ChildPropsT, ChildOutputT, *>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): RenderingHandle {
+    checkPerformingRender(child.identifier) {
+      "renderWorkflowIndirectly(${child.identifier})"
+    }
+    return renderer.renderIndirectly(child, props, key, handler)
   }
 
   override fun runningSideEffect(

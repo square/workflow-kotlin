@@ -2,10 +2,12 @@ package com.squareup.workflow1.tracing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderingAndSnapshot
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -195,6 +197,23 @@ public fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
     ): CR = outer.onRenderChild(child, childProps, key, handler) { c, p, k, h ->
       inner.onRenderChild(c, p, k, h, proceed)
     }
+
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <CP, CO> onRenderWorkflowIndirectly(
+      child: Workflow<CP, CO, *>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: (
+        child: Workflow<CP, CO, *>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> RenderingHandle
+    ): RenderingHandle =
+      outer.onRenderWorkflowIndirectly(child, childProps, key, handler) { c, p, k, h ->
+        inner.onRenderWorkflowIndirectly(c, p, k, h, proceed)
+      }
 
     override fun onRunningSideEffect(
       key: String,

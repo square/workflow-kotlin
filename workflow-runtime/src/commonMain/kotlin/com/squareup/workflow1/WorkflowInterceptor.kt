@@ -339,6 +339,28 @@ public interface WorkflowInterceptor {
       ) -> CR
     ): CR = proceed(child, childProps, key, handler)
 
+    /**
+     * Intercepts calls to [BaseRenderContext.renderWorkflowIndirectly], allowing the
+     * interceptor to wrap or replace the [child] Workflow, its [childProps],
+     * [key], and the [handler] function to be applied to the child's output.
+     *
+     * Note that the rendering itself is not visible here – interceptors that need to see a child's
+     * rendering should ask the parent to use [BaseRenderContext.renderChild] instead.
+     */
+    @WorkflowExperimentalApi
+    public fun <CP, CO> onRenderWorkflowIndirectly(
+      child: Workflow<CP, CO, *>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: (
+        child: Workflow<CP, CO, *>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> RenderingHandle
+    ): RenderingHandle = proceed(child, childProps, key, handler)
+
     public fun <CResult> onRemember(
       key: String,
       resultType: KType,
@@ -457,6 +479,18 @@ private class InterceptedRenderContext<P, S, O>(
   ): ChildRenderingT =
     interceptor.onRenderChild(child, props, key, handler) { iChild, iProps, iKey, iHandler ->
       baseRenderContext.renderChild(iChild, iProps, iKey, iHandler)
+    }
+
+  @WorkflowExperimentalApi
+  override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+    child: Workflow<ChildPropsT, ChildOutputT, *>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<P, S, O>
+  ): RenderingHandle =
+    interceptor.onRenderWorkflowIndirectly(child, props, key, handler) {
+        iChild, iProps, iKey, iHandler ->
+      baseRenderContext.renderWorkflowIndirectly(iChild, iProps, iKey, iHandler)
     }
 
   override fun runningSideEffect(

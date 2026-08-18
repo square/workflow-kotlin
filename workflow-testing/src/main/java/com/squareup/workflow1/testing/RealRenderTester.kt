@@ -2,6 +2,7 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
@@ -9,6 +10,7 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowIdentifierType
 import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
@@ -268,6 +270,22 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     return match.childRendering as ChildRenderingT
   }
 
+  @WorkflowExperimentalApi
+  override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+    child: Workflow<ChildPropsT, ChildOutputT, *>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): RenderingHandle {
+    // Workflow is covariant in its rendering type, so the star projection is already a
+    // Workflow<_, _, Any?>.
+    val erasedChild: Workflow<ChildPropsT, ChildOutputT, Any?> = child
+    // Expectations are matched exactly as they are for renderChild, so `expectWorkflow` works for
+    // indirectly rendered children too. The rendering is just hidden behind a handle.
+    val rendering = renderChild(erasedChild, props, key, handler)
+    return TestRenderingHandle(rendering)
+  }
+
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
@@ -432,6 +450,18 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private fun checkNotFrozen(reason: () -> String = { "" }) = check(!frozen) {
     "RenderContext cannot be used after render method returns" +
       "${reason().takeUnless { it.isBlank() }?.let { " ($it)" }}"
+  }
+
+  /**
+   * [RenderingHandle] implementation for [RenderTester]. A [RenderTester] only ever performs a
+   * single render pass, so unlike the real runtime's handle this one never needs to be updated and
+   * doesn't need to notify anyone when it is.
+   */
+  @WorkflowExperimentalApi
+  private class TestRenderingHandle(
+    override val currentRendering: Any?
+  ) : RenderingHandle() {
+    override fun toString(): String = "TestRenderingHandle($currentRendering)"
   }
 }
 

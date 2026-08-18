@@ -2,6 +2,7 @@ package com.squareup.workflow1.tracing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderingAndSnapshot
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Sink
@@ -10,6 +11,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
@@ -1180,6 +1182,16 @@ internal class WorkflowRuntimeMonitorTest {
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT {
+      throw NotImplementedError("Not implemented for testing")
+    }
+
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+    ): RenderingHandle {
       throw NotImplementedError("Not implemented for testing")
     }
 

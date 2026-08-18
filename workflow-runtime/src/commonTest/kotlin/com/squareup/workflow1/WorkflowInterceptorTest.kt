@@ -326,6 +326,14 @@ internal class WorkflowInterceptorTest {
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT = fail()
 
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+    ): RenderingHandle = fail()
+
     override fun runningSideEffect(
       key: String,
       sideEffect: suspend CoroutineScope.() -> Unit

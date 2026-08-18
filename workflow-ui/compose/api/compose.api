@@ -26,6 +26,14 @@ public final class com/squareup/workflow1/ui/compose/RenderAsStateKt {
 	public static final fun renderAsState (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/util/List;Lkotlinx/coroutines/CoroutineScope;Ljava/util/Set;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
 }
 
+public final class com/squareup/workflow1/ui/compose/RenderingHandleScreen : com/squareup/workflow1/ui/compose/ComposeScreen {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/RenderingHandle;)V
+	public fun Content (Landroidx/compose/runtime/Composer;I)V
+	public final fun getHandle ()Lcom/squareup/workflow1/RenderingHandle;
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class com/squareup/workflow1/ui/compose/ScreenComposableFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public abstract fun Content (Lcom/squareup/workflow1/ui/Screen;Landroidx/compose/runtime/Composer;I)V
 	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;

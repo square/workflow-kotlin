@@ -1,8 +1,10 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -85,6 +87,25 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
   } else {
     @Suppress("UNCHECKED_CAST")
     captureStack.removeLast() as CR
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  override fun <CP, CO> onRenderWorkflowIndirectly(
+    child: Workflow<CP, CO, *>,
+    childProps: CP,
+    key: String,
+    handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>,
+    proceed: (
+      child: Workflow<CP, CO, *>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>
+    ) -> RenderingHandle
+  ): RenderingHandle = if (!replaying) {
+    proceed(child, childProps, key, handler)
+      .also { captureStack.addFirst(it) }
+  } else {
+    captureStack.removeLast() as RenderingHandle
   }
 
   override fun onRunningSideEffect(

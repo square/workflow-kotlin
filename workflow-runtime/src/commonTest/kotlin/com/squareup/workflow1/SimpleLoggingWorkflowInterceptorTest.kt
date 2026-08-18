@@ -141,6 +141,16 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       fail()
     }
 
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <ChildPropsT, ChildOutputT> renderWorkflowIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Nothing>
+    ): RenderingHandle {
+      fail()
+    }
+
     override fun runningSideEffect(
       key: String,
       sideEffect: suspend CoroutineScope.() -> Unit

@@ -2,6 +2,7 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.ImpostorWorkflow
 import com.squareup.workflow1.LifecycleWorker
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -19,6 +20,7 @@ import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.remember
 import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.renderWorkflowIndirectly
 import com.squareup.workflow1.rendering
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.sessionWorkflow
@@ -94,6 +96,43 @@ internal class RealRenderTesterTest {
         "kotlin.Unit but noAction() was already processed.",
       failure.message
     )
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `renderWorkflowIndirectly matches expectWorkflow and hides the rendering`() {
+    val child = Workflow.stateless<Unit, Nothing, String> { "child rendering" }
+    val workflow = Workflow.stateless<Unit, Nothing, RenderingHandle> {
+      renderWorkflowIndirectly(child)
+    }
+
+    workflow.testRender(Unit)
+      .expectWorkflow(child.identifier, rendering = "child rendering")
+      .render { handle ->
+        assertEquals("child rendering", handle.currentRendering)
+      }
+      .verifyActionResult { _, output -> assertNull(output) }
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `renderWorkflowIndirectly delivers output to handler`() {
+    val child = Workflow.stateless<Unit, String, String> { "child rendering" }
+    val workflow = Workflow.stateless<Unit, String, RenderingHandle> {
+      renderWorkflowIndirectly(
+        child,
+        Unit
+      ) { output -> action("") { setOutput("handled:$output") } }
+    }
+
+    workflow.testRender(Unit)
+      .expectWorkflow(
+        child.identifier,
+        rendering = "child rendering",
+        output = WorkflowOutput("hello")
+      )
+      .render()
+      .verifyActionResult { _, output -> assertEquals("handled:hello", output?.value) }
   }
 
   @Test fun `expectWorkflow without output doesn't throw when already expecting output`() {

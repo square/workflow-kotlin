@@ -3,11 +3,13 @@ package com.squareup.workflow1.tracing
 import androidx.collection.mutableLongObjectMapOf
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderingAndSnapshot
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
@@ -329,21 +331,45 @@ open class WorkflowTracer(
     ): CR {
       // onRenderChild is not traced (the child's own render will be traced),
       // but we trace the action handler.
-      return proceed(child, childProps, key) { output ->
-        val childOutputString = getWfLogString(output)
-        trace(
-          systemTraceLabel = { "Send Output[$childOutputString] to $workflowName" }
-        ) {
-          val delegateAction = handler(output)
-          val actionName = delegateAction.toLoggingShortName()
-          PerfettoTraceWorkflowAction(
-            delegateAction = delegateAction,
-            actionName = actionName,
-            actionType = CascadeAction(
-              childOutputString = childOutputString
-            ),
-          )
-        }
+      return proceed(child, childProps, key, tracingHandler(handler))
+    }
+
+    /** Same as [onRenderChild], for children that are rendered indirectly. */
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <CP, CO> onRenderWorkflowIndirectly(
+      child: Workflow<CP, CO, *>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: (
+        child: Workflow<CP, CO, *>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> RenderingHandle
+    ): RenderingHandle {
+      return proceed(child, childProps, key, tracingHandler(handler))
+    }
+
+    /**
+     * Wraps a child output [handler] so that applying it shows up as a [CascadeAction] in traces.
+     */
+    private fun <CO> tracingHandler(
+      handler: (CO) -> WorkflowAction<P, S, O>
+    ): (CO) -> WorkflowAction<P, S, O> = { output ->
+      val childOutputString = getWfLogString(output)
+      trace(
+        systemTraceLabel = { "Send Output[$childOutputString] to $workflowName" }
+      ) {
+        val delegateAction = handler(output)
+        val actionName = delegateAction.toLoggingShortName()
+        PerfettoTraceWorkflowAction(
+          delegateAction = delegateAction,
+          actionName = actionName,
+          actionType = CascadeAction(
+            childOutputString = childOutputString
+          ),
+        )
       }
     }
 

@@ -4,11 +4,13 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -134,6 +136,39 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    val stagedChild = retainOrCreateChild(child, props, key, handler)
+    return stagedChild.render(child.asStatefulWorkflow(), props)
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  override fun <ChildPropsT, ChildOutputT> renderIndirectly(
+    child: Workflow<ChildPropsT, ChildOutputT, *>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): RenderingHandle {
+    // The rendering type is erased to Any? by renderWorkflowIndirectly – nobody but the view layer
+    // will ever see it again, so there's nothing to preserve it for. Workflow is covariant in its
+    // rendering type, so the star projection is already a Workflow<_, _, Any?>.
+    val erasedChild: Workflow<ChildPropsT, ChildOutputT, Any?> = child
+    val stagedChild = retainOrCreateChild(erasedChild, props, key, handler)
+    // For now indirect rendering is implemented as a plain render, and the parent is re-rendered
+    // just like it would be for renderChild. Treating these children as re-render sub-roots is a
+    // separate optimization.
+    val rendering = stagedChild.render<Any?>(erasedChild.asStatefulWorkflow(), props)
+    return stagedChild.updateRenderingHandle(rendering)
+  }
+
+  /**
+   * Moves the [WorkflowChildNode] for [child] from the active list to the staging list, creating it
+   * (and starting the child's session) if this is the first render pass that it appears in.
+   */
+  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> retainOrCreateChild(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkflowChildNode<*, *, *, *, *> {
     val childId = child.id(key)
 
     // Prevent duplicate workflows with the same key.
@@ -169,7 +204,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         }
       }
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild
   }
 
   /**

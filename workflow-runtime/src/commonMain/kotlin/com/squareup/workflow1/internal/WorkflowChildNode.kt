@@ -1,8 +1,10 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
 import com.squareup.workflow1.trace
@@ -25,6 +27,12 @@ internal class WorkflowChildNode<
   val workflowNode: WorkflowNode<ChildPropsT, *, ChildOutputT, *>
 ) : InlineListNode<WorkflowChildNode<*, *, *, *, *>> {
   override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
+
+  /**
+   * Created the first time this child is rendered indirectly, and then reused for the rest of this
+   * child's session – which is exactly as long as this [WorkflowChildNode] lives.
+   */
+  private var renderingHandle: TraditionalRenderingHandle? = null
 
   /** The [WorkflowNode]'s [WorkflowNodeId]. */
   val id get() = workflowNode.id
@@ -60,6 +68,18 @@ internal class WorkflowChildNode<
       props as ChildPropsT
     ) as R
   }
+
+  /**
+   * Publishes [rendering] to this child's [RenderingHandle], creating the handle if this is the
+   * first time this child has been rendered indirectly.
+   *
+   * The returned instance is always the same for a given child session, which is what allows
+   * parents to hold onto it across render passes.
+   */
+  @OptIn(WorkflowExperimentalApi::class)
+  fun updateRenderingHandle(rendering: Any?): RenderingHandle =
+    renderingHandle?.apply { currentRendering = rendering }
+      ?: TraditionalRenderingHandle(rendering).also { renderingHandle = it }
 
   /**
    * Wrapper around [handler] that allows calling it with erased types.

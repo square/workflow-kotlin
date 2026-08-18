@@ -55,6 +55,8 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.squareup.okio)
 
-  implementation(project(":workflow-core"))
+  // `api` rather than `implementation` because RenderingHandleScreen exposes RenderingHandle.
+  api(project(":workflow-core"))
+
   implementation(project(":workflow-runtime"))
 }

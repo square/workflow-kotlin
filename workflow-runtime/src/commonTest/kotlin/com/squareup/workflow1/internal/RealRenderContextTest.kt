@@ -2,10 +2,12 @@
 
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
@@ -52,7 +54,28 @@ internal class RealRenderContextTest {
       key,
       handler as (Any) -> WorkflowAction<String, String, String>
     ) as ChildRenderingT
+
+    @Suppress("UNCHECKED_CAST")
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <ChildPropsT, ChildOutputT> renderIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+    ): RenderingHandle = TestRenderingHandle(
+      Rendering(
+        child,
+        props,
+        key,
+        handler as (Any) -> WorkflowAction<String, String, String>
+      )
+    )
   }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  private class TestRenderingHandle(
+    override val currentRendering: Any?
+  ) : RenderingHandle()
 
   private class TestRunner : SideEffectRunner {
     override fun runningSideEffect(
@@ -98,6 +121,14 @@ internal class RealRenderContextTest {
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<P, S, O>
     ): ChildRenderingT = fail()
+
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <ChildPropsT, ChildOutputT> renderIndirectly(
+      child: Workflow<ChildPropsT, ChildOutputT, *>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<P, S, O>
+    ): RenderingHandle = fail()
   }
 
   private class PoisonRunner : SideEffectRunner {

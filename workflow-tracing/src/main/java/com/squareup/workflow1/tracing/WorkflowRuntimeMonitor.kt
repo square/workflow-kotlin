@@ -4,11 +4,13 @@ import androidx.collection.mutableLongObjectMapOf
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderingAndSnapshot
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
@@ -428,19 +430,40 @@ public class WorkflowRuntimeMonitor(
         handler: (CO) -> WorkflowAction<P, S, O>
       ) -> CR
     ): CR {
-      return proceed(child, childProps, key) { output ->
-        val childOutputString = getWfLogString(output)
-          .wfEllipsizeEnd(MAX_LOG_FIELD_LENGTH)
-        val delegateAction = handler(output)
-        val actionName = delegateAction.toLoggingShortName()
-        RuntimeMonitoringAction(
-          delegateAction = delegateAction,
-          actionName = actionName,
-          actionType = CascadeAction(
-            childOutputString = childOutputString
-          ),
-        )
-      }
+      return proceed(child, childProps, key, monitoringHandler(handler))
+    }
+
+    /** Same as [onRenderChild], for children that are rendered indirectly. */
+    @OptIn(WorkflowExperimentalApi::class)
+    override fun <CP, CO> onRenderWorkflowIndirectly(
+      child: Workflow<CP, CO, *>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: (
+        child: Workflow<CP, CO, *>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> RenderingHandle
+    ): RenderingHandle {
+      return proceed(child, childProps, key, monitoringHandler(handler))
+    }
+
+    private fun <CO> monitoringHandler(
+      handler: (CO) -> WorkflowAction<P, S, O>
+    ): (CO) -> WorkflowAction<P, S, O> = { output ->
+      val childOutputString = getWfLogString(output)
+        .wfEllipsizeEnd(MAX_LOG_FIELD_LENGTH)
+      val delegateAction = handler(output)
+      val actionName = delegateAction.toLoggingShortName()
+      RuntimeMonitoringAction(
+        delegateAction = delegateAction,
+        actionName = actionName,
+        actionType = CascadeAction(
+          childOutputString = childOutputString
+        ),
+      )
     }
 
     /**

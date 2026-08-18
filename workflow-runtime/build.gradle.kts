@@ -49,6 +49,12 @@ kotlin {
       dependencies {
         api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+
+        // Only used for snapshot state, so that the view layer is automatically invalidated when
+        // an indirectly-rendered child's rendering changes. androidx.compose.runtime is published
+        // for every target we support. See TraditionalRenderingHandle.
+        implementation(project.dependencies.platform(libs.androidx.compose.bom))
+        implementation(libs.androidx.compose.runtime)
       }
     }
 

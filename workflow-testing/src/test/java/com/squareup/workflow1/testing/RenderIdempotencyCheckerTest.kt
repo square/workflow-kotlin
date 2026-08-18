@@ -1,9 +1,12 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.RenderingHandle
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.renderWorkflowIndirectly
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -33,6 +36,30 @@ class RenderIdempotencyCheckerTest {
     ) {}
     assertEquals(2, rootRenders)
     assertEquals(2, leafRenders)
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `handles indirectly rendered children`() {
+    var leafRenders = 0
+    val leafWorkflow = Workflow.stateless<Unit, Nothing, Unit> { leafRenders++ }
+    val rootWorkflow = Workflow.stateless<Unit, Nothing, RenderingHandle> {
+      renderWorkflowIndirectly(leafWorkflow)
+    }
+    val scope = TestScope()
+
+    val renderings = renderWorkflowIn(
+      rootWorkflow,
+      scope,
+      MutableStateFlow(Unit),
+      interceptors = listOf(RenderIdempotencyChecker)
+    ) {}
+
+    // The verification pass replays the handle captured by the first pass instead of rendering the
+    // child a second time – otherwise the runtime would reject the duplicate key. Each workflow is
+    // still rendered twice by its own interception of the render pass.
+    assertEquals(2, leafRenders)
+    assertEquals(Unit, renderings.value.rendering.currentRendering)
   }
 
   @Test fun `events sent to sink read after render are accepted`() {

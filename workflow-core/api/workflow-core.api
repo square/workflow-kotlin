@@ -29,11 +29,14 @@ public abstract interface class com/squareup/workflow1/BaseRenderContext {
 	public abstract fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public abstract fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun renderWorkflowIndirectly (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/RenderingHandle;
+	public static synthetic fun renderWorkflowIndirectly$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingHandle;
 	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun renderWorkflowIndirectly$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingHandle;
 }
 
 public final class com/squareup/workflow1/HandlerBox1 {
@@ -160,6 +163,11 @@ public final class com/squareup/workflow1/NullableInitBox$Uninitialized {
 
 public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/ActionProcessingResult {
 	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
+}
+
+public abstract class com/squareup/workflow1/RenderingHandle {
+	public fun <init> ()V
+	public abstract fun getCurrentRendering ()Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum {
@@ -341,6 +349,7 @@ public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/s
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public fun renderWorkflowIndirectly (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/RenderingHandle;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
@@ -361,6 +370,7 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public fun renderWorkflowIndirectly (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/RenderingHandle;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
@@ -509,6 +519,12 @@ public final class com/squareup/workflow1/Workflows {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun renderWorkflowIndirectly (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;)Lcom/squareup/workflow1/RenderingHandle;
+	public static final fun renderWorkflowIndirectly (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;)Lcom/squareup/workflow1/RenderingHandle;
+	public static final fun renderWorkflowIndirectly (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/RenderingHandle;
+	public static synthetic fun renderWorkflowIndirectly$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingHandle;
+	public static synthetic fun renderWorkflowIndirectly$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingHandle;
+	public static synthetic fun renderWorkflowIndirectly$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingHandle;
 	public static final fun rendering (Lcom/squareup/workflow1/Workflow$Companion;Ljava/lang/Object;)Lcom/squareup/workflow1/Workflow;
 	public static final fun runningWorker (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Worker;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun runningWorker$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Worker;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
