@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -25,6 +26,10 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.Lifecycle.Event.ON_CREATE
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
@@ -228,6 +233,21 @@ internal class ComposeViewTreeIntegrationTest {
     scenario.recreate()
 
     composeRule.onNodeWithTag(CounterTag).assertTextEquals("Counter: 1")
+  }
+
+  @Test
+  fun android_view_saved_state_is_restored_after_config_change() {
+    val child = SavedStateAndroidRendering("child")
+
+    scenario.onActivity { it.setRendering(ComposeAndroidHost(child)) }
+    composeRule.runOnIdle {
+      assertThat(child.restoredValues).containsExactly(0)
+      child.value = 41
+    }
+
+    scenario.recreate()
+
+    composeRule.runOnIdle { assertThat(child.restoredValues).containsExactly(0, 41).inOrder() }
   }
 
   @Test
@@ -712,6 +732,69 @@ internal class ComposeViewTreeIntegrationTest {
       }
   }
 
+  private data class ComposeAndroidHost(val child: Screen) : ComposeScreen {
+    @Composable
+    override fun Content() {
+      WorkflowRendering(child)
+    }
+  }
+
+  private class SavedStateAndroidRendering(override val compatibilityKey: String) :
+    Compatible, AndroidScreen<SavedStateAndroidRendering> {
+    val restoredValues = mutableListOf<Int>()
+    var value: Int
+      get() = checkNotNull(view).value
+      set(value) {
+        checkNotNull(view).value = value
+      }
+
+    private var view: SavedStateView? = null
+
+    override val viewFactory =
+      fromCode<SavedStateAndroidRendering> { rendering, initialEnvironment, context, _ ->
+        val view =
+          SavedStateView(context) { restoredValue -> rendering.restoredValues += restoredValue }
+        rendering.view = view
+        ScreenViewHolder(initialEnvironment, view) { _, _ -> }
+      }
+  }
+
+  private class SavedStateView(context: Context, private val onRestored: (Int) -> Unit) :
+    View(context) {
+    var value: Int = 0
+    private var owner: SavedStateRegistryOwner? = null
+    private var providerRegistered = false
+    private val lifecycleObserver = LifecycleEventObserver { _, event ->
+      if (event == ON_CREATE) {
+        val owner = checkNotNull(owner)
+        val registry = owner.savedStateRegistry
+        value = registry.consumeRestoredStateForKey(SAVED_VALUE_KEY)?.getInt(SAVED_VALUE_KEY) ?: 0
+        registry.registerSavedStateProvider(SAVED_VALUE_KEY) {
+          Bundle().apply { putInt(SAVED_VALUE_KEY, value) }
+        }
+        providerRegistered = true
+        onRestored(value)
+      }
+    }
+
+    override fun onAttachedToWindow() {
+      super.onAttachedToWindow()
+      val owner = checkNotNull(findViewTreeSavedStateRegistryOwner())
+      this.owner = owner
+      owner.lifecycle.addObserver(lifecycleObserver)
+    }
+
+    override fun onDetachedFromWindow() {
+      owner?.lifecycle?.removeObserver(lifecycleObserver)
+      if (providerRegistered) {
+        owner?.savedStateRegistry?.unregisterSavedStateProvider(SAVED_VALUE_KEY)
+      }
+      owner = null
+      providerRegistered = false
+      super.onDetachedFromWindow()
+    }
+  }
+
   /**
    * This is our own custom lovingly handcrafted implementation that creates [ComposeView] itself,
    * bypassing [ScreenComposableFactory] entirely. Allows us to mess with alternative
@@ -773,5 +856,6 @@ internal class ComposeViewTreeIntegrationTest {
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
     const val CounterTag3 = "counter3"
+    const val SAVED_VALUE_KEY = "saved-value"
   }
 }

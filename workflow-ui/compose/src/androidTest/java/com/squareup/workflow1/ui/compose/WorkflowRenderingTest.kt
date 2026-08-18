@@ -2,6 +2,8 @@
 
 package com.squareup.workflow1.ui.compose
 
+import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.compose.foundation.clickable
@@ -50,6 +52,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.compose.LocalSavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -144,6 +149,77 @@ internal class WorkflowRenderingTest {
     onView(withText("two")).check(matches(isDisplayed()))
     wrapperText.value = "OWT"
     onView(withText("OWT")).check(matches(isDisplayed()))
+  }
+
+  @Test
+  fun incompatibleLegacyViewsHaveDistinctSavedStateRegistryOwners() {
+    val log = RegistryRegistrationLog()
+    lateinit var parentOwner: SavedStateRegistryOwner
+    var rendering: Screen by mutableStateOf(RegisteringRendering("outgoing", log))
+
+    composeRule.setContent {
+      parentOwner = LocalSavedStateRegistryOwner.current
+      env.RootScreen(rendering)
+    }
+
+    composeRule.runOnIdle { assertThat(log.owners).containsKey("outgoing") }
+
+    rendering = RegisteringRendering("incoming", log)
+
+    composeRule.runOnIdle {
+      assertThat(log.failures).isEmpty()
+      assertThat(log.owners.keys).containsExactly("outgoing", "incoming")
+      assertThat(log.owners.getValue("outgoing")).isNotSameInstanceAs(parentOwner)
+      assertThat(log.owners.getValue("incoming")).isNotSameInstanceAs(parentOwner)
+      assertThat(log.owners.getValue("outgoing"))
+        .isNotSameInstanceAs(log.owners.getValue("incoming"))
+      // This is the overlap that requires separate registry namespaces. If a future Compose
+      // release detaches the old AndroidView first, this assertion should be intentionally removed.
+      assertThat(log.maxSimultaneouslyAttached).isEqualTo(2)
+    }
+  }
+
+  @Test
+  fun siblingLegacyViewsHaveDistinctSavedStateRegistryOwners() {
+    val log = RegistryRegistrationLog()
+
+    class SiblingHost : ComposableRendering {
+      @Composable
+      override fun Content() {
+        Column {
+          WorkflowRendering(RegisteringRendering("first", log))
+          WorkflowRendering(RegisteringRendering("second", log))
+        }
+      }
+    }
+
+    composeRule.setContent { env.RootScreen(SiblingHost()) }
+
+    composeRule.runOnIdle {
+      assertThat(log.failures).isEmpty()
+      assertThat(log.owners.keys).containsExactly("first", "second")
+      assertThat(log.owners.getValue("first")).isNotSameInstanceAs(log.owners.getValue("second"))
+    }
+  }
+
+  @Test
+  fun composableRenderingKeepsParentSavedStateRegistryOwner() {
+    lateinit var parentOwner: SavedStateRegistryOwner
+    lateinit var renderingOwner: SavedStateRegistryOwner
+
+    class OwnerRecorder : ComposableRendering {
+      @Composable
+      override fun Content() {
+        renderingOwner = LocalSavedStateRegistryOwner.current
+      }
+    }
+
+    composeRule.setContent {
+      parentOwner = LocalSavedStateRegistryOwner.current
+      env.RootScreen(OwnerRecorder())
+    }
+
+    composeRule.runOnIdle { assertThat(renderingOwner).isSameInstanceAs(parentOwner) }
   }
 
   // https://github.com/square/workflow-kotlin/issues/538
@@ -546,5 +622,73 @@ internal class WorkflowRenderingTest {
         val view = TextView(context)
         ScreenViewHolder(initialEnvironment, view) { rendering, _ -> view.text = rendering.text }
       }
+  }
+
+  private class RegistryRegistrationLog {
+    val owners = mutableMapOf<String, SavedStateRegistryOwner>()
+    val failures = mutableListOf<String>()
+    var maxSimultaneouslyAttached = 0
+      private set
+
+    private val attached = mutableSetOf<String>()
+
+    fun onAttached(name: String) {
+      attached += name
+      maxSimultaneouslyAttached = maxOf(maxSimultaneouslyAttached, attached.size)
+    }
+
+    fun onDetached(name: String) {
+      attached -= name
+    }
+  }
+
+  private class RegisteringRendering(
+    private val name: String,
+    private val log: RegistryRegistrationLog,
+  ) : AndroidScreen<RegisteringRendering>, Compatible {
+    override val compatibilityKey: String = name
+
+    override val viewFactory =
+      ScreenViewFactory.fromCode<RegisteringRendering> { _, initialEnvironment, context, _ ->
+        ScreenViewHolder(initialEnvironment, RegisteringView(context, name, log)) { _, _ -> }
+      }
+  }
+
+  /** Simulates a Workflow container that registers state under its rendering compatibility key. */
+  private class RegisteringView(
+    context: Context,
+    private val name: String,
+    private val log: RegistryRegistrationLog,
+  ) : View(context) {
+    private var owner: SavedStateRegistryOwner? = null
+    private var providerRegistered = false
+
+    override fun onAttachedToWindow() {
+      super.onAttachedToWindow()
+      val owner = checkNotNull(findViewTreeSavedStateRegistryOwner())
+      this.owner = owner
+      log.owners[name] = owner
+
+      try {
+        owner.savedStateRegistry.registerSavedStateProvider(SHARED_PROVIDER_KEY) { Bundle() }
+        providerRegistered = true
+      } catch (e: IllegalArgumentException) {
+        // Let the composition finish applying so the test can report the actual namespace failure.
+        log.failures += "$name: ${e.message}"
+      }
+      log.onAttached(name)
+    }
+
+    override fun onDetachedFromWindow() {
+      if (providerRegistered) {
+        owner?.savedStateRegistry?.unregisterSavedStateProvider(SHARED_PROVIDER_KEY)
+      }
+      log.onDetached(name)
+      super.onDetachedFromWindow()
+    }
+
+    private companion object {
+      const val SHARED_PROVIDER_KEY = "shared-container-key"
+    }
   }
 }

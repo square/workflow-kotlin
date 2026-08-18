@@ -7,13 +7,16 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.RememberObserver
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -21,6 +24,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
+import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import kotlin.reflect.KClass
@@ -185,7 +189,13 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
     @Composable
     override fun Content(rendering: ScreenT) {
       val lifecycleOwner = LocalLifecycleOwner.current
-      val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
+      val renderingKey = Compatible.keyFor(rendering)
+      val parentSavedStateRegistryOwner = LocalSavedStateRegistryOwner.current
+      val savedStateRegistry =
+        rememberViewFactorySavedStateRegistry(
+          renderingKey = renderingKey,
+          parent = parentSavedStateRegistryOwner,
+        )
       val environment = LocalWorkflowEnvironment.current
 
       // Make sure any nested WorkflowViewStub will be able to propagate the
@@ -212,14 +222,9 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
 
             // Unfortunately AndroidView doesn't propagate these itself.
             viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
-            viewHolder.view.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            savedStateRegistry.installOn(viewHolder.view)
             onBackOrNull?.let { viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it) }
 
-            // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
-            // SaveableStateRegistry, because currently all our navigation is implemented as
-            // Android views, which ensures there is always an Android view between any state
-            // registry and any Android view shown as a child of it, even if there's a compose
-            // view in between.
             viewHolder.view
           }
         },
@@ -235,3 +240,54 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
     }
   }
 }
+
+/**
+ * Gives each Android view hosted by [ScreenViewFactory.asComposableFactory] its own saved state
+ * namespace, just as view-based Workflow containers do for their children.
+ *
+ * [currentCompositeKeyHashCode] distinguishes multiple rendering call sites with the same
+ * [renderingKey]. Including [renderingKey] also distinguishes outgoing and incoming incompatible
+ * renderings while Compose briefly keeps both Android views attached during replacement.
+ */
+@Composable
+private fun rememberViewFactorySavedStateRegistry(
+  renderingKey: String,
+  parent: SavedStateRegistryOwner,
+): ViewFactorySavedStateRegistry {
+  val parentKey = "$VIEW_FACTORY_SAVED_STATE_KEY_PREFIX:$renderingKey#$currentCompositeKeyHashCode"
+  return remember(parent, parentKey) {
+    ViewFactorySavedStateRegistry(childKey = renderingKey, parentKey = parentKey, parent = parent)
+  }
+}
+
+/**
+ * Owns the view-oriented [WorkflowSavedStateRegistryAggregator] for one composition subtree.
+ * Attaching during construction makes restoration available before [AndroidView] attaches the
+ * child. [RememberObserver] guarantees that an abandoned or forgotten composition unregisters the
+ * aggregator from its parent.
+ */
+private class ViewFactorySavedStateRegistry(
+  private val childKey: String,
+  parentKey: String,
+  parent: SavedStateRegistryOwner,
+) : RememberObserver {
+  private val aggregator =
+    WorkflowSavedStateRegistryAggregator().apply { attachToParentRegistry(parentKey, parent) }
+
+  fun installOn(view: android.view.View) {
+    aggregator.installChildRegistryOwnerOn(view, childKey, force = true)
+  }
+
+  override fun onRemembered() = Unit
+
+  override fun onForgotten() {
+    aggregator.detachFromParentRegistry()
+  }
+
+  override fun onAbandoned() {
+    aggregator.detachFromParentRegistry()
+  }
+}
+
+private const val VIEW_FACTORY_SAVED_STATE_KEY_PREFIX =
+  "com.squareup.workflow1.ui.compose.ScreenViewFactory"
