@@ -20,6 +20,7 @@ import com.squareup.workflow1.ui.compose.asComposableFactory
  *
  * Use inside `@Preview` Composable functions:
  *
+ *     ```
  *     @Preview(heightDp = 150, showBackground = true)
  *     @Composable
  *     fun HelloPreview() {
@@ -28,6 +29,7 @@ import com.squareup.workflow1.ui.compose.asComposableFactory
  *         onClick = {}
  *       ).Preview()
  *     }
+ *     ```
  */
 @Composable
 public fun Screen.Preview(
@@ -54,11 +56,13 @@ public fun Screen.Preview(
  *
  * Use inside `@Preview` Composable functions:
  *
+ *     ```
  *     @Preview(heightDp = 150, showBackground = true)
  *     @Composable
  *     fun DrawHelloRenderingPreview() {
  *       HelloBinding.Preview(HelloScreen("Hello!", onClick = {}))
  *     }
+ *     ```
  *
  * *Note: [rendering] must be the same type as this [ScreenComposableFactory], even though the type
  * system does not enforce this constraint. This is due to a Compose compiler bug tracked

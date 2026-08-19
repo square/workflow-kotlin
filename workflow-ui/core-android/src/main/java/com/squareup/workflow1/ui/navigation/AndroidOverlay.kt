@@ -16,6 +16,7 @@ package com.squareup.workflow1.ui.navigation
  *
  * For example:
  *
+ *     ```
  *     data class MyModal<C : Screen>(
  *       override val content: C
  *     ) : ScreenOverlay<C>, ModalOverlay, AndroidOverlay<MyModal<C>> {
@@ -25,6 +26,7 @@ package com.squareup.workflow1.ui.navigation
  *
  *       override fun <D : Screen> map(transform: (C) -> D) = MyModal(transform(content))
  *     }
+ *     ```
  *
  * This is the simplest way to introduce a [Dialog][android.app.Dialog] workflow driven UI,
  * but using it requires your workflows code to reside in Android modules, instead

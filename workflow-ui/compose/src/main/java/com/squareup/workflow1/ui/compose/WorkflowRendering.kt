@@ -25,6 +25,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  *
  * ## Example
  *
+ *     ```
  *     data class FramedRendering<R : Any>(
  *       val borderColor: Color,
  *       val child: R
@@ -36,6 +37,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  *         }
  *       }
  *     }
+ *     ```
  *
  * @param rendering The workflow rendering to display.
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].

@@ -30,6 +30,7 @@ import com.squareup.workflow1.ui.ViewRegistry
  *
  * Example:
  *
+ *     ```
  *     data class HelloScreen(
  *       val message: String,
  *       val onClick: () -> Unit
@@ -48,6 +49,7 @@ import com.squareup.workflow1.ui.ViewRegistry
  *           Text(screen.message)
  *         }
  *     }
+ *     ```
  *
  * (Note that the example includes a `modifier` parameter that is not used by
  * the `HelloScreen` itself. We recommend this approach to simplify

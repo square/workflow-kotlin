@@ -39,6 +39,7 @@ abstract class SessionWorkflow<
    *     linking them to the lifetime of a Workflow session. For example,
    *     here is how you might safely combine two `StateFlow`s:
    *
+   *         ```
    *         data class MyState(
    *           val derivedValue: String,
    *           val derivedWorker: Worker<String>
@@ -57,6 +58,7 @@ abstract class SessionWorkflow<
    *             transformedStateFlow.asWorker()
    *           )
    *         }
+   *         ```
    *
    *   - set reliable teardown hooks, e.g. via [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
    *     Note however, that while these are reliable in the sense of being guaranteed to be executed
@@ -73,6 +75,7 @@ abstract class SessionWorkflow<
    *     [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion]. Otherwise use
    *     [awaitCancellation][kotlinx.coroutines.awaitCancellation] with a finally block. Examples:
    *
+   *         ```
    *         override fun initialState(
    *           props: Unit,
    *           snapshot: Snapshot?,
@@ -93,6 +96,7 @@ abstract class SessionWorkflow<
    *           }
    *           return MyState()
    *         }
+   *         ```
    *
    * **Note Carefully**: Neither [workflowScope] nor any of these transformed/computed dependencies
    * should be stored by this Workflow instance. This could be re-created, or re-used unexpectedly

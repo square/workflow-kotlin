@@ -34,9 +34,13 @@ import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
  *        rendering: ScreenT
  *      ): ScreenViewFactory<ScreenT> {
  *        @Suppress("UNCHECKED_CAST")
+ *        ```
  *        if (rendering is BackStackScreen<*>) return MyViewFactory as ScreenViewFactory<ScreenT>
  *        return super.getViewFactoryForRendering(environment, rendering)
+ *        ```
+ *      ```
  *      }
+ *      ```
  *    }
  *
  *    class MyViewModel(savedState: SavedStateHandle) : ViewModel() {

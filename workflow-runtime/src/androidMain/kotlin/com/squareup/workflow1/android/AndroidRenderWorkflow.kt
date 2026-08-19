@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.stateIn
  * one -- which is likely to be the case most of the time if your root `RenderingT`
  * implementation is a `data class`.
  *
+ *    ```
  *    class HelloWorkflowActivity : AppCompatActivity() {
  *      override fun onCreate(savedInstanceState: Bundle?) {
  *        super.onCreate(savedInstanceState)
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.stateIn
  *        savedStateHandle = savedState
  *      )
  *    }
+ *    ```
  *
  * @param workflow
  * The root workflow to render.
@@ -111,6 +113,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
  * for use with a [workflow] that requires one input value ([prop]) to run.
  *
+ *    ```
  *    class HelloNameWorkflowActivity : AppCompatActivity() {
  *      override fun onCreate(savedInstanceState: Bundle?) {
  *        super.onCreate(savedInstanceState)
@@ -130,6 +133,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  *        prop = "Your name here!"
  *      )
  *    }
+ *    ```
  *
  * @param workflow
  * The root workflow to render.
@@ -203,6 +207,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * For example, for a workflow that uses [android.content.Intent] as its `PropsT` type,
  * you could do something like this:
  *
+ *    ```
  *    class HelloIntentsWorkflowActivity : AppCompatActivity() {
  *
  *      override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,6 +239,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  *        props = intents
  *      )
  *    }
+ *    ```
  *
  * @param workflow
  * The root workflow to render.

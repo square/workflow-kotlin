@@ -38,6 +38,7 @@ import com.squareup.workflow1.ui.Screen
  *
  * We could model that this way:
  *
+ *     ```
  *     MyBodyAndBottomBarScreen(
  *       body = BodyAndOverlaysScreen(
  *         body = mainScreen,
@@ -45,11 +46,13 @@ import com.squareup.workflow1.ui.Screen
  *       ),
  *       bar = tutorialScreenOrNull,
  *     )
+ *     ```
  *
  * It is also possible to nest [BodyAndOverlaysScreen] instances. For example,
  * to show a higher priority modal that covers both `MyMainScreen` and `MyTutorialScreen`,
  * we could render this:
  *
+ *     ```
  *     BodyAndOverlaysScreen(
  *       overlays = listOfNotNull(fullScreenModalOrNull),
  *       body = MyBodyAndBottomBarScreen(
@@ -60,6 +63,7 @@ import com.squareup.workflow1.ui.Screen
  *         bar = tutorialScreenOrNull,
  *       )
  *     )
+ *     ```
  *
  * Whatever structure you settle on for your root rendering, it is important
  * to render the same structure every time. If your app will ever want to show

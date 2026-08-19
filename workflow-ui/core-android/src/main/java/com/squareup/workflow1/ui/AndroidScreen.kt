@@ -13,6 +13,7 @@ package com.squareup.workflow1.ui
  * of its [companion methods][ScreenViewFactory.Companion] like [ScreenViewFactory.fromViewBinding]
  * instead.
  *
+ *     ```
  *     data class HelloScreen(
  *       val message: String,
  *       val onClick: () -> Unit
@@ -23,6 +24,7 @@ package com.squareup.workflow1.ui
  *           helloMessage.setOnClickListener { screen.onClick() }
  *         }
  *     }
+ *     ```
  *
  * This is the simplest way to bridge the gap between your workflows and the UI,
  * but using it requires your workflows code to reside in Android modules, instead

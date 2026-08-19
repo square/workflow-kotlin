@@ -131,6 +131,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * It checks that the rendering properties are expected and that the output handler for the
  * `SubmitLoginWorker` returned the `CompleteLogin` action.
  *
+ *    ```
  *    workflow
  *      .testRender(
  *        props = MyProps(…),
@@ -153,11 +154,13 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *      .verifyAction { action ->
  *        assertThat(action).isEqualTo(Action.CompleteLogin(success = true))
  *      }
+ *    ```
  *
  * ### Rendering event
  *
  * This is similar to the example above, but will test an event sent to the rendering instead.
  *
+ *    ```
  *    workflow
  *      .testRender(
  *        props = MyProps(…),
@@ -180,12 +183,14 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *      .verifyAction { action ->
  *        assertThat(action).isEqualTo(Action.CancelLogin)
  *      }
+ *    ```
  *
  * ### Verify action result
  *
  * This test verifies the action _result_ instead of the action itself. This technique is useful
  * if the [WorkflowAction] is anonymous or inline.
  *
+ *    ```
  *    val currentState = …
  *    val previousState = …
  *
@@ -204,12 +209,14 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *        // Check that the workflow didn't emit any output from the button click.
  *        assertThat(output).isNull()
  *      }
+ *    ```
  *
  * ### Too many outputs
  *
  * This is an example of what **not** to do – this test will error out because a worker is emitting
  * and output _and_ a rendering event is sent.
  *
+ *    ```
  *    workflow
  *      .testRender(
  *        props = MyProps(…),
@@ -230,6 +237,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *        // This will throw and fail the test because the SubmitLoginWorker is also configured to emit
  *        // an output.
  *        rendering.onCancelClicked()
+ *    ```
  */
 public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
   /**
@@ -421,6 +429,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
+ *    ```
  *    val workflow = Workflow.stateless<…> {
  *      renderChild(
  *        childWorkflow.mapRendering { … }
@@ -430,6 +439,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  *
  *    workflow.testRender(…)
  *      .expectWorkflow(childWorkflow::class, …)
+ *    ```
  *
  * @param identifier The [WorkflowIdentifier] of the expected workflow. May identify any supertype
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
@@ -487,6 +497,7 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
+ *    ```
  *    val workflow = Workflow.stateless<…> {
  *      renderChild(
  *        childWorkflow.mapRendering { … }
@@ -496,6 +507,7 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  *
  *    workflow.testRender(…)
  *      .expectWorkflow(childWorkflow::class, …)
+ *    ```
  *
  * @param identifier The [WorkflowIdentifier] of the expected workflow. May identify any supertype
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
@@ -574,12 +586,14 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
+ *    ```
  *    val workflow = Workflow.stateless<…> {
  *      renderChild(childWorkflow.mapRendering { … })
  *    }
  *
  *    workflow.testRender(…)
  *      .expectWorkflow(childWorkflow::class, …)
+ *    ```
  *
  * @param workflowType The [KClass] of the expected workflow. May also be any of the supertypes
  * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test

@@ -17,6 +17,7 @@ import kotlin.reflect.safeCast
  *
  * For example:
  *
+ *     ```
  *     val AuthViewFactories = ViewRegistry(
  *       AuthorizingLayoutRunner, LoginLayoutRunner, SecondFactorLayoutRunner
  *     )
@@ -47,11 +48,13 @@ import kotlin.reflect.safeCast
  *         )
  *       }
  *     }
+ *     ```
  *
  * In the above example, it is assumed that the `companion object`s of the various
  * decoupled [LayoutRunner] classes honor a convention of implementing [ViewFactory], in
  * aid of this kind of assembly.
  *
+ *     ```
  *     class GamePlayLayoutRunner(view: View) : LayoutRunner<GameRendering> {
  *
  *       // ...
@@ -60,6 +63,7 @@ import kotlin.reflect.safeCast
  *         R.layout.game_layout, ::GameLayoutRunner
  *       )
  *     }
+ *     ```
  */
 public interface ViewRegistry {
   /**

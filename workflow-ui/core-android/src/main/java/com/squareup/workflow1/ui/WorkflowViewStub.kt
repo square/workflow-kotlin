@@ -23,13 +23,17 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  * you want child renderings to be displayed. E.g.:
  *
  *    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ *         ```
  *         xmlns:app="http://schemas.android.com/apk/res-auto"
  *         …>
+ *         ```
  *
+ *        ```
  *        <com.squareup.workflow1.WorkflowViewStub
  *            android:id="@+id/child_stub"
  *            app:inflatedId="@+id/child"
  *            />
+ *        ```
  *       …
  *
  * Then in your [LayoutRunner],
