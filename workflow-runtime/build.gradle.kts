@@ -17,8 +17,12 @@ plugins {
 // Configure dependency resolution to prefer desktop variants for JVM target.
 // Only resolvable configurations can have attributes set; Gradle 9.x rejects attribute
 // assignment on declarable-only configurations (e.g. *ApiElements-published).
+// Consumable configurations must be excluded too: legacy configurations that are both
+// resolvable and consumable (e.g. ktlint, COMPOSE_SKIKO_JS_WASM_RUNTIME) are advertised as
+// variants to consuming projects, and stamping a platform type on them makes variant
+// selection ambiguous for consumers that don't request one (e.g. SwiftPM lockfile tasks).
 configurations.configureEach {
-  if (isCanBeResolved) {
+  if (isCanBeResolved && !isCanBeConsumed) {
     attributes {
       // When resolving for JVM, prefer the desktop (non-Android) variants of Compose
       attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
