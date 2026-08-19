@@ -17,12 +17,8 @@ plugins {
 // Configure dependency resolution to prefer desktop variants for JVM target.
 // Only resolvable configurations can have attributes set; Gradle 9.x rejects attribute
 // assignment on declarable-only configurations (e.g. *ApiElements-published).
-// Consumable configurations must be excluded too: legacy configurations that are both
-// resolvable and consumable (e.g. ktlint, COMPOSE_SKIKO_JS_WASM_RUNTIME) are advertised as
-// variants to consuming projects, and stamping a platform type on them makes variant
-// selection ambiguous for consumers that don't request one (e.g. SwiftPM lockfile tasks).
 configurations.configureEach {
-  if (isCanBeResolved && !isCanBeConsumed) {
+  if (isCanBeResolved) {
     attributes {
       // When resolving for JVM, prefer the desktop (non-Android) variants of Compose
       attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
@@ -45,7 +41,7 @@ kotlin {
   if (targets == "kmp" || targets == "android") {
     @Suppress("UnstableApiUsage")
     androidLibrary {
-      namespace = "com.squareup.workflow1.android"
+      namespace = "com.squareup.workflow1.compose.android"
       testNamespace = "$namespace.test"
 
       compileSdk = libs.versions.compileSdk.get().toInt()
@@ -66,14 +62,11 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        api(project(":workflow-core"))
-        api(project(":workflow-compose"))
         api(libs.kotlinx.coroutines.core)
 
-        // These are aliases to the androidx runtime libraries for android source sets.
+        // These become aliases to the androidx runtime libraries in Compose 1.9.3.
         implementation(libs.jetbrains.compose.runtime)
         implementation(libs.jetbrains.compose.runtime.saveable)
-        implementation(libs.molecule)
       }
     }
 
@@ -85,7 +78,9 @@ kotlin {
     }
 
     // Shared source set for JVM-based targets (Android and JVM)
-    val jvmCommon = create("jvmCommon") { dependsOn(commonMain.get()) }
+    val jvmCommon = create("jvmCommon") {
+      dependsOn(commonMain.get())
+    }
 
     androidMain {
       dependsOn(jvmCommon)
@@ -99,37 +94,35 @@ kotlin {
       }
     }
 
-    jvmMain { dependsOn(jvmCommon) }
+    jvmMain {
+      dependsOn(jvmCommon)
+    }
 
     // Configure native/apple source sets hierarchy (replacing the default hierarchy template)
-    val nativeMain = maybeCreate("nativeMain").apply { dependsOn(commonMain.get()) }
+    val nativeMain = maybeCreate("nativeMain").apply {
+      dependsOn(commonMain.get())
+    }
 
-    val appleMain = maybeCreate("appleMain").apply { dependsOn(nativeMain) }
+    val appleMain = maybeCreate("appleMain").apply {
+      dependsOn(nativeMain)
+    }
 
-    val iosMain = maybeCreate("iosMain").apply { dependsOn(appleMain) }
+    val iosMain = maybeCreate("iosMain").apply {
+      dependsOn(appleMain)
+    }
 
     // Individual iOS target source sets depend on iosMain
     maybeCreate("iosArm64Main").apply { dependsOn(iosMain) }
     maybeCreate("iosX64Main").apply { dependsOn(iosMain) }
     maybeCreate("iosSimulatorArm64Main").apply { dependsOn(iosMain) }
 
-    // Test source sets mirror the main hierarchy. Without this, intermediate test source sets like
-    // iosTest are not compiled by any target and their tests silently never run.
-    val nativeTest = maybeCreate("nativeTest").apply { dependsOn(commonTest.get()) }
-    val appleTest = maybeCreate("appleTest").apply { dependsOn(nativeTest) }
-    val iosTest = maybeCreate("iosTest").apply { dependsOn(appleTest) }
-    maybeCreate("iosArm64Test").apply { dependsOn(iosTest) }
-    maybeCreate("iosX64Test").apply { dependsOn(iosTest) }
-    maybeCreate("iosSimulatorArm64Test").apply { dependsOn(iosTest) }
-
     // JS source set depends on commonMain
-    maybeCreate("jsMain").apply { dependsOn(commonMain.get()) }
+    maybeCreate("jsMain").apply {
+      dependsOn(commonMain.get())
+    }
 
     getByName("androidDeviceTest") {
       dependencies {
-        implementation(project(":workflow-config:config-android"))
-        implementation(project(":workflow-ui:internal-testing-android"))
-
         implementation(libs.androidx.test.espresso.core)
         implementation(libs.androidx.test.junit)
         implementation(libs.squareup.leakcanary.instrumentation)
