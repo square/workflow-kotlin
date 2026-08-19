@@ -26,7 +26,7 @@ plugins {
   id("artifacts-check")
   id("dependency-guard")
   alias(libs.plugins.dokka)
-  alias(libs.plugins.ktlint)
+  alias(libs.plugins.ktfmt)
   alias(libs.plugins.compose.compiler) apply false
   alias(libs.plugins.androidx.benchmark) apply false
 }
@@ -52,10 +52,7 @@ dokka {
   //   artifact id: workflow-config-android
   //          path: workflow-config/config-android
   moduleName.set(
-    provider {
-      findProperty("POM_ARTIFACT_ID") as? String
-        ?: project.path.removePrefix(":")
-    }
+      provider { findProperty("POM_ARTIFACT_ID") as? String ?: project.path.removePrefix(":") }
   )
 }
 
@@ -63,17 +60,17 @@ dokka {
 // which then causes execution optimizations to be disabled.  If this target project has Publish
 // tasks, explicitly make them run after Sign.
 subprojects {
-  tasks.withType(AbstractPublishToMaven::class.java)
-    .configureEach { mustRunAfter(tasks.matching { it is Sign }) }
+  tasks.withType(AbstractPublishToMaven::class.java).configureEach {
+    mustRunAfter(tasks.matching { it is Sign })
+  }
 
-  tasks.withType(Test::class.java)
-    .configureEach {
-      testLogging {
-        // This prints exception messages and stack traces to the log when tests fail. Makes it a
-        // lot easier to see what failed in CI. If this gets too noisy, just remove it.
-        exceptionFormat = FULL
-      }
+  tasks.withType(Test::class.java).configureEach {
+    testLogging {
+      // This prints exception messages and stack traces to the log when tests fail. Makes it a
+      // lot easier to see what failed in CI. If this gets too noisy, just remove it.
+      exceptionFormat = FULL
     }
+  }
 }
 
 // This task is invoked by the documentation site generator script in the main workflow project (not

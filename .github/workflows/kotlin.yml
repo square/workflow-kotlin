@@ -116,8 +116,8 @@ jobs:
           write-cache-key: build-logic
           access-token: ${{ steps.app-token.outputs.token || '' }}
 
-  ktlint:
-    name: KtLint
+  ktfmt:
+    name: Ktfmt
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -134,11 +134,11 @@ jobs:
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
-      - name: KtLint
+      - name: Ktfmt
         uses: ./.github/actions/gradle-task-with-commit
         with:
-          check-task: ktLintCheck
-          fix-task: ktLintFormat
+          check-task: ktfmtCheck
+          fix-task: ktfmtFormat
           write-cache-key: build-logic
           access-token: ${{ steps.app-token.outputs.token || '' }}
 
@@ -773,7 +773,7 @@ jobs:
       - unit-conflate-stateChange-drainExclusive-runtime-tests
       - unit-conflate-partial-drainExclusive-runtime-tests
       - unit-all-runtime-tests
-      - ktlint
+      - ktfmt
       - macrobenchmarks
       - microbenchmarks
       - runtime-instrumentation-tests
