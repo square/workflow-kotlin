@@ -40,6 +40,7 @@ dependencies {
   api(libs.androidx.compose.runtime)
   api(libs.kotlin.common)
 
+  api(project(":workflow-compose"))
   api(project(":workflow-ui:core-android"))
   api(project(":workflow-ui:core-common"))
 
