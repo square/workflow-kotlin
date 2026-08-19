@@ -32,14 +32,9 @@ import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.parser.RenderTrace
 import io.github.vinceglb.filekit.PlatformFile
 
-/**
- * Main composable that provides the different layers of UI.
- */
+/** Main composable that provides the different layers of UI. */
 @Composable
-internal fun TraceViewerWindow(
-  modifier: Modifier = Modifier,
-  traceMode: TraceMode,
-) {
+internal fun TraceViewerWindow(modifier: Modifier = Modifier, traceMode: TraceMode) {
   var appWindowSize by remember { mutableStateOf(IntSize(0, 0)) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   var frameSize by remember { mutableIntStateOf(0) }
@@ -50,26 +45,16 @@ internal fun TraceViewerWindow(
 
   // Default to File mode, and can be toggled to be in Live mode.
   var active by remember { mutableStateOf(false) }
-  // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one errors
+  // frameIndex is set to -1 when app is in Live Mode, so we increment it by one to avoid off-by-one
+  // errors
   val frameInd = if (traceMode is TraceMode.Live) frameIndex + 1 else frameIndex
 
-  LaunchedEffect(sandboxState) {
-    snapshotFlow { frameIndex }.collect {
-      sandboxState.reset()
-    }
-  }
+  LaunchedEffect(sandboxState) { snapshotFlow { frameIndex }.collect { sandboxState.reset() } }
 
-  Box(
-    modifier = modifier.onSizeChanged {
-      appWindowSize = it
-    }
-  ) {
+  Box(modifier = modifier.onSizeChanged { appWindowSize = it }) {
 
     // Main content
-    SandboxBackground(
-      appWindowSize = appWindowSize,
-      sandboxState = sandboxState,
-    ) {
+    SandboxBackground(appWindowSize = appWindowSize, sandboxState = sandboxState) {
       // if there is not a file selected and trace mode is live, then don't render anything.
       val readyForFileTrace = TraceMode.validateFileMode(traceMode)
       val readyForLiveTrace = TraceMode.validateLiveMode(traceMode)
@@ -83,15 +68,13 @@ internal fun TraceViewerWindow(
           onNodeSelect = { selectedNode = it },
           onNewFrame = { frameIndex += 1 },
           onNewData = { rawRenderPass += "$it," },
-          storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) }
+          storeNodeLocation = { node, loc -> nodeLocations[frameInd] += (node to loc) },
         )
       }
     }
 
     Row(
-      modifier = Modifier
-        .align(Alignment.TopCenter)
-        .padding(top = 8.dp),
+      modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp),
       horizontalArrangement = Arrangement.spacedBy(8.dp),
       verticalAlignment = Alignment.Top,
     ) {
@@ -100,7 +83,8 @@ internal fun TraceViewerWindow(
         // locations is null, that means we've skipped frames and need to fill all the intermediate
         // ones. e.g. Frame 1 to Frame 10
         if (nodeLocations.getOrNull(frameInd) == null) {
-          // frameSize has not been updated yet, so on the first frame, frameSize = nodeLocations.size = 0,
+          // frameSize has not been updated yet, so on the first frame, frameSize =
+          // nodeLocations.size = 0,
           // and it will append a new map
           while (nodeLocations.size <= frameSize) {
             nodeLocations += mutableStateMapOf()
@@ -112,10 +96,12 @@ internal fun TraceViewerWindow(
           nodes = frameNodeLocations.keys.toList(),
           onSearch = { name ->
             val node = frameNodeLocations.keys.first { it.name == name }
-            val newX = (sandboxState.offset.x - frameNodeLocations.getValue(node).x
-              + appWindowSize.width / 2)
-            val newY = (sandboxState.offset.y - frameNodeLocations.getValue(node).y
-              + appWindowSize.height / 2)
+            val newX =
+              (sandboxState.offset.x - frameNodeLocations.getValue(node).x +
+                appWindowSize.width / 2)
+            val newY =
+              (sandboxState.offset.y - frameNodeLocations.getValue(node).y +
+                appWindowSize.height / 2)
             sandboxState.offset = Offset(x = newX, y = newY)
           },
         )
@@ -128,16 +114,10 @@ internal fun TraceViewerWindow(
       }
     }
     if (traceMode is TraceMode.Live) {
-      FileDump(
-        trace = rawRenderPass,
-        modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
-      )
+      FileDump(trace = rawRenderPass, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
     }
     key(selectedNode) {
-      RightInfoPanel(
-        selectedNode = selectedNode,
-        modifier = Modifier.align(Alignment.TopEnd)
-      )
+      RightInfoPanel(selectedNode = selectedNode, modifier = Modifier.align(Alignment.TopEnd))
     }
   }
 }
@@ -152,6 +132,7 @@ internal class SandboxState {
 
 internal sealed interface TraceMode {
   data class File(val file: PlatformFile?) : TraceMode
+
   data class Live(val device: String? = null) : TraceMode
 
   companion object {

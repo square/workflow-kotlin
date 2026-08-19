@@ -4,23 +4,20 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 /**
- * Like Kotlin's [requireNotNull], but uses [stackTraceKey] to create a fake top element
- * on the stack trace, ensuring that a crash reporter's default grouping will create unique
- * groups for unique keys.
- *
- * @see [withKey]
+ * Like Kotlin's [requireNotNull], but uses [stackTraceKey] to create a fake top element on the
+ * stack trace, ensuring that a crash reporter's default grouping will create unique groups for
+ * unique keys.
  *
  * @throws IllegalArgumentException if the [value] is false.
+ * @see [withKey]
  */
 @OptIn(ExperimentalContracts::class)
 public inline fun <T : Any> requireNotNullWithKey(
   value: T?,
   stackTraceKey: Any,
-  lazyMessage: () -> Any = { "Required value was null." }
+  lazyMessage: () -> Any = { "Required value was null." },
 ): T {
-  contract {
-    returns() implies (value != null)
-  }
+  contract { returns() implies (value != null) }
   if (value == null) {
     val message = lazyMessage()
     val exception: Throwable = IllegalArgumentException(message.toString())
@@ -31,29 +28,24 @@ public inline fun <T : Any> requireNotNullWithKey(
 }
 
 /**
- * Like Kotlin's [require], but uses [stackTraceKey] to create a fake top element
- * on the stack trace, ensuring that a crash reporter's default grouping will create unique
- * groups for unique keys.
+ * Like Kotlin's [require], but uses [stackTraceKey] to create a fake top element on the stack
+ * trace, ensuring that a crash reporter's default grouping will create unique groups for unique
+ * keys.
  *
  * So far [stackTraceKey] is only effective on JVM, it has no effect in other languages.
  *
- * @param stackTraceKey an object whose [toString] method will serve as a grouping key
- * for crash reporters. It is important that keys are stable across processes,
- * avoid system hashes.
- *
- * @see [withKey]
- *
+ * @param stackTraceKey an object whose [toString] method will serve as a grouping key for crash
+ *   reporters. It is important that keys are stable across processes, avoid system hashes.
  * @throws IllegalArgumentException if the [value] is false.
+ * @see [withKey]
  */
 @OptIn(ExperimentalContracts::class)
 internal inline fun requireWithKey(
   value: Boolean,
   stackTraceKey: Any,
-  lazyMessage: () -> Any = { "Failed requirement." }
+  lazyMessage: () -> Any = { "Failed requirement." },
 ) {
-  contract {
-    returns() implies value
-  }
+  contract { returns() implies value }
   if (!value) {
     val message = lazyMessage()
     val exception: Throwable = IllegalArgumentException(message.toString())
@@ -62,29 +54,23 @@ internal inline fun requireWithKey(
 }
 
 /**
- * Like Kotlin's [check], but uses [stackTraceKey] to create a fake top element
- * on the stack trace, ensuring that a crash reporter's default grouping will create unique
- * groups for unique keys.
+ * Like Kotlin's [check], but uses [stackTraceKey] to create a fake top element on the stack trace,
+ * ensuring that a crash reporter's default grouping will create unique groups for unique keys.
  *
  * So far [stackTraceKey] is only effective on JVM, it has no effect in other languages.
  *
- * @param stackTraceKey an object whose [toString] method will serve as a grouping key
- * for crash reporters. It is important that keys are stable across processes,
- * avoid system hashes.
- *
- * @see [withKey]
- *
+ * @param stackTraceKey an object whose [toString] method will serve as a grouping key for crash
+ *   reporters. It is important that keys are stable across processes, avoid system hashes.
  * @throws IllegalStateException if the [value] is false.
+ * @see [withKey]
  */
 @OptIn(ExperimentalContracts::class)
 internal inline fun checkWithKey(
   value: Boolean,
   stackTraceKey: Any,
-  lazyMessage: () -> Any = { "Check failed." }
+  lazyMessage: () -> Any = { "Check failed." },
 ) {
-  contract {
-    returns() implies value
-  }
+  contract { returns() implies value }
   if (!value) {
     val message = lazyMessage()
     val exception: Throwable = IllegalStateException(message.toString())
@@ -93,13 +79,12 @@ internal inline fun checkWithKey(
 }
 
 /**
- * Uses [stackTraceKey] to create a fake top element on the stack trace, ensuring
- * that a crash reporter's default grouping will create unique groups for unique keys.
+ * Uses [stackTraceKey] to create a fake top element on the stack trace, ensuring that a crash
+ * reporter's default grouping will create unique groups for unique keys.
  *
  * So far only effective on JVM, this is a pass through in other languages.
  *
- * @param stackTraceKey an object whose [toString] method will serve as a grouping key
- * for crash reporters. It is important that keys are stable across processes,
- * avoid system hashes.
+ * @param stackTraceKey an object whose [toString] method will serve as a grouping key for crash
+ *   reporters. It is important that keys are stable across processes, avoid system hashes.
  */
 public expect fun <T : Throwable> T.withKey(stackTraceKey: Any): T

@@ -25,10 +25,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.plus
 
 private val viewEnvironment =
-  (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding))
-    .withComposeInteropSupport { content ->
-      MaterialTheme(content = content)
-    }
+  (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)).withComposeInteropSupport { content ->
+    MaterialTheme(content = content)
+  }
 
 /**
  * Demonstrates how to create and display a view factory with
@@ -39,10 +38,7 @@ class HelloBindingActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
 
     val model: HelloBindingModel by viewModels()
-    workflowContentView.take(
-      lifecycle = lifecycle,
-      renderings = model.renderings,
-    )
+    workflowContentView.take(lifecycle = lifecycle, renderings = model.renderings)
   }
 
   class HelloBindingModel(savedState: SavedStateHandle) : ViewModel() {
@@ -51,7 +47,7 @@ class HelloBindingActivity : AppCompatActivity() {
         workflow = HelloWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
         scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
       )
     }
   }

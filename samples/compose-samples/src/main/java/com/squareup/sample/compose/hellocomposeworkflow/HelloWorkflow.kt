@@ -18,28 +18,23 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeScreen>() {
     Hello,
     Goodbye;
 
-    fun theOtherState(): State = when (this) {
-      Hello -> Goodbye
-      Goodbye -> Hello
-    }
+    fun theOtherState(): State =
+      when (this) {
+        Hello -> Goodbye
+        Goodbye -> Hello
+      }
   }
 
-  private val helloAction = action("hello") {
-    state = state.theOtherState()
-  }
+  private val helloAction = action("hello") { state = state.theOtherState() }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-    ?: Hello
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye } ?: Hello
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
-  ): ComposeScreen =
-    context.renderChild(HelloComposeWorkflow, renderState.name) { helloAction }
+    context: RenderContext<Unit, State, Nothing>,
+  ): ComposeScreen = context.renderChild(HelloComposeWorkflow, renderState.name) { helloAction }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 }

@@ -15,15 +15,12 @@ class AndroidSampleAppPlugin : Plugin<Project> {
     target.plugins.apply(AndroidDefaultsPlugin::class.java)
 
     target.extensions.configure(TestedExtension::class.java) { testedExtension ->
-
       @Suppress("UnstableApiUsage")
       testedExtension.buildFeatures.viewBinding = true
     }
 
     target.extensions.configure(BaseAppModuleExtension::class.java) { appExtension ->
-      appExtension.lint {
-        baseline = target.file("lint-baseline.xml")
-      }
+      appExtension.lint { baseline = target.file("lint-baseline.xml") }
     }
 
     target.dependencies {

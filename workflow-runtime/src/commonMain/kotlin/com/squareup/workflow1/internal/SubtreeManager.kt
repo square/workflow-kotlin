@@ -15,8 +15,8 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.trace
-import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.selects.SelectBuilder
 
 /**
  * Responsible for tracking child workflows, starting them and tearing them down when necessary.
@@ -27,56 +27,63 @@ import kotlin.coroutines.CoroutineContext
  *
  * ## Rendering
  *
- * This class implements [RealRenderContext.Renderer], and [WorkflowNode] will pass its instance
- * of this class to the [RealRenderContext] on each render pass to render children. That means that
+ * This class implements [RealRenderContext.Renderer], and [WorkflowNode] will pass its instance of
+ * this class to the [RealRenderContext] on each render pass to render children. That means that
  * when a workflow renders a child, this class does the actual work.
  *
  * This class keeps two lists:
- *  1. Active list: All the children from the last render pass that have not yet been rendered in
- *     the subsequent pass.
- *  2. Staging list: Children that have been rendered in the current render pass, before the pass is
- *     [committed][commitRenderedChildren].
+ * 1. Active list: All the children from the last render pass that have not yet been rendered in the
+ *    subsequent pass.
+ * 2. Staging list: Children that have been rendered in the current render pass, before the pass is
+ *    [committed][commitRenderedChildren].
  *
  * The render process is as follows:
- *   1. When the render pass starts, the staging list is empty and the active list contains all the
- *      children rendered in the last pass.
+ * 1. When the render pass starts, the staging list is empty and the active list contains all the
+ *    children rendered in the last pass.
+ *
  *      ```
  *      active:  [foo, bar]
  *      staging: []
  *      ```
- *   2. Every time a child is rendered, it is looked up in the list of children from the last render
- *      pass. If found, it is removed from the active list and added to the staging list.
+ * 2. Every time a child is rendered, it is looked up in the list of children from the last render
+ *    pass. If found, it is removed from the active list and added to the staging list.
+ *
  *      ```
  *      render(foo)
  *      active:  [bar]
  *      staging: [foo]
  *      ```
- *   3. If not found, a new [WorkflowChildNode] is created and added to the staging list.
+ * 3. If not found, a new [WorkflowChildNode] is created and added to the staging list.
+ *
  *      ```
  *      render(baz)
  *      active:  [bar]
  *      staging: [foo, baz]
  *      ```
- *   4. When the workflow's render method returns, the [WorkflowNode] calls
- *      [commitRenderedChildren], which:
- *        1. Tears down all the children remaining in the active list
+ * 4. When the workflow's render method returns, the [WorkflowNode] calls [commitRenderedChildren],
+ *    which:
+ *     1. Tears down all the children remaining in the active list
+ *
  *           ```
  *           bar.cancel()
  *           active:  [bar]
  *           staging: [foo, baz]
  *           ```
- *        2. Clears the old active list
+ *     2. Clears the old active list
+ *
  *           ```
  *           active:  []
  *           staging: [foo, baz]
  *           ```
- *        3. And then swaps the active and staging lists.
+ *     3. And then swaps the active and staging lists.
+ *
  *           ```
  *           active:  [foo, baz]
  *           staging: []
  *           ```
- *      This just updates a couple references, and since the lists are swapped, doesn't involve any
- *      allocations.
+ *
+ *    This just updates a couple references, and since the lists are swapped, doesn't involve any
+ *    allocations.
  *
  * When looking up a child in the active list, a linear search is used. This is expected to perform
  * adequately in practice because most workflows don't have a large number of children (even as few
@@ -84,32 +91,34 @@ import kotlin.coroutines.CoroutineContext
  * change (no workflows are added or removed), and children are re-rendered in the same order as
  * before, so the first active child will usually match.
  *
- * @param snapshotCache When this manager's node is restored from a snapshot, its children
- * snapshots are extracted into this cache. Then, when those children are started for the
- * first time, they are also restored from their snapshots.
+ * @param snapshotCache When this manager's node is restored from a snapshot, its children snapshots
+ *   are extracted into this cache. Then, when those children are started for the first time, they
+ *   are also restored from their snapshots.
  */
 @OptIn(WorkflowExperimentalRuntime::class)
 internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (
-    action: WorkflowAction<PropsT, StateT, OutputT>,
-    childResult: ActionApplied<*>
-  ) -> ActionProcessingResult,
+  private val emitActionToParent:
+    (
+      action: WorkflowAction<PropsT, StateT, OutputT>, childResult: ActionApplied<*>,
+    ) -> ActionProcessingResult,
   private val runtimeConfig: RuntimeConfig,
   private val workflowTracer: WorkflowTracer?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter? = null
+  private val idCounter: IdCounter? = null,
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private val indexedActiveStagingLists = runtimeConfig.contains(INDEXED_ACTIVE_STAGING_LISTS)
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(
-    identityOf = if (indexedActiveStagingLists) {
-      { it.id }
-    } else {
-      null
-    }
-  )
+  private var children =
+    ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>(
+      identityOf =
+        if (indexedActiveStagingLists) {
+          { it.id }
+        } else {
+          null
+        }
+    )
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -120,9 +129,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   fun commitRenderedChildren() {
     // Any children left in the previous active list after the render finishes were not re-rendered
     // and must be torn down.
-    children.commitStaging { child ->
-      child.workflowNode.cancel()
-    }
+    children.commitStaging { child -> child.workflowNode.cancel() }
     // Get rid of any snapshots that weren't applied on the first render pass.
     // They belong to children that were saved but not restarted.
     snapshotCache = null
@@ -132,7 +139,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
   ): ChildRenderingT {
     val childId = child.id(key)
 
@@ -141,14 +148,18 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       if (indexedActiveStagingLists) {
         requireWithKey(
           !children.containsStagingIdentity(childId),
-          stackTraceKey = child.identifier
-        ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
+          stackTraceKey = child.identifier,
+        ) {
+          "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+        }
       } else {
         children.forEachStaging {
           requireWithKey(
             !(it.matches(child, key, workflowTracer)),
-            stackTraceKey = child.identifier
-          ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
+            stackTraceKey = child.identifier,
+          ) {
+            "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+          }
         }
       }
     }
@@ -159,12 +170,12 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         if (indexedActiveStagingLists) {
           children.retainOrCreateByIdentity(
             identity = childId,
-            create = { createChildNode(child, props, childId, handler) }
+            create = { createChildNode(child, props, childId, handler) },
           )
         } else {
           children.retainOrCreate(
             predicate = { it.matches(child, key, workflowTracer) },
-            create = { createChildNode(child, props, childId, handler) }
+            create = { createChildNode(child, props, childId, handler) },
           )
         }
       }
@@ -177,20 +188,17 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    * workflow this instance is managing.
    */
   fun registerChildActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
-    children.forEachActive { child ->
-      child.workflowNode.registerTreeActionSelectors(selector)
-    }
+    children.forEachActive { child -> child.workflowNode.registerTreeActionSelectors(selector) }
   }
 
   /**
    * Will try to apply any actions immediately available in our children's actions queues.
    *
    * @param skipDirtyNodes Whether or not this should skip over any workflow nodes that are already
-   * 'dirty' - that is, they had their own state changed as the result of a previous action before
-   * the next render pass.
-   *
+   *   'dirty' - that is, they had their own state changed as the result of a previous action before
+   *   the next render pass.
    * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
-   * none immediately available.
+   *   none immediately available.
    */
   fun applyNextAvailableChildAction(skipDirtyNodes: Boolean = false): ActionProcessingResult {
     children.forEachActive { child ->
@@ -215,35 +223,36 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
     id: WorkflowNodeId,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
   ): WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT> {
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
     fun acceptChildActionResult(actionResult: ActionApplied<ChildOutputT>): ActionProcessingResult {
-      val action = if (actionResult.output != null) {
-        node.acceptChildOutput(actionResult.output!!.value)
-      } else {
-        WorkflowAction.noAction()
-      }
+      val action =
+        if (actionResult.output != null) {
+          node.acceptChildOutput(actionResult.output!!.value)
+        } else {
+          WorkflowAction.noAction()
+        }
       return emitActionToParent(action, actionResult)
     }
 
     val childTreeSnapshots = snapshotCache?.get(id)
 
-    val workflowNode = WorkflowNode(
-      id = id,
-      workflow = child.asStatefulWorkflow(),
-      initialProps = initialProps,
-      snapshot = childTreeSnapshots,
-      baseContext = contextForChildren,
-      runtimeConfig = runtimeConfig,
-      workflowTracer = workflowTracer,
-      emitAppliedActionToParent = ::acceptChildActionResult,
-      parent = workflowSession,
-      interceptor = interceptor,
-      idCounter = idCounter
-    )
-    return WorkflowChildNode(child, handler, workflowNode)
-      .also { node = it }
+    val workflowNode =
+      WorkflowNode(
+        id = id,
+        workflow = child.asStatefulWorkflow(),
+        initialProps = initialProps,
+        snapshot = childTreeSnapshots,
+        baseContext = contextForChildren,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
+        emitAppliedActionToParent = ::acceptChildActionResult,
+        parent = workflowSession,
+        interceptor = interceptor,
+        idCounter = idCounter,
+      )
+    return WorkflowChildNode(child, handler, workflowNode).also { node = it }
   }
 }

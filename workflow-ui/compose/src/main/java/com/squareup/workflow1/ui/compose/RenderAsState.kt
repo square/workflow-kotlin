@@ -33,10 +33,10 @@ import kotlinx.coroutines.plus
 import okio.ByteString
 
 /**
- * Runs this [Workflow] as long as this composable is part of the composition, and returns a
- * [State] object that will be updated whenever the runtime emits a new [RenderingT]. Note that
- * here, and in the rest of the documentation for this class, the "`State`" type refers to Compose's
- * snapshot [State] type, _not_ the concept of the `StateT` type in a particular workflow.
+ * Runs this [Workflow] as long as this composable is part of the composition, and returns a [State]
+ * object that will be updated whenever the runtime emits a new [RenderingT]. Note that here, and in
+ * the rest of the documentation for this class, the "`State`" type refers to Compose's snapshot
+ * [State] type, _not_ the concept of the `StateT` type in a particular workflow.
  *
  * The workflow runtime will be started when this function is first added to the composition, and
  * cancelled when it is removed or if the composition fails. The first rendering will be available
@@ -82,30 +82,27 @@ import okio.ByteString
  * should not be a problem. Any side effects performed by workflows using the `runningSideEffect`
  * method or Workers will be executed in [scope] as usual.
  *
- * Also note that composition is an operation that may fail, or be cancelled, and the "result"
- * of a given composition pass may be thrown away and never used to update UI. When this happens,
- * the composition is said to have failed to commit. If the composition that initializes a workflow
+ * Also note that composition is an operation that may fail, or be cancelled, and the "result" of a
+ * given composition pass may be thrown away and never used to update UI. When this happens, the
+ * composition is said to have failed to commit. If the composition that initializes a workflow
  * runtime using this function fails to commit, the runtime will be started and then immediately
  * cancelled. Since the workflow runtime may perform side effects, this may cause effects that look
  * like they spontaneously occur, or happen more often than they should.
  *
- * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
- * while this function is in the composition, the runtime will be restarted with the new workflow.
  * @param props The [PropsT] for the root [Workflow]. Changes to this value across different
- * compositions will cause the root workflow to re-render with the new props.
- * @param interceptors
- * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
- * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
- * workflow first, then the interceptor at index 1, etc.
- * @param scope
- * The [CoroutineScope] in which to launch the workflow runtime. If not specified, the value of
- * [rememberCoroutineScope] will be used. Any exceptions thrown in any workflows, after the initial
- * render pass, will be handled by this scope, and cancelling this scope will cancel the workflow
- * runtime and any running workers. Note that any dispatcher in this scope will _not_ be used to
- * execute the very first render pass.
- * @param runtimeConfig
- * The [RuntimeConfig] for the Workflow runtime started to power this state.
+ *   compositions will cause the root workflow to re-render with the new props.
+ * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
+ *   rendered by the runtime. Interceptors will be invoked in 0-to-`length` order: the interceptor
+ *   at index 0 will process the workflow first, then the interceptor at index 1, etc.
+ * @param scope The [CoroutineScope] in which to launch the workflow runtime. If not specified, the
+ *   value of [rememberCoroutineScope] will be used. Any exceptions thrown in any workflows, after
+ *   the initial render pass, will be handled by this scope, and cancelling this scope will cancel
+ *   the workflow runtime and any running workers. Note that any dispatcher in this scope will _not_
+ *   be used to execute the very first render pass.
+ * @param runtimeConfig The [RuntimeConfig] for the Workflow runtime started to power this state.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
+ * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
+ *   while this function is in the composition, the runtime will be restarted with the new workflow.
  */
 @Composable
 public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
@@ -113,12 +110,12 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
   interceptors: List<WorkflowInterceptor> = emptyList(),
   scope: CoroutineScope = rememberCoroutineScope(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  onOutput: suspend (OutputT) -> Unit
+  onOutput: suspend (OutputT) -> Unit,
 ): State<RenderingT> = renderAsState(this, scope, props, interceptors, runtimeConfig, onOutput)
 
 /**
  * @param snapshotKey Allows tests to pass in a custom key to use to save/restore the snapshot from
- * the [LocalSaveableStateRegistry]. If null, will use the default key based on source location.
+ *   the [LocalSaveableStateRegistry]. If null, will use the default key based on source location.
  */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
@@ -129,7 +126,7 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   interceptors: List<WorkflowInterceptor>,
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit,
-  snapshotKey: String? = null
+  snapshotKey: String? = null,
 ): State<RenderingT> {
   val snapshotState = rememberTreeSnapshotState(snapshotKey)
   val updatedOnOutput by rememberUpdatedState(onOutput)
@@ -144,34 +141,28 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   // the workflow runtime when it leaves the composition or if the composition doesn't commit.
   // The remember is keyed on any values that we can't update the runtime with dynamically, and
   // therefore require completely restarting the runtime to take effect.
-  val state = remember(workflow, scope, interceptors) {
-    WorkflowRuntimeState<PropsT, OutputT, RenderingT>(
-      workflowScope = scope,
-      initialProps = props,
-      snapshotState = snapshotState,
-      runtimeConfig = runtimeConfig,
-      onOutput = { updatedOnOutput(it) }
-    ).apply {
-      start(workflow, interceptors)
+  val state =
+    remember(workflow, scope, interceptors) {
+      WorkflowRuntimeState<PropsT, OutputT, RenderingT>(
+          workflowScope = scope,
+          initialProps = props,
+          snapshotState = snapshotState,
+          runtimeConfig = runtimeConfig,
+          onOutput = { updatedOnOutput(it) },
+        )
+        .apply { start(workflow, interceptors) }
     }
-  }
 
   // Use a side effect to update props so that it waits for the composition to commit.
-  SideEffect {
-    state.setProps(props)
-  }
+  SideEffect { state.setProps(props) }
 
   return state.rendering
 }
 
 @Composable
-private fun rememberTreeSnapshotState(
-  snapshotKey: String?
-): MutableState<TreeSnapshot?> {
+private fun rememberTreeSnapshotState(snapshotKey: String?): MutableState<TreeSnapshot?> {
   return if (snapshotKey == null) {
-    rememberSaveable(stateSaver = TreeSnapshotSaver) {
-      mutableStateOf(null)
-    }
+    rememberSaveable(stateSaver = TreeSnapshotSaver) { mutableStateOf(null) }
   } else {
     rememberTreeSnapshotStateWithKey(snapshotKey)
   }
@@ -179,16 +170,10 @@ private fun rememberTreeSnapshotState(
 
 @Suppress("DEPRECATION")
 @Composable
-private fun rememberTreeSnapshotStateWithKey(
-  snapshotKey: String
-): MutableState<TreeSnapshot?> =
-  rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) {
-    mutableStateOf(null)
-  }
+private fun rememberTreeSnapshotStateWithKey(snapshotKey: String): MutableState<TreeSnapshot?> =
+  rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) { mutableStateOf(null) }
 
-/**
- * State hoisted out of [renderAsState].
- */
+/** State hoisted out of [renderAsState]. */
 private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
   workflowScope: CoroutineScope,
   initialProps: PropsT,
@@ -201,8 +186,8 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
   private val propsFlow = MutableStateFlow(initialProps)
 
   /**
-   * The actual scope used to run the workflow. It has a child [Job] of the incoming scope so
-   * we can cancel the runtime without cancelling the incoming scope.
+   * The actual scope used to run the workflow. It has a child [Job] of the incoming scope so we can
+   * cancel the runtime without cancelling the incoming scope.
    */
   private val workflowScope = workflowScope + Job(parent = workflowScope.coroutineContext[Job])
 
@@ -213,22 +198,20 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
 
   fun start(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
-    interceptors: List<WorkflowInterceptor>
+    interceptors: List<WorkflowInterceptor>,
   ) {
-    val renderings = renderWorkflowIn(
-      workflow = workflow,
-      scope = workflowScope,
-      props = propsFlow,
-      initialSnapshot = snapshotState.value,
-      interceptors = interceptors,
-      runtimeConfig = runtimeConfig,
-      onOutput = onOutput
-    )
+    val renderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = workflowScope,
+        props = propsFlow,
+        initialSnapshot = snapshotState.value,
+        interceptors = interceptors,
+        runtimeConfig = runtimeConfig,
+        onOutput = onOutput,
+      )
 
-    workflowScope.launch(
-      start = UNDISPATCHED,
-      context = Dispatchers.Unconfined
-    ) {
+    workflowScope.launch(start = UNDISPATCHED, context = Dispatchers.Unconfined) {
       // We collect the renderings in the workflowScope to participate in structured concurrency,
       // however we don't need to use its dispatcher – this collector is simply setting snapshot
       // state values, which is thread safe.
@@ -265,7 +248,8 @@ private object TreeSnapshotSaver : Saver<TreeSnapshot?, ByteArray> {
   }
 
   override fun restore(value: ByteArray): TreeSnapshot? {
-    return value.takeUnless { it.isEmpty() }
+    return value
+      .takeUnless { it.isEmpty() }
       ?.let { bytes -> TreeSnapshot.parse(ByteString.of(*bytes)) }
   }
 }

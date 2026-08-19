@@ -14,47 +14,36 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.transform
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.transform
 import kotlin.random.Random
 import kotlin.reflect.KClass
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.transform
 
-/**
- * Simple AI workflow that just moves around in squiggly spirals and tries to eat the player.
- */
+/** Simple AI workflow that just moves around in squiggly spirals and tries to eat the player. */
 class AiWorkflow(
   private val avatar: BoardCell = BoardCell("👻"),
   private val random: Random,
-  private val cellsPerSecond: Float = random.nextFloat() * 3f + 4f // Between 4 and 7.
+  private val cellsPerSecond: Float = random.nextFloat() * 3f + 4f, // Between 4 and 7.
 ) : ActorWorkflow, StatefulWorkflow<ActorProps, State, Nothing, ActorRendering>() {
 
-  data class State(
-    val direction: Direction,
-    val directionTicker: Worker<Unit>
-  )
+  data class State(val direction: Direction, val directionTicker: Worker<Unit>)
 
-  override fun initialState(
-    props: ActorProps,
-    snapshot: Snapshot?
-  ): State {
+  override fun initialState(props: ActorProps, snapshot: Snapshot?): State {
     val startingDirection = random.nextEnum(Direction::class)
     return State(startingDirection, props.ticks.createDirectionTicker(random))
   }
 
-  override fun onPropsChanged(
-    old: ActorProps,
-    new: ActorProps,
-    state: State
-  ): State = if (!old.ticks.doesSameWorkAs(new.ticks)) {
-    state.copy(directionTicker = new.ticks.createDirectionTicker(random))
-  } else {
-    state
-  }
+  override fun onPropsChanged(old: ActorProps, new: ActorProps, state: State): State =
+    if (!old.ticks.doesSameWorkAs(new.ticks)) {
+      state.copy(directionTicker = new.ticks.createDirectionTicker(random))
+    } else {
+      state
+    }
 
   override fun render(
     renderProps: ActorProps,
     renderState: State,
-    context: RenderContext<ActorProps, State, Nothing>
+    context: RenderContext<ActorProps, State, Nothing>,
   ): ActorRendering {
     context.runningWorker(renderState.directionTicker) { updateDirection }
 
@@ -63,17 +52,19 @@ class AiWorkflow(
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private val updateDirection = action("updateDirection") {
-    // Rotate 90 degrees.
-    val newDirection = when (state.direction) {
-      UP -> RIGHT
-      RIGHT -> DOWN
-      DOWN -> LEFT
-      LEFT -> UP
-    }
+  private val updateDirection =
+    action("updateDirection") {
+      // Rotate 90 degrees.
+      val newDirection =
+        when (state.direction) {
+          UP -> RIGHT
+          RIGHT -> DOWN
+          DOWN -> LEFT
+          LEFT -> UP
+        }
 
-    state = state.copy(direction = newDirection)
-  }
+      state = state.copy(direction = newDirection)
+    }
 }
 
 private fun <T : Enum<T>> Random.nextEnum(enumClass: KClass<T>): T {
@@ -81,15 +72,12 @@ private fun <T : Enum<T>> Random.nextEnum(enumClass: KClass<T>): T {
   return values[nextInt(values.size)]
 }
 
-/**
- * Scales the tick frequency by a random amount to make direction changes look more arbitrary.
- */
+/** Scales the tick frequency by a random amount to make direction changes look more arbitrary. */
 @OptIn(ExperimentalCoroutinesApi::class)
-private fun Worker<Long>.createDirectionTicker(random: Random): Worker<Unit> =
-  transform { flow ->
-    flow.transform { tick ->
-      if (tick % random.nextInt(2, 5) == 0L) {
-        emit(Unit)
-      }
+private fun Worker<Long>.createDirectionTicker(random: Random): Worker<Unit> = transform { flow ->
+  flow.transform { tick ->
+    if (tick % random.nextInt(2, 5) == 0L) {
+      emit(Unit)
     }
   }
+}

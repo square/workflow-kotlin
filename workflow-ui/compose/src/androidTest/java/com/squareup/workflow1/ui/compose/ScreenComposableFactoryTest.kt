@@ -35,41 +35,38 @@ internal class ScreenComposableFactoryTest {
 
   private val composeRule = createComposeRule()
 
-  @get:Rule val rules: RuleChain =
+  @get:Rule
+  val rules: RuleChain =
     RuleChain.outerRule(DetectLeaksAfterTestSuccess())
       .around(IdleAfterTestRule)
       .around(composeRule)
       .around(IdlingDispatcherRule)
 
-  @Test fun showsComposeContent() {
-    val composableFactory = ScreenComposableFactory<TestRendering> { _ ->
-      BasicText("Hello, world!")
-    }
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(composableFactory))
-      .withComposeInteropSupport()
+  @Test
+  fun showsComposeContent() {
+    val composableFactory =
+      ScreenComposableFactory<TestRendering> { _ -> BasicText("Hello, world!") }
+    val viewEnvironment =
+      (ViewEnvironment.EMPTY + ViewRegistry(composableFactory)).withComposeInteropSupport()
 
     composeRule.setContent {
-      AndroidView(::RootView) {
-        it.stub.show(TestRendering(), viewEnvironment)
-      }
+      AndroidView(::RootView) { it.stub.show(TestRendering(), viewEnvironment) }
     }
 
     composeRule.onNodeWithText("Hello, world!").assertIsDisplayed()
   }
 
-  @Test fun getsRenderingUpdates() {
-    val composableFactory = ScreenComposableFactory<TestRendering> { rendering ->
-      BasicText(rendering.text, Modifier.testTag("text"))
-    }
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(composableFactory))
-      .withComposeInteropSupport()
+  @Test
+  fun getsRenderingUpdates() {
+    val composableFactory =
+      ScreenComposableFactory<TestRendering> { rendering ->
+        BasicText(rendering.text, Modifier.testTag("text"))
+      }
+    val viewEnvironment =
+      (ViewEnvironment.EMPTY + ViewRegistry(composableFactory)).withComposeInteropSupport()
     var rendering by mutableStateOf(TestRendering("hello"))
 
-    composeRule.setContent {
-      AndroidView(::RootView) {
-        it.stub.show(rendering, viewEnvironment)
-      }
-    }
+    composeRule.setContent { AndroidView(::RootView) { it.stub.show(rendering, viewEnvironment) } }
     composeRule.onNodeWithTag("text").assertTextEquals("hello")
 
     rendering = TestRendering("world")
@@ -77,25 +74,28 @@ internal class ScreenComposableFactoryTest {
     composeRule.onNodeWithTag("text").assertTextEquals("world")
   }
 
-  @Test fun getsViewEnvironmentUpdates() {
-    val testEnvironmentKey = object : ViewEnvironmentKey<String>() {
-      override val default: String get() = error("No default")
-    }
+  @Test
+  fun getsViewEnvironmentUpdates() {
+    val testEnvironmentKey =
+      object : ViewEnvironmentKey<String>() {
+        override val default: String
+          get() = error("No default")
+      }
 
-    val composableFactory = ScreenComposableFactory<TestRendering> { _ ->
-      val text = LocalWorkflowEnvironment.current[testEnvironmentKey]
-      BasicText(text, Modifier.testTag("text"))
-    }
+    val composableFactory =
+      ScreenComposableFactory<TestRendering> { _ ->
+        val text = LocalWorkflowEnvironment.current[testEnvironmentKey]
+        BasicText(text, Modifier.testTag("text"))
+      }
     val viewRegistry = ViewRegistry(composableFactory)
-    var viewEnvironment by mutableStateOf(
-      (ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello"))
-        .withComposeInteropSupport()
-    )
+    var viewEnvironment by
+      mutableStateOf(
+        (ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello"))
+          .withComposeInteropSupport()
+      )
 
     composeRule.setContent {
-      AndroidView(::RootView) {
-        it.stub.show(TestRendering(), viewEnvironment)
-      }
+      AndroidView(::RootView) { it.stub.show(TestRendering(), viewEnvironment) }
     }
     composeRule.onNodeWithTag("text").assertTextEquals("hello")
 
@@ -104,21 +104,21 @@ internal class ScreenComposableFactoryTest {
     composeRule.onNodeWithTag("text").assertTextEquals("world")
   }
 
-  @Test fun wrapsFactoryWithRoot() {
+  @Test
+  fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(TestFactory))
-      .withComposeInteropSupport { content ->
-        Column {
-          BasicText(wrapperText.value)
-          content()
+    val viewEnvironment =
+      (ViewEnvironment.EMPTY + ViewRegistry(TestFactory))
+        .withComposeInteropSupport { content ->
+          Column {
+            BasicText(wrapperText.value)
+            content()
+          }
         }
-      }
-      .withComposeInteropSupport()
+        .withComposeInteropSupport()
 
     composeRule.setContent {
-      AndroidView(::RootView) {
-        it.stub.show(TestRendering("two"), viewEnvironment)
-      }
+      AndroidView(::RootView) { it.stub.show(TestRendering("two"), viewEnvironment) }
     }
 
     // Compose bug doesn't let us use assertIsDisplayed on older devices.
@@ -139,8 +139,7 @@ internal class ScreenComposableFactoryTest {
   private data class TestRendering(val text: String = "") : Screen
 
   private companion object {
-    val TestFactory = ScreenComposableFactory<TestRendering> { rendering ->
-      BasicText(rendering.text)
-    }
+    val TestFactory =
+      ScreenComposableFactory<TestRendering> { rendering -> BasicText(rendering.text) }
   }
 }

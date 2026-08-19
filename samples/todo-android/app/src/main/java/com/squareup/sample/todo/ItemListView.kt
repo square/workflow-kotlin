@@ -22,10 +22,7 @@ class ItemListView private constructor(private val itemContainer: LinearLayout) 
     pruneDeadRowsFrom(rows.size)
   }
 
-  private fun addItemRow(
-    index: Int,
-    row: RowEditingSession
-  ) {
+  private fun addItemRow(index: Int, row: RowEditingSession) {
     val rowView = requireRowView(index)
 
     val checkBox = rowView.findViewById<CheckBox>(R.id.todo_done)
@@ -60,8 +57,9 @@ class ItemListView private constructor(private val itemContainer: LinearLayout) 
     return if (index < itemContainer.childCount) {
       itemContainer.getChildAt(index)
     } else {
-      inflater.inflate(R.layout.todo_item_layout, itemContainer, false)
-        .also { row -> itemContainer.addView(row) }
+      inflater.inflate(R.layout.todo_item_layout, itemContainer, false).also { row ->
+        itemContainer.addView(row)
+      }
     }
   }
 

@@ -32,45 +32,42 @@ public inline fun <reified ScreenT : Screen> ScreenComposableFactory(
 @PublishedApi
 internal fun <ScreenT : Screen> ScreenComposableFactory(
   type: KClass<in ScreenT>,
-  content: @Composable (rendering: ScreenT) -> Unit
-): ScreenComposableFactory<ScreenT> = object : ScreenComposableFactory<ScreenT> {
-  override val type: KClass<in ScreenT> = type
+  content: @Composable (rendering: ScreenT) -> Unit,
+): ScreenComposableFactory<ScreenT> =
+  object : ScreenComposableFactory<ScreenT> {
+    override val type: KClass<in ScreenT> = type
 
-  @Composable override fun Content(
-    rendering: ScreenT
-  ) {
-    content(rendering)
+    @Composable
+    override fun Content(rendering: ScreenT) {
+      content(rendering)
+    }
   }
-}
 
 /**
- * A [ViewRegistry.Entry] that uses a [Composable] function to display [ScreenT].
- * This is the fundamental unit of Compose tooling in Workflow UI, the Compose analogue of
+ * A [ViewRegistry.Entry] that uses a [Composable] function to display [ScreenT]. This is the
+ * fundamental unit of Compose tooling in Workflow UI, the Compose analogue of
  * [ScreenViewFactory][com.squareup.workflow1.ui.ScreenViewFactory].
  *
- * [ScreenComposableFactory] is also a bit cumbersome to use directly,
- * so [ComposeScreen] is provided as a convenience. Most developers will
- * have no reason to work with [ScreenComposableFactory] directly, or even
- * be aware of it.
+ * [ScreenComposableFactory] is also a bit cumbersome to use directly, so [ComposeScreen] is
+ * provided as a convenience. Most developers will have no reason to work with
+ * [ScreenComposableFactory] directly, or even be aware of it.
  *
- * - See [ComposeScreen] for a more complete description of using Compose to
- *   build a Workflow-based UI.
+ * - See [ComposeScreen] for a more complete description of using Compose to build a Workflow-based
+ *   UI.
  *
- * - See [WorkflowRendering] to display a nested [Screen] from [ComposeScreen.Content]
- *   or from [ScreenComposableFactory.Content]
+ * - See [WorkflowRendering] to display a nested [Screen] from [ComposeScreen.Content] or from
+ *   [ScreenComposableFactory.Content]
  *
- * Use [ScreenComposableFactory] directly if you need to prevent your
- * [Screen] rendering classes from depending on Compose at compile time.
+ * Use [ScreenComposableFactory] directly if you need to prevent your [Screen] rendering classes
+ * from depending on Compose at compile time.
  *
  * Example:
  *
  *     val fooComposableFactory = ScreenComposableFactory<FooScreen> { screen, _ ->
  *       Text(screen.message)
  *     }
- *
  *     val viewRegistry = ViewRegistry(fooComposableFactory, …)
  *     val viewEnvironment = ViewEnvironment.EMPTY + viewRegistry
- *
  *     renderWorkflowIn(
  *       workflow = MyWorkflow.mapRendering { it.withEnvironment(viewEnvironment) }
  *     )
@@ -82,8 +79,8 @@ public interface ScreenComposableFactory<in ScreenT : Screen> : ViewRegistry.Ent
     get() = Key(type, ScreenComposableFactory::class)
 
   /**
-   * The composable content of this [ScreenComposableFactory]. This method will be called
-   * any time [rendering] changes. It is the Compose-based analogue of
+   * The composable content of this [ScreenComposableFactory]. This method will be called any time
+   * [rendering] changes. It is the Compose-based analogue of
    * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.showRendering].
    */
   @Composable public fun Content(rendering: ScreenT)
@@ -91,22 +88,24 @@ public interface ScreenComposableFactory<in ScreenT : Screen> : ViewRegistry.Ent
 
 /**
  * It is rare to call this method directly. Instead the most common path is to pass [Screen]
- * instances to [WorkflowRendering], which will apply the [ScreenComposableFactory]
- * and [ScreenComposableFactoryFinder] machinery for you.
+ * instances to [WorkflowRendering], which will apply the [ScreenComposableFactory] and
+ * [ScreenComposableFactoryFinder] machinery for you.
  */
 public fun <ScreenT : Screen> ScreenT.toComposableFactory(
   environment: ViewEnvironment
 ): ScreenComposableFactory<ScreenT> {
-  return environment[ScreenComposableFactoryFinder]
-    .requireComposableFactoryForRendering(environment, this)
+  return environment[ScreenComposableFactoryFinder].requireComposableFactoryForRendering(
+    environment,
+    this,
+  )
 }
 
 /**
- * Convert a [ScreenComposableFactory] into a [ScreenViewFactory]
- * by using a [ComposeView] to host [ScreenComposableFactory.Content].
+ * Convert a [ScreenComposableFactory] into a [ScreenViewFactory] by using a [ComposeView] to host
+ * [ScreenComposableFactory.Content].
  *
- * It is unusual to use this function directly, it is mainly an implementation detail
- * of [ViewEnvironment.withComposeInteropSupport].
+ * It is unusual to use this function directly, it is mainly an implementation detail of
+ * [ViewEnvironment.withComposeInteropSupport].
  */
 public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
   ScreenViewFactory<ScreenT> {
@@ -118,7 +117,7 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
       initialRendering: ScreenT,
       initialEnvironment: ViewEnvironment,
       context: Context,
-      container: ViewGroup?
+      container: ViewGroup?,
     ): ScreenViewHolder<ScreenT> {
       val view = ComposeView(context)
       return ScreenViewHolder(initialEnvironment, view) { newRendering, environment ->
@@ -126,9 +125,10 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
         // Update the state whenever a new rendering is emitted.
         // This lambda will be executed synchronously before ScreenViewHolder.show returns.
         view.setContent {
-          val onBackOrNull = remember(environment) {
-            environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
-          }
+          val onBackOrNull =
+            remember(environment) {
+              environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
+            }
           if (onBackOrNull == null) {
             CompositionLocalProvider(LocalWorkflowEnvironment provides environment) {
               Content(newRendering)
@@ -136,7 +136,7 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
           } else {
             CompositionLocalProvider(
               LocalWorkflowEnvironment provides environment,
-              LocalOnBackPressedDispatcherOwner provides onBackOrNull
+              LocalOnBackPressedDispatcherOwner provides onBackOrNull,
             ) {
               Content(newRendering)
             }
@@ -148,42 +148,42 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
 }
 
 /**
- * Convert a [ScreenViewFactory] to a [ScreenComposableFactory],
- * using [AndroidView] to host the `View` it builds.
+ * Convert a [ScreenViewFactory] to a [ScreenComposableFactory], using [AndroidView] to host the
+ * `View` it builds.
  *
- * It is unusual to use this function directly, it is mainly an implementation detail
- * of [ViewEnvironment.withComposeInteropSupport].
+ * It is unusual to use this function directly, it is mainly an implementation detail of
+ * [ViewEnvironment.withComposeInteropSupport].
  */
 public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
   ScreenComposableFactory<ScreenT> {
   return object : ScreenComposableFactory<ScreenT> {
     private val viewFactory = this@asComposableFactory
 
-    override val type: KClass<in ScreenT> get() = viewFactory.type
+    override val type: KClass<in ScreenT>
+      get() = viewFactory.type
 
     /**
-     * This is effectively the logic of `WorkflowViewStub`, but translated into Compose idioms.
-     * This approach has a few advantages:
+     * This is effectively the logic of `WorkflowViewStub`, but translated into Compose idioms. This
+     * approach has a few advantages:
      *
-     *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition.
-     *    Its trick of replacing itself in its parent doesn't play nicely with Compose.
-     *  - Allows us to pass the correct parent view for inflation (the root of the composition).
-     *  - Avoids `WorkflowViewStub` having to do its own lookup to find the correct
-     *    [ScreenViewFactory], since we already have the correct one.
-     *  - Propagate the current `LifecycleOwner` from [LocalLifecycleOwner] by setting it as the
-     *    [ViewTreeLifecycleOwner] on the view.
-     *  - Propagate the current [OnBackPressedDispatcherOwner] from either
-     *    [LocalOnBackPressedDispatcherOwner] or the [viewEnvironment],
-     *    both on the [AndroidView] via [setViewTreeOnBackPressedDispatcherOwner],
-     *    and in the [ViewEnvironment] for use by any nested [WorkflowViewStub]
+     * - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its
+     *   trick of replacing itself in its parent doesn't play nicely with Compose.
+     * - Allows us to pass the correct parent view for inflation (the root of the composition).
+     * - Avoids `WorkflowViewStub` having to do its own lookup to find the correct
+     *   [ScreenViewFactory], since we already have the correct one.
+     * - Propagate the current `LifecycleOwner` from [LocalLifecycleOwner] by setting it as the
+     *   [ViewTreeLifecycleOwner] on the view.
+     * - Propagate the current [OnBackPressedDispatcherOwner] from either
+     *   [LocalOnBackPressedDispatcherOwner] or the [viewEnvironment], both on the [AndroidView] via
+     *   [setViewTreeOnBackPressedDispatcherOwner], and in the [ViewEnvironment] for use by any
+     *   nested [WorkflowViewStub]
      *
-     * Like `WorkflowViewStub`, this function uses the [viewFactory] to create and memoize a
-     * `View` to display the [rendering], keeps it updated with the latest [rendering] and adds
-     * it to the composition.
+     * Like `WorkflowViewStub`, this function uses the [viewFactory] to create and memoize a `View`
+     * to display the [rendering], keeps it updated with the latest [rendering] and adds it to the
+     * composition.
      */
-    @Composable override fun Content(
-      rendering: ScreenT
-    ) {
+    @Composable
+    override fun Content(rendering: ScreenT) {
       val lifecycleOwner = LocalLifecycleOwner.current
       val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
       val environment = LocalWorkflowEnvironment.current
@@ -194,10 +194,10 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
       // at those call sites should be clear enough.
       val onBackOrNull = LocalOnBackPressedDispatcherOwner.current
 
-      val envWithOnBack = remember(onBackOrNull, environment) {
-        onBackOrNull?.let { environment + (OnBackPressedDispatcherOwnerKey to it) }
-          ?: environment
-      }
+      val envWithOnBack =
+        remember(onBackOrNull, environment) {
+          onBackOrNull?.let { environment + (OnBackPressedDispatcherOwnerKey to it) } ?: environment
+        }
 
       AndroidView(
         factory = { context ->
@@ -205,26 +205,23 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
           // We pass in a null container because the container isn't a View, it's a composable. The
           // compose machinery will generate an intermediate view that it ends up adding this to but
           // we don't have access to that.
-          viewFactory
-            .startShowing(rendering, envWithOnBack, context, container = null)
-            .let { viewHolder ->
-              // Put the viewHolder in a tag so that we can find it in the update lambda, below.
-              viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
+          viewFactory.startShowing(rendering, envWithOnBack, context, container = null).let {
+            viewHolder ->
+            // Put the viewHolder in a tag so that we can find it in the update lambda, below.
+            viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
 
-              // Unfortunately AndroidView doesn't propagate these itself.
-              viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
-              viewHolder.view.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
-              onBackOrNull?.let {
-                viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it)
-              }
+            // Unfortunately AndroidView doesn't propagate these itself.
+            viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
+            viewHolder.view.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            onBackOrNull?.let { viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it) }
 
-              // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
-              // SaveableStateRegistry, because currently all our navigation is implemented as
-              // Android views, which ensures there is always an Android view between any state
-              // registry and any Android view shown as a child of it, even if there's a compose
-              // view in between.
-              viewHolder.view
-            }
+            // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
+            // SaveableStateRegistry, because currently all our navigation is implemented as
+            // Android views, which ensures there is always an Android view between any state
+            // registry and any Android view shown as a child of it, even if there's a compose
+            // view in between.
+            viewHolder.view
+          }
         },
         // This function will be invoked every time this composable is recomposed, which means that
         // any time a new rendering or view environment are passed in we'll send them to the view.
@@ -233,7 +230,7 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
           val viewHolder =
             view.getTag(R.id.workflow_screen_view_holder) as ScreenViewHolder<ScreenT>
           viewHolder.show(rendering, envWithOnBack)
-        }
+        },
       )
     }
   }

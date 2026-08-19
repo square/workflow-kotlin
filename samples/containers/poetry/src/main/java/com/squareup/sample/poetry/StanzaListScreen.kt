@@ -25,24 +25,22 @@ data class StanzaListScreen(
   val firstLines: List<String>,
   val onStanzaSelected: (Int) -> Unit,
   val onExit: () -> Unit,
-  val selection: Int = -1
+  val selection: Int = -1,
 ) : AndroidScreen<StanzaListScreen> {
-  override val viewFactory =
-    ScreenViewFactory.fromLayout(R.layout.list, ::StanzaListLayoutRunner)
+  override val viewFactory = ScreenViewFactory.fromLayout(R.layout.list, ::StanzaListLayoutRunner)
 }
 
 private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListScreen> {
   private val toolbar = view.findViewById<Toolbar>(R.id.list_toolbar)
-  private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)
-    .apply { layoutManager = LinearLayoutManager(context) }
+  private val recyclerView =
+    view.findViewById<RecyclerView>(R.id.list_body).apply {
+      layoutManager = LinearLayoutManager(context)
+    }
 
   private val adapter = Adapter()
 
   @SuppressLint("NotifyDataSetChanged")
-  override fun showRendering(
-    rendering: StanzaListScreen,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: StanzaListScreen, environment: ViewEnvironment) {
     adapter.view = rendering
     adapter.environment = environment
     adapter.notifyDataSetChanged()
@@ -67,16 +65,14 @@ private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListSc
     lateinit var view: StanzaListScreen
     lateinit var environment: ViewEnvironment
 
-    override fun onCreateViewHolder(
-      parent: ViewGroup,
-      viewType: Int
-    ): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
       val selectable = environment[OverviewDetailConfig] == Overview
-      val layoutId = if (selectable) {
-        R.layout.list_row_selectable
-      } else {
-        R.layout.list_row_unselectable
-      }
+      val layoutId =
+        if (selectable) {
+          R.layout.list_row_selectable
+        } else {
+          R.layout.list_row_unselectable
+        }
 
       return ViewHolder(
         LayoutInflater.from(parent.context).inflate(layoutId, parent, false) as TextView
@@ -87,15 +83,11 @@ private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListSc
       return view.firstLines.size
     }
 
-    override fun onBindViewHolder(
-      holder: ViewHolder,
-      position: Int
-    ) = with(holder.view) {
-      text = view.firstLines[position]
-      isSelected = view.selection == position
-      setOnClickListener {
-        view.onStanzaSelected(position)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
+      with(holder.view) {
+        text = view.firstLines[position]
+        isSelected = view.selection == position
+        setOnClickListener { view.onStanzaSelected(position) }
       }
-    }
   }
 }

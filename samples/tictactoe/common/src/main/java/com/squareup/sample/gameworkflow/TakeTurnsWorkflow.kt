@@ -12,40 +12,33 @@ import com.squareup.workflow1.WorkflowAction
 
 typealias TakeTurnsWorkflow = Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
 
-class TakeTurnsProps private constructor(
-  val playerInfo: PlayerInfo,
-  val initialTurn: Turn = Turn()
-) {
+class TakeTurnsProps
+private constructor(val playerInfo: PlayerInfo, val initialTurn: Turn = Turn()) {
   companion object {
     fun newGame(playerInfo: PlayerInfo): TakeTurnsProps = TakeTurnsProps(playerInfo)
-    fun resumeGame(
-      playerInfo: PlayerInfo,
-      turn: Turn
-    ): TakeTurnsProps = TakeTurnsProps(playerInfo, turn)
+
+    fun resumeGame(playerInfo: PlayerInfo, turn: Turn): TakeTurnsProps =
+      TakeTurnsProps(playerInfo, turn)
   }
 }
 
 /**
- * Models the turns of a Tic Tac Toe game, alternating between [Player.X]
- * and [Player.O]. Finishes with a [report][CompletedGame] of the last turn of the game,
- * and an [Ending] condition of [Victory], [Draw] or [Quitted].
+ * Models the turns of a Tic Tac Toe game, alternating between [Player.X] and [Player.O]. Finishes
+ * with a [report][CompletedGame] of the last turn of the game, and an [Ending] condition of
+ * [Victory], [Draw] or [Quitted].
  *
  * http://go/sf-taketurns
  */
-class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
-  StatefulWorkflow<TakeTurnsProps, Turn, CompletedGame, GamePlayScreen>() {
+class RealTakeTurnsWorkflow :
+  TakeTurnsWorkflow, StatefulWorkflow<TakeTurnsProps, Turn, CompletedGame, GamePlayScreen>() {
 
   sealed class Action : WorkflowAction<TakeTurnsProps, Turn, CompletedGame>() {
-    class TakeSquare(
-      private val row: Int,
-      private val col: Int
-    ) : Action() {
+    class TakeSquare(private val row: Int, private val col: Int) : Action() {
       override fun Updater.apply() {
         val newBoard = state.board.takeSquare(row, col, state.playing)
 
         when {
-          newBoard.hasVictory() ->
-            setOutput(CompletedGame(Victory, state.copy(board = newBoard)))
+          newBoard.hasVictory() -> setOutput(CompletedGame(Victory, state.copy(board = newBoard)))
 
           newBoard.isFull() -> setOutput(CompletedGame(Draw, state.copy(board = newBoard)))
 
@@ -61,21 +54,19 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
     }
   }
 
-  override fun initialState(
-    props: TakeTurnsProps,
-    snapshot: Snapshot?
-  ): Turn = props.initialTurn
+  override fun initialState(props: TakeTurnsProps, snapshot: Snapshot?): Turn = props.initialTurn
 
   override fun render(
     renderProps: TakeTurnsProps,
     renderState: Turn,
-    context: RenderContext<TakeTurnsProps, Turn, CompletedGame>
-  ): GamePlayScreen = GamePlayScreen(
-    playerInfo = renderProps.playerInfo,
-    gameState = renderState,
-    onQuit = { context.actionSink.send(Quit) },
-    onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) }
-  )
+    context: RenderContext<TakeTurnsProps, Turn, CompletedGame>,
+  ): GamePlayScreen =
+    GamePlayScreen(
+      playerInfo = renderProps.playerInfo,
+      gameState = renderState,
+      onQuit = { context.actionSink.send(Quit) },
+      onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) },
+    )
 
   override fun snapshotState(state: Turn): Snapshot? = null
 }

@@ -6,9 +6,9 @@ import org.gradle.api.Project
 /**
  * Convention plugin that registers the `extractAiContext` task.
  *
- * Apply to any project that depends on workflow-kotlin artifacts and wants
- * AI context (AGENTS.md, skills) automatically extracted to the project root
- * for AI tools like Amp, Codex, Cursor, and Claude.
+ * Apply to any project that depends on workflow-kotlin artifacts and wants AI context (AGENTS.md,
+ * skills) automatically extracted to the project root for AI tools like Amp, Codex, Cursor, and
+ * Claude.
  *
  * Usage in build.gradle.kts:
  * ```

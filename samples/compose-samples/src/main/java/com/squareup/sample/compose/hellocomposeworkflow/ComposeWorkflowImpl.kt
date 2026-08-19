@@ -22,13 +22,10 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   data class State<PropsT, OutputT>(
     val propsHolder: MutableState<PropsT>,
     val sinkHolder: SinkHolder<OutputT>,
-    val rendering: ComposeScreen
+    val rendering: ComposeScreen,
   )
 
-  override fun initialState(
-    props: PropsT,
-    snapshot: Snapshot?
-  ): State<PropsT, OutputT> {
+  override fun initialState(props: PropsT, snapshot: Snapshot?): State<PropsT, OutputT> {
     val propsHolder = mutableStateOf(props, policy = structuralEqualityPolicy())
     val sinkHolder = SinkHolder<OutputT>()
 
@@ -36,21 +33,22 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
       propsHolder,
       sinkHolder,
       object : ComposeScreen {
-        @Composable override fun Content() {
+        @Composable
+        override fun Content() {
           // The sink will get set on the first render pass, which must happen before this is first
           // composed, so it should never be null.
           val sink = sinkHolder.sink!!
           // Important: Use the props from the MutableState, _not_ the one passed into render.
           workflow.RenderingContent(propsHolder.value, sink)
         }
-      }
+      },
     )
   }
 
   override fun onPropsChanged(
     old: PropsT,
     new: PropsT,
-    state: State<PropsT, OutputT>
+    state: State<PropsT, OutputT>,
   ): State<PropsT, OutputT> {
     state.propsHolder.value = new
     return state
@@ -59,7 +57,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   override fun render(
     renderProps: PropsT,
     renderState: State<PropsT, OutputT>,
-    context: RenderContext<PropsT, State<PropsT, OutputT>, OutputT>
+    context: RenderContext<PropsT, State<PropsT, OutputT>, OutputT>,
   ): ComposeScreen {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.

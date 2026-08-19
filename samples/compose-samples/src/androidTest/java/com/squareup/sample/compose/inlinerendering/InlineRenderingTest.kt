@@ -22,40 +22,41 @@ class InlineRenderingTest {
 
   private val composeRule = createAndroidComposeRule<InlineRenderingActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun counterIncrements() {
+  @Test
+  fun counterIncrements() {
     runBlocking {
-      composeRule.onNode(hasClickAction())
+      composeRule
+        .onNode(hasClickAction())
         .assertTextEquals("Counter: ", "0")
         .assertIsDisplayed()
         .performClick()
 
       retry {
-        composeRule.onNode(hasClickAction())
-          .assertTextEquals("Counter: ", "1")
-          .assertIsDisplayed()
+        composeRule.onNode(hasClickAction()).assertTextEquals("Counter: ", "1").assertIsDisplayed()
       }
     }
   }
 
-  @Test fun counterAnimates() {
+  @Test
+  fun counterAnimates() {
     runBlocking {
       // Take manual control of animations.
       composeRule.mainClock.autoAdvance = false
 
-      composeRule.onNode(hasClickAction())
-        .performClick()
+      composeRule.onNode(hasClickAction()).performClick()
 
       // need to release execution since we are waiting for a timeout in the action processing.
       composeRule.settleForNextRendering()
 
       // During the animation, both counter values will be present.
-      composeRule.onNode(hasClickAction())
-        .assertTextEquals("Counter: ", "0", "1")
+      composeRule.onNode(hasClickAction()).assertTextEquals("Counter: ", "0", "1")
     }
   }
 }

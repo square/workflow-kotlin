@@ -20,23 +20,23 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
   override fun performTransition(
     oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
     newHolder: ScreenViewHolder<NamedScreen<*>>,
-    popped: Boolean
+    popped: Boolean,
   ) {
     oldHolderMaybe?.view?.let(::removeView)
     addView(newHolder.view)
   }
 
-  companion object : ScreenViewFactory<BackStackScreen<*>>
-  by ScreenViewFactory.fromCode(
-    buildView = { _, initialEnvironment, context, _ ->
-      val view = NoTransitionBackStackContainer(context)
-        .apply {
-          id = R.id.workflow_back_stack_container
-          layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+  companion object :
+    ScreenViewFactory<BackStackScreen<*>> by ScreenViewFactory.fromCode(
+      buildView = { _, initialEnvironment, context, _ ->
+        val view =
+          NoTransitionBackStackContainer(context).apply {
+            id = R.id.workflow_back_stack_container
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          }
+        ScreenViewHolder(initialEnvironment, view) { rendering, environment ->
+          view.update(rendering, environment)
         }
-      ScreenViewHolder(initialEnvironment, view) { rendering, environment ->
-        view.update(rendering, environment)
       }
-    }
-  )
+    )
 }

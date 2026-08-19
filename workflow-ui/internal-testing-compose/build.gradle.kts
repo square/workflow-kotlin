@@ -6,9 +6,7 @@ plugins {
 
 // This module is not published, since it's just internal testing utilities.
 
-android {
-  namespace = "com.squareup.workflow1.ui.internal.test.compose"
-}
+android { namespace = "com.squareup.workflow1.ui.internal.test.compose" }
 
 dependencies {
   api(libs.androidx.compose.ui.test.junit4)

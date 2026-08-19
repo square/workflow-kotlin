@@ -11,11 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-data class HelloComposeScreen(
-  val message: String,
-  val onClick: () -> Unit
-) : ComposeScreen {
-  @Composable override fun Content() {
+data class HelloComposeScreen(val message: String, val onClick: () -> Unit) : ComposeScreen {
+  @Composable
+  override fun Content() {
     // It is best to keep this method as empty as possible to avoid
     // capturing state from stale ComposeScreen instances,
     // and to keep from interfering with Compose's stability checks.
@@ -25,29 +23,21 @@ data class HelloComposeScreen(
 }
 
 /**
- * @param modifier even though we use the default [Modifier] when calling
- * from [HelloComposeScreen.Content], a habit of accepting this param from the
- * Composable itself is handy for screenshot tests and previews.
+ * @param modifier even though we use the default [Modifier] when calling from
+ *   [HelloComposeScreen.Content], a habit of accepting this param from the Composable itself is
+ *   handy for screenshot tests and previews.
  */
 @Composable
-private fun Hello(
-  screen: HelloComposeScreen,
-  modifier: Modifier = Modifier
-) {
+private fun Hello(screen: HelloComposeScreen, modifier: Modifier = Modifier) {
   Text(
     screen.message,
-    modifier = modifier
-      .clickable(onClick = screen.onClick)
-      .fillMaxSize()
-      .wrapContentSize(Alignment.Center)
+    modifier =
+      modifier.clickable(onClick = screen.onClick).fillMaxSize().wrapContentSize(Alignment.Center),
   )
 }
 
 @Preview(heightDp = 150, showBackground = true)
 @Composable
 private fun HelloPreview() {
-  HelloComposeScreen(
-    "Hello!",
-    onClick = {}
-  ).Preview()
+  HelloComposeScreen("Hello!", onClick = {}).Preview()
 }

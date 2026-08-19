@@ -33,47 +33,47 @@ internal class ViewStateCacheTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   private val viewEnvironment = EMPTY
 
-  private val fakeOnBack = object : OnBackPressedDispatcherOwner {
-    override val lifecycle: Lifecycle
-      get() = error("")
+  private val fakeOnBack =
+    object : OnBackPressedDispatcherOwner {
+      override val lifecycle: Lifecycle
+        get() = error("")
 
-    override val onBackPressedDispatcher: OnBackPressedDispatcher
-      get() = error("")
-  }
+      override val onBackPressedDispatcher: OnBackPressedDispatcher
+        get() = error("")
+    }
 
   private object AScreen : Screen
 
-  @Test fun saves_and_restores_self() {
+  @Test
+  fun saves_and_restores_self() {
     val rendering = NamedScreen(content = AScreen, name = "rendering")
-    val childState = SparseArray<Parcelable>().apply {
-      put(0, TestChildState("hello world"))
-    }
-    val cache = ViewStateCache(
-      viewStates = mutableMapOf(
-        rendering.name to ViewStateFrame(rendering.name, childState)
+    val childState = SparseArray<Parcelable>().apply { put(0, TestChildState("hello world")) }
+    val cache =
+      ViewStateCache(
+        viewStates = mutableMapOf(rendering.name to ViewStateFrame(rendering.name, childState))
       )
-    )
     val parcel = Parcel.obtain()
 
     parcel.writeParcelable(cache.save(), 0)
 
     parcel.setDataPosition(0)
-    val restoredCache = (
-      if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-        parcel.readParcelable(
-          ViewStateCache.Saved::class.java.classLoader,
-          ViewStateCache.Saved::class.java
-        )!!
-      } else {
-        @Suppress("DEPRECATION")
-        parcel.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
-      }
-      ).let { restoredState -> ViewStateCache().apply { restore(restoredState) } }
+    val restoredCache =
+      (if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+          parcel.readParcelable(
+            ViewStateCache.Saved::class.java.classLoader,
+            ViewStateCache.Saved::class.java,
+          )!!
+        } else {
+          @Suppress("DEPRECATION")
+          parcel.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+        })
+        .let { restoredState -> ViewStateCache().apply { restore(restoredState) } }
 
     assertThat(restoredCache.equalsForTest(cache)).isTrue()
   }
 
-  @Test fun saves_and_restores_child_states_on_navigation() {
+  @Test
+  fun saves_and_restores_child_states_on_navigation() {
     val cache = ViewStateCache()
     val firstRendering = NamedScreen(content = AScreen, name = "first")
     val secondRendering = NamedScreen(content = AScreen, name = "second")
@@ -88,14 +88,14 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       retainedRenderings = emptyList(),
       oldHolderMaybe = null,
-      newHolder = firstView
+      newHolder = firstView,
     )
 
     // "Navigate" to the second screen, saving the first screen.
     cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
-      newHolder = secondView
+      newHolder = secondView,
     )
 
     // Nothing should read this value again, but clear it to make sure.
@@ -109,7 +109,8 @@ internal class ViewStateCacheTest {
     assertThat(firstViewRestored.viewState).isEqualTo("hello world")
   }
 
-  @Test fun doesnt_restore_child_states_on_error() {
+  @Test
+  fun doesnt_restore_child_states_on_error() {
     val cache = ViewStateCache()
     val firstRendering = NamedScreen(content = AScreen, name = "first")
     val secondRendering = NamedScreen(content = AScreen, name = "second")
@@ -124,14 +125,14 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       retainedRenderings = emptyList(),
       oldHolderMaybe = null,
-      newHolder = firstView
+      newHolder = firstView,
     )
 
     // "Navigate" to the second screen, saving the first screen.
     cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
-      newHolder = secondView
+      newHolder = secondView,
     )
 
     // "Navigate" back to the first screen, restoring state.
@@ -145,7 +146,8 @@ internal class ViewStateCacheTest {
     assertThat(firstViewRestored.viewState).isEqualTo("should not be clobbered")
   }
 
-  @Test fun doesnt_restore_state_when_restored_view_id_is_different() {
+  @Test
+  fun doesnt_restore_state_when_restored_view_id_is_different() {
     val cache = ViewStateCache()
     val firstRendering = NamedScreen(content = AScreen, name = "first")
     val secondRendering = NamedScreen(content = AScreen, name = "second")
@@ -157,7 +159,7 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       retainedRenderings = emptyList(),
       oldHolderMaybe = null,
-      newHolder = firstView
+      newHolder = firstView,
     )
 
     // Set some state on the first view that will be saved.
@@ -167,32 +169,33 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       retainedRenderings = listOf(firstRendering),
       oldHolderMaybe = firstView,
-      newHolder = secondView
+      newHolder = secondView,
     )
 
     // Nothing should read this value again, but clear it to make sure.
     firstView.viewState = "ignored"
 
     // "Navigate" back to the first screen, restoring state.
-    val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
-      id = 2
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
-    }
-    val firstHolderRestored =
-      ScreenViewHolder<NamedScreen<*>>(EMPTY, firstViewRestored) { _, _ -> }.also {
-        it.show(firstRendering, viewEnvironment)
+    val firstViewRestored =
+      ViewStateTestView(instrumentation.context).apply {
+        id = 2
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack)
       }
+    val firstHolderRestored =
+      ScreenViewHolder<NamedScreen<*>>(EMPTY, firstViewRestored) { _, _ -> }
+        .also { it.show(firstRendering, viewEnvironment) }
     cache.updateOnMain(
       listOf(firstRendering),
       oldHolderMaybe = secondView,
-      newHolder = firstHolderRestored
+      newHolder = firstHolderRestored,
     )
 
     // Check that the state was restored.
     assertThat(firstViewRestored.viewState).isEqualTo("")
   }
 
-  @Test fun doesnt_restore_state_when_view_id_not_set() {
+  @Test
+  fun doesnt_restore_state_when_view_id_not_set() {
     val cache = ViewStateCache()
     val firstRendering = NamedScreen(content = AScreen, name = "first")
     val secondRendering = NamedScreen(content = AScreen, name = "second")
@@ -206,7 +209,7 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       retainedRenderings = emptyList(),
       oldHolderMaybe = null,
-      newHolder = firstView
+      newHolder = firstView,
     )
 
     // "Navigate" to the second screen, saving the first screen.
@@ -220,14 +223,15 @@ internal class ViewStateCacheTest {
     cache.updateOnMain(
       listOf(firstRendering),
       oldHolderMaybe = secondView,
-      newHolder = firstViewRestored
+      newHolder = firstViewRestored,
     )
 
     // Check that the state was NOT restored.
     assertThat(firstViewRestored.viewState).isEqualTo("")
   }
 
-  @Test fun throws_on_duplicate_renderings() {
+  @Test
+  fun throws_on_duplicate_renderings() {
     val cache = ViewStateCache()
     val rendering = NamedScreen(content = AScreen, name = "duplicate")
     val view = createTestView(rendering)
@@ -241,22 +245,22 @@ internal class ViewStateCacheTest {
   }
 
   /**
-   * [ViewStateCache.update] installs a [com.squareup.workflow1.ui.androidx.KeyedSavedStateRegistryOwner]
-   * on the incoming view, which observes the view's lifecycle -- and
-   * [androidx.lifecycle.LifecycleRegistry] requires observers to be registered on the main
-   * thread, just as production callers (container views) always do.
+   * [ViewStateCache.update] installs a
+   * [com.squareup.workflow1.ui.androidx.KeyedSavedStateRegistryOwner] on the incoming view, which
+   * observes the view's lifecycle -- and [androidx.lifecycle.LifecycleRegistry] requires observers
+   * to be registered on the main thread, just as production callers (container views) always do.
    */
   private fun ViewStateCache.updateOnMain(
     retainedRenderings: Collection<NamedScreen<*>>,
     oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
-    newHolder: ScreenViewHolder<NamedScreen<*>>
+    newHolder: ScreenViewHolder<NamedScreen<*>>,
   ) {
-    instrumentation.runOnMainSync {
-      update(retainedRenderings, oldHolderMaybe, newHolder)
-    }
+    instrumentation.runOnMainSync { update(retainedRenderings, oldHolderMaybe, newHolder) }
   }
 
-  private val ScreenViewHolder<*>.testView get() = (view as ViewStateTestView)
+  private val ScreenViewHolder<*>.testView
+    get() = (view as ViewStateTestView)
+
   private var ScreenViewHolder<*>.viewState: String
     get() = testView.viewState
     set(value) {
@@ -266,20 +270,21 @@ internal class ViewStateCacheTest {
   private fun createTestView(
     firstRendering: NamedScreen<*>,
     id: Int? = null,
-    crashOnRestore: Boolean = false
+    crashOnRestore: Boolean = false,
   ): ScreenViewHolder<NamedScreen<*>> {
-    val view = ViewStateTestView(instrumentation.context, crashOnRestore).also { view ->
-      id?.let { view.id = id }
-      WorkflowLifecycleOwner.installOn(view, fakeOnBack)
-    }
-    return ScreenViewHolder<NamedScreen<*>>(EMPTY, view) { _, _ -> }.also {
-      it.show(firstRendering, viewEnvironment)
-    }
+    val view =
+      ViewStateTestView(instrumentation.context, crashOnRestore).also { view ->
+        id?.let { view.id = id }
+        WorkflowLifecycleOwner.installOn(view, fakeOnBack)
+      }
+    return ScreenViewHolder<NamedScreen<*>>(EMPTY, view) { _, _ -> }
+      .also { it.show(firstRendering, viewEnvironment) }
   }
 
   private fun ViewStateCache.equalsForTest(other: ViewStateCache): Boolean {
     if (viewStates.size != other.viewStates.size) return false
-    viewStates.entries.sortedBy { it.key }
+    viewStates.entries
+      .sortedBy { it.key }
       .zip(other.viewStates.entries.sortedBy { it.key })
       .forEach { (leftEntry, rightEntry) ->
         if (leftEntry.key != rightEntry.key) return false
@@ -297,10 +302,8 @@ internal class ViewStateCacheTest {
 
   data class TestChildState(val state: String) : Parcelable {
     override fun describeContents(): Int = 0
-    override fun writeToParcel(
-      dest: Parcel,
-      flags: Int
-    ) {
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
       dest.writeString(state)
     }
 

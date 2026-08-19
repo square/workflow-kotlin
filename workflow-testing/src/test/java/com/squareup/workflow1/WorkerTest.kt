@@ -3,10 +3,10 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.testing.test
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /** Worker tests that use the [Worker.test] function. Core tests are in the core module. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -14,7 +14,8 @@ internal class WorkerTest {
 
   private class ExpectedException : RuntimeException()
 
-  @Test fun `create emits and finishes`() {
+  @Test
+  fun `create emits and finishes`() {
     val worker = Worker.create {
       emit("hello")
       emit("world")
@@ -27,23 +28,22 @@ internal class WorkerTest {
     }
   }
 
-  @Test fun `create finishes without emitting`() {
+  @Test
+  fun `create finishes without emitting`() {
     val worker = Worker.create<String> {}
 
-    worker.test {
-      assertFinished()
-    }
+    worker.test { assertFinished() }
   }
 
-  @Test fun `create propagates exceptions`() {
+  @Test
+  fun `create propagates exceptions`() {
     val worker = Worker.create<Unit> { throw ExpectedException() }
 
-    worker.test {
-      assertTrue(getException() is ExpectedException)
-    }
+    worker.test { assertTrue(getException() is ExpectedException) }
   }
 
-  @Test fun `from emits and finishes`() {
+  @Test
+  fun `from emits and finishes`() {
     val worker = Worker.from { "foo" }
 
     worker.test {
@@ -52,7 +52,8 @@ internal class WorkerTest {
     }
   }
 
-  @Test fun `from emits null`() {
+  @Test
+  fun `from emits null`() {
     val worker = Worker.from<String?> { null }
 
     worker.test {
@@ -61,7 +62,8 @@ internal class WorkerTest {
     }
   }
 
-  @Test fun `fromNullable emits and finishes`() {
+  @Test
+  fun `fromNullable emits and finishes`() {
     val worker = Worker.fromNullable { "foo" }
 
     worker.test {
@@ -70,15 +72,15 @@ internal class WorkerTest {
     }
   }
 
-  @Test fun `fromNullable doesn't emit null`() {
+  @Test
+  fun `fromNullable doesn't emit null`() {
     val worker = Worker.fromNullable<String> { null }
 
-    worker.test {
-      assertFinished()
-    }
+    worker.test { assertFinished() }
   }
 
-  @Test fun `timer emits and finishes after delay`() {
+  @Test
+  fun `timer emits and finishes after delay`() {
     val worker = Worker.timer(1000)
 
     worker.test {

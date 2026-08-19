@@ -19,8 +19,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Test that is used to confirm that the number of render passes and the fresh rendering ratio
- * is constant.
+ * Test that is used to confirm that the number of render passes and the fresh rendering ratio is
+ * constant.
  */
 @RunWith(AndroidJUnit4::class)
 class RenderPassTest {
@@ -35,14 +35,15 @@ class RenderPassTest {
   data class RenderExpectation(
     val totalPasses: IntRange,
     val freshRenderedNodes: IntRange,
-    val staleRenderedNodes: IntRange
+    val staleRenderedNodes: IntRange,
   )
 
   private val renderPassCountingInterceptor = RenderPassCountingInterceptor()
   private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
   private lateinit var context: Context
 
-  @Before fun setup() {
+  @Before
+  fun setup() {
     context = ApplicationProvider.getApplicationContext()
     PerformancePoetryActivity.installedInterceptor = renderPassCountingInterceptor
 
@@ -54,40 +55,37 @@ class RenderPassTest {
     device.landscapeOrientation()
   }
 
-  @Test fun renderPassCounterBaselineComplexWithInitializingState() {
+  @Test
+  fun renderPassCounterBaselineComplexWithInitializingState() {
     runRenderPassCounter(COMPLEX_INITIALIZING)
   }
 
-  @Test fun renderPassCounterBaselineComplexNoInitializingState() {
+  @Test
+  fun renderPassCounterBaselineComplexNoInitializingState() {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING)
   }
 
-  @Test fun renderPassCounterBaselineComplexNoInitializingStateHighFrequencyEvents() {
+  @Test
+  fun renderPassCounterBaselineComplexNoInitializingStateHighFrequencyEvents() {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY)
   }
 
-  @Test fun renderPassCounterBaselineComplexNoInitializingStateSimultaneous() {
+  @Test
+  fun renderPassCounterBaselineComplexNoInitializingStateSimultaneous() {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_SIMULTANEOUS)
   }
 
-  private fun runRenderPassCounter(
-    scenario: Scenario,
-  ) {
-    val intent = Intent(context, PerformancePoetryActivity::class.java).apply {
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-      putExtra(
-        EXTRA_SCENARIO_CONFIG_INITIALIZING,
-        scenario.useInitializingState
-      )
-      putExtra(
-        EXTRA_PERF_CONFIG_SIMULTANEOUS,
-        scenario.simultaneousActions
-      )
-      if (scenario.useHighFrequencyRange) {
-        putExtra(EXTRA_PERF_CONFIG_REPEAT, PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT)
+  private fun runRenderPassCounter(scenario: Scenario) {
+    val intent =
+      Intent(context, PerformancePoetryActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        putExtra(EXTRA_SCENARIO_CONFIG_INITIALIZING, scenario.useInitializingState)
+        putExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, scenario.simultaneousActions)
+        if (scenario.useHighFrequencyRange) {
+          putExtra(EXTRA_PERF_CONFIG_REPEAT, PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT)
+        }
       }
-    }
 
     InstrumentationRegistry.getInstrumentation().context.startActivity(intent)
     device.waitForIdle()
@@ -114,7 +112,7 @@ class RenderPassTest {
         by = by,
         value = "$totalRenderPasses",
         oldValue = "${expectation.totalPasses}",
-        scenario = title
+        scenario = title,
       )
     } else if (totalRenderPasses < expectation.totalPasses.first) {
       val diff = expectation.totalPasses.first - totalRenderPasses
@@ -125,7 +123,7 @@ class RenderPassTest {
         by = by,
         value = "$totalRenderPasses",
         oldValue = "${expectation.totalPasses}",
-        scenario = title
+        scenario = title,
       )
     }
 
@@ -141,8 +139,9 @@ class RenderPassTest {
     val ratioSubject = "the fresh rendering ratio (higher better)"
     val ratioString = "%.3f".format(freshRatio)
     val oldRatioString = "%.3f".format(expectedRatio)
-    val valueString = "(ratio: $ratioString; fresh renderings: $freshRenderings;" +
-      " stale renderings: $staleRenderings)"
+    val valueString =
+      "(ratio: $ratioString; fresh renderings: $freshRenderings;" +
+        " stale renderings: $staleRenderings)"
     val oldValueString =
       "(ratio: $oldRatioString; fresh renderings: ${expectation.freshRenderedNodes};" +
         " stale renderings: ${expectation.staleRenderedNodes})"
@@ -153,21 +152,21 @@ class RenderPassTest {
         val diff = expectation.staleRenderedNodes.first - staleRenderings
         val percentage =
           "%.2f".format(100.0 * (diff.toDouble() / expectation.staleRenderedNodes.first))
-        val by = "rendering $diff fewer stale nodes" +
-          " (reducing by $percentage% to $staleRenderings)"
+        val by =
+          "rendering $diff fewer stale nodes" + " (reducing by $percentage% to $staleRenderings)"
         congrats(
           subject = ratioSubject,
           by = by,
           value = valueString,
           oldValue = oldValueString,
-          scenario = title
+          scenario = title,
         )
       } else {
         meh(
           subject = ratioSubject,
           value = valueString,
           oldValue = oldValueString,
-          scenario = title
+          scenario = title,
         )
       }
     } else if ((freshRatio - expectedRatio) < -0.05) {
@@ -176,111 +175,124 @@ class RenderPassTest {
         val diff = staleRenderings - expectation.staleRenderedNodes.last
         val percentage =
           "%.2f".format(100.0 * (diff.toDouble() / expectation.staleRenderedNodes.last))
-        val by = "rendering $diff more stale nodes" +
-          " (increasing by $percentage% to $staleRenderings)"
+        val by =
+          "rendering $diff more stale nodes" + " (increasing by $percentage% to $staleRenderings)"
         uhOh(
           subject = ratioSubject,
           by = by,
           value = valueString,
           oldValue = oldValueString,
-          scenario = title
+          scenario = title,
         )
       } else {
         meh(
           subject = ratioSubject,
           value = valueString,
           oldValue = oldValueString,
-          scenario = title
+          scenario = title,
         )
       }
     }
   }
 
   companion object {
-    val COMPLEX_INITIALIZING = Scenario(
-      title = "the 'Raven navigation with initializing state scenario'",
-      useInitializingState = true,
-      useHighFrequencyRange = false,
-      simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 57..57,
-        freshRenderedNodes = 85..85,
-        staleRenderedNodes = 608..608
-      ),
-    )
+    val COMPLEX_INITIALIZING =
+      Scenario(
+        title = "the 'Raven navigation with initializing state scenario'",
+        useInitializingState = true,
+        useHighFrequencyRange = false,
+        simultaneousActions = 0,
+        baselineExpectation =
+          RenderExpectation(
+            totalPasses = 57..57,
+            freshRenderedNodes = 85..85,
+            staleRenderedNodes = 608..608,
+          ),
+      )
 
-    val COMPLEX_NO_INITIALIZING = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario'",
-      useInitializingState = false,
-      useHighFrequencyRange = false,
-      simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 56..56,
-        freshRenderedNodes = 83..83,
-        staleRenderedNodes = 605..605
-      ),
-    )
+    val COMPLEX_NO_INITIALIZING =
+      Scenario(
+        title = "the 'Raven navigation (no initializing state) scenario'",
+        useInitializingState = false,
+        useHighFrequencyRange = false,
+        simultaneousActions = 0,
+        baselineExpectation =
+          RenderExpectation(
+            totalPasses = 56..56,
+            freshRenderedNodes = 83..83,
+            staleRenderedNodes = 605..605,
+          ),
+      )
 
-    val COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario with high frequency events'",
-      useInitializingState = false,
-      useHighFrequencyRange = true,
-      simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 181..181,
-        freshRenderedNodes = 213..213,
-        staleRenderedNodes = 2350..2350
-      ),
-    )
+    val COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY =
+      Scenario(
+        title =
+          "the 'Raven navigation (no initializing state) scenario with high frequency events'",
+        useInitializingState = false,
+        useHighFrequencyRange = true,
+        simultaneousActions = 0,
+        baselineExpectation =
+          RenderExpectation(
+            totalPasses = 181..181,
+            freshRenderedNodes = 213..213,
+            staleRenderedNodes = 2350..2350,
+          ),
+      )
 
-    val COMPLEX_NO_INITIALIZING_SIMULTANEOUS = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario with simultaneous events" +
-        " AND high frequency events'",
-      useInitializingState = false,
-      useHighFrequencyRange = true,
-      simultaneousActions = 20,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 762..762,
-        freshRenderedNodes = 253..253,
-        staleRenderedNodes = 38919..38919
-      ),
-    )
+    val COMPLEX_NO_INITIALIZING_SIMULTANEOUS =
+      Scenario(
+        title =
+          "the 'Raven navigation (no initializing state) scenario with simultaneous events" +
+            " AND high frequency events'",
+        useInitializingState = false,
+        useHighFrequencyRange = true,
+        simultaneousActions = 20,
+        baselineExpectation =
+          RenderExpectation(
+            totalPasses = 762..762,
+            freshRenderedNodes = 253..253,
+            staleRenderedNodes = 38919..38919,
+          ),
+      )
 
     fun congrats(
       subject: String,
       value: String,
       oldValue: String,
       scenario: String,
-      by: String? = null
-    ) = fail(
-      "Congrats! You have improved the $subject ${by?.let { "by $by " } ?: ""}for $scenario!" +
-        " Please update the expected value for your config. The value is now $value" +
-        " (was $oldValue)."
-    )
+      by: String? = null,
+    ) =
+      fail(
+        "Congrats! You have improved the $subject ${by?.let { "by $by " } ?: ""}for $scenario!" +
+          " Please update the expected value for your config. The value is now $value" +
+          " (was $oldValue)."
+      )
 
     fun uhOh(
       subject: String,
       value: String,
       oldValue: String,
       scenario: String,
-      by: String? = null
-    ) = fail(
-      "Uh Oh! You have worsened the $subject ${by?.let { "by $by " } ?: ""}for $scenario!" +
-        " The value is now $value (was $oldValue). This likely results in worse performance." +
-        " You can check with the timing benchmarks if you disagree."
-    )
+      by: String? = null,
+    ) =
+      fail(
+        "Uh Oh! You have worsened the $subject ${by?.let { "by $by " } ?: ""}for $scenario!" +
+          " The value is now $value (was $oldValue). This likely results in worse performance." +
+          " You can check with the timing benchmarks if you disagree."
+      )
 
     fun meh(
       subject: String,
       value: String,
       oldValue: String,
       scenario: String,
-      by: String? = null
-    ) = fail(
-      "Hmmm. The $subject has improved ${by?.let { "by $by " } ?: ""}for $scenario," +
-        " but only because the scenario has changed, impacting expectation" +
-        " but not clearly for the better or the worse." +
-        " The value is now $value (was $oldValue). Please update the test."
-    )
+      by: String? = null,
+    ) =
+      fail(
+        "Hmmm. The $subject has improved ${by?.let { "by $by " } ?: ""}for $scenario," +
+          " but only because the scenario has changed, impacting expectation" +
+          " but not clearly for the better or the worse." +
+          " The value is now $value (was $oldValue). Please update the test."
+      )
   }
 }

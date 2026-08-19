@@ -5,9 +5,7 @@ plugins {
   id("published")
 }
 
-android {
-  namespace = "com.squareup.workflow1.tracing"
-}
+android { namespace = "com.squareup.workflow1.tracing" }
 
 dependencies {
   api(libs.androidx.collection)

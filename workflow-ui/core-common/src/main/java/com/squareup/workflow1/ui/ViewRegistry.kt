@@ -6,38 +6,32 @@ import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
 /**
- * The [ViewEnvironment] service that can be used to display the stream of renderings
- * from a workflow tree as [View] instances. This is the engine behind [AndroidViewRendering],
+ * The [ViewEnvironment] service that can be used to display the stream of renderings from a
+ * workflow tree as [View] instances. This is the engine behind [AndroidViewRendering],
  * [WorkflowViewStub] and [ViewFactory]. Most apps can ignore [ViewRegistry] as an implementation
  * detail, by using [AndroidViewRendering] to tie their rendering classes to view code.
  *
- * To avoid that coupling between workflow code and the Android runtime, registries can
- * be loaded with [ViewFactory] instances at runtime, and provided as an optional parameter to
+ * To avoid that coupling between workflow code and the Android runtime, registries can be loaded
+ * with [ViewFactory] instances at runtime, and provided as an optional parameter to
  * [WorkflowLayout.start].
  *
  * For example:
- *
  *     ```
  *     val AuthViewFactories = ViewRegistry(
  *       AuthorizingLayoutRunner, LoginLayoutRunner, SecondFactorLayoutRunner
  *     )
- *
  *     val TicTacToeViewFactories = ViewRegistry(
  *       NewGameLayoutRunner, GamePlayLayoutRunner, GameOverLayoutRunner
  *     )
- *
  *     val ApplicationViewFactories = ViewRegistry(ApplicationLayoutRunner) +
  *       AuthViewFactories + TicTacToeViewFactories
- *
  *     override fun onCreate(savedInstanceState: Bundle?) {
  *       super.onCreate(savedInstanceState)
- *
  *       val model: MyViewModel by viewModels()
  *       setContentView(
  *         WorkflowLayout(this).apply { start(model.renderings, ApplicationViewFactories) }
  *       )
  *     }
- *
  *     /** As always, use an androidx ViewModel for state that survives config change. */
  *     class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
  *       val renderings: StateFlow<Any> by lazy {
@@ -50,15 +44,13 @@ import kotlin.reflect.safeCast
  *     }
  *     ```
  *
- * In the above example, it is assumed that the `companion object`s of the various
- * decoupled [LayoutRunner] classes honor a convention of implementing [ViewFactory], in
- * aid of this kind of assembly.
+ * In the above example, it is assumed that the `companion object`s of the various decoupled
+ * [LayoutRunner] classes honor a convention of implementing [ViewFactory], in aid of this kind of
+ * assembly.
  *
  *     ```
  *     class GamePlayLayoutRunner(view: View) : LayoutRunner<GameRendering> {
- *
  *       // ...
- *
  *       companion object : ViewFactory<GameRendering> by LayoutRunner.bind(
  *         R.layout.game_layout, ::GameLayoutRunner
  *       )
@@ -74,7 +66,7 @@ public interface ViewRegistry {
    */
   public class Key<in RenderingT : Any, out FactoryT : Any>(
     public val renderingType: KClass<in RenderingT>,
-    public val factoryType: KClass<out FactoryT>
+    public val factoryType: KClass<out FactoryT>,
   ) {
     override fun equals(other: Any?): Boolean {
       if (this === other) return true
@@ -98,9 +90,9 @@ public interface ViewRegistry {
   }
 
   /**
-   * Implemented by a factory that can build some kind of UI for view models
-   * of type [RenderingT], and which can be listed in a [ViewRegistry]. The
-   * [Key.factoryType] field of [key] must be the type of this [Entry].
+   * Implemented by a factory that can build some kind of UI for view models of type [RenderingT],
+   * and which can be listed in a [ViewRegistry]. The [Key.factoryType] field of [key] must be the
+   * type of this [Entry].
    */
   public interface Entry<in RenderingT : Any> {
     public val key: Key<RenderingT, *>
@@ -114,20 +106,16 @@ public interface ViewRegistry {
    */
   public val keys: Set<Key<*, *>>
 
-  /**
-   * Returns the [Entry] that was registered for the given [key], or null
-   * if none was found.
-   */
+  /** Returns the [Entry] that was registered for the given [key], or null if none was found. */
   public fun <RenderingT : Any, FactoryT : Any> getEntryFor(
     key: Key<RenderingT, FactoryT>
   ): Entry<RenderingT>?
 
   public companion object : ViewEnvironmentKey<ViewRegistry>() {
-    override val default: ViewRegistry get() = ViewRegistry()
-    override fun combine(
-      left: ViewRegistry,
-      right: ViewRegistry
-    ): ViewRegistry = left.merge(right)
+    override val default: ViewRegistry
+      get() = ViewRegistry()
+
+    override fun combine(left: ViewRegistry, right: ViewRegistry): ViewRegistry = left.merge(right)
   }
 }
 
@@ -137,10 +125,8 @@ public inline fun <RenderingT : Any, reified FactoryT : Any> ViewRegistry.getFac
   return FactoryT::class.safeCast(getEntryFor(Key(rendering::class, FactoryT::class)))
 }
 
-public inline fun <
-  reified RenderingT : Any,
-  reified FactoryT : Any
-  > ViewRegistry.getFactoryFor(): FactoryT? {
+public inline fun <reified RenderingT : Any, reified FactoryT : Any> ViewRegistry.getFactoryFor():
+  FactoryT? {
   return FactoryT::class.safeCast(getEntryFor(Key(RenderingT::class, FactoryT::class)))
 }
 
@@ -148,8 +134,7 @@ public inline operator fun <reified RenderingT : Any, reified FactoryT : Any> Vi
   key: Key<RenderingT, FactoryT>
 ): FactoryT? = FactoryT::class.safeCast(getEntryFor(key))
 
-public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
-  TypedViewRegistry(*bindings)
+public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry = TypedViewRegistry(*bindings)
 
 /**
  * Returns a [ViewRegistry] that contains no bindings.
@@ -162,14 +147,13 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * Transforms the receiver to add [entry], throwing [IllegalArgumentException] if the receiver
  * already has a matching [entry]. Use [merge] to replace an existing entry with a new one.
  */
-public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
-  this + ViewRegistry(entry)
+public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry = this + ViewRegistry(entry)
 
 /**
  * Transforms the receiver to add all entries from [other].
  *
- * @throws [IllegalArgumentException] if the receiver already has an matching [Entry].
- * Use [merge] to replace existing entries instead.
+ * @throws [IllegalArgumentException] if the receiver already has an matching [Entry]. Use [merge]
+ *   to replace existing entries instead.
  */
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
   if (other.keys.isEmpty()) return this
@@ -178,9 +162,8 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
 }
 
 /**
- * Returns a new [ViewEnvironment] that adds [registry] to the receiver.
- * If the receiver already has a [ViewRegistry], [ViewEnvironmentKey.combine]
- * is applied as usual to [merge] its entries.
+ * Returns a new [ViewEnvironment] that adds [registry] to the receiver. If the receiver already has
+ * a [ViewRegistry], [ViewEnvironmentKey.combine] is applied as usual to [merge] its entries.
  */
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
   if (this[ViewRegistry] === registry) return this
@@ -189,15 +172,16 @@ public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironmen
 }
 
 /**
- * Combines the receiver with [other]. If there are conflicting entries,
- * those in [other] are preferred.
+ * Combines the receiver with [other]. If there are conflicting entries, those in [other] are
+ * preferred.
  */
 public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
   if (this === other) return this
   if (other.keys.isEmpty()) return this
   if (this.keys.isEmpty()) return other
 
-  return (keys + other.keys).asSequence()
+  return (keys + other.keys)
+    .asSequence()
     .map { other.getEntryFor(it) ?: getEntryFor(it)!! }
     .toList()
     .toTypedArray()

@@ -14,45 +14,36 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.buffer
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
-internal fun FileDump(
-  trace: String,
-  modifier: Modifier = Modifier
-) {
+internal fun FileDump(trace: String, modifier: Modifier = Modifier) {
   var filePath by remember { mutableStateOf("") }
   var clicked by remember { mutableStateOf(false) }
   Button(
-    modifier = modifier
-      .padding(16.dp)
-      .widthIn(max = 300.dp),
+    modifier = modifier.padding(16.dp).widthIn(max = 300.dp),
     shape = CircleShape,
     colors = buttonColors(Color.Black),
     onClick = {
       clicked = true
       filePath = writeToFile(trace)
-    }
+    },
   ) {
-    val text = if (clicked) {
-      "Trace saved to $filePath"
-    } else {
-      "Save trace to file"
-    }
-    Text(
-      text = text,
-      color = Color.White,
-      maxLines = 3,
-      softWrap = true
-    )
+    val text =
+      if (clicked) {
+        "Trace saved to $filePath"
+      } else {
+        "Save trace to file"
+      }
+    Text(text = text, color = Color.White, maxLines = 3, softWrap = true)
   }
 }
 
-private fun writeToFile(trace: String): String{
+private fun writeToFile(trace: String): String {
   val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
   val home = System.getProperty("user.home")
   val path = "$home/Downloads/workflow-trace_$timestamp.json".toPath()

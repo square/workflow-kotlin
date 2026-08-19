@@ -11,43 +11,36 @@ import com.squareup.workflow1.parse
 object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRendering>() {
   enum class State {
     HideBottom,
-    ShowBottom
+    ShowBottom,
   }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot
-    ?.bytes
-    ?.parse { source -> if (source.readInt() == 1) HideBottom else ShowBottom }
-    ?: HideBottom
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.bytes?.parse { source -> if (source.readInt() == 1) HideBottom else ShowBottom }
+      ?: HideBottom
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
-  ): OuterRendering = when (renderState) {
-    HideBottom -> OuterRendering(
-      top = ClickyTextRendering(message = "Click to show footer") {
-        context.actionSink.send(
-          action("HideBottom") {
-            this@action.state = ShowBottom
-          }
+    context: RenderContext<Unit, State, Nothing>,
+  ): OuterRendering =
+    when (renderState) {
+      HideBottom ->
+        OuterRendering(
+          top =
+            ClickyTextRendering(message = "Click to show footer") {
+              context.actionSink.send(action("HideBottom") { this@action.state = ShowBottom })
+            },
+          bottom = ClickyTextRendering(message = "Should not be seen", visible = false),
         )
-      },
-      bottom = ClickyTextRendering(message = "Should not be seen", visible = false)
-    )
-    ShowBottom -> OuterRendering(
-      top = ClickyTextRendering(message = "Click to hide footer") {
-        context.actionSink.send(
-          action("ShowBottom") {
-            this@action.state = HideBottom
-          }
+      ShowBottom ->
+        OuterRendering(
+          top =
+            ClickyTextRendering(message = "Click to hide footer") {
+              context.actionSink.send(action("ShowBottom") { this@action.state = HideBottom })
+            },
+          bottom = ClickyTextRendering(message = "Footer", visible = true),
         )
-      },
-      bottom = ClickyTextRendering(message = "Footer", visible = true)
-    )
-  }
+    }
 
   override fun snapshotState(state: State): Snapshot =
     Snapshot.of(if (state == HideBottom) 1 else 0)

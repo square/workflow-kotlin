@@ -7,14 +7,14 @@ import org.junit.Test
 
 internal class TextControllerTest {
 
-  @Test fun `does not emit initial value`() = runTest {
+  @Test
+  fun `does not emit initial value`() = runTest {
     val controller = TextController()
-    controller.onTextChanged.test {
-      expectNoEvents()
-    }
+    controller.onTextChanged.test { expectNoEvents() }
   }
 
-  @Test fun `emits value when text changes`() = runTest {
+  @Test
+  fun `emits value when text changes`() = runTest {
     val controller = TextController()
     controller.onTextChanged.test {
       controller.textValue = "apple"
@@ -24,7 +24,8 @@ internal class TextControllerTest {
     }
   }
 
-  @Test fun `does not emit twice with the same value`() = runTest {
+  @Test
+  fun `does not emit twice with the same value`() = runTest {
     val controller = TextController()
     controller.onTextChanged.test {
       controller.textValue = "apple"

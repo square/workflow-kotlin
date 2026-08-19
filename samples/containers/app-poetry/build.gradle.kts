@@ -6,9 +6,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.containers.poetry"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.containers.poetry" }
   namespace = "com.squareup.sample.container.poetryapp"
 }
 

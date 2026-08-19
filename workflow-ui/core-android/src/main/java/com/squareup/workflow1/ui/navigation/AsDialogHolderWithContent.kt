@@ -16,21 +16,19 @@ import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
 
 /**
- * Given a [ComponentDialog], wrap it in an [OverlayDialogHolder] that can drive
- * the Dialog's content via instances of a particular type of [ScreenOverlay].
- * This is the most convenient way to implement [OverlayDialogFactory], see
- * the kdoc there for complete details.
+ * Given a [ComponentDialog], wrap it in an [OverlayDialogHolder] that can drive the Dialog's
+ * content via instances of a particular type of [ScreenOverlay]. This is the most convenient way to
+ * implement [OverlayDialogFactory], see the kdoc there for complete details.
  *
  * Dialogs managed this way are compatible with
- * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler],
- * and honor the [OverlayArea] and [CoveredByModal] values placed in
- * the [ViewEnvironment] by the standard [BodyAndOverlaysScreen] container.
+ * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler], and honor the
+ * [OverlayArea] and [CoveredByModal] values placed in the [ViewEnvironment] by the standard
+ * [BodyAndOverlaysScreen] container.
  *
- * @param setContent the function that sets the view built for [C] as the
- * content of the [ComponentDialog] built for [O]. This is also a good hook
- * for configuring the newly made dialog. The default calls
- * [ComponentDialog.setContentView] and the [fixBackgroundAndDimming] extension
- * function provided below.
+ * @param setContent the function that sets the view built for [C] as the content of the
+ *   [ComponentDialog] built for [O]. This is also a good hook for configuring the newly made
+ *   dialog. The default calls [ComponentDialog.setContentView] and the [fixBackgroundAndDimming]
+ *   extension function provided below.
  */
 public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWithContent(
   overlay: O,
@@ -38,7 +36,7 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWith
   setContent: (ScreenViewHolder<C>) -> Unit = { contentViewHolder ->
     setContentView(contentViewHolder.view)
     fixBackgroundAndDimming()
-  }
+  },
 ): OverlayDialogHolder<O> {
   // Note that we always tell Android to make the window non-modal, regardless of our own
   // notion of its modality. Even a modal dialog should only block events within
@@ -46,8 +44,8 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWith
   requireNotNull(window) { "Expected to find a window for $this." }.addFlags(FLAG_NOT_TOUCH_MODAL)
 
   val envWithOnBack = environment + (OnBackPressedDispatcherOwnerKey to this)
-  val contentHolder = overlay.content.toViewFactory(envWithOnBack)
-    .buildView(overlay.content, envWithOnBack, context)
+  val contentHolder =
+    overlay.content.toViewFactory(envWithOnBack).buildView(overlay.content, envWithOnBack, context)
 
   // We absolutely do not want Android to close the window behind our backs.
   // Feature devs should set back handlers in their content views if that's
@@ -68,21 +66,20 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWith
   // Note that we set onBackPressed to null, so that the implementation built
   // into ComponentDialog will be used. Our default implementation is a shabby
   // imitation of that one, and is going to be removed soon.
-  return OverlayDialogHolder(
-    initialEnvironment = environment,
-    dialog = this
-  ) { newOverlay, newEnvironment ->
+  return OverlayDialogHolder(initialEnvironment = environment, dialog = this) {
+    newOverlay,
+    newEnvironment ->
     contentHolder.show(
       newOverlay.content,
-      newEnvironment + (OnBackPressedDispatcherOwnerKey to this@asDialogHolderWithContent)
+      newEnvironment + (OnBackPressedDispatcherOwnerKey to this@asDialogHolderWithContent),
     )
   }
 }
 
 /**
- * Called from the default `setContent` function of [asDialogHolderWithContent].
- * Fixes the default background and window flag settings that interfere with
- * making a [Dialog] respect the bounds required by [OverlayArea].
+ * Called from the default `setContent` function of [asDialogHolderWithContent]. Fixes the default
+ * background and window flag settings that interfere with making a [Dialog] respect the bounds
+ * required by [OverlayArea].
  */
 public fun Dialog.fixBackgroundAndDimming() {
   // Welcome to Android. Nothing workflow-related here, this is just how one

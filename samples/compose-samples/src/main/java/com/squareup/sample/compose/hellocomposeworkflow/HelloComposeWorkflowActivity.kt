@@ -31,12 +31,13 @@ class HelloComposeWorkflowActivity : AppCompatActivity() {
   class HelloComposeModel(savedState: SavedStateHandle) : ViewModel() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
-        workflow = HelloWorkflow.mapRendering {
-          it.withEnvironment(ViewEnvironment.EMPTY.withComposeInteropSupport())
-        },
+        workflow =
+          HelloWorkflow.mapRendering {
+            it.withEnvironment(ViewEnvironment.EMPTY.withComposeInteropSupport())
+          },
         scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
       )
     }
   }

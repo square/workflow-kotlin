@@ -1,5 +1,11 @@
 package com.squareup.workflow1
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.test.fail
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -11,19 +17,14 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-import kotlin.test.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SinkTest {
 
   private val sink = RecordingSink()
 
-  @Test fun collectToSink_sends_action() = runTest {
+  @Test
+  fun collectToSink_sends_action() = runTest {
     val flow = MutableStateFlow(1)
     val collector = launch {
       flow.collectToSink(sink) {
@@ -36,36 +37,33 @@ internal class SinkTest {
 
     advanceUntilIdle()
     assertEquals(1, sink.actions.size)
-    sink.actions.removeFirst()
-      .let { action ->
-        val (newState, result) = action.applyTo("props", "state")
-        assertEquals("props state 1", newState)
-        assertEquals("output: 1", result.output!!.value)
-      }
+    sink.actions.removeFirst().let { action ->
+      val (newState, result) = action.applyTo("props", "state")
+      assertEquals("props state 1", newState)
+      assertEquals("output: 1", result.output!!.value)
+    }
     assertTrue(sink.actions.isEmpty())
 
     flow.value = 2
     advanceUntilIdle()
     assertEquals(1, sink.actions.size)
-    sink.actions.removeFirst()
-      .let { action ->
-        val (newState, result) = action.applyTo("props", "state")
-        assertEquals("props state 2", newState)
-        assertEquals("output: 2", result.output!!.value)
-      }
+    sink.actions.removeFirst().let { action ->
+      val (newState, result) = action.applyTo("props", "state")
+      assertEquals("props state 2", newState)
+      assertEquals("output: 2", result.output!!.value)
+    }
 
     collector.cancel()
   }
 
-  @Test fun collectToSink_propagates_backpressure() {
+  @Test
+  fun collectToSink_propagates_backpressure() {
     val channel = Channel<String>()
     val flow = channel.consumeAsFlow()
     // Used to assert ordering.
     val counter = atomic(0)
     val sentActions = mutableListOf<WorkflowAction<Unit, Unit, String>>()
-    val sink = Sink<WorkflowAction<Unit, Unit, String>> {
-      sentActions += it
-    }
+    val sink = Sink<WorkflowAction<Unit, Unit, String>> { sentActions += it }
 
     // With StandardTestDispatcher, coroutines are not eagerly dispatched. The sendJob starts
     // UNDISPATCHED so it runs to its first suspension (channel.send("a")). Then advanceUntilIdle
@@ -74,25 +72,25 @@ internal class SinkTest {
     // because the collector is blocked on backpressure. Only after we apply the first action and
     // advance again does "b" get processed.
     runTest(StandardTestDispatcher()) {
-      val collectJob = launch {
-        flow.collectToSink(sink) { action("") { setOutput(it) } }
-      }
+      val collectJob = launch { flow.collectToSink(sink) { action("") { setOutput(it) } } }
 
-      val sendJob = launch(start = UNDISPATCHED) {
-        assertEquals(0, counter.getAndIncrement())
-        channel.send("a")
-        // Resumed after advanceUntilIdle when collectJob receives "a" from channel.
-        assertEquals(1, counter.getAndIncrement())
-        channel.send("b")
-        // Resumed after second advanceUntilIdle when collectJob receives "b" from channel.
-        assertEquals(5, counter.getAndIncrement())
-        channel.close()
-        assertEquals(6, counter.getAndIncrement())
-      }
+      val sendJob =
+        launch(start = UNDISPATCHED) {
+          assertEquals(0, counter.getAndIncrement())
+          channel.send("a")
+          // Resumed after advanceUntilIdle when collectJob receives "a" from channel.
+          assertEquals(1, counter.getAndIncrement())
+          channel.send("b")
+          // Resumed after second advanceUntilIdle when collectJob receives "b" from channel.
+          assertEquals(5, counter.getAndIncrement())
+          channel.close()
+          assertEquals(6, counter.getAndIncrement())
+        }
       advanceUntilIdle()
       assertEquals(2, counter.getAndIncrement())
 
-      sentActions.removeFirst()
+      sentActions
+        .removeFirst()
         .also {
           // Sender won't resume until we've _applied_ the action.
           assertEquals(3, counter.getAndIncrement())
@@ -109,25 +107,25 @@ internal class SinkTest {
       // and let sendJob resume from send("b") through close().
       advanceUntilIdle()
 
-      sentActions.removeFirst()
-        .applyTo(Unit, Unit)
-        .let { (_, result) ->
-          assertEquals(7, counter.getAndIncrement())
-          assertEquals("b", result.output!!.value)
-        }
+      sentActions.removeFirst().applyTo(Unit, Unit).let { (_, result) ->
+        assertEquals(7, counter.getAndIncrement())
+        assertEquals("b", result.output!!.value)
+      }
 
       collectJob.cancel()
       sendJob.cancel()
     }
   }
 
-  @Test fun sendAndAwaitApplication_applies_action() {
+  @Test
+  fun sendAndAwaitApplication_applies_action() {
     var applications = 0
-    val action = action<String, String, String>("") {
-      applications++
-      state = "$props $state applied"
-      setOutput("output")
-    }
+    val action =
+      action<String, String, String>("") {
+        applications++
+        state = "$props $state applied"
+        setOutput("output")
+      }
 
     runTest {
       launch { sink.sendAndAwaitApplication(action) }
@@ -141,11 +139,10 @@ internal class SinkTest {
     }
   }
 
-  @Test fun sendAndAwaitApplication_suspends_until_after_applied() = runTest {
+  @Test
+  fun sendAndAwaitApplication_suspends_until_after_applied() = runTest {
     var resumed = false
-    val action = action<String, String, String>("") {
-      assertFalse(resumed)
-    }
+    val action = action<String, String, String>("") { assertFalse(resumed) }
     launch {
       sink.sendAndAwaitApplication(action)
       resumed = true
@@ -165,27 +162,28 @@ internal class SinkTest {
     assertTrue(resumed)
   }
 
-  @Test fun sendAndAwaitApplication_does_not_apply_action_when_cancelled_while_suspended() =
-    runTest {
-      var applied = false
-      val action = action<String, String, String>("") {
+  @Test
+  fun sendAndAwaitApplication_does_not_apply_action_when_cancelled_while_suspended() = runTest {
+    var applied = false
+    val action =
+      action<String, String, String>("") {
         applied = true
         fail()
       }
-      val sendJob = launch { sink.sendAndAwaitApplication(action) }
-      advanceUntilIdle()
-      assertFalse(applied)
-      assertEquals(1, sink.actions.size)
+    val sendJob = launch { sink.sendAndAwaitApplication(action) }
+    advanceUntilIdle()
+    assertFalse(applied)
+    assertEquals(1, sink.actions.size)
 
-      val enqueuedAction = sink.actions.removeFirst()
-      sendJob.cancel()
-      advanceUntilIdle()
-      val (newState, result) = enqueuedAction.applyTo("unused props", "state")
+    val enqueuedAction = sink.actions.removeFirst()
+    sendJob.cancel()
+    advanceUntilIdle()
+    val (newState, result) = enqueuedAction.applyTo("unused props", "state")
 
-      assertFalse(applied)
-      assertEquals("state", newState)
-      assertNull(result.output)
-    }
+    assertFalse(applied)
+    assertEquals("state", newState)
+    assertNull(result.output)
+  }
 
   private class RecordingSink : Sink<WorkflowAction<String, String, String>> {
     val actions = mutableListOf<WorkflowAction<String, String, String>>()

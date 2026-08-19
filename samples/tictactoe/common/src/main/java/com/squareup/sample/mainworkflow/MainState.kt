@@ -7,8 +7,8 @@ import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 
 /**
- * The state of [TicTacToeWorkflow]. Indicates which nested workflow is running, and records
- * the current nested state.
+ * The state of [TicTacToeWorkflow]. Indicates which nested workflow is running, and records the
+ * current nested state.
  */
 sealed class MainState {
 

@@ -10,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 class SampleLauncherActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent {
-      SampleLauncherApp()
-    }
+    setContent { SampleLauncherApp() }
   }
 }

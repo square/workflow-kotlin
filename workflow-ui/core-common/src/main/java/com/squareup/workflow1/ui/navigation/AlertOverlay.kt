@@ -10,12 +10,12 @@ public data class AlertOverlay(
   val message: String = "",
   val title: String = "",
   val cancelable: Boolean = true,
-  val onEvent: (Event) -> Unit
+  val onEvent: (Event) -> Unit,
 ) : ModalOverlay {
   public enum class Button {
     POSITIVE,
     NEGATIVE,
-    NEUTRAL
+    NEUTRAL,
   }
 
   public sealed class Event {

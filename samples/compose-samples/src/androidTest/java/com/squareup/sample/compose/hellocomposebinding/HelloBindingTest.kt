@@ -18,19 +18,17 @@ class HelloBindingTest {
 
   private val composeRule = createAndroidComposeRule<HelloBindingActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun togglesBetweenStates() {
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Goodbye")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
+  @Test
+  fun togglesBetweenStates() {
+    composeRule.onNodeWithText("Hello").assertIsDisplayed().performClick()
+    composeRule.onNodeWithText("Goodbye").assertIsDisplayed().performClick()
+    composeRule.onNodeWithText("Hello").assertIsDisplayed()
   }
 }

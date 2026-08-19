@@ -6,11 +6,11 @@ import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Workflow
 
 /**
- * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListScreen]
- * for the poem, and whose detail traverses through [StanzaScreen]s.
+ * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListScreen] for the
+ * poem, and whose detail traverses through [StanzaScreen]s.
  *
- * (Defining this as an interface allows us to use other implementations
- * in other contexts -- check out our :benchmarks module!)
+ * (Defining this as an interface allows us to use other implementations in other contexts -- check
+ * out our :benchmarks module!)
  */
 interface PoemWorkflow : Workflow<Poem, ClosePoem, OverviewDetailScreen<*>> {
   object ClosePoem

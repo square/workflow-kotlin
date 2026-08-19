@@ -17,8 +17,8 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
- * Renders a live game, including the board with player and actors, and the buttons to control
- * the player.
+ * Renders a live game, including the board with player and actors, and the buttons to control the
+ * player.
  */
 class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
 
@@ -37,10 +37,7 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
     moveDown.registerPlayerEventHandlers(DOWN)
   }
 
-  override fun showRendering(
-    rendering: GameRendering,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: GameRendering, environment: ViewEnvironment) {
     boardView.show(rendering.board, environment)
     this.rendering = rendering
 
@@ -64,8 +61,6 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
     }
   }
 
-  companion object : ScreenViewFactory<GameRendering> by fromLayout(
-    R.layout.game_layout,
-    ::GameLayoutRunner
-  )
+  companion object :
+    ScreenViewFactory<GameRendering> by fromLayout(R.layout.game_layout, ::GameLayoutRunner)
 }

@@ -16,7 +16,7 @@ public const val RETRY_POLLING_INTERVAL: Long = 16L
 public suspend inline fun retry(
   clue: String = "",
   timeout_ms: Long = DEFAULT_RETRY_TIMEOUT,
-  crossinline predicate: () -> Any
+  crossinline predicate: () -> Any,
 ) {
   var exception: Throwable? = null
 
@@ -26,23 +26,16 @@ public suspend inline fun retry(
         predicate()
         return@withTimeoutOrNull
       } catch (e: NoMatchingViewException) {
-        exception = NoMatchingViewException.Builder()
-          .from(e)
-          .withCause(AssertionError(clue))
-          .build()
+        exception =
+          NoMatchingViewException.Builder().from(e).withCause(AssertionError(clue)).build()
         delay(RETRY_POLLING_INTERVAL)
       } catch (e: PerformException) {
-        exception = PerformException.Builder()
-          .from(e)
-          .withCause(AssertionError(clue))
-          .build()
+        exception = PerformException.Builder().from(e).withCause(AssertionError(clue)).build()
         delay(RETRY_POLLING_INTERVAL)
       } catch (e: AssertionFailedError) {
         exception = AssertionFailedError(clue + e.message)
         delay(RETRY_POLLING_INTERVAL)
       }
     }
-  } ?: exception?.let {
-    throw it
-  }
+  } ?: exception?.let { throw it }
 }

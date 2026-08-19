@@ -28,12 +28,9 @@ import kotlinx.coroutines.plus
 private val viewRegistry = ViewRegistry(RecursiveComposableFactory)
 
 private val viewEnvironment =
-  (ViewEnvironment.EMPTY + viewRegistry)
-    .withComposeInteropSupport { content ->
-      CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
-        content()
-      }
-    }
+  (ViewEnvironment.EMPTY + viewRegistry).withComposeInteropSupport { content ->
+    CompositionLocalProvider(LocalBackgroundColor provides Color.Green) { content() }
+  }
 
 class NestedRenderingsActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +46,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
         scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
       )
     }
   }

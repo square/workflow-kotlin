@@ -1,6 +1,4 @@
-plugins {
-  id("kotlin-jvm")
-}
+plugins { id("kotlin-jvm") }
 
 dependencies {
   api(libs.rxjava2.rxjava)

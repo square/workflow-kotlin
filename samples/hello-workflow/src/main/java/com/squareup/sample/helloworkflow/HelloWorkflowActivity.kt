@@ -32,7 +32,7 @@ class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = HelloWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
     )
   }
 }

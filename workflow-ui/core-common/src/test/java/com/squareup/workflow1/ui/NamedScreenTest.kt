@@ -6,44 +6,53 @@ import org.junit.Test
 // If you try to replace isTrue() with isTrue compilation fails.
 internal class NamedScreenTest {
   object Whut : Screen
+
   object Hey : Screen
 
-  @Test fun `same type same name matches`() {
+  @Test
+  fun `same type same name matches`() {
     assertThat(compatible(NamedScreen(Hey, "eh"), NamedScreen(Hey, "eh"))).isTrue()
   }
 
-  @Test fun `same type diff name matches`() {
+  @Test
+  fun `same type diff name matches`() {
     assertThat(compatible(NamedScreen(Hey, "blam"), NamedScreen(Hey, "bloom"))).isFalse()
   }
 
-  @Test fun `diff type same name no match`() {
+  @Test
+  fun `diff type same name no match`() {
     assertThat(compatible(NamedScreen(Hey, "a"), NamedScreen(Whut, "a"))).isFalse()
   }
 
-  @Test fun recursion() {
+  @Test
+  fun recursion() {
     assertThat(
-      compatible(
-        NamedScreen(NamedScreen(Hey, "one"), "ho"),
-        NamedScreen(NamedScreen(Hey, "one"), "ho")
+        compatible(
+          NamedScreen(NamedScreen(Hey, "one"), "ho"),
+          NamedScreen(NamedScreen(Hey, "one"), "ho"),
+        )
       )
-    ).isTrue()
+      .isTrue()
 
     assertThat(
-      compatible(
-        NamedScreen(NamedScreen(Hey, "one"), "ho"),
-        NamedScreen(NamedScreen(Hey, "two"), "ho")
+        compatible(
+          NamedScreen(NamedScreen(Hey, "one"), "ho"),
+          NamedScreen(NamedScreen(Hey, "two"), "ho"),
+        )
       )
-    ).isFalse()
+      .isFalse()
 
     assertThat(
-      compatible(
-        NamedScreen(NamedScreen(Hey, "a"), "ho"),
-        NamedScreen(NamedScreen(Whut, "a"), "ho")
+        compatible(
+          NamedScreen(NamedScreen(Hey, "a"), "ho"),
+          NamedScreen(NamedScreen(Whut, "a"), "ho"),
+        )
       )
-    ).isFalse()
+      .isFalse()
   }
 
-  @Test fun `key recursion`() {
+  @Test
+  fun `key recursion`() {
     assertThat(NamedScreen(NamedScreen(Hey, "one"), "ho").compatibilityKey)
       .isEqualTo(NamedScreen(NamedScreen(Hey, "one"), "ho").compatibilityKey)
 
@@ -54,26 +63,30 @@ internal class NamedScreenTest {
       .isNotEqualTo(NamedScreen(NamedScreen(Whut, "a"), "ho").compatibilityKey)
   }
 
-  @Test fun `recursive keys are legible`() {
+  @Test
+  fun `recursive keys are legible`() {
     assertThat(NamedScreen(NamedScreen(Hey, "one"), "ho").compatibilityKey)
       .isEqualTo("NamedScreen:ho(NamedScreen:one(com.squareup.workflow1.ui.NamedScreenTest\$Hey))")
   }
 
   private class Foo(override val compatibilityKey: String) : Compatible, Screen
 
-  @Test fun `the test Compatible class actually works`() {
+  @Test
+  fun `the test Compatible class actually works`() {
     assertThat(compatible(Foo("bar"), Foo("bar"))).isTrue()
     assertThat(compatible(Foo("bar"), Foo("baz"))).isFalse()
   }
 
-  @Test fun `wrapping custom Compatible compatibility works`() {
+  @Test
+  fun `wrapping custom Compatible compatibility works`() {
     assertThat(compatible(NamedScreen(Foo("bar"), "name"), NamedScreen(Foo("bar"), "name")))
       .isTrue()
     assertThat(compatible(NamedScreen(Foo("bar"), "name"), NamedScreen(Foo("baz"), "name")))
       .isFalse()
   }
 
-  @Test fun `wrapping custom Compatible keys work`() {
+  @Test
+  fun `wrapping custom Compatible keys work`() {
     assertThat(NamedScreen(Foo("bar"), "name").compatibilityKey)
       .isEqualTo(NamedScreen(Foo("bar"), "name").compatibilityKey)
     assertThat(NamedScreen(Foo("bar"), "name").compatibilityKey)

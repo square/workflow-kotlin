@@ -26,6 +26,7 @@ import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.writeUtf8WithLength
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -42,19 +43,21 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
-import kotlin.test.assertFailsWith
 
 @RunWith(AndroidJUnit4::class)
 internal class RenderAsStateTest {
 
   private val composeRule = createComposeRule()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun passesPropsThrough() {
+  @Test
+  fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
     lateinit var initialRendering: String
 
@@ -62,36 +65,30 @@ internal class RenderAsStateTest {
       initialRendering = workflow.renderAsState(props = "foo", onOutput = {}).value
     }
 
-    composeRule.runOnIdle {
-      assertThat(initialRendering).isEqualTo("foo")
-    }
+    composeRule.runOnIdle { assertThat(initialRendering).isEqualTo("foo") }
   }
 
-  @Test fun seesPropsAndRenderingUpdates() {
+  @Test
+  fun seesPropsAndRenderingUpdates() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
     val props = mutableStateOf("foo")
     lateinit var rendering: String
 
-    composeRule.setContent {
-      rendering = workflow.renderAsState(props.value, onOutput = {}).value
-    }
+    composeRule.setContent { rendering = workflow.renderAsState(props.value, onOutput = {}).value }
 
     composeRule.runOnIdle {
       assertThat(rendering).isEqualTo("foo")
       props.value = "bar"
     }
-    composeRule.runOnIdle {
-      assertThat(rendering).isEqualTo("bar")
-    }
+    composeRule.runOnIdle { assertThat(rendering).isEqualTo("bar") }
   }
 
-  @Test fun invokesOutputCallback() {
-    val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
-      {
-          string ->
-        actionSink.send(action("") { setOutput(string) })
+  @Test
+  fun invokesOutputCallback() {
+    val workflow =
+      Workflow.stateless<Unit, String, (String) -> Unit> {
+        { string -> actionSink.send(action("") { setOutput(string) }) }
       }
-    }
     val receivedOutputs = mutableListOf<String>()
     lateinit var rendering: (String) -> Unit
 
@@ -109,12 +106,11 @@ internal class RenderAsStateTest {
       rendering("two")
     }
 
-    composeRule.runOnIdle {
-      assertThat(receivedOutputs).isEqualTo(listOf("one", "two"))
-    }
+    composeRule.runOnIdle { assertThat(receivedOutputs).isEqualTo(listOf("one", "two")) }
   }
 
-  @Test fun savesSnapshot() {
+  @Test
+  fun savesSnapshot() {
     val workflow = SnapshottingWorkflow()
     val savedStateRegistry = SaveableStateRegistry(emptyMap()) { true }
     lateinit var rendering: SnapshottedRendering
@@ -122,14 +118,16 @@ internal class RenderAsStateTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalSaveableStateRegistry provides savedStateRegistry) {
-        rendering = renderAsState(
-          workflow = workflow,
-          scope = scope,
-          props = Unit,
-          interceptors = emptyList(),
-          onOutput = {},
-          snapshotKey = SNAPSHOT_KEY
-        ).value
+        rendering =
+          renderAsState(
+              workflow = workflow,
+              scope = scope,
+              props = Unit,
+              interceptors = emptyList(),
+              onOutput = {},
+              snapshotKey = SNAPSHOT_KEY,
+            )
+            .value
       }
     }
 
@@ -153,7 +151,8 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Test fun restoresSnapshot() {
+  @Test
+  fun restoresSnapshot() {
     val workflow = SnapshottingWorkflow()
     val restoreValues =
       mapOf(SNAPSHOT_KEY to listOf(mutableStateOf(EXPECTED_SNAPSHOT.toByteArray())))
@@ -162,35 +161,34 @@ internal class RenderAsStateTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalSaveableStateRegistry provides savedStateRegistry) {
-        rendering = renderAsState(
-          workflow = workflow,
-          scope = rememberCoroutineScope(),
-          props = Unit,
-          interceptors = emptyList(),
-          onOutput = {},
-          snapshotKey = "workflow-snapshot"
-        ).value
+        rendering =
+          renderAsState(
+              workflow = workflow,
+              scope = rememberCoroutineScope(),
+              props = Unit,
+              interceptors = emptyList(),
+              onOutput = {},
+              snapshotKey = "workflow-snapshot",
+            )
+            .value
       }
     }
 
-    composeRule.runOnIdle {
-      assertThat(rendering.string).isEqualTo("foo")
-    }
+    composeRule.runOnIdle { assertThat(rendering.string).isEqualTo("foo") }
   }
 
-  @Test fun savesAndRestoresSnapshotOnConfigChange() {
+  @Test
+  fun savesAndRestoresSnapshotOnConfigChange() {
     val stateRestorationTester = StateRestorationTester(composeRule)
     val workflow = SnapshottingWorkflow()
     lateinit var rendering: SnapshottedRendering
     val scope = TestScope()
 
     stateRestorationTester.setContent {
-      rendering = workflow.renderAsState(
-        scope = scope,
-        props = Unit,
-        interceptors = emptyList(),
-        onOutput = {},
-      ).value
+      rendering =
+        workflow
+          .renderAsState(scope = scope, props = Unit, interceptors = emptyList(), onOutput = {})
+          .value
     }
 
     composeRule.runOnIdle {
@@ -203,12 +201,11 @@ internal class RenderAsStateTest {
 
     stateRestorationTester.emulateSavedInstanceStateRestore()
 
-    composeRule.runOnIdle {
-      assertThat(rendering.string).isEqualTo("foo")
-    }
+    composeRule.runOnIdle { assertThat(rendering.string).isEqualTo("foo") }
   }
 
-  @Test fun restoresFromSnapshotWhenWorkflowChanged() {
+  @Test
+  fun restoresFromSnapshotWhenWorkflowChanged() {
     val workflow1 = SnapshottingWorkflow()
     val workflow2 = SnapshottingWorkflow()
     val currentWorkflow = mutableStateOf(workflow1)
@@ -257,28 +254,27 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Test fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
+  @Test
+  fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
     val workflow = Workflow.rendering<Nothing, String>("hello")
     val scope = TestScope()
 
     composeRule.setContent {
-      val initialRendering = workflow.renderAsState(
-        props = Unit,
-        onOutput = {},
-        scope = scope
-      )
+      val initialRendering = workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
       assertThat(initialRendering.value).isNotNull()
     }
   }
 
-  @Test fun runtimeIsCancelledWhenCompositionFails() {
+  @Test
+  fun runtimeIsCancelledWhenCompositionFails() {
     var innerJob: Job? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("test") {
-        innerJob = coroutineContext.job
-        awaitCancellation()
+    val workflow =
+      Workflow.stateless<Unit, Nothing, Unit> {
+        runningSideEffect("test") {
+          innerJob = coroutineContext.job
+          awaitCancellation()
+        }
       }
-    }
     val scope = TestScope(StandardTestDispatcher())
 
     class CancelCompositionException : RuntimeException()
@@ -299,7 +295,8 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Test fun workflowScopeIsNotCancelledWhenRemovedFromComposition() {
+  @Test
+  fun workflowScopeIsNotCancelledWhenRemovedFromComposition() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
     val scope = TestScope()
     var shouldRunWorkflow by mutableStateOf(true)
@@ -311,9 +308,7 @@ internal class RenderAsStateTest {
         }
       }
 
-      composeRule.runOnIdle {
-        assertThat(scope.isActive).isTrue()
-      }
+      composeRule.runOnIdle { assertThat(scope.isActive).isTrue() }
 
       shouldRunWorkflow = false
 
@@ -324,14 +319,16 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Test fun runtimeIsCancelledWhenRemovedFromComposition() {
+  @Test
+  fun runtimeIsCancelledWhenRemovedFromComposition() {
     var innerJob: Job? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("test") {
-        innerJob = coroutineContext.job
-        awaitCancellation()
+    val workflow =
+      Workflow.stateless<Unit, Nothing, Unit> {
+        runningSideEffect("test") {
+          innerJob = coroutineContext.job
+          awaitCancellation()
+        }
       }
-    }
     var shouldRunWorkflow by mutableStateOf(true)
 
     composeRule.setContent {
@@ -347,9 +344,7 @@ internal class RenderAsStateTest {
 
     shouldRunWorkflow = false
 
-    composeRule.runOnIdle {
-      assertThat(innerJob!!.isCancelled).isTrue()
-    }
+    composeRule.runOnIdle { assertThat(innerJob!!.isCancelled).isTrue() }
   }
 
   private companion object {
@@ -360,32 +355,28 @@ internal class RenderAsStateTest {
   }
 
   // Seems to be a problem accessing Workflow.stateful.
-  private class SnapshottingWorkflow : StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
+  private class SnapshottingWorkflow :
+    StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
 
-    data class SnapshottedRendering(
-      val string: String,
-      val updateString: (String) -> Unit
-    )
+    data class SnapshottedRendering(val string: String, val updateString: (String) -> Unit)
 
-    override fun initialState(
-      props: Unit,
-      snapshot: Snapshot?
-    ): String = snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: ""
+    override fun initialState(props: Unit, snapshot: Snapshot?): String =
+      snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: ""
 
     override fun render(
       renderProps: Unit,
       renderState: String,
-      context: RenderContext<Unit, String, Nothing>
-    ) = SnapshottedRendering(
-      string = renderState,
-      updateString = { newString -> context.actionSink.send(updateString(newString)) }
-    )
+      context: RenderContext<Unit, String, Nothing>,
+    ) =
+      SnapshottedRendering(
+        string = renderState,
+        updateString = { newString -> context.actionSink.send(updateString(newString)) },
+      )
 
-    override fun snapshotState(state: String): Snapshot =
-      Snapshot.write { it.writeUtf8WithLength(state) }
-
-    private fun updateString(newString: String) = action("updateString") {
-      state = newString
+    override fun snapshotState(state: String): Snapshot = Snapshot.write {
+      it.writeUtf8WithLength(state)
     }
+
+    private fun updateString(newString: String) = action("updateString") { state = newString }
   }
 }

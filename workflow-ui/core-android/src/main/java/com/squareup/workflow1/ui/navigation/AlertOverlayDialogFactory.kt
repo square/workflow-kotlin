@@ -20,8 +20,8 @@ import kotlin.reflect.KClass
  * See [AlertDialog.toDialogHolder] to use [AlertDialog] for other purposes.
  *
  * - To customize [AlertDialog] theming, see [AlertDialogThemeResId]
- * - To customize how [AlertOverlay] is handled more generally, set up a
- *   custom [OverlayDialogFactoryFinder].
+ * - To customize how [AlertOverlay] is handled more generally, set up a custom
+ *   [OverlayDialogFactoryFinder].
  */
 internal class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
   override val type: KClass<AlertOverlay> = AlertOverlay::class
@@ -29,19 +29,19 @@ internal class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
   override fun buildDialog(
     initialRendering: AlertOverlay,
     initialEnvironment: ViewEnvironment,
-    context: Context
+    context: Context,
   ): OverlayDialogHolder<AlertOverlay> =
     AlertDialog.Builder(
-      context,
-      initialEnvironment[com.squareup.workflow1.ui.navigation.AlertDialogThemeResId]
-    )
+        context,
+        initialEnvironment[com.squareup.workflow1.ui.navigation.AlertDialogThemeResId],
+      )
       .create()
       .toDialogHolder(initialEnvironment)
 }
 
 /**
- * Wraps the receiver in in an [OverlayDialogHolder] that is able to update its
- * buttons as new [AlertOverlay] renderings are received.
+ * Wraps the receiver in in an [OverlayDialogHolder] that is able to update its buttons as new
+ * [AlertOverlay] renderings are received.
  */
 public fun AlertDialog.toDialogHolder(
   initialEnvironment: ViewEnvironment
@@ -69,7 +69,7 @@ public fun AlertDialog.toDialogHolder(
   return OverlayDialogHolder(
     initialEnvironment = initialEnvironment,
     dialog = this,
-    onUpdateBounds = null
+    onUpdateBounds = null,
   ) { rendering, _ ->
     with(this) {
       if (rendering.cancelable) {
@@ -86,19 +86,18 @@ public fun AlertDialog.toDialogHolder(
       if (isShowing) {
         updateButtonsOnShow(rendering)
       } else {
-        setOnShowListener {
-          updateButtonsOnShow(rendering)
-        }
+        setOnShowListener { updateButtonsOnShow(rendering) }
       }
     }
   }
 }
 
-private fun Button.toId(): Int = when (this) {
-  POSITIVE -> DialogInterface.BUTTON_POSITIVE
-  NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
-  NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
-}
+private fun Button.toId(): Int =
+  when (this) {
+    POSITIVE -> DialogInterface.BUTTON_POSITIVE
+    NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
+    NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
+  }
 
 private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
   setOnShowListener(null)

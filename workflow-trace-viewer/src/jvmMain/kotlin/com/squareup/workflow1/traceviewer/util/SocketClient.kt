@@ -1,5 +1,6 @@
 package com.squareup.workflow1.traceviewer.util
 
+import java.net.Socket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
@@ -9,13 +10,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import okio.IOException
-import java.net.Socket
 
 /**
  * Maintains the channel, which acts as buffer for information read from the socket, as the data are
  * being processed.
  */
-internal suspend fun streamRenderPassesFromDevice(device: String, parseOnNewRenderPass: (String) -> Unit) {
+internal suspend fun streamRenderPassesFromDevice(
+  device: String,
+  parseOnNewRenderPass: (String) -> Unit,
+) {
   val renderPassChannel: Channel<String> = Channel(Channel.BUFFERED)
   coroutineScope {
     launch {
@@ -41,7 +44,7 @@ internal suspend fun streamRenderPassesFromDevice(device: String, parseOnNewRend
  * 2) A reattempt at establishing socket connection without restarting the app
  *
  * @param onNewRenderPass is called from an arbitrary thread, so it is important to ensure that the
- *        caller is thread safe
+ *   caller is thread safe
  */
 private suspend fun pollSocket(device: String, onNewRenderPass: suspend (String) -> Unit) {
   withContext(Dispatchers.IO) {
@@ -64,9 +67,7 @@ private suspend fun pollSocket(device: String, onNewRenderPass: suspend (String)
   }
 }
 
-/**
- * Force [pollSocket] to exit with exception if the coroutine is cancelled. See comment below.
- */
+/** Force [pollSocket] to exit with exception if the coroutine is cancelled. See comment below. */
 private suspend fun Socket.useWithCancellation(block: suspend (Socket) -> Unit) {
   val socket = this
   coroutineScope {
@@ -74,11 +75,7 @@ private suspend fun Socket.useWithCancellation(block: suspend (Socket) -> Unit) 
     // cancelled. This causes any code reading from the socket to throw a CancellationException.
     // We also need to explicitly cancel this coroutine if the block returns on its own, otherwise
     // the coroutineScope will never exit.
-    val socketJob = launch {
-      socket.use {
-        awaitCancellation()
-      }
-    }
+    val socketJob = launch { socket.use { awaitCancellation() } }
 
     block(socket)
     socketJob.cancel()
@@ -86,37 +83,29 @@ private suspend fun Socket.useWithCancellation(block: suspend (Socket) -> Unit) 
 }
 
 /**
- * Call adb to setup a port forwarding to the server socket, and calls block with the allocated
- * port number if successful.
+ * Call adb to setup a port forwarding to the server socket, and calls block with the allocated port
+ * number if successful.
  *
  * If block throws or returns on finish, the port forwarding is removed via adb (best effort).
  */
 @Suppress("BlockingMethodInNonBlockingContext")
 private suspend inline fun runForwardingPortThroughAdb(device: String, block: (port: Int) -> Unit) {
-  val process = ProcessBuilder(
-    "adb", "-s", device, "forward", "tcp:0", "localabstract:workflow-trace"
-  ).start()
+  val process =
+    ProcessBuilder("adb", "-s", device, "forward", "tcp:0", "localabstract:workflow-trace").start()
 
   // The adb forward command will output the port number it picks to connect.
-  val forwardReturnCode = runInterruptible {
-    process.waitFor()
-  }
+  val forwardReturnCode = runInterruptible { process.waitFor() }
   if (forwardReturnCode != 0) {
     return
   }
 
-  val port = process.inputStream.bufferedReader().readText()
-    .trim().toInt()
+  val port = process.inputStream.bufferedReader().readText().trim().toInt()
 
   try {
     block(port)
   } finally {
     // We don't care if this fails since there's nothing we can do then anyway. It just means
     // there's an extra forward left open, but that's not a big deal.
-    runCatching {
-      ProcessBuilder(
-        "adb", "forward", "--remove", "tcp:$port"
-      ).start()
-    }
+    runCatching { ProcessBuilder("adb", "forward", "--remove", "tcp:$port").start() }
   }
 }

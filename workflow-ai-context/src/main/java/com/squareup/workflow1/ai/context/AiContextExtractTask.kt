@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ai.context
 
+import java.io.File
+import java.util.jar.JarFile
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -9,41 +11,35 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import java.io.File
-import java.util.jar.JarFile
 
 /**
- * Gradle task that discovers runtime classpath archives and extracts AI context
- * (AGENTS.md, skills) from workflow-kotlin JARs.
+ * Gradle task that discovers runtime classpath archives and extracts AI context (AGENTS.md, skills)
+ * from workflow-kotlin JARs.
  *
- * Use `--preview` to see what would be extracted without writing files.
- * For interactive prompting, use `scripts/extract-ai-context.sh` which wraps
- * this task with a shell-based confirmation prompt.
+ * Use `--preview` to see what would be extracted without writing files. For interactive prompting,
+ * use `scripts/extract-ai-context.sh` which wraps this task with a shell-based confirmation prompt.
  */
 public abstract class AiContextExtractTask : DefaultTask() {
 
   @get:Input
   @get:Option(
     option = "preview",
-    description = "Print what would be extracted without writing files"
+    description = "Print what would be extracted without writing files",
   )
   public abstract val preview: Property<Boolean>
 
   @get:Input
   @get:Option(
     option = "tools",
-    description = "Comma-separated agent names used to derive standard skills directories"
+    description = "Comma-separated agent names used to derive standard skills directories",
   )
   public abstract val tools: Property<String>
 
-  @get:Internal
-  public abstract val outputDirectory: DirectoryProperty
+  @get:Internal public abstract val outputDirectory: DirectoryProperty
 
-  @get:Internal
-  public abstract val agentsFile: RegularFileProperty
+  @get:Internal public abstract val agentsFile: RegularFileProperty
 
-  @get:Input
-  public abstract val skillsDirectories: ListProperty<String>
+  @get:Input public abstract val skillsDirectories: ListProperty<String>
 
   init {
     preview.convention(false)
@@ -53,26 +49,21 @@ public abstract class AiContextExtractTask : DefaultTask() {
   @TaskAction
   public fun extract() {
     val archiveFiles = collectClasspathArchives()
-    logger.lifecycle(
-      "Discovered ${archiveFiles.size} classpath archives to scan for AI context..."
-    )
+    logger.lifecycle("Discovered ${archiveFiles.size} classpath archives to scan for AI context...")
 
     if (archiveFiles.isEmpty()) {
       logger.lifecycle("No classpath archives found. Nothing to extract.")
       return
     }
 
-    val configuredSkillDirs = skillsDirectories.get()
-      .map { it.trim() }
-      .filter { it.isNotEmpty() }
-    val toolNames = tools.get().split(",")
-      .map { it.trim().lowercase() }
-      .filter { it.isNotEmpty() }
-    val skillDirCandidates = if (configuredSkillDirs.isNotEmpty()) {
-      configuredSkillDirs
-    } else {
-      toolNames.map { resolveSkillsDir(it) }
-    }
+    val configuredSkillDirs = skillsDirectories.get().map { it.trim() }.filter { it.isNotEmpty() }
+    val toolNames = tools.get().split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+    val skillDirCandidates =
+      if (configuredSkillDirs.isNotEmpty()) {
+        configuredSkillDirs
+      } else {
+        toolNames.map { resolveSkillsDir(it) }
+      }
     val skillDirs = skillDirCandidates.distinct()
     val outputDir = outputDirectory.get().asFile
 
@@ -97,14 +88,15 @@ public abstract class AiContextExtractTask : DefaultTask() {
 
     // Determine AGENTS.md action
     val targetAgentsFile = agentsFile.get().asFile
-    val agentsAction = when {
-      agentsContent.isEmpty() -> null
-      !targetAgentsFile.exists() -> "Will create new file"
-      targetAgentsFile.readText().let {
-        it.contains(AGENTS_INJECTION_START) && it.contains(AGENTS_INJECTION_END)
-      } -> "Will update existing injection block"
-      else -> "Will append to existing file"
-    }
+    val agentsAction =
+      when {
+        agentsContent.isEmpty() -> null
+        !targetAgentsFile.exists() -> "Will create new file"
+        targetAgentsFile.readText().let {
+          it.contains(AGENTS_INJECTION_START) && it.contains(AGENTS_INJECTION_END)
+        } -> "Will update existing injection block"
+        else -> "Will append to existing file"
+      }
 
     // Preview: print report and return
     if (preview.get()) {
@@ -113,11 +105,12 @@ public abstract class AiContextExtractTask : DefaultTask() {
       logger.lifecycle("This will:")
       logger.lifecycle("")
       if (agentsAction != null) {
-        val verb = when (agentsAction) {
-          "Will create new file" -> "Create"
-          "Will update existing injection block" -> "Update the injection block in"
-          else -> "Append workflow-kotlin context to"
-        }
+        val verb =
+          when (agentsAction) {
+            "Will create new file" -> "Create"
+            "Will update existing injection block" -> "Update the injection block in"
+            else -> "Append workflow-kotlin context to"
+          }
         logger.lifecycle("  - $verb ${displayPath(targetAgentsFile)}")
       }
       if (skills.isNotEmpty()) {
@@ -168,25 +161,21 @@ public abstract class AiContextExtractTask : DefaultTask() {
   }
 
   /**
-   * Finds all JAR/AAR files across resolved classpath configurations of all subprojects.
-   * Uses lenient resolution to handle partial failures gracefully.
+   * Finds all JAR/AAR files across resolved classpath configurations of all subprojects. Uses
+   * lenient resolution to handle partial failures gracefully.
    */
   private fun collectClasspathArchives(): List<File> {
     return project.allprojects
       .flatMap { proj ->
-        val matchingConfigs = proj.configurations
-          .filter { config ->
+        val matchingConfigs =
+          proj.configurations.filter { config ->
             config.isCanBeResolved &&
-              (
-                config.name.endsWith("RuntimeClasspath", ignoreCase = true) ||
-                  config.name.endsWith("CompileClasspath", ignoreCase = true)
-                )
+              (config.name.endsWith("RuntimeClasspath", ignoreCase = true) ||
+                config.name.endsWith("CompileClasspath", ignoreCase = true))
           }
         matchingConfigs.flatMap { config ->
           try {
-            val resolved = config.incoming.artifactView { view ->
-              view.lenient(true)
-            }.files.files
+            val resolved = config.incoming.artifactView { view -> view.lenient(true) }.files.files
             resolved.filter { it.extension == "jar" || it.extension == "aar" }
           } catch (e: Exception) {
             logger.debug("Could not resolve ${proj.name}/${config.name}: ${e.message}")
@@ -214,34 +203,34 @@ public abstract class AiContextExtractTask : DefaultTask() {
     internal const val AGENTS_INJECTION_END = "<!-- $AGENTS_INJECTION_SLUG:END -->"
 
     /**
-     * Standard agent-to-directory mappings following the Agent Skills specification.
-     * See https://agentskills.io and https://github.com/vercel-labs/skills
+     * Standard agent-to-directory mappings following the Agent Skills specification. See
+     * https://agentskills.io and https://github.com/vercel-labs/skills
      *
-     * Many agents share `.agents/skills/` as their standard directory.
-     * Using `amp` as the tool name covers all of them.
+     * Many agents share `.agents/skills/` as their standard directory. Using `amp` as the tool name
+     * covers all of them.
      */
-    internal val AGENT_SKILLS_DIRS: Map<String, String> = mapOf(
-      // .agents/skills/ — universal standard
-      "amp" to ".agents/skills",
-      "cursor" to ".agents/skills",
-      "codex" to ".agents/skills",
-      "github-copilot" to ".agents/skills",
-      "gemini-cli" to ".agents/skills",
-      "opencode" to ".agents/skills",
-      // Agent-specific directories
-      "claude-code" to ".claude/skills",
-      "goose" to ".goose/skills",
-      "windsurf" to ".windsurf/skills",
-      "roo" to ".roo/skills",
-    )
+    internal val AGENT_SKILLS_DIRS: Map<String, String> =
+      mapOf(
+        // .agents/skills/ — universal standard
+        "amp" to ".agents/skills",
+        "cursor" to ".agents/skills",
+        "codex" to ".agents/skills",
+        "github-copilot" to ".agents/skills",
+        "gemini-cli" to ".agents/skills",
+        "opencode" to ".agents/skills",
+        // Agent-specific directories
+        "claude-code" to ".claude/skills",
+        "goose" to ".goose/skills",
+        "windsurf" to ".windsurf/skills",
+        "roo" to ".roo/skills",
+      )
 
     /**
-     * Resolves a tool name to its skills directory path.
-     * Known agents use standard mappings; unknown names use `.{name}/skills` as fallback.
+     * Resolves a tool name to its skills directory path. Known agents use standard mappings;
+     * unknown names use `.{name}/skills` as fallback.
      */
     internal fun resolveSkillsDir(toolName: String): String {
-      return AGENT_SKILLS_DIRS[toolName.trim().lowercase()]
-        ?: ".${toolName.trim()}/skills"
+      return AGENT_SKILLS_DIRS[toolName.trim().lowercase()] ?: ".${toolName.trim()}/skills"
     }
 
     /**
@@ -250,22 +239,14 @@ public abstract class AiContextExtractTask : DefaultTask() {
      * - If [existing] contains injection markers, replaces the block between them.
      * - Otherwise, appends the wrapped injection block to the end.
      */
-    internal fun mergeAgentsMd(
-      existing: String,
-      agentsContent: List<String>,
-    ): String {
+    internal fun mergeAgentsMd(existing: String, agentsContent: List<String>): String {
       val merged = agentsContent.joinToString("\n\n")
-      val wrappedInjection =
-        "$AGENTS_INJECTION_START\n$merged\n$AGENTS_INJECTION_END"
+      val wrappedInjection = "$AGENTS_INJECTION_START\n$merged\n$AGENTS_INJECTION_END"
       return when {
-        existing.contains(AGENTS_INJECTION_START) &&
-          existing.contains(AGENTS_INJECTION_END) -> {
+        existing.contains(AGENTS_INJECTION_START) && existing.contains(AGENTS_INJECTION_END) -> {
           val startPattern = Regex.escape(AGENTS_INJECTION_START)
           val endPattern = Regex.escape(AGENTS_INJECTION_END)
-          existing.replace(
-            Regex("$startPattern[\\s\\S]*?$endPattern"),
-            wrappedInjection
-          )
+          existing.replace(Regex("$startPattern[\\s\\S]*?$endPattern"), wrappedInjection)
         }
         existing.isNotEmpty() -> {
           existing.trimEnd() + "\n\n" + wrappedInjection + "\n"
@@ -275,16 +256,16 @@ public abstract class AiContextExtractTask : DefaultTask() {
     }
 
     /**
-     * Scans a JAR file for AI context entries under [PREFIX].
-     * Returns a pair of (agentsContent, skills) where skills are (relativePath, bytes).
+     * Scans a JAR file for AI context entries under [PREFIX]. Returns a pair of (agentsContent,
+     * skills) where skills are (relativePath, bytes).
      */
-    internal fun scanJar(
-      jarFile: java.io.File,
-    ): Pair<List<String>, List<Pair<String, ByteArray>>> {
+    internal fun scanJar(jarFile: java.io.File): Pair<List<String>, List<Pair<String, ByteArray>>> {
       val agentsContent = mutableListOf<String>()
       val skills = mutableListOf<Pair<String, ByteArray>>()
       JarFile(jarFile).use { jar ->
-        jar.entries().asSequence()
+        jar
+          .entries()
+          .asSequence()
           .filter { !it.isDirectory }
           .forEach { entry ->
             when {

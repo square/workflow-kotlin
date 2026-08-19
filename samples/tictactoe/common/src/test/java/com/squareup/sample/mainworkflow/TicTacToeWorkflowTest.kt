@@ -23,38 +23,36 @@ import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import org.junit.Test
 
 /**
- * Demonstrates unit testing of a composite workflow. Note how we
- * pass in fakes for the nested workflows.
+ * Demonstrates unit testing of a composite workflow. Note how we pass in fakes for the nested
+ * workflows.
  */
 class TicTacToeWorkflowTest {
-  @Test fun `starts in auth over empty game`() {
+  @Test
+  fun `starts in auth over empty game`() {
     TicTacToeWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
-      awaitNextRendering()
-        .let { screen ->
-          assertThat(screen.panels).hasSize(1)
-          val panelBody = (screen.panels[0].content as BackStackScreen<*>).top
-          assertThat(panelBody).isEqualTo(S(DEFAULT_AUTH))
+      awaitNextRendering().let { screen ->
+        assertThat(screen.panels).hasSize(1)
+        val panelBody = (screen.panels[0].content as BackStackScreen<*>).top
+        assertThat(panelBody).isEqualTo(S(DEFAULT_AUTH))
 
-          // This GamePlayScreen() is emitted by TicTacToeWorkflow itself.
-          assertThat(screen.body.content).isEqualTo(GamePlayScreen())
-        }
+        // This GamePlayScreen() is emitted by TicTacToeWorkflow itself.
+        assertThat(screen.body.content).isEqualTo(GamePlayScreen())
+      }
     }
   }
 
-  @Test fun `starts game on auth then moves to run game`() {
+  @Test
+  fun `starts game on auth then moves to run game`() {
     val authWorkflow: AuthWorkflow = Workflow.stateless {
-      runningWorker(Worker.from { }) {
-        action("auth") { setOutput(Authorized("auth")) }
-      }
+      runningWorker(Worker.from {}) { action("auth") { setOutput(Authorized("auth")) } }
       authScreen()
     }
 
     TicTacToeWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
-      awaitNextRendering()
-        .let { screen ->
-          assertThat(screen.panels).isEmpty()
-          assertThat(screen.body.content).isEqualTo(S(DEFAULT_RUN_GAME))
-        }
+      awaitNextRendering().let { screen ->
+        assertThat(screen.panels).isEmpty()
+        assertThat(screen.body.content).isEqualTo(S(DEFAULT_RUN_GAME))
+      }
     }
   }
 
@@ -65,13 +63,11 @@ class TicTacToeWorkflowTest {
   private val BodyAndOverlaysScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
     get() = overlays.mapNotNull { it as? PanelOverlay<*> }
 
-  private fun authWorkflow(
-    screen: String = DEFAULT_AUTH
-  ): AuthWorkflow = Workflow.rendering(authScreen(screen))
+  private fun authWorkflow(screen: String = DEFAULT_AUTH): AuthWorkflow =
+    Workflow.rendering(authScreen(screen))
 
-  private fun runGameWorkflow(
-    body: String = DEFAULT_RUN_GAME
-  ): RunGameWorkflow = Workflow.rendering(RunGameRendering(S(body)))
+  private fun runGameWorkflow(body: String = DEFAULT_RUN_GAME): RunGameWorkflow =
+    Workflow.rendering(RunGameRendering(S(body)))
 
   private companion object {
     const val DEFAULT_AUTH = "DefaultAuthScreen"

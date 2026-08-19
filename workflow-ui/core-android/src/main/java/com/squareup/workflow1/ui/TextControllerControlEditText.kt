@@ -21,10 +21,12 @@ public fun TextController.control(view: EditText) {
   // Do nothing if already subscribed on a previous update pass and the coroutine is still active.
   val registeredController =
     view.getTag(R.id.text_controller_rendering) as? TextControllerSubscription
-  if (registeredController?.controller === this &&
-    // This check ensures the subscription is re-started if the view was somehow detached since the
-    // call, eg. in a RecyclerView.
-    registeredController.subscription.isActive
+  if (
+    registeredController?.controller === this &&
+      // This check ensures the subscription is re-started if the view was somehow detached since
+      // the
+      // call, eg. in a RecyclerView.
+      registeredController.subscription.isActive
   ) {
     return
   }
@@ -50,10 +52,7 @@ public fun TextController.control(view: EditText) {
   view.setTag(R.id.text_controller_rendering, TextControllerSubscription(this, subscription))
 }
 
-private class TextControllerSubscription(
-  val controller: TextController,
-  val subscription: Job
-)
+private class TextControllerSubscription(val controller: TextController, val subscription: Job)
 
 /**
  * Suspends the coroutine until cancelled, calling [handler] any time a text change event is fired.
@@ -62,25 +61,16 @@ private suspend fun TextView.listenForTextChangesUntilCancelled(
   handler: (CharSequence?) -> Unit
 ): Nothing {
   suspendCancellableCoroutine<Nothing> { continuation ->
-    val textWatcher = object : TextWatcher {
-      override fun onTextChanged(
-        s: CharSequence?,
-        start: Int,
-        before: Int,
-        count: Int
-      ) {
-        handler(s)
+    val textWatcher =
+      object : TextWatcher {
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+          handler(s)
+        }
+
+        override fun afterTextChanged(s: Editable) = Unit
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
       }
-
-      override fun afterTextChanged(s: Editable) = Unit
-
-      override fun beforeTextChanged(
-        s: CharSequence?,
-        start: Int,
-        count: Int,
-        after: Int
-      ) = Unit
-    }
     addTextChangedListener(textWatcher)
     continuation.invokeOnCancellation { removeTextChangedListener(textWatcher) }
   }

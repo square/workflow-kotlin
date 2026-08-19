@@ -28,9 +28,11 @@ class TodoAppTest {
 
   private val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
   private val uiDevice by lazy { UiDevice.getInstance(getInstrumentation()) }
 
   @Before
@@ -43,30 +45,23 @@ class TodoAppTest {
     uiDevice.unfreezeRotation()
   }
 
-  @Test fun navigatesToListAndBack_portrait() {
+  @Test
+  fun navigatesToListAndBack_portrait() {
     val isPortrait = uiDevice.displayWidth < uiDevice.displayHeight
     if (!isPortrait) uiDevice.setOrientationLeft()
 
-    onView(withText("Daily Chores"))
-      .check(matches(allOf(isDisplayed())))
-      .perform(click())
-    onView(withId(R.id.item_container))
-      .check(matches(isDisplayed()))
-      .perform(pressBack())
-    onView(withId(R.id.todo_lists_container))
-      .check(matches(isDisplayed()))
+    onView(withText("Daily Chores")).check(matches(allOf(isDisplayed()))).perform(click())
+    onView(withId(R.id.item_container)).check(matches(isDisplayed())).perform(pressBack())
+    onView(withId(R.id.todo_lists_container)).check(matches(isDisplayed()))
   }
 
-  @Test fun showsOverviewAndDetail_landscape() {
+  @Test
+  fun showsOverviewAndDetail_landscape() {
     val isPortrait = uiDevice.displayWidth < uiDevice.displayHeight
     if (isPortrait) uiDevice.setOrientationLeft()
 
-    onView(withText("Daily Chores"))
-      .check(matches(allOf(isDisplayed())))
-      .perform(click())
-    onView(withId(R.id.item_container))
-      .check(matches(isDisplayed()))
-    onView(withId(R.id.todo_lists_container))
-      .check(matches(isDisplayed()))
+    onView(withText("Daily Chores")).check(matches(allOf(isDisplayed()))).perform(click())
+    onView(withId(R.id.item_container)).check(matches(isDisplayed()))
+    onView(withId(R.id.todo_lists_container)).check(matches(isDisplayed()))
   }
 }

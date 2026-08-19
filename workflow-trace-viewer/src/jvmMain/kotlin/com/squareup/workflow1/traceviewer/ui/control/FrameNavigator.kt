@@ -34,15 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * A frame navigator that shows the current frame number with dropdown selection
- * and left/right navigation arrows.
+ * A frame navigator that shows the current frame number with dropdown selection and left/right
+ * navigation arrows.
  */
 @Composable
 internal fun FrameNavigator(
   totalFrames: Int,
   currentIndex: Int,
   onIndexChange: (Int) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   var dropdownExpanded by remember { mutableStateOf(false) }
 
@@ -50,13 +50,12 @@ internal fun FrameNavigator(
     modifier = modifier,
     color = Color.White,
     elevation = 2.dp,
-    shape = RoundedCornerShape(8.dp)
+    shape = RoundedCornerShape(8.dp),
   ) {
     Row(
-      modifier = Modifier
-        .padding(horizontal = 8.dp, vertical = 4.dp),
+      modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(4.dp)
+      horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
       // Previous frame button
       IconButton(
@@ -65,44 +64,41 @@ internal fun FrameNavigator(
             onIndexChange(currentIndex - 1)
           }
         },
-        enabled = currentIndex > 0
+        enabled = currentIndex > 0,
       ) {
         Icon(
           imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
           contentDescription = "Previous frame",
-          tint = if (currentIndex > 0) Color.Black else Color.LightGray
+          tint = if (currentIndex > 0) Color.Black else Color.LightGray,
         )
       }
 
       Box {
         Row(
-          modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .clickable { dropdownExpanded = true }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+          modifier =
+            Modifier.clip(RoundedCornerShape(4.dp))
+              .clickable { dropdownExpanded = true }
+              .padding(horizontal = 12.dp, vertical = 8.dp),
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
           Text(
             text = "Frame ${currentIndex + 1}",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.Black
+            color = Color.Black,
           )
           Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = "Select frame",
-            tint = Color.Black
+            tint = Color.Black,
           )
         }
 
         DropdownMenu(
           expanded = dropdownExpanded,
           onDismissRequest = { dropdownExpanded = false },
-          modifier = Modifier
-            .background(Color.White)
-            .width(150.dp)
-            .heightIn(max = 350.dp)
+          modifier = Modifier.background(Color.White).width(150.dp).heightIn(max = 350.dp),
         ) {
           (0 until totalFrames).forEach { index ->
             DropdownMenuItem(
@@ -110,12 +106,12 @@ internal fun FrameNavigator(
                 onIndexChange(index)
                 dropdownExpanded = false
               },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
             ) {
               Text(
                 text = "Frame ${index + 1}",
                 color = if (index == currentIndex) Color.Black else Color.LightGray,
-                fontWeight = if (index == currentIndex) FontWeight.Bold else FontWeight.Normal
+                fontWeight = if (index == currentIndex) FontWeight.Bold else FontWeight.Normal,
               )
             }
           }
@@ -128,12 +124,12 @@ internal fun FrameNavigator(
             onIndexChange(currentIndex + 1)
           }
         },
-        enabled = currentIndex < totalFrames - 1
+        enabled = currentIndex < totalFrames - 1,
       ) {
         Icon(
           imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
           contentDescription = "Next frame",
-          tint = if (currentIndex < totalFrames - 1) Color.Black else Color.LightGray
+          tint = if (currentIndex < totalFrames - 1) Color.Black else Color.LightGray,
         )
       }
     }

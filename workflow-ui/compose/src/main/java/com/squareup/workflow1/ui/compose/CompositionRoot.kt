@@ -10,9 +10,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 
-/**
- * Used by [WrappedWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
- */
+/** Used by [WrappedWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once. */
 private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { false }
 
 /**
@@ -21,8 +19,8 @@ private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { fals
  * [composition locals][androidx.compose.runtime.CompositionLocal] that all
  * [ScreenComposableFactory] factories need access to, such as UI themes.
  *
- * This function will be called once, to wrap the _highest-level_ [ScreenComposableFactory]
- * in the tree. However, composition locals are propagated down to child [ScreenComposableFactory]
+ * This function will be called once, to wrap the _highest-level_ [ScreenComposableFactory] in the
+ * tree. However, composition locals are propagated down to child [ScreenComposableFactory]
  * compositions, so any locals provided here will be available in _all_ [ScreenComposableFactory]
  * compositions.
  */
@@ -54,10 +52,7 @@ public fun ScreenComposableFactoryFinder.withCompositionRoot(
  */
 @VisibleForTesting(otherwise = PRIVATE)
 @Composable
-internal fun WrappedWithRootIfNecessary(
-  root: CompositionRoot,
-  content: @Composable () -> Unit
-) {
+internal fun WrappedWithRootIfNecessary(root: CompositionRoot, content: @Composable () -> Unit) {
   if (LocalHasViewFactoryRootBeenApplied.current) {
     // The only way this local can have the value true is if, somewhere above this point in the
     // composition, the else case below was hit and wrapped us in the local. Since the root
@@ -67,27 +62,26 @@ internal fun WrappedWithRootIfNecessary(
     // If the local is false, this is the first time this function has appeared in the composition
     // so far. We provide a true value for the local for everything below us, so any recursive
     // calls to this function will hit the if case above and not re-apply the wrapper.
-    CompositionLocalProvider(LocalHasViewFactoryRootBeenApplied provides true) {
-      root(content)
-    }
+    CompositionLocalProvider(LocalHasViewFactoryRootBeenApplied provides true) { root(content) }
   }
 }
 
 private fun ScreenComposableFactoryFinder.mapFactories(
   transform: (ScreenComposableFactory<*>) -> ScreenComposableFactory<*>
-): ScreenComposableFactoryFinder = object : ScreenComposableFactoryFinder {
-  override fun <ScreenT : Screen> getComposableFactoryForRendering(
-    environment: ViewEnvironment,
-    rendering: ScreenT
-  ): ScreenComposableFactory<ScreenT>? {
-    val factoryFor = this@mapFactories.getComposableFactoryForRendering(environment, rendering)
-      ?: return null
-    val transformedFactory = transform(factoryFor)
-    check(transformedFactory.type == rendering::class) {
-      "Expected transform to return a ScreenComposableFactory that is compatible " +
-        "with ${rendering::class}, but got one with type ${transformedFactory.type}"
+): ScreenComposableFactoryFinder =
+  object : ScreenComposableFactoryFinder {
+    override fun <ScreenT : Screen> getComposableFactoryForRendering(
+      environment: ViewEnvironment,
+      rendering: ScreenT,
+    ): ScreenComposableFactory<ScreenT>? {
+      val factoryFor =
+        this@mapFactories.getComposableFactoryForRendering(environment, rendering) ?: return null
+      val transformedFactory = transform(factoryFor)
+      check(transformedFactory.type == rendering::class) {
+        "Expected transform to return a ScreenComposableFactory that is compatible " +
+          "with ${rendering::class}, but got one with type ${transformedFactory.type}"
+      }
+      @Suppress("UNCHECKED_CAST")
+      return transformedFactory as ScreenComposableFactory<ScreenT>
     }
-    @Suppress("UNCHECKED_CAST")
-    return transformedFactory as ScreenComposableFactory<ScreenT>
   }
-}

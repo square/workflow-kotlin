@@ -18,21 +18,19 @@ class HelloComposeWorkflowTest {
 
   private val composeRule = createAndroidComposeRule<HelloComposeWorkflowActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun togglesBetweenStates() {
+  @Test
+  fun togglesBetweenStates() {
     composeRule.activityRule.scenario
 
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Goodbye")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
+    composeRule.onNodeWithText("Hello").assertIsDisplayed().performClick()
+    composeRule.onNodeWithText("Goodbye").assertIsDisplayed().performClick()
+    composeRule.onNodeWithText("Hello").assertIsDisplayed()
   }
 }

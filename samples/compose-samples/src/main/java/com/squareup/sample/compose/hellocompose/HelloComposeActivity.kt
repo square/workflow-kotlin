@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 class HelloComposeActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent {
-      App()
-    }
+    setContent { App() }
   }
 }

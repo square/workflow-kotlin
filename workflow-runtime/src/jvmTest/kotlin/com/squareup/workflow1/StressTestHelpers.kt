@@ -7,13 +7,13 @@ import java.util.concurrent.CountDownLatch
  * down to the nearest even number, and at least 2.
  */
 internal fun calculateSaturatingTestThreadCount(minThreads: Int) =
-  Runtime.getRuntime().availableProcessors().let {
-    if (it.mod(2) != 0) it - 1 else it
-  }.coerceAtLeast(minThreads)
+  Runtime.getRuntime()
+    .availableProcessors()
+    .let { if (it.mod(2) != 0) it - 1 else it }
+    .coerceAtLeast(minThreads)
 
 /**
- * Calls [CountDownLatch.await] in a loop until count is zero, even if the thread gets
- * interrupted.
+ * Calls [CountDownLatch.await] in a loop until count is zero, even if the thread gets interrupted.
  */
 @Suppress("CheckResult")
 internal fun CountDownLatch.awaitUntilDone() {

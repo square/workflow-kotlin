@@ -1,117 +1,95 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.Worker
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WorkerTesterTest {
 
-  @Test fun `assertNoOutput succeeds in live flow without output`() {
-    val worker = Worker.create<Unit> {
-      suspendCancellableCoroutine { }
-    }
-    worker.test {
-      assertNoOutput()
-    }
+  @Test
+  fun `assertNoOutput succeeds in live flow without output`() {
+    val worker = Worker.create<Unit> { suspendCancellableCoroutine {} }
+    worker.test { assertNoOutput() }
   }
 
-  @Test fun `assertNoOutput fails after worker finishes without emitting`() {
+  @Test
+  fun `assertNoOutput fails after worker finishes without emitting`() {
     val worker = Worker.finished<Unit>()
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertNoOutput()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertNoOutput() } }
     assertEquals(
       expected = "Expected no output, completion, or error to have been emitted.",
-      actual = error.message
+      actual = error.message,
     )
   }
 
-  @Test fun `assertNotFinished fails after worker finished`() {
+  @Test
+  fun `assertNotFinished fails after worker finished`() {
     val worker = Worker.finished<Unit>()
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertNotFinished()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertNotFinished() } }
     assertEquals("Expected Worker to not be finished.", error.message)
   }
 
-  @Test fun `assertNotFinished true while worker running`() {
+  @Test
+  fun `assertNotFinished true while worker running`() {
     val worker = Worker.from<Unit> { suspendCancellableCoroutine {} }
-    worker.test {
-      assertNotFinished()
-    }
+    worker.test { assertNotFinished() }
   }
 
-  @Test fun `assertNoOutput fails after worker emits`() {
+  @Test
+  fun `assertNoOutput fails after worker emits`() {
     val worker = Worker.from { Unit }
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertNoOutput()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertNoOutput() } }
     assertEquals(
       expected = "Expected no output, completion, or error to have been emitted.",
-      actual = error.message
+      actual = error.message,
     )
   }
 
-  @Test fun `assertFinished passes when worker finishes without emitting`() {
+  @Test
+  fun `assertFinished passes when worker finishes without emitting`() {
     val worker = Worker.finished<Unit>()
-    worker.test {
-      assertFinished()
-    }
+    worker.test { assertFinished() }
   }
 
-  @Test fun `assertFinished fails when worker hasn't finished and hasn't emitted`() {
+  @Test
+  fun `assertFinished fails when worker hasn't finished and hasn't emitted`() {
     val worker = Worker.from<Unit> { suspendCancellableCoroutine {} }
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertFinished()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertFinished() } }
     assertEquals("Expected Worker to be finished.", error.message)
   }
 
-  @Test fun `assertFinished fails when worker has emitted but hasn't finished`() {
+  @Test
+  fun `assertFinished fails when worker has emitted but hasn't finished`() {
     val worker = Worker.create {
       emit("output")
       suspendCancellableCoroutine {}
     }
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertFinished()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertFinished() } }
     assertEquals("Expected Worker to be finished. Emitted outputs: [output]", error.message)
   }
 
-  @Test fun `assertFinished failure includes all queued outputs`() {
+  @Test
+  fun `assertFinished failure includes all queued outputs`() {
     val worker = Worker.create {
       emit("foo")
       emit("bar")
       suspendCancellableCoroutine {}
     }
-    val error = assertFailsWith<AssertionError> {
-      worker.test {
-        assertFinished()
-      }
-    }
+    val error = assertFailsWith<AssertionError> { worker.test { assertFinished() } }
     assertEquals("Expected Worker to be finished. Emitted outputs: [foo, bar]", error.message)
   }
 
-  @Test fun `nextOutput returns expected`() {
+  @Test
+  fun `nextOutput returns expected`() {
     val worker = Worker.create {
       emit("foo")
       emit("bar")
@@ -123,7 +101,8 @@ class WorkerTesterTest {
     }
   }
 
-  @Test fun `cancelWorker cancels worker`() {
+  @Test
+  fun `cancelWorker cancels worker`() {
     var capturedContext: CoroutineContext? = null
     val worker = Worker.create {
       capturedContext = coroutineContext
@@ -137,44 +116,42 @@ class WorkerTesterTest {
     }
   }
 
-  @Test fun `getException gives expected value`() {
+  @Test
+  fun `getException gives expected value`() {
     val expectedException = Throwable("My Special One.")
-    val worker = Worker.create<Unit> {
-      throw expectedException
-    }
+    val worker = Worker.create<Unit> { throw expectedException }
     worker.test {
       val exception = getException()
       assertEquals(expectedException.message, exception.message)
     }
   }
 
-  @Test fun `skips delays`() {
+  @Test
+  fun `skips delays`() {
     val worker = Worker.create {
       delay(1000)
       emit("foo")
     }
-    worker.test(
-      timeoutMs = 50L
-    ) {
+    worker.test(timeoutMs = 50L) {
       val first = nextOutput()
       assertEquals("foo", first)
     }
   }
 
-  @Test fun `times out when it should`() {
+  @Test
+  fun `times out when it should`() {
     val worker = Worker.create {
       emit("foo")
       suspendCancellableCoroutine {}
     }
-    val error = assertFailsWith<AssertionError> {
-      worker.test(
-        timeoutMs = 5L
-      ) {
-        val first = nextOutput()
-        assertEquals("foo", first)
-        nextOutput()
+    val error =
+      assertFailsWith<AssertionError> {
+        worker.test(timeoutMs = 5L) {
+          val first = nextOutput()
+          assertEquals("foo", first)
+          nextOutput()
+        }
       }
-    }
     assertEquals(error.message!!, "No value produced in 5ms")
   }
 

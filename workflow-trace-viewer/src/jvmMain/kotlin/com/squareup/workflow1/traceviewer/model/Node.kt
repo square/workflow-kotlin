@@ -5,7 +5,8 @@ package com.squareup.workflow1.traceviewer.model
  * children workflows, a tree structure is most appropriate for representing the data rather than
  * using flat data structures like an array.
  *
- * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
+ * TBD what more metadata should be involved with each node, e.g. (props, states, # of render
+ * passes)
  */
 internal data class Node(
   val name: String,
@@ -15,7 +16,7 @@ internal data class Node(
   val props: String,
   val state: String,
   val rendering: String = "",
-  @Transient val children: LinkedHashMap<String, Node> = LinkedHashMap()
+  @Transient val children: LinkedHashMap<String, Node> = LinkedHashMap(),
 ) {
 
   override fun toString(): String {

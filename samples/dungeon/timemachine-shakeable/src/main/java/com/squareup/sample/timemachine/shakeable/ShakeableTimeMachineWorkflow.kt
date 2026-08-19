@@ -18,53 +18,50 @@ import kotlin.time.ExperimentalTime
 
 /**
  * A wrapper around a [TimeMachineWorkflow] that uses [ShakeableTimeMachineLayoutRunner] to render
- * the [delegate workflow][TimeMachineWorkflow.delegateWorkflow]'s rendering, but wrap it in a
- * UI to scrub around the recorded timeline when the device is shaken.
+ * the [delegate workflow][TimeMachineWorkflow.delegateWorkflow]'s rendering, but wrap it in a UI to
+ * scrub around the recorded timeline when the device is shaken.
  *
  * This workflow takes a [PropsFactory] as its props. See that class for more documentation.
  */
 @ExperimentalTime
 class ShakeableTimeMachineWorkflow<P, O : Any, out R : Screen>(
   private val timeMachineWorkflow: TimeMachineWorkflow<P, O, R>,
-  context: Context
+  context: Context,
 ) : StatefulWorkflow<PropsFactory<P>, State, O, ShakeableTimeMachineScreen>() {
 
   /**
    * A factory that knows how to create the props for a [TimeMachineWorkflow.delegateWorkflow],
    * given a flag indicating whether the workflow is in recording mode or not.
    */
-  class PropsFactory<out P>(
-    val createDelegateProps: (recording: Boolean) -> P
-  )
+  class PropsFactory<out P>(val createDelegateProps: (recording: Boolean) -> P)
 
   sealed class State {
     object Recording : State()
+
     data class PlayingBack(val timestamp: Duration) : State()
   }
 
   private val shakeWorker = ShakeWorker(context)
 
-  override fun initialState(
-    props: PropsFactory<P>,
-    snapshot: Snapshot?
-  ): State = Recording
+  override fun initialState(props: PropsFactory<P>, snapshot: Snapshot?): State = Recording
 
   override fun snapshotState(state: State): Snapshot? = null
 
   override fun render(
     renderProps: PropsFactory<P>,
     renderState: State,
-    context: RenderContext<PropsFactory<P>, State, O>
+    context: RenderContext<PropsFactory<P>, State, O>,
   ): ShakeableTimeMachineScreen {
     // Only listen to shakes when recording.
     if (renderState === Recording) context.runningWorker(shakeWorker) { onShake }
 
     val delegateProps = renderProps.createDelegateProps(renderState === Recording)
 
-    val timeMachineProps = when (renderState) {
-      Recording -> TimeMachineProps.Recording(delegateProps)
-      is PlayingBack -> TimeMachineProps.PlayingBackAt(delegateProps, renderState.timestamp)
-    }
+    val timeMachineProps =
+      when (renderState) {
+        Recording -> TimeMachineProps.Recording(delegateProps)
+        is PlayingBack -> TimeMachineProps.PlayingBackAt(delegateProps, renderState.timestamp)
+      }
 
     val timeMachineRendering =
       context.renderChild(timeMachineWorkflow, timeMachineProps) { output: O ->
@@ -74,41 +71,41 @@ class ShakeableTimeMachineWorkflow<P, O : Any, out R : Screen>(
     return ShakeableTimeMachineScreen(
       rendering = timeMachineRendering.value,
       totalDuration = timeMachineRendering.totalDuration,
-      playbackPosition = if (renderState is PlayingBack) {
-        minOf(renderState.timestamp, timeMachineRendering.totalDuration)
-      } else {
-        Duration.INFINITE
-      },
+      playbackPosition =
+        if (renderState is PlayingBack) {
+          minOf(renderState.timestamp, timeMachineRendering.totalDuration)
+        } else {
+          Duration.INFINITE
+        },
       recording = (renderState is Recording),
-      onSeek = when (renderState) {
-        Recording -> {
-          // No handler. Need the _ so the type inferencer doesn't get confused for the lambda
-          // below. This will be fixed with the new type inference algorithm in 1.4.
-          { _ -> }
-        }
-        is PlayingBack -> {
-          { position -> context.actionSink.send(SeekAction(position)) }
-        }
-      },
-      onResumeRecording = when (renderState) {
-        Recording -> {
-          // No handler.
-          {}
-        }
-        is PlayingBack -> {
-          { context.actionSink.send(ResumeRecordingAction()) }
-        }
-      }
+      onSeek =
+        when (renderState) {
+          Recording -> {
+            // No handler. Need the _ so the type inferencer doesn't get confused for the lambda
+            // below. This will be fixed with the new type inference algorithm in 1.4.
+            { _ -> }
+          }
+          is PlayingBack -> {
+            { position -> context.actionSink.send(SeekAction(position)) }
+          }
+        },
+      onResumeRecording =
+        when (renderState) {
+          Recording -> {
+            // No handler.
+            {}
+          }
+          is PlayingBack -> {
+            { context.actionSink.send(ResumeRecordingAction()) }
+          }
+        },
     )
   }
 
-  private val onShake = action("onShake") {
-    state = PlayingBack(Duration.INFINITE)
-  }
+  private val onShake = action("onShake") { state = PlayingBack(Duration.INFINITE) }
 
-  private inner class SeekAction(
-    private val newPosition: Duration
-  ) : WorkflowAction<PropsFactory<P>, State, O>() {
+  private inner class SeekAction(private val newPosition: Duration) :
+    WorkflowAction<PropsFactory<P>, State, O>() {
     override fun Updater.apply() {
       state = PlayingBack(newPosition)
     }

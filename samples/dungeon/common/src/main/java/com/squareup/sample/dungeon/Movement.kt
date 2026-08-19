@@ -14,16 +14,18 @@ import java.util.EnumSet.noneOf
  */
 data class Movement(
   private val directions: EnumSet<Direction> = noneOf(Direction::class.java),
-  val cellsPerSecond: Float = 1f
+  val cellsPerSecond: Float = 1f,
 ) : Iterable<Direction> by directions {
 
   constructor(
     vararg directions: Direction,
-    cellsPerSecond: Float = 1f
+    cellsPerSecond: Float = 1f,
   ) : this(copyOf(directions.asList()), cellsPerSecond)
 
   operator fun contains(direction: Direction): Boolean = direction in directions
+
   operator fun plus(direction: Direction): Movement = with { it.add(direction) }
+
   operator fun minus(direction: Direction): Movement = with { it.remove(direction) }
 
   private inline fun with(block: (EnumSet<Direction>) -> Unit): Movement =

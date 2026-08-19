@@ -9,34 +9,25 @@ import com.squareup.workflow1.writeByteStringWithLength
 import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 
-/**
- * The state of a [RealRunGameWorkflow].
- */
+/** The state of a [RealRunGameWorkflow]. */
 sealed class RunGameState {
-  internal data class Playing(
-    val playerInfo: PlayerInfo,
-    val resume: Turn? = null
-  ) : RunGameState()
+  internal data class Playing(val playerInfo: PlayerInfo, val resume: Turn? = null) : RunGameState()
 
-  internal data class NewGame(
-    val defaultXName: String = "X",
-    val defaultOName: String = "O"
-  ) : RunGameState()
+  internal data class NewGame(val defaultXName: String = "X", val defaultOName: String = "O") :
+    RunGameState()
 
-  internal data class MaybeQuitting(
-    val playerInfo: PlayerInfo,
-    val completedGame: CompletedGame
-  ) : RunGameState()
+  internal data class MaybeQuitting(val playerInfo: PlayerInfo, val completedGame: CompletedGame) :
+    RunGameState()
 
   internal data class MaybeQuittingForSure(
     val playerInfo: PlayerInfo,
-    val completedGame: CompletedGame
+    val completedGame: CompletedGame,
   ) : RunGameState()
 
   data class GameOver(
     val playerInfo: PlayerInfo,
     val completedGame: CompletedGame,
-    val syncState: SyncState = SAVING
+    val syncState: SyncState = SAVING,
   ) : RunGameState()
 
   fun toSnapshot(): Snapshot {
@@ -71,29 +62,29 @@ sealed class RunGameState {
     fun fromSnapshot(byteString: ByteString): RunGameState {
       byteString.parse { source ->
         return when (val className = source.readUtf8WithLength()) {
-          Playing::class.java.name -> Playing(
-            PlayerInfo.fromSnapshot(source.readByteStringWithLength())
-          )
+          Playing::class.java.name ->
+            Playing(PlayerInfo.fromSnapshot(source.readByteStringWithLength()))
 
-          NewGame::class.java.name -> NewGame(
-            source.readUtf8WithLength(),
-            source.readUtf8WithLength()
-          )
+          NewGame::class.java.name ->
+            NewGame(source.readUtf8WithLength(), source.readUtf8WithLength())
 
-          MaybeQuitting::class.java.name -> MaybeQuitting(
-            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-            CompletedGame.fromSnapshot(source.readByteStringWithLength())
-          )
+          MaybeQuitting::class.java.name ->
+            MaybeQuitting(
+              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+              CompletedGame.fromSnapshot(source.readByteStringWithLength()),
+            )
 
-          MaybeQuittingForSure::class.java.name -> MaybeQuittingForSure(
-            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-            CompletedGame.fromSnapshot(source.readByteStringWithLength())
-          )
+          MaybeQuittingForSure::class.java.name ->
+            MaybeQuittingForSure(
+              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+              CompletedGame.fromSnapshot(source.readByteStringWithLength()),
+            )
 
-          GameOver::class.java.name -> GameOver(
-            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-            CompletedGame.fromSnapshot(source.readByteStringWithLength())
-          )
+          GameOver::class.java.name ->
+            GameOver(
+              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+              CompletedGame.fromSnapshot(source.readByteStringWithLength()),
+            )
 
           else -> throw IllegalArgumentException("Unknown type $className")
         }
@@ -103,11 +94,11 @@ sealed class RunGameState {
 }
 
 /**
- * Sub-state of [RunGameState.GameOver], indicates if we're in the process of saving the game,
- * or if not, how that went.
+ * Sub-state of [RunGameState.GameOver], indicates if we're in the process of saving the game, or if
+ * not, how that went.
  */
 enum class SyncState {
   SAVING,
   SAVE_FAILED,
-  SAVED
+  SAVED,
 }

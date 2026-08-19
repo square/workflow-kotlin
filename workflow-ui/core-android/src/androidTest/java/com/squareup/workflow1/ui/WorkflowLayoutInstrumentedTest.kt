@@ -5,17 +5,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.testing.TestLifecycleOwner
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 /**
- * Instrumented tests for [WorkflowLayout] that require a real Android environment.
- * These tests verify behavior that cannot be properly tested with Robolectric,
- * such as the main thread requirement for collecting renderings.
+ * Instrumented tests for [WorkflowLayout] that require a real Android environment. These tests
+ * verify behavior that cannot be properly tested with Robolectric, such as the main thread
+ * requirement for collecting renderings.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowLayoutInstrumentedTest {
@@ -40,7 +40,7 @@ internal class WorkflowLayoutInstrumentedTest {
     workflowLayout.take(
       lifecycle = testLifeCycleOwner.lifecycle,
       renderings = renderings,
-      collectionContext = nonMainThreadDispatcher
+      collectionContext = nonMainThreadDispatcher,
     )
 
     // start the lifecycle.
@@ -53,9 +53,7 @@ internal class WorkflowLayoutInstrumentedTest {
     assertThat(exception?.message).contains("Collection dispatch must happen on the main thread!")
   }
 
-  /**
-   * Simple test screen for instrumented tests.
-   */
+  /** Simple test screen for instrumented tests. */
   private class TestScreen : AndroidScreen<TestScreen> {
     override val viewFactory =
       ScreenViewFactory.fromCode<TestScreen> { _, initialEnvironment, context, _ ->

@@ -19,7 +19,8 @@ class RxWorkersTest {
 
   // region Observable
 
-  @Test fun `observable emits`() {
+  @Test
+  fun `observable emits`() {
     val subject = PublishSubject.create<String>()
     // Should support out-projected parameters.
     val worker = (subject as Observable<out String?>).asWorker()
@@ -33,7 +34,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `observable finishes`() {
+  @Test
+  fun `observable finishes`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -43,7 +45,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `observable finishes after emitting`() {
+  @Test
+  fun `observable finishes after emitting`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -56,7 +59,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `observable throws`() {
+  @Test
+  fun `observable throws`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -66,24 +70,22 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `observable is subscribed lazily`() {
+  @Test
+  fun `observable is subscribed lazily`() {
     var subscriptions = 0
     val subject = PublishSubject.create<String>()
-    val worker = subject.doOnSubscribe { subscriptions++ }
-      .asWorker()
+    val worker = subject.doOnSubscribe { subscriptions++ }.asWorker()
 
     assertEquals(0, subscriptions)
 
-    worker.test {
-      assertEquals(1, subscriptions)
-    }
+    worker.test { assertEquals(1, subscriptions) }
   }
 
-  @Test fun `observable is disposed when worker cancelled`() {
+  @Test
+  fun `observable is disposed when worker cancelled`() {
     var disposals = 0
     val subject = PublishSubject.create<String>()
-    val worker = subject.doOnDispose { disposals++ }
-      .asWorker()
+    val worker = subject.doOnDispose { disposals++ }.asWorker()
 
     assertEquals(0, disposals)
 
@@ -98,10 +100,10 @@ class RxWorkersTest {
 
   // region Flowable
 
-  @Test fun `flowable emits`() {
+  @Test
+  fun `flowable emits`() {
     val subject = PublishSubject.create<String>()
-    val worker = (subject.toFlowable(MISSING) as Flowable<out String?>)
-      .asWorker()
+    val worker = (subject.toFlowable(MISSING) as Flowable<out String?>).asWorker()
 
     worker.test {
       subject.onNext("foo")
@@ -112,10 +114,10 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `flowable finishes`() {
+  @Test
+  fun `flowable finishes`() {
     val subject = PublishSubject.create<String>()
-    val worker = subject.toFlowable(MISSING)
-      .asWorker()
+    val worker = subject.toFlowable(MISSING).asWorker()
 
     worker.test {
       subject.onComplete()
@@ -123,10 +125,10 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `flowable finishes after emitting`() {
+  @Test
+  fun `flowable finishes after emitting`() {
     val subject = PublishSubject.create<String>()
-    val worker = subject.toFlowable(MISSING)
-      .asWorker()
+    val worker = subject.toFlowable(MISSING).asWorker()
 
     worker.test {
       subject.onNext("foo")
@@ -137,10 +139,10 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `flowable throws`() {
+  @Test
+  fun `flowable throws`() {
     val subject = PublishSubject.create<String>()
-    val worker = subject.toFlowable(MISSING)
-      .asWorker()
+    val worker = subject.toFlowable(MISSING).asWorker()
 
     worker.test {
       subject.onError(ExpectedException())
@@ -148,26 +150,22 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `flowable is subscribed lazily`() {
+  @Test
+  fun `flowable is subscribed lazily`() {
     var subscriptions = 0
     val subject = PublishSubject.create<String>()
-    val worker = subject.toFlowable(MISSING)
-      .doOnSubscribe { subscriptions++ }
-      .asWorker()
+    val worker = subject.toFlowable(MISSING).doOnSubscribe { subscriptions++ }.asWorker()
 
     assertEquals(0, subscriptions)
 
-    worker.test {
-      assertEquals(1, subscriptions)
-    }
+    worker.test { assertEquals(1, subscriptions) }
   }
 
-  @Test fun `flowable is cancelled when worker cancelled`() {
+  @Test
+  fun `flowable is cancelled when worker cancelled`() {
     var cancels = 0
     val subject = PublishSubject.create<String>()
-    val worker = subject.toFlowable(MISSING)
-      .doOnCancel { cancels++ }
-      .asWorker()
+    val worker = subject.toFlowable(MISSING).doOnCancel { cancels++ }.asWorker()
 
     assertEquals(0, cancels)
 
@@ -182,7 +180,8 @@ class RxWorkersTest {
 
   // region Maybe
 
-  @Test fun `maybe emits`() {
+  @Test
+  fun `maybe emits`() {
     val subject = MaybeSubject.create<String>()
     val worker = (subject as Maybe<out String?>).asWorker()
 
@@ -193,7 +192,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `maybe finishes without emitting`() {
+  @Test
+  fun `maybe finishes without emitting`() {
     val subject = MaybeSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -203,7 +203,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `maybe throws`() {
+  @Test
+  fun `maybe throws`() {
     val subject = MaybeSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -213,24 +214,22 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `maybe is subscribed lazily`() {
+  @Test
+  fun `maybe is subscribed lazily`() {
     var subscriptions = 0
     val subject = MaybeSubject.create<String>()
-    val worker = subject.doOnSubscribe { subscriptions++ }
-      .asWorker()
+    val worker = subject.doOnSubscribe { subscriptions++ }.asWorker()
 
     assertEquals(0, subscriptions)
 
-    worker.test {
-      assertEquals(1, subscriptions)
-    }
+    worker.test { assertEquals(1, subscriptions) }
   }
 
-  @Test fun `maybe is disposed when worker cancelled`() {
+  @Test
+  fun `maybe is disposed when worker cancelled`() {
     var cancels = 0
     val subject = MaybeSubject.create<String>()
-    val worker = subject.doOnDispose { cancels++ }
-      .asWorker()
+    val worker = subject.doOnDispose { cancels++ }.asWorker()
 
     assertEquals(0, cancels)
 
@@ -245,7 +244,8 @@ class RxWorkersTest {
 
   // region Single
 
-  @Test fun `single emits`() {
+  @Test
+  fun `single emits`() {
     val subject = SingleSubject.create<String>()
     val worker = (subject as Single<out String?>).asWorker()
 
@@ -256,7 +256,8 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `single throws`() {
+  @Test
+  fun `single throws`() {
     val subject = SingleSubject.create<String>()
     val worker = subject.asWorker()
 
@@ -266,24 +267,22 @@ class RxWorkersTest {
     }
   }
 
-  @Test fun `single is subscribed lazily`() {
+  @Test
+  fun `single is subscribed lazily`() {
     var subscriptions = 0
     val subject = SingleSubject.create<String>()
-    val worker = subject.doOnSubscribe { subscriptions++ }
-      .asWorker()
+    val worker = subject.doOnSubscribe { subscriptions++ }.asWorker()
 
     assertEquals(0, subscriptions)
 
-    worker.test {
-      assertEquals(1, subscriptions)
-    }
+    worker.test { assertEquals(1, subscriptions) }
   }
 
-  @Test fun `single is disposed when worker cancelled`() {
+  @Test
+  fun `single is disposed when worker cancelled`() {
     var cancels = 0
     val subject = SingleSubject.create<String>()
-    val worker = subject.doOnDispose { cancels++ }
-      .asWorker()
+    val worker = subject.doOnDispose { cancels++ }.asWorker()
 
     assertEquals(0, cancels)
 

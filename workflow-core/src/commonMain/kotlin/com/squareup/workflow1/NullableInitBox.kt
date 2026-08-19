@@ -3,15 +3,14 @@ package com.squareup.workflow1
 import kotlin.jvm.JvmInline
 
 /**
- * Used to wrap immutable nullable values whose holder may not yet be initialized.
- * Check [isInitialized] to see if the value has been assigned.
+ * Used to wrap immutable nullable values whose holder may not yet be initialized. Check
+ * [isInitialized] to see if the value has been assigned.
  */
 @JvmInline
 public value class NullableInitBox<T>(private val _value: Any? = Uninitialized) {
-  /**
-   * Whether or not a value has been set for this [NullableInitBox]
-   */
-  public val isInitialized: Boolean get() = _value !== Uninitialized
+  /** Whether or not a value has been set for this [NullableInitBox] */
+  public val isInitialized: Boolean
+    get() = _value !== Uninitialized
 
   /**
    * Get the value this has been initialized with.

@@ -3,33 +3,26 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
 
 /**
  * A lazy wrapper of [ByteString]. Allows [Workflow]s to capture their state frequently, without
  * worrying about performing unnecessary serialization work.
  */
-public class Snapshot
-private constructor(private val toByteString: () -> ByteString) {
+public class Snapshot private constructor(private val toByteString: () -> ByteString) {
 
   public companion object {
-    @JvmStatic
-    public fun of(string: String): Snapshot =
-      Snapshot { string.encodeUtf8() }
+    @JvmStatic public fun of(string: String): Snapshot = Snapshot { string.encodeUtf8() }
 
-    @JvmStatic
-    public fun of(byteString: ByteString): Snapshot =
-      Snapshot { byteString }
+    @JvmStatic public fun of(byteString: ByteString): Snapshot = Snapshot { byteString }
 
-    @JvmStatic
-    public fun of(lazy: () -> ByteString): Snapshot =
-      Snapshot(lazy)
+    @JvmStatic public fun of(lazy: () -> ByteString): Snapshot = Snapshot(lazy)
 
     @JvmStatic
     public fun of(integer: Int): Snapshot {
@@ -43,15 +36,12 @@ private constructor(private val toByteString: () -> ByteString) {
 
     /** Create a snapshot by writing to a nice ergonomic [BufferedSink]. */
     @JvmStatic
-    public fun write(lazy: (BufferedSink) -> Unit): Snapshot =
-      of {
-        Buffer().apply(lazy)
-          .readByteString()
-      }
+    public fun write(lazy: (BufferedSink) -> Unit): Snapshot = of {
+      Buffer().apply(lazy).readByteString()
+    }
   }
 
-  @get:JvmName("bytes")
-  public val bytes: ByteString by lazy { toByteString() }
+  @get:JvmName("bytes") public val bytes: ByteString by lazy { toByteString() }
 
   /**
    * Returns a `String` describing the [bytes] of this `Snapshot`.
@@ -78,7 +68,7 @@ private constructor(private val toByteString: () -> ByteString) {
 
 public fun <T : Any> BufferedSink.writeNullable(
   obj: T?,
-  writer: BufferedSink.(T) -> Unit
+  writer: BufferedSink.(T) -> Unit,
 ): BufferedSink = apply {
   writeBooleanAsInt(obj != null)
   obj?.let { writer(it) }
@@ -112,8 +102,7 @@ public fun BufferedSource.readOptionalUtf8WithLength(): String? {
 }
 
 public fun BufferedSink.writeByteStringWithLength(bytes: ByteString): BufferedSink = apply {
-  writeInt(bytes.size)
-    .write(bytes)
+  writeInt(bytes.size).write(bytes)
 }
 
 public fun BufferedSource.readByteStringWithLength(): ByteString {
@@ -139,15 +128,14 @@ public fun <T : Enum<T>> BufferedSink.writeEnumByOrdinal(enumVal: T): BufferedSi
 
 public inline fun <T> BufferedSink.writeList(
   values: List<T>,
-  writer: BufferedSink.(T) -> Unit
+  writer: BufferedSink.(T) -> Unit,
 ): BufferedSink = apply {
   writeInt(values.size)
   values.forEach { writer(it) }
 }
 
-public inline fun <T> BufferedSource.readList(
-  reader: BufferedSource.() -> T
-): List<T> = List(readInt()) { reader() }
+public inline fun <T> BufferedSource.readList(reader: BufferedSource.() -> T): List<T> =
+  List(readInt()) { reader() }
 
 /**
  * Runs `block` with a `BufferedSource` that will read from this `ByteString`.

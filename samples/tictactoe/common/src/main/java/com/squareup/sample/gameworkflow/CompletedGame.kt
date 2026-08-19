@@ -5,27 +5,18 @@ import com.squareup.workflow1.parse
 import okio.ByteString
 
 /**
- * The [lastTurn] of a tic tac toe game, and its [ending]. Serves as the
- * result type for [TakeTurnsWorkflow].
+ * The [lastTurn] of a tic tac toe game, and its [ending]. Serves as the result type for
+ * [TakeTurnsWorkflow].
  */
-data class CompletedGame(
-  val ending: Ending,
-  val lastTurn: Turn = Turn()
-) {
+data class CompletedGame(val ending: Ending, val lastTurn: Turn = Turn()) {
 
   fun toSnapshot(): Snapshot {
-    return Snapshot.write { sink ->
-      sink.writeInt(ending.ordinal)
-    }
+    return Snapshot.write { sink -> sink.writeInt(ending.ordinal) }
   }
 
   companion object {
     fun fromSnapshot(byteString: ByteString): CompletedGame {
-      return byteString.parse { source ->
-        CompletedGame(
-          Ending.values()[source.readInt()]
-        )
-      }
+      return byteString.parse { source -> CompletedGame(Ending.values()[source.readInt()]) }
     }
   }
 }
@@ -33,5 +24,5 @@ data class CompletedGame(
 enum class Ending {
   Victory,
   Draw,
-  Quitted
+  Quitted,
 }

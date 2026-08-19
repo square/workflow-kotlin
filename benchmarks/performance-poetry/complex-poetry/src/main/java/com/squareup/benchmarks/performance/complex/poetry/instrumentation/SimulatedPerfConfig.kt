@@ -6,9 +6,9 @@ import com.squareup.sample.poetry.RecursionGraphConfig
 import kotlinx.parcelize.Parcelize
 
 /**
- * We use this to 'simulate' different performance scenarios that we have seen that we want to
- * be able to benchmark and monitor. Firstly we have a complexity which is just used to add some
- * delay to selection activities - only use with Poetry right now.
+ * We use this to 'simulate' different performance scenarios that we have seen that we want to be
+ * able to benchmark and monitor. Firstly we have a complexity which is just used to add some delay
+ * to selection activities - only use with Poetry right now.
  *
  * @property isComplex Determines whether or not we start a Worker in between state transitions that
  *   roughly approximates doing I/O work or a network call.
@@ -30,7 +30,8 @@ import kotlinx.parcelize.Parcelize
  *   'complex' state transition. This will result in y actions that need to be handled
  *   simultaneously and tries to represent a scenario of multiple Workflows listening to the same
  *   action.
- * @property traceRenderingPasses flag to add instrumentation for different performance measurements.
+ * @property traceRenderingPasses flag to add instrumentation for different performance
+ *   measurements.
  * @property traceFrameLatency flag to add instrumentation for different performance measurements.
  * @property traceEventLatency flag to add instrumentation for different performance measurements.
  */
@@ -44,19 +45,20 @@ data class SimulatedPerfConfig(
   val simultaneousActions: Int = 0,
   val traceRenderingPasses: Boolean = false,
   val traceFrameLatency: Boolean = false,
-  val traceEventLatency: Boolean = false
+  val traceEventLatency: Boolean = false,
 ) : Parcelable {
   companion object {
-    val NO_SIMULATED_PERF = SimulatedPerfConfig(
-      isComplex = false,
-      complexityDelay = 0,
-      useInitializingState = false,
-      recursionGraph = 0 to 0,
-      repeatOnNext = 0,
-      simultaneousActions = 0,
-      traceRenderingPasses = false,
-      traceFrameLatency = false,
-      traceEventLatency = false
-    )
+    val NO_SIMULATED_PERF =
+      SimulatedPerfConfig(
+        isComplex = false,
+        complexityDelay = 0,
+        useInitializingState = false,
+        recursionGraph = 0 to 0,
+        repeatOnNext = 0,
+        simultaneousActions = 0,
+        traceRenderingPasses = false,
+        traceFrameLatency = false,
+        traceEventLatency = false,
+      )
   }
 }

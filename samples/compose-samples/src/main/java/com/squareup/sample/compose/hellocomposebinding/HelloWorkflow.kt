@@ -15,36 +15,26 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     Hello,
     Goodbye;
 
-    fun theOtherState(): State = when (this) {
-      Hello -> Goodbye
-      Goodbye -> Hello
-    }
+    fun theOtherState(): State =
+      when (this) {
+        Hello -> Goodbye
+        Goodbye -> Hello
+      }
   }
 
-  data class Rendering(
-    val message: String,
-    val onClick: () -> Unit
-  ) : Screen
+  data class Rendering(val message: String, val onClick: () -> Unit) : Screen
 
-  private val helloAction = action("hello") {
-    state = state.theOtherState()
-  }
+  private val helloAction = action("hello") { state = state.theOtherState() }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-    ?: Hello
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye } ?: Hello
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
+    context: RenderContext<Unit, State, Nothing>,
   ): Rendering {
-    return Rendering(
-      message = renderState.name,
-      onClick = { context.actionSink.send(helloAction) }
-    )
+    return Rendering(message = renderState.name, onClick = { context.actionSink.send(helloAction) })
   }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)

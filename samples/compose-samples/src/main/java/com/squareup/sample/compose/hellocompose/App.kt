@@ -22,22 +22,19 @@ import com.squareup.workflow1.ui.withEnvironment
 
 private val viewEnvironment = ViewEnvironment.EMPTY.withComposeInteropSupport()
 
-@Composable fun App() {
+@Composable
+fun App() {
   MaterialTheme {
-    val rendering by HelloComposeWorkflow
-      .mapRendering { it.withEnvironment(viewEnvironment) }
-      .renderAsState(
-        props = Unit,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
-        onOutput = {}
-      )
+    val rendering by
+      HelloComposeWorkflow.mapRendering { it.withEnvironment(viewEnvironment) }
+        .renderAsState(
+          props = Unit,
+          runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+          onOutput = {},
+        )
     WorkflowRendering(
       rendering,
-      Modifier.border(
-        shape = RoundedCornerShape(10.dp),
-        width = 10.dp,
-        color = Color.Magenta
-      )
+      Modifier.border(shape = RoundedCornerShape(10.dp), width = 10.dp, color = Color.Magenta),
     )
   }
 }

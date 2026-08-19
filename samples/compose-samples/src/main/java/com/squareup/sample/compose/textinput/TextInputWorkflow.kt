@@ -13,31 +13,25 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   data class State(
     val textA: TextController = TextController(),
     val textB: TextController = TextController(),
-    val showingTextA: Boolean = true
+    val showingTextA: Boolean = true,
   )
 
-  data class Rendering(
-    val textController: TextController,
-    val onSwapText: () -> Unit
-  ) : Screen
+  data class Rendering(val textController: TextController, val onSwapText: () -> Unit) : Screen
 
-  private val swapText = action("swapText") {
-    state = state.copy(showingTextA = !state.showingTextA)
-  }
+  private val swapText =
+    action("swapText") { state = state.copy(showingTextA = !state.showingTextA) }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = State()
+  override fun initialState(props: Unit, snapshot: Snapshot?): State = State()
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
-  ): Rendering = Rendering(
-    textController = if (renderState.showingTextA) renderState.textA else renderState.textB,
-    onSwapText = { context.actionSink.send(swapText) }
-  )
+    context: RenderContext<Unit, State, Nothing>,
+  ): Rendering =
+    Rendering(
+      textController = if (renderState.showingTextA) renderState.textA else renderState.textB,
+      onSwapText = { context.actionSink.send(swapText) },
+    )
 
   override fun snapshotState(state: State): Snapshot? = null
 }

@@ -21,13 +21,13 @@ import kotlin.time.TimeSource
  * Any outputs from the [delegateWorkflow] will be forwarded as-is, even in playback mode.
  *
  * @param delegateWorkflow The [Workflow] whose renderings to record. This workflow will be rendered
- * continuously as long as the `TimeMachineWorkflow` is being rendered.
+ *   continuously as long as the `TimeMachineWorkflow` is being rendered.
  * @param clock The [TimeSource] to use to assign timestamps to recorded values.
  */
 @ExperimentalTime
 class TimeMachineWorkflow<P, O : Any, out R>(
   private val delegateWorkflow: Workflow<P, O, R>,
-  clock: TimeSource
+  clock: TimeSource,
 ) : StatelessWorkflow<TimeMachineProps<P>, O, TimeMachineRendering<R>>() {
 
   /**
@@ -35,9 +35,7 @@ class TimeMachineWorkflow<P, O : Any, out R>(
    * [delegate workflow's][delegateWorkflow] renderings, or [playing them back][PlayingBackAt].
    */
   sealed class TimeMachineProps<out P> {
-    /**
-     * The props to pass to the [delegateWorkflow].
-     */
+    /** The props to pass to the [delegateWorkflow]. */
     abstract val delegateProps: P
 
     /**
@@ -56,28 +54,27 @@ class TimeMachineWorkflow<P, O : Any, out R>(
      *
      * @param delegateProps The props to pass to the [delegateWorkflow].
      * @param timestamp The timestamp nearest to the recorded value to return in the
-     * [TimeMachineRendering].
+     *   [TimeMachineRendering].
      */
-    data class PlayingBackAt<out P>(
-      override val delegateProps: P,
-      val timestamp: Duration
-    ) : TimeMachineProps<P>()
+    data class PlayingBackAt<out P>(override val delegateProps: P, val timestamp: Duration) :
+      TimeMachineProps<P>()
   }
 
   private val recordingWorkflow = RecorderWorkflow<R>(clock)
 
   override fun render(
     renderProps: TimeMachineProps<P>,
-    context: RenderContext<TimeMachineProps<P>, O>
+    context: RenderContext<TimeMachineProps<P>, O>,
   ): TimeMachineRendering<R> {
     // Always render the delegate, even if in playback mode, to keep it alive.
     val delegateRendering =
       context.renderChild(delegateWorkflow, renderProps.delegateProps) { forwardOutput(it) }
 
-    val recorderProps = when (renderProps) {
-      is Recording -> RecordValue(delegateRendering)
-      is PlayingBackAt -> PlaybackAt(renderProps.timestamp)
-    }
+    val recorderProps =
+      when (renderProps) {
+        is Recording -> RecordValue(delegateRendering)
+        is PlayingBackAt -> PlaybackAt(renderProps.timestamp)
+      }
 
     return context.renderChild(recordingWorkflow, recorderProps)
   }

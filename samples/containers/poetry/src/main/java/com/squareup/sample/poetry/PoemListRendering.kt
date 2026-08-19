@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:filename")
-
 package com.squareup.sample.poetry
 
 import android.view.LayoutInflater
@@ -21,12 +19,9 @@ import com.squareup.workflow1.ui.ViewEnvironment
 data class PoemListScreen(
   val poems: List<Poem>,
   val onPoemSelected: (Int) -> Unit,
-  val selection: Int = -1
+  val selection: Int = -1,
 ) : AndroidScreen<PoemListScreen> {
-  override val viewFactory = ScreenViewFactory.fromLayout(
-    R.layout.list,
-    ::PoemListLayoutRunner
-  )
+  override val viewFactory = ScreenViewFactory.fromLayout(R.layout.list, ::PoemListLayoutRunner)
 
   companion object {
     const val NO_POEM_SELECTED: Int = -1
@@ -35,22 +30,20 @@ data class PoemListScreen(
 
 private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen> {
   init {
-    view.findViewById<Toolbar>(R.id.list_toolbar)
-      .apply {
-        title = view.resources.getString(R.string.poems)
-        navigationIcon = null
-      }
+    view.findViewById<Toolbar>(R.id.list_toolbar).apply {
+      title = view.resources.getString(R.string.poems)
+      navigationIcon = null
+    }
   }
 
-  private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)
-    .apply { layoutManager = LinearLayoutManager(context) }
+  private val recyclerView =
+    view.findViewById<RecyclerView>(R.id.list_body).apply {
+      layoutManager = LinearLayoutManager(context)
+    }
 
   private val adapter = Adapter()
 
-  override fun showRendering(
-    rendering: PoemListScreen,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: PoemListScreen, environment: ViewEnvironment) {
     adapter.rendering = rendering
     adapter.environment = environment
     adapter.notifyDataSetChanged()
@@ -65,16 +58,14 @@ private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen
     lateinit var rendering: PoemListScreen
     lateinit var environment: ViewEnvironment
 
-    override fun onCreateViewHolder(
-      parent: ViewGroup,
-      viewType: Int
-    ): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
       val selectable = environment[OverviewDetailConfig] == Overview
-      val layoutId = if (selectable) {
-        R.layout.list_row_selectable
-      } else {
-        R.layout.list_row_unselectable
-      }
+      val layoutId =
+        if (selectable) {
+          R.layout.list_row_selectable
+        } else {
+          R.layout.list_row_unselectable
+        }
 
       return ViewHolder(
         LayoutInflater.from(parent.context).inflate(layoutId, parent, false) as TextView
@@ -85,15 +76,11 @@ private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen
       return rendering.poems.size
     }
 
-    override fun onBindViewHolder(
-      holder: ViewHolder,
-      position: Int
-    ) = with(holder.view) {
-      text = rendering.poems[position].title
-      isActivated = rendering.selection == position
-      setOnClickListener {
-        rendering.onPoemSelected(position)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
+      with(holder.view) {
+        text = rendering.poems[position].title
+        isActivated = rendering.selection == position
+        setOnClickListener { rendering.onPoemSelected(position) }
       }
-    }
   }
 }

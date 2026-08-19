@@ -14,20 +14,20 @@ import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedD
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
- * A placeholder [View] that can replace itself with ones driven by workflow renderings,
- * similar to [android.view.ViewStub].
+ * A placeholder [View] that can replace itself with ones driven by workflow renderings, similar to
+ * [android.view.ViewStub].
  *
  * ## Usage
  *
- * In the XML layout for a container view, place a [WorkflowViewStub] where
- * you want child renderings to be displayed. E.g.:
+ * In the XML layout for a container view, place a [WorkflowViewStub] where you want child
+ * renderings to be displayed. E.g.:
  *
- *    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ * <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ *
  *         ```
  *         xmlns:app="http://schemas.android.com/apk/res-auto"
  *         …>
  *         ```
- *
  *        ```
  *        <com.squareup.workflow1.WorkflowViewStub
  *            android:id="@+id/child_stub"
@@ -37,9 +37,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  *       …
  *
  * Then in your [LayoutRunner],
- *   - pull the view out with [findViewById] like any other view
- *   - and [update] it in your [LayoutRunner.showRendering] method:
- *
+ * - pull the view out with [findViewById] like any other view
+ * - and [update] it in your [LayoutRunner.showRendering] method:
  * ```
  *     class YourLayoutRunner(view: View) {
  *       private val childStub = view.findViewById<WorkflowViewStub>(R.id.child_stub)
@@ -59,49 +58,51 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  *     }
  * ```
  *
- * **NB**: If you're using a stub in a `RelativeLayout` or `ConstraintLayout`, relationships
- * should be tied to the stub's `app:inflatedId`, not its `android:id`.
+ * **NB**: If you're using a stub in a `RelativeLayout` or `ConstraintLayout`, relationships should
+ * be tied to the stub's `app:inflatedId`, not its `android:id`.
  *
- * Use [updatesVisibility] and [setBackground] for more control of how [update]
- * effects the visibility and backgrounds of created views.
+ * Use [updatesVisibility] and [setBackground] for more control of how [update] effects the
+ * visibility and backgrounds of created views.
  *
- * Use [replaceOldViewInParent] to customize replacing [actual] with a new view, e.g.
- * for animated transitions.
+ * Use [replaceOldViewInParent] to customize replacing [actual] with a new view, e.g. for animated
+ * transitions.
  */
-public class WorkflowViewStub @JvmOverloads constructor(
+public class WorkflowViewStub
+@JvmOverloads
+constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
-  defStyleRes: Int = 0
+  defStyleRes: Int = 0,
 ) : View(context, attributeSet, defStyle, defStyleRes) {
   private var holder: ScreenViewHolder<Screen>? = null
 
   /**
-   * On-demand access to the view created by the last call to [update],
-   * or this [WorkflowViewStub] instance if none has yet been made.
+   * On-demand access to the view created by the last call to [update], or this [WorkflowViewStub]
+   * instance if none has yet been made.
    */
-  public val actual: View get() = holder?.view ?: this
+  public val actual: View
+    get() = holder?.view ?: this
 
   /**
-   * If true, the visibility of views created by [update] will be copied
-   * from that of [actual]. Bear in mind that the initial value of
-   * [actual] is this stub.
+   * If true, the visibility of views created by [update] will be copied from that of [actual]. Bear
+   * in mind that the initial value of [actual] is this stub.
    */
   public var updatesVisibility: Boolean = true
 
   /**
-   * If true, the [layoutParams][getLayoutParams] of this stub will be applied
-   * to new views as they are added to the stub's original parent.
-   * Specifically, the third parameter passed to [replaceOldViewInParent]
-   * will be non-null.
+   * If true, the [layoutParams][getLayoutParams] of this stub will be applied to new views as they
+   * are added to the stub's original parent. Specifically, the third parameter passed to
+   * [replaceOldViewInParent] will be non-null.
    */
   public var propagatesLayoutParams: Boolean = true
 
   /**
-   * The id to be assigned to new views created by [update]. If the inflated id is
-   * [View.NO_ID] (its default value), new views keep their original ids.
+   * The id to be assigned to new views created by [update]. If the inflated id is [View.NO_ID] (its
+   * default value), new views keep their original ids.
    */
-  @IdRes public var inflatedId: Int = NO_ID
+  @IdRes
+  public var inflatedId: Int = NO_ID
     set(value) {
       require(value == NO_ID || value != id) {
         "inflatedId must be distinct from id: ${resources.getResourceName(id)}"
@@ -110,12 +111,13 @@ public class WorkflowViewStub @JvmOverloads constructor(
     }
 
   init {
-    val attrs = context.obtainStyledAttributes(
-      attributeSet,
-      R.styleable.WorkflowViewStub,
-      defStyle,
-      defStyleRes
-    )
+    val attrs =
+      context.obtainStyledAttributes(
+        attributeSet,
+        R.styleable.WorkflowViewStub,
+        defStyle,
+        defStyleRes,
+      )
     inflatedId = attrs.getResourceId(R.styleable.WorkflowViewStub_inflatedId, NO_ID)
     updatesVisibility = attrs.getBoolean(R.styleable.WorkflowViewStub_updatesVisibility, true)
     attrs.recycle()
@@ -131,29 +133,25 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Function called from [update] to replace this stub, or the current [actual],
-   * with a new view. Can be updated to provide custom transition effects.
-   * The default implementation simply calls [ViewGroup.addView], including
-   * the `layoutParams` parameter if it is non-null.
+   * Function called from [update] to replace this stub, or the current [actual], with a new view.
+   * Can be updated to provide custom transition effects. The default implementation simply calls
+   * [ViewGroup.addView], including the `layoutParams` parameter if it is non-null.
    *
    * @see propagatesLayoutParams
    */
-  public var replaceOldViewInParent: (
-    parent: ViewGroup,
-    newView: View,
-    layoutParams: LayoutParams?
-  ) -> Unit = { parent, newView, layoutParams ->
-    val index = parent.indexOfChild(actual)
-    parent.removeView(actual)
-    layoutParams
-      ?.let { parent.addView(newView, index, it) }
-      ?: run { parent.addView(newView, index) }
-  }
+  public var replaceOldViewInParent:
+    (parent: ViewGroup, newView: View, layoutParams: LayoutParams?) -> Unit =
+    { parent, newView, layoutParams ->
+      val index = parent.indexOfChild(actual)
+      parent.removeView(actual)
+      layoutParams?.let { parent.addView(newView, index, it) }
+        ?: run { parent.addView(newView, index) }
+    }
 
   /**
-   * Sets the visibility of [actual]. If [updatesVisibility] is true, the visibility of
-   * new views created by [update] will copied from [actual]. (Bear in mind that the initial
-   * value of [actual] is this stub.)
+   * Sets the visibility of [actual]. If [updatesVisibility] is true, the visibility of new views
+   * created by [update] will copied from [actual]. (Bear in mind that the initial value of [actual]
+   * is this stub.)
    */
   override fun setVisibility(visibility: Int) {
     super.setVisibility(visibility)
@@ -165,22 +163,23 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Returns the visibility of [actual]. (Bear in mind that the initial value of
-   * [actual] is this stub.)
+   * Returns the visibility of [actual]. (Bear in mind that the initial value of [actual] is this
+   * stub.)
    */
   override fun getVisibility(): Int {
     // actual can be null when called from the constructor.
     @Suppress("SENSELESS_NULL_IN_WHEN")
     return when (actual) {
-      this, null -> super.getVisibility()
+      this,
+      null -> super.getVisibility()
       else -> actual.visibility
     }
   }
 
   /**
-   * Sets the background of this stub as usual, and also that of [actual]
-   * if the given [background] is not null. Any new views created by [update]
-   * will be assigned this background, again if it is not null.
+   * Sets the background of this stub as usual, and also that of [actual] if the given [background]
+   * is not null. Any new views created by [update] will be assigned this background, again if it is
+   * not null.
    */
   override fun setBackground(background: Drawable?) {
     super.setBackground(background)
@@ -192,36 +191,34 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Replaces this view with one that can display [rendering]. If the receiver
-   * has already been replaced, updates the replacement if it [canShowRendering].
-   * If the current replacement can't handle [rendering], a new view is put in its place.
+   * Replaces this view with one that can display [rendering]. If the receiver has already been
+   * replaced, updates the replacement if it [canShowRendering]. If the current replacement can't
+   * handle [rendering], a new view is put in its place.
    *
-   * The [id][View.setId] of any view created by this method will be set to to [inflatedId],
-   * unless that value is [View.NO_ID].
+   * The [id][View.setId] of any view created by this method will be set to to [inflatedId], unless
+   * that value is [View.NO_ID].
    *
-   * The [background][setBackground] of any view created by this method will be copied
-   * from [getBackground], if that value is non-null.
+   * The [background][setBackground] of any view created by this method will be copied from
+   * [getBackground], if that value is non-null.
    *
-   * If [updatesVisibility] is true, the [visibility][setVisibility] of any view created by
-   * this method will be copied from [actual]. (Bear in mind that the initial value of
-   * [actual] is this stub.)
+   * If [updatesVisibility] is true, the [visibility][setVisibility] of any view created by this
+   * method will be copied from [actual]. (Bear in mind that the initial value of [actual] is this
+   * stub.)
    *
    * @return the view that showed [rendering]
-   *
    * @throws IllegalArgumentException if no binding can be found for the type of [rendering]
    */
-  public fun show(
-    rendering: Screen,
-    viewEnvironment: ViewEnvironment
-  ) {
-    holder?.takeIf { it.canShow(rendering) }
+  public fun show(rendering: Screen, viewEnvironment: ViewEnvironment) {
+    holder
+      ?.takeIf { it.canShow(rendering) }
       ?.let {
         it.show(rendering, viewEnvironment)
         return
       }
 
-    val parent = actual.parent as? ViewGroup
-      ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
+    val parent =
+      actual.parent as? ViewGroup
+        ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
     holder?.view?.let {
       // The old view is about to be detached by replaceOldViewInParent. When that happens,
@@ -231,19 +228,25 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
     }
 
-    holder = rendering.toViewFactory(viewEnvironment)
-      .startShowing(rendering, viewEnvironment, parent.context, parent) { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view, viewEnvironment.onBackPressedDispatcherOwner(parent))
-        doStart()
-      }.apply {
-        val newView = view
+    holder =
+      rendering
+        .toViewFactory(viewEnvironment)
+        .startShowing(rendering, viewEnvironment, parent.context, parent) { view, doStart ->
+          WorkflowLifecycleOwner.installOn(
+            view,
+            viewEnvironment.onBackPressedDispatcherOwner(parent),
+          )
+          doStart()
+        }
+        .apply {
+          val newView = view
 
-        if (inflatedId != NO_ID) newView.id = inflatedId
-        if (updatesVisibility) newView.visibility = visibility
-        background?.let { newView.background = it }
-        propagateSavedStateRegistryOwner(newView)
-        replaceOldViewInParent(parent, newView, layoutParams?.takeIf { propagatesLayoutParams })
-      }
+          if (inflatedId != NO_ID) newView.id = inflatedId
+          if (updatesVisibility) newView.visibility = visibility
+          background?.let { newView.background = it }
+          propagateSavedStateRegistryOwner(newView)
+          replaceOldViewInParent(parent, newView, layoutParams?.takeIf { propagatesLayoutParams })
+        }
   }
 
   /**
@@ -260,9 +263,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
     // (if we have a parent) to determine if we have our own owner.
     val myStateRegistryOwner = this.findViewTreeSavedStateRegistryOwner()
     val parentStateRegistryOwner =
-      (this.parent as? ViewGroup)?.run {
-        findViewTreeSavedStateRegistryOwner()
-      }
+      (this.parent as? ViewGroup)?.run { findViewTreeSavedStateRegistryOwner() }
     if (myStateRegistryOwner !== parentStateRegistryOwner) {
       // Someone has set an owner on the stub itself, so we need to also set it on the new
       // subview.

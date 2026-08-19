@@ -20,9 +20,7 @@ class KotlinMultiPlatformConventionPlugin : Plugin<Project> {
     target.tasks.withType(Test::class.java) { test ->
       target.properties
         .asSequence()
-        .filter { (key, value) ->
-          key.startsWith("workflow.runtime") && value != null
-        }
+        .filter { (key, value) -> key.startsWith("workflow.runtime") && value != null }
         .forEach { (key, value) ->
           // Add in a system property to the fork for the test.
           test.systemProperty(key, value!!)
@@ -36,13 +34,10 @@ class KotlinMultiPlatformConventionPlugin : Plugin<Project> {
     }
     target.extensions.configure(KotlinProjectExtension::class.java) { kotlin ->
       kotlin.sourceSets.configureEach { sourceSet ->
-        sourceSet.languageSettings {
-          optIn("kotlin.RequiresOptIn")
-        }
+        sourceSet.languageSettings { optIn("kotlin.RequiresOptIn") }
       }
     }
     target.extensions.configure(JavaPluginExtension::class.java) { java ->
-
       java.sourceCompatibility = target.javaTargetVersion
       java.targetCompatibility = target.javaTargetVersion
     }

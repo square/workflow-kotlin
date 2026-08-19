@@ -11,7 +11,8 @@ import kotlin.test.fail
 
 internal class ActiveStagingListTest {
 
-  @Test fun retainOrCreate_on_empty_list_creates_new_item() {
+  @Test
+  fun retainOrCreate_on_empty_list_creates_new_item() {
     val list = ActiveStagingList<Node>()
 
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
@@ -20,10 +21,11 @@ internal class ActiveStagingListTest {
     assertEquals(emptyList(), list.active())
   }
 
-  @Test fun retainOrCreate_with_matching_predicate_moves_item() {
+  @Test
+  fun retainOrCreate_with_matching_predicate_moves_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
-    list.commitStaging { }
+    list.commitStaging {}
 
     list.retainOrCreate(predicate = { it.data == "foo" }, create = { Node("bar") })
 
@@ -31,10 +33,11 @@ internal class ActiveStagingListTest {
     assertEquals(emptyList(), list.active())
   }
 
-  @Test fun retainOrCreate_with_no_matching_predicate_creates_item() {
+  @Test
+  fun retainOrCreate_with_no_matching_predicate_creates_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
-    list.commitStaging { }
+    list.commitStaging {}
 
     list.retainOrCreate(predicate = { it.data == "bar" }, create = { Node("bar") })
 
@@ -42,13 +45,15 @@ internal class ActiveStagingListTest {
     assertEquals(listOf("foo"), list.active())
   }
 
-  @Test fun commitStaging_on_empty_lists() {
+  @Test
+  fun commitStaging_on_empty_lists() {
     val list = ActiveStagingList<Node>()
 
-    list.commitStaging { }
+    list.commitStaging {}
   }
 
-  @Test fun commitStaging_processes_inactive_items() {
+  @Test
+  fun commitStaging_processes_inactive_items() {
     val discardedItems = mutableListOf<String>()
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { false }, create = { Node("foo") })
@@ -62,16 +67,18 @@ internal class ActiveStagingListTest {
     assertEquals(listOf("bar"), discardedItems)
   }
 
-  @Test fun retainOrCreateByIdentity_with_matching_active_identity_moves_item() {
+  @Test
+  fun retainOrCreateByIdentity_with_matching_active_identity_moves_item() {
     val list = ActiveStagingList<Node>(identityOf = { it.data })
     list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
-    list.commitStaging { }
+    list.commitStaging {}
 
     var createCalled = false
-    val node = list.retainOrCreateByIdentity(identity = "foo") {
-      createCalled = true
-      Node("should-not-create")
-    }
+    val node =
+      list.retainOrCreateByIdentity(identity = "foo") {
+        createCalled = true
+        Node("should-not-create")
+      }
 
     assertFalse(createCalled)
     assertEquals("foo", node.data)
@@ -79,34 +86,38 @@ internal class ActiveStagingListTest {
     assertEquals(emptyList(), list.active())
   }
 
-  @Test fun retainOrCreateByIdentity_throws_for_duplicate_staging_identity() {
+  @Test
+  fun retainOrCreateByIdentity_throws_for_duplicate_staging_identity() {
     val list = ActiveStagingList<Node>(identityOf = { it.data })
     list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      list.retainOrCreateByIdentity(identity = "foo") { Node("foo-2") }
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> {
+        list.retainOrCreateByIdentity(identity = "foo") { Node("foo-2") }
+      }
 
     assertEquals("Expected identities to be unique in staging: \"foo\"", error.message)
   }
 
-  @Test fun indexed_identity_membership_tracks_active_and_staging_across_commit() {
+  @Test
+  fun indexed_identity_membership_tracks_active_and_staging_across_commit() {
     val list = ActiveStagingList<Node>(identityOf = { it.data })
 
     list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
     assertTrue(list.containsStagingIdentity("foo"))
     assertFalse(list.containsActiveIdentity("foo"))
 
-    list.commitStaging { }
+    list.commitStaging {}
     assertFalse(list.containsStagingIdentity("foo"))
     assertTrue(list.containsActiveIdentity("foo"))
   }
 
-  @Test fun indexed_identity_removes_dropped_active_nodes_after_commit() {
+  @Test
+  fun indexed_identity_removes_dropped_active_nodes_after_commit() {
     val list = ActiveStagingList<Node>(identityOf = { it.data })
     list.retainOrCreateByIdentity(identity = "foo") { Node("foo") }
     val originalBar = list.retainOrCreateByIdentity(identity = "bar") { Node("bar") }
-    list.commitStaging { }
+    list.commitStaging {}
 
     val dropped = mutableListOf<String>()
     list.retainOrCreateByIdentity(identity = "foo") { fail("expected retain") }
@@ -117,10 +128,11 @@ internal class ActiveStagingListTest {
     assertFalse(list.containsActiveIdentity("bar"))
 
     var created = false
-    val bar = list.retainOrCreateByIdentity(identity = "bar") {
-      created = true
-      Node("bar")
-    }
+    val bar =
+      list.retainOrCreateByIdentity(identity = "bar") {
+        created = true
+        Node("bar")
+      }
 
     assertTrue(created)
     assertEquals("bar", bar.data)
@@ -128,14 +140,10 @@ internal class ActiveStagingListTest {
   }
 
   private fun ActiveStagingList<Node>.active() =
-    mutableListOf<String>()
-      .also { collector -> forEachActive { collector += it.data } }
-      .toList()
+    mutableListOf<String>().also { collector -> forEachActive { collector += it.data } }.toList()
 
   private fun ActiveStagingList<Node>.staging() =
-    mutableListOf<String>()
-      .also { collector -> forEachStaging { collector += it.data } }
-      .toList()
+    mutableListOf<String>().also { collector -> forEachStaging { collector += it.data } }.toList()
 
   private class Node(val data: String) : InlineListNode<Node> {
     override var nextListNode: Node? = null

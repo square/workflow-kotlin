@@ -12,7 +12,7 @@ import com.squareup.workflow1.ui.Wrapper
 data class TopAndBottomBarsScreen<T : Screen>(
   override val content: T,
   val topBar: ButtonBar? = null,
-  val bottomBar: ButtonBar? = null
+  val bottomBar: ButtonBar? = null,
 ) : AndroidScreen<TopAndBottomBarsScreen<T>>, Wrapper<Screen, T> {
   override fun <ContentU : Screen> map(transform: (T) -> ContentU) =
     TopAndBottomBarsScreen(transform(content), topBar, bottomBar)

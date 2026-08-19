@@ -7,9 +7,11 @@ import org.junit.Test
 
 internal class BodyAndOverlaysScreenTest {
   data class S<T>(val value: T) : Screen
+
   data class O<T>(val value: T) : Overlay
 
-  @Test fun mapBody() {
+  @Test
+  fun mapBody() {
     val before = BodyAndOverlaysScreen(S("s-before"), listOf(O("o-before")), name = "fnord")
     val after = before.mapBody {
       assertThat(it.value).isEqualTo("s-before")
@@ -23,7 +25,8 @@ internal class BodyAndOverlaysScreenTest {
     assertThat(compatible(before, after)).isTrue()
   }
 
-  @Test fun mapOverlays() {
+  @Test
+  fun mapOverlays() {
     val before = BodyAndOverlaysScreen(S("s-before"), listOf(O("o-before")), name = "bagel")
     val after = before.mapOverlays {
       assertThat(it.value).isEqualTo("o-before")
@@ -37,7 +40,8 @@ internal class BodyAndOverlaysScreenTest {
     assertThat(compatible(before, after)).isTrue()
   }
 
-  @Test fun nameAffectsCompatibility() {
+  @Test
+  fun nameAffectsCompatibility() {
     val unnamed = BodyAndOverlaysScreen<Screen, Overlay>(S(1))
     val alsoUnnamed = BodyAndOverlaysScreen<Screen, Overlay>(S("string"))
     val named = BodyAndOverlaysScreen<Screen, Overlay>(S(1), name = "name1")

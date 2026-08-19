@@ -24,97 +24,68 @@ internal class TextControllerAsMutableStateTest {
 
   private val composeRule = createComposeRule()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun setTextInCompose() {
+  @Test
+  fun setTextInCompose() {
     val textController = TextController()
     composeRule.setContent {
       var state by textController.asMutableTextFieldValueState()
-      LaunchedEffect(Unit) {
-        state = TextFieldValue(text = "foo")
-      }
+      LaunchedEffect(Unit) { state = TextFieldValue(text = "foo") }
     }
-    composeRule.runOnIdle {
-      assertThat(textController.textValue).isEqualTo("foo")
-    }
+    composeRule.runOnIdle { assertThat(textController.textValue).isEqualTo("foo") }
   }
 
-  @Test fun setTextInComposeWithSelection() {
+  @Test
+  fun setTextInComposeWithSelection() {
     val textController = TextController()
     val textFieldValue = mutableStateOf<TextFieldValue?>(null)
     composeRule.setContent {
       var state by textController.asMutableTextFieldValueState()
-      LaunchedEffect(Unit) {
-        state = TextFieldValue(text = "foobar", selection = TextRange(1, 3))
-      }
-      LaunchedEffect(Unit) {
-        snapshotFlow { state }
-          .collect {
-            textFieldValue.value = it
-          }
-      }
+      LaunchedEffect(Unit) { state = TextFieldValue(text = "foobar", selection = TextRange(1, 3)) }
+      LaunchedEffect(Unit) { snapshotFlow { state }.collect { textFieldValue.value = it } }
     }
     composeRule.runOnIdle {
       assertThat(textController.textValue).isEqualTo("foobar")
-      assertThat(textFieldValue.value).isEqualTo(
-        TextFieldValue(
-          text = "foobar",
-          selection = TextRange(1, 3)
-        )
-      )
+      assertThat(textFieldValue.value)
+        .isEqualTo(TextFieldValue(text = "foobar", selection = TextRange(1, 3)))
     }
   }
 
-  @Test fun setTextViaTextController() {
+  @Test
+  fun setTextViaTextController() {
     val textController = TextController()
     val textFieldValue = mutableStateOf<TextFieldValue?>(null)
     composeRule.setContent {
       val state by textController.asMutableTextFieldValueState()
-      LaunchedEffect(Unit) {
-        snapshotFlow { state }
-          .collect {
-            textFieldValue.value = it
-          }
-      }
+      LaunchedEffect(Unit) { snapshotFlow { state }.collect { textFieldValue.value = it } }
     }
     textController.textValue = "foo"
     composeRule.runOnIdle {
-      assertThat(textFieldValue.value).isEqualTo(
-        TextFieldValue(
-          text = "foo",
-          selection = TextRange(3)
-        )
-      )
+      assertThat(textFieldValue.value)
+        .isEqualTo(TextFieldValue(text = "foo", selection = TextRange(3)))
     }
   }
 
-  @Test fun withInitialSelectionSet() {
+  @Test
+  fun withInitialSelectionSet() {
     val textController = TextController("foobar")
     val textFieldValue = mutableStateOf<TextFieldValue?>(null)
     composeRule.setContent {
-      val state by textController.asMutableTextFieldValueState(
-        initialSelection = TextRange(
-          start = 1,
-          end = 3,
-        ),
-      )
-      LaunchedEffect(Unit) {
-        snapshotFlow { state }
-          .collect {
-            textFieldValue.value = it
-          }
-      }
+      val state by
+        textController.asMutableTextFieldValueState(
+          initialSelection = TextRange(start = 1, end = 3)
+        )
+      LaunchedEffect(Unit) { snapshotFlow { state }.collect { textFieldValue.value = it } }
     }
     composeRule.runOnIdle {
-      assertThat(textFieldValue.value).isEqualTo(
-        TextFieldValue(
-          text = "foobar",
-          selection = TextRange(1, 3)
-        )
-      )
+      assertThat(textFieldValue.value)
+        .isEqualTo(TextFieldValue(text = "foobar", selection = TextRange(1, 3)))
     }
   }
 }

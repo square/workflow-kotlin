@@ -13,34 +13,28 @@ typealias SelectedStanza = Int
  */
 object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListScreen>() {
 
-  data class Props(
-    val poem: Poem,
-    val eventHandlerTag: (String) -> String = { it }
-  )
+  data class Props(val poem: Poem, val eventHandlerTag: (String) -> String = { it })
 
   const val NO_SELECTED_STANZA = -1
 
   override fun render(
     renderProps: Props,
-    context: RenderContext<Props, SelectedStanza>
+    context: RenderContext<Props, SelectedStanza>,
   ): StanzaListScreen {
     val poem = renderProps.poem
     return StanzaListScreen(
       title = poem.title,
       subtitle = poem.poet.fullName,
       firstLines = poem.initialStanzas,
-      onStanzaSelected = context.eventHandler(
-        name = renderProps.eventHandlerTag("E-StanzaList-StanzaSelected")
-      ) { index ->
-        setOutput(
-          index
-        )
-      },
-      onExit = context.eventHandler(name = renderProps.eventHandlerTag("E-StanzaList-Exit")) {
-        setOutput(
-          NO_SELECTED_STANZA
-        )
-      }
+      onStanzaSelected =
+        context.eventHandler(name = renderProps.eventHandlerTag("E-StanzaList-StanzaSelected")) {
+          index ->
+          setOutput(index)
+        },
+      onExit =
+        context.eventHandler(name = renderProps.eventHandlerTag("E-StanzaList-Exit")) {
+          setOutput(NO_SELECTED_STANZA)
+        },
     )
   }
 }

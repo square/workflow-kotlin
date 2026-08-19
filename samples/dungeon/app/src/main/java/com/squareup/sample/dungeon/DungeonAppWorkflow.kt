@@ -17,61 +17,62 @@ import com.squareup.workflow1.ui.navigation.Overlay
 
 class DungeonAppWorkflow(
   private val gameSessionWorkflow: GameSessionWorkflow,
-  private val boardLoader: BoardLoader
+  private val boardLoader: BoardLoader,
 ) : StatefulWorkflow<Props, State, Nothing, BodyAndOverlaysScreen<Screen, Overlay>>() {
 
   data class Props(val paused: Boolean = false)
 
   sealed class State : Screen {
     object LoadingBoardList : State()
+
     data class ChoosingBoard(val boards: List<Pair<String, Board>>) : State()
+
     data class PlayingGame(val boardPath: BoardPath) : State()
   }
 
   data class DisplayBoardsListScreen(
     val boards: List<Board>,
-    val onBoardSelected: (index: Int) -> Unit
+    val onBoardSelected: (index: Int) -> Unit,
   ) : Screen
 
-  override fun initialState(
-    props: Props,
-    snapshot: Snapshot?
-  ): State = LoadingBoardList
+  override fun initialState(props: Props, snapshot: Snapshot?): State = LoadingBoardList
 
   override fun render(
     renderProps: Props,
     renderState: State,
-    context: RenderContext<Props, State, Nothing>
-  ): BodyAndOverlaysScreen<Screen, Overlay> = when (renderState) {
-    LoadingBoardList -> {
-      context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }
-      BodyAndOverlaysScreen(renderState)
-    }
+    context: RenderContext<Props, State, Nothing>,
+  ): BodyAndOverlaysScreen<Screen, Overlay> =
+    when (renderState) {
+      LoadingBoardList -> {
+        context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }
+        BodyAndOverlaysScreen(renderState)
+      }
 
-    is ChoosingBoard -> {
-      val screen = DisplayBoardsListScreen(
-        boards = renderState.boards.map { it.second },
-        onBoardSelected = { index -> context.actionSink.send(selectBoard(index)) }
-      )
-      BodyAndOverlaysScreen(screen)
-    }
+      is ChoosingBoard -> {
+        val screen =
+          DisplayBoardsListScreen(
+            boards = renderState.boards.map { it.second },
+            onBoardSelected = { index -> context.actionSink.send(selectBoard(index)) },
+          )
+        BodyAndOverlaysScreen(screen)
+      }
 
-    is PlayingGame -> {
-      val sessionProps = GameSessionWorkflow.Props(renderState.boardPath, renderProps.paused)
-      val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps)
-      gameScreen
+      is PlayingGame -> {
+        val sessionProps = GameSessionWorkflow.Props(renderState.boardPath, renderProps.paused)
+        val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps)
+        gameScreen
+      }
     }
-  }
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun displayBoards(boards: Map<String, Board>) = action("displayBoards") {
-    state = ChoosingBoard(boards.toList())
-  }
+  private fun displayBoards(boards: Map<String, Board>) =
+    action("displayBoards") { state = ChoosingBoard(boards.toList()) }
 
-  private fun selectBoard(index: Int) = action("selectBoard") {
-    // No-op if we're not in the ChoosingBoard state.
-    val boards = (state as? ChoosingBoard)?.boards ?: return@action
-    state = PlayingGame(boards[index].first)
-  }
+  private fun selectBoard(index: Int) =
+    action("selectBoard") {
+      // No-op if we're not in the ChoosingBoard state.
+      val boards = (state as? ChoosingBoard)?.boards ?: return@action
+      state = PlayingGame(boards[index].first)
+    }
 }

@@ -1,8 +1,8 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
-import org.jetbrains.annotations.TestOnly
 import kotlin.reflect.KClass
+import org.jetbrains.annotations.TestOnly
 
 /**
  * The [WorkflowIdentifier] that identifies the workflow this [KClass] represents.

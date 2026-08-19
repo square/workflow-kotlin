@@ -15,18 +15,17 @@ fun DependencyHandler.androidTestImplementation(notation: Any) {
   add("androidTestImplementation", notation)
 }
 
-operator fun DependencyHandler.invoke(
-  config: DependencyHandler.() -> Unit
-): DependencyHandler = apply { config(this) }
+operator fun DependencyHandler.invoke(config: DependencyHandler.() -> Unit): DependencyHandler =
+  apply {
+    config(this)
+  }
 
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
 val Project.isRunningFromIde
   get() = properties["android.injected.invoked.from.ide"] == "true"
 
-fun DependencyHandler.kotlin(
-  module: String,
-  version: String? = null
-): Any = "org.jetbrains.kotlin:kotlin-$module${version?.let { ":$version" } ?: ""}"
+fun DependencyHandler.kotlin(module: String, version: String? = null): Any =
+  "org.jetbrains.kotlin:kotlin-$module${version?.let { ":$version" } ?: ""}"
 
 /**
  * the jdk used in packaging
@@ -43,8 +42,8 @@ val Project.javaTargetInt: Int
 /**
  * Gradle's Java version enum.
  *
- * nb: Their class version is the jdk's integer value + 44.
- * For instance, Java 8's class version is 52.
+ * nb: Their class version is the jdk's integer value + 44. For instance, Java 8's class version
+ * is 52.
  */
 val Project.javaTargetVersion: JavaVersion
   get() = JavaVersion.forClassVersion(javaTargetInt + 44)

@@ -12,11 +12,9 @@ class AndroidDefaultsPlugin : Plugin<Project> {
   override fun apply(target: Project) {
 
     target.extensions.configure(TestedExtension::class.java) { testedExtension ->
-
       testedExtension.compileSdkVersion(target.libsCatalog.version("compileSdk").toInt())
 
       testedExtension.compileOptions { compileOptions ->
-
         compileOptions.sourceCompatibility = target.javaTargetVersion
         compileOptions.targetCompatibility = target.javaTargetVersion
       }

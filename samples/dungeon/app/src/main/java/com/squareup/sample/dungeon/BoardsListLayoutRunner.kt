@@ -20,8 +20,8 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 /**
  * Renders a list of boards in a grid, along with previews of the boards.
  *
- * Notably, this runner uses the [Cycler](https://github.com/square/cycler) library to configure
- * a `RecyclerView`.
+ * Notably, this runner uses the [Cycler](https://github.com/square/cycler) library to configure a
+ * `RecyclerView`.
  */
 class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsListScreen> {
 
@@ -34,7 +34,7 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
   private data class BoardItem(
     val board: Board,
     val viewEnvironment: ViewEnvironment,
-    val onClicked: () -> Unit
+    val onClicked: () -> Unit,
   )
 
   private val recycler =
@@ -70,17 +70,12 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
       }
     }
 
-  override fun showRendering(
-    rendering: DisplayBoardsListScreen,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: DisplayBoardsListScreen, environment: ViewEnvironment) {
     // Associate the viewEnvironment and event handler to each item because it needs to be used when
     // binding the RecyclerView item above.
     // Recycler is configured with a DataSource, which effectively (and often in practice) a simple
     // wrapper around a List.
-    recycler.update {
-      data = rendering.toDataSource(environment)
-    }
+    recycler.update { data = rendering.toDataSource(environment) }
   }
 
   /**
@@ -90,18 +85,23 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
    */
   private fun DisplayBoardsListScreen.toDataSource(
     viewEnvironment: ViewEnvironment
-  ): DataSource<BoardItem> = object : AbstractList<BoardItem>() {
-    override val size: Int get() = boards.size
+  ): DataSource<BoardItem> =
+    object : AbstractList<BoardItem>() {
+        override val size: Int
+          get() = boards.size
 
-    override fun get(index: Int): BoardItem = BoardItem(
-      board = boards[index],
-      viewEnvironment = viewEnvironment,
-      onClicked = { onBoardSelected(index) }
+        override fun get(index: Int): BoardItem =
+          BoardItem(
+            board = boards[index],
+            viewEnvironment = viewEnvironment,
+            onClicked = { onBoardSelected(index) },
+          )
+      }
+      .toDataSource()
+
+  companion object :
+    ScreenViewFactory<DisplayBoardsListScreen> by fromLayout(
+      R.layout.boards_list_layout,
+      ::BoardsListLayoutRunner,
     )
-  }.toDataSource()
-
-  companion object : ScreenViewFactory<DisplayBoardsListScreen> by fromLayout(
-    R.layout.boards_list_layout,
-    ::BoardsListLayoutRunner
-  )
 }

@@ -20,47 +20,33 @@ import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.toBackStackScreen
 
-/**
- * Default implementation of [PoemWorkflow].
- */
-class RealPoemWorkflow : PoemWorkflow,
-  StatefulWorkflow<Poem, SelectedStanza, ClosePoem, OverviewDetailScreen<*>>() {
+/** Default implementation of [PoemWorkflow]. */
+class RealPoemWorkflow :
+  PoemWorkflow, StatefulWorkflow<Poem, SelectedStanza, ClosePoem, OverviewDetailScreen<*>>() {
 
-  override fun initialState(
-    props: Poem,
-    snapshot: Snapshot?
-  ): SelectedStanza {
-    return snapshot?.bytes?.parse { source ->
-      source.readInt()
-    } ?: NO_SELECTED_STANZA
+  override fun initialState(props: Poem, snapshot: Snapshot?): SelectedStanza {
+    return snapshot?.bytes?.parse { source -> source.readInt() } ?: NO_SELECTED_STANZA
   }
 
   override fun render(
     renderProps: Poem,
     renderState: SelectedStanza,
-    context: RenderContext<Poem, SelectedStanza, ClosePoem>
+    context: RenderContext<Poem, SelectedStanza, ClosePoem>,
   ): OverviewDetailScreen<*> {
     val previousStanzas: List<StanzaScreen> =
       if (renderState == NO_SELECTED_STANZA) {
         emptyList()
       } else {
-        renderProps.stanzas.subList(0, renderState)
-          .mapIndexed { index, _ ->
-            context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
-              noAction()
-            }
-          }
+        renderProps.stanzas.subList(0, renderState).mapIndexed { index, _ ->
+          context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") { noAction() }
+        }
       }
 
     val visibleStanza =
       if (renderState == NO_SELECTED_STANZA) {
         null
       } else {
-        context.renderChild(
-          StanzaWorkflow,
-          Props(renderProps, renderState),
-          "$renderState"
-        ) {
+        context.renderChild(StanzaWorkflow, Props(renderProps, renderState), "$renderState") {
           when (it) {
             CloseStanzas -> ClearSelection
             ShowPreviousStanza -> SelectPrevious
@@ -74,34 +60,37 @@ class RealPoemWorkflow : PoemWorkflow,
     }
 
     val stanzaListOverview =
-      context.renderChild(
-        StanzaListWorkflow,
-        StanzaListWorkflow.Props(renderProps)
-      ) { selected ->
-        HandleStanzaListOutput(selected)
-      }
+      context
+        .renderChild(StanzaListWorkflow, StanzaListWorkflow.Props(renderProps)) { selected ->
+          HandleStanzaListOutput(selected)
+        }
         .copy(selection = renderState)
 
-    return stackedStanzas
-      ?.let {
-        OverviewDetailScreen(
-          overviewRendering = BackStackScreen(stanzaListOverview),
-          detailRendering = it
-        )
-      } ?: OverviewDetailScreen(
-      overviewRendering = BackStackScreen(stanzaListOverview),
-      selectDefault = { context.actionSink.send(HandleStanzaListOutput(0)) }
-    )
+    return stackedStanzas?.let {
+      OverviewDetailScreen(
+        overviewRendering = BackStackScreen(stanzaListOverview),
+        detailRendering = it,
+      )
+    }
+      ?: OverviewDetailScreen(
+        overviewRendering = BackStackScreen(stanzaListOverview),
+        selectDefault = { context.actionSink.send(HandleStanzaListOutput(0)) },
+      )
   }
 
-  override fun snapshotState(state: SelectedStanza): Snapshot =
-    Snapshot.write { sink -> sink.writeInt(state) }
+  override fun snapshotState(state: SelectedStanza): Snapshot = Snapshot.write { sink ->
+    sink.writeInt(state)
+  }
 
   private sealed class Action : WorkflowAction<Poem, SelectedStanza, ClosePoem>() {
     object ClearSelection : Action()
+
     object SelectPrevious : Action()
+
     object SelectNext : Action()
+
     class HandleStanzaListOutput(val selection: Int) : Action()
+
     object ExitPoem : Action()
 
     override fun Updater.apply() {

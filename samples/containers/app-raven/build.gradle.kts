@@ -6,9 +6,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.containers.raven"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.containers.raven" }
   namespace = "com.squareup.sample.container.ravenapp"
 }
 

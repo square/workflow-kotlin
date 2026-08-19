@@ -9,6 +9,12 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -16,12 +22,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.withContext
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 /**
  * Tests for WorkflowTurbine to verify that awaitNextRendering, awaitNextOutput, and
@@ -29,13 +29,10 @@ import kotlin.test.assertTrue
  */
 class WorkflowTurbineTest {
 
-  @Test fun `awaitNextRendering returns first rendering`() {
-    val workflow = Workflow.stateful<Int, Nothing, Int>(
-      initialState = 42,
-      render = { state: Int ->
-        state
-      }
-    )
+  @Test
+  fun `awaitNextRendering returns first rendering`() {
+    val workflow =
+      Workflow.stateful<Int, Nothing, Int>(initialState = 42, render = { state: Int -> state })
 
     workflow.renderForTest {
       // First rendering should be 42
@@ -43,14 +40,14 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `awaitNextSnapshot returns first snapshot`() {
-    val workflow = Workflow.stateful<Int, Nothing, Int>(
-      initialState = { snapshot: Snapshot? -> 42 },
-      render = { state: Int ->
-        state
-      },
-      snapshot = { state: Int -> Snapshot.of(state) }
-    )
+  @Test
+  fun `awaitNextSnapshot returns first snapshot`() {
+    val workflow =
+      Workflow.stateful<Int, Nothing, Int>(
+        initialState = { snapshot: Snapshot? -> 42 },
+        render = { state: Int -> state },
+        snapshot = { state: Int -> Snapshot.of(state) },
+      )
 
     workflow.renderForTest {
       // First snapshot should exist
@@ -61,13 +58,13 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `firstRendering property is accessible`() {
-    val workflow = Workflow.stateful<String, Nothing, String>(
-      initialState = "hello",
-      render = { state: String ->
-        state
-      }
-    )
+  @Test
+  fun `firstRendering property is accessible`() {
+    val workflow =
+      Workflow.stateful<String, Nothing, String>(
+        initialState = "hello",
+        render = { state: String -> state },
+      )
 
     workflow.renderForTest {
       // First rendering property should be accessible
@@ -77,14 +74,14 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `firstSnapshot property is accessible`() {
-    val workflow = Workflow.stateful<String, Nothing, String>(
-      initialState = { snapshot: Snapshot? -> "hello" },
-      render = { state: String ->
-        state
-      },
-      snapshot = { state: String -> Snapshot.of(state) }
-    )
+  @Test
+  fun `firstSnapshot property is accessible`() {
+    val workflow =
+      Workflow.stateful<String, Nothing, String>(
+        initialState = { snapshot: Snapshot? -> "hello" },
+        render = { state: String -> state },
+        snapshot = { state: String -> Snapshot.of(state) },
+      )
 
     workflow.renderForTest {
       // First snapshot property should be accessible
@@ -103,7 +100,7 @@ class WorkflowTurbineTest {
     override fun render(
       renderProps: Unit,
       renderState: String,
-      context: RenderContext<Unit, String, Nothing>
+      context: RenderContext<Unit, String, Nothing>,
     ): String {
       if (renderState == "prompt") {
         context.runningWorker(
@@ -112,16 +109,15 @@ class WorkflowTurbineTest {
             "installing"
           }
         ) {
-          action("timerFinished") {
-            state = it
-          }
+          action("timerFinished") { state = it }
         }
       }
       return renderState
     }
   }
 
-  @Test fun `renderForTest startup auto-advance is enabled by default`() {
+  @Test
+  fun `renderForTest startup auto-advance is enabled by default`() {
     StartupAdvanceWorkflow.renderForTest(
       testParams = WorkflowTestParams(checkRenderIdempotence = false)
     ) {
@@ -129,12 +125,10 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `renderForTest startup auto-advance can be disabled`() {
+  @Test
+  fun `renderForTest startup auto-advance can be disabled`() {
     StartupAdvanceWorkflow.renderForTest(
-      testParams = WorkflowTestParams(
-        checkRenderIdempotence = false,
-        autoAdvanceOnStartup = false
-      )
+      testParams = WorkflowTestParams(checkRenderIdempotence = false, autoAdvanceOnStartup = false)
     ) {
       assertEquals("prompt", awaitNextRendering())
       advanceUntilSettled()
@@ -151,13 +145,10 @@ class WorkflowTurbineTest {
     var cleanupFinished = false
 
     workflowWithCancellationCleanup(cleanupStarted) {
-      cleanupCanFinish.await()
-      cleanupFinished = true
-    }.renderForTest(
-      coroutineContext = dispatcher
-    ) {
-      cleanupStarted.await()
-    }
+        cleanupCanFinish.await()
+        cleanupFinished = true
+      }
+      .renderForTest(coroutineContext = dispatcher) { cleanupStarted.await() }
 
     assertFalse(cleanupFinished)
     cleanupCanFinish.complete(Unit)
@@ -173,15 +164,16 @@ class WorkflowTurbineTest {
     var cleanupFinished = false
 
     workflowWithCancellationCleanup(cleanupStarted) {
-      delay(1)
-      cleanupFinished = true
-    }.renderForTest(
-      coroutineContext = dispatcher,
-      teardown = WorkflowRuntimeTeardown.CancelAndAwait()
-    ) {
-      cleanupStarted.await()
-      assertFalse(cleanupFinished)
-    }
+        delay(1)
+        cleanupFinished = true
+      }
+      .renderForTest(
+        coroutineContext = dispatcher,
+        teardown = WorkflowRuntimeTeardown.CancelAndAwait(),
+      ) {
+        cleanupStarted.await()
+        assertFalse(cleanupFinished)
+      }
 
     assertTrue(cleanupFinished)
   }
@@ -198,12 +190,10 @@ class WorkflowTurbineTest {
           try {
             awaitCancellation()
           } finally {
-            withContext(NonCancellable) {
-              cleanup()
-            }
+            withContext(NonCancellable) { cleanup() }
           }
         }
-      }
+      },
     )
 
   // Workflow that can increment state
@@ -215,20 +205,15 @@ class WorkflowTurbineTest {
     override fun render(
       renderProps: Unit,
       renderState: Int,
-      context: RenderContext<Unit, Int, Nothing>
+      context: RenderContext<Unit, Int, Nothing>,
     ): Pair<Int, () -> Unit> {
-      val increment = {
-        context.actionSink.send(
-          action("increment") {
-            state = renderState + 1
-          }
-        )
-      }
+      val increment = { context.actionSink.send(action("increment") { state = renderState + 1 }) }
       return renderState to increment
     }
   }
 
-  @Test fun `awaitNextRendering and awaitNextSnapshot are independent`() {
+  @Test
+  fun `awaitNextRendering and awaitNextSnapshot are independent`() {
     IncrementWorkflow.renderForTest {
       // Get first rendering
       val (value0, increment0) = awaitNextRendering()
@@ -267,7 +252,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `awaitNextSnapshot and awaitNextRendering are synchronized`() {
+  @Test
+  fun `awaitNextSnapshot and awaitNextRendering are synchronized`() {
     IncrementWorkflow.renderForTest {
       // Consume first rendering
       val (value0, increment) = awaitNextRendering()
@@ -291,7 +277,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `shareIn works - both turbines receive same emissions`() {
+  @Test
+  fun `shareIn works - both turbines receive same emissions`() {
     IncrementWorkflow.renderForTest {
       // Consume renderings first
       val (value0, increment0) = awaitNextRendering()
@@ -334,7 +321,7 @@ class WorkflowTurbineTest {
     override fun render(
       renderProps: Unit,
       renderState: Int,
-      context: RenderContext<Unit, Int, String>
+      context: RenderContext<Unit, Int, String>,
     ): Pair<Int, () -> Unit> {
       val emitOutput = {
         context.actionSink.send(
@@ -348,7 +335,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `awaitNextOutput receives workflow outputs`() {
+  @Test
+  fun `awaitNextOutput receives workflow outputs`() {
     OutputWorkflow.renderForTest {
       // Get first rendering
       val (value0, emit0) = awaitNextRendering()
@@ -378,7 +366,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `renderForTest ignores unconsumed events on teardown`() {
+  @Test
+  fun `renderForTest ignores unconsumed events on teardown`() {
     OutputWorkflow.renderForTest {
       val (_, emit) = awaitNextRendering()
 
@@ -387,7 +376,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `all three await methods work together independently`() {
+  @Test
+  fun `all three await methods work together independently`() {
     OutputWorkflow.renderForTest {
       // Get first rendering
       val (value0, emit0) = awaitNextRendering()
@@ -425,7 +415,8 @@ class WorkflowTurbineTest {
     }
   }
 
-  @Test fun `multiple state changes produce multiple emissions for all flows`() {
+  @Test
+  fun `multiple state changes produce multiple emissions for all flows`() {
     IncrementWorkflow.renderForTest {
       val (value0, increment0) = awaitNextRendering()
       assertEquals(0, value0)
@@ -465,14 +456,9 @@ class WorkflowTurbineTest {
   }
 }
 
-/**
- * Extension function to read an Int value from a TreeSnapshot.
- */
-private fun TreeSnapshot.readIntValue(): Int? =
-  workflowSnapshotByteString()?.parse { it.readInt() }
+/** Extension function to read an Int value from a TreeSnapshot. */
+private fun TreeSnapshot.readIntValue(): Int? = workflowSnapshotByteString()?.parse { it.readInt() }
 
-/***
- * Extension function to read a String value from a TreeSnapshot.
- */
+/** Extension function to read a String value from a TreeSnapshot. */
 private fun TreeSnapshot.readStringValue(): String? =
   workflowSnapshotByteString()?.parse { it.readUtf8() }

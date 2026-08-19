@@ -34,19 +34,18 @@ class ShakeWorker(private val context: Context) : Worker<Unit> {
     awaitClose { shakeDetector.stop() }
   }
 
-  private val fakeShakes = callbackFlow<Unit> {
-    val receiver = object : BroadcastReceiver() {
-      override fun onReceive(
-        context: Context,
-        intent: Intent
-      ) {
-        trySend(Unit).isSuccess
-      }
+  private val fakeShakes =
+    callbackFlow<Unit> {
+      val receiver =
+        object : BroadcastReceiver() {
+          override fun onReceive(context: Context, intent: Intent) {
+            trySend(Unit).isSuccess
+          }
+        }
+      val intentFilter = IntentFilter(ACTION_FAKE_SHAKE)
+      context.registerReceiver(receiver, intentFilter)
+      awaitClose { context.unregisterReceiver(receiver) }
     }
-    val intentFilter = IntentFilter(ACTION_FAKE_SHAKE)
-    context.registerReceiver(receiver, intentFilter)
-    awaitClose { context.unregisterReceiver(receiver) }
-  }
 
   @OptIn(FlowPreview::class)
   override fun run(): Flow<Unit> = flowOf(realShakes, fakeShakes).flattenMerge()

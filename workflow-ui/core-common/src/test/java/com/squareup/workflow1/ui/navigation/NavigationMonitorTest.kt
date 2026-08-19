@@ -11,31 +11,21 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 class NavigationMonitorTest {
-  private data class NotScreen(
-    val name: String,
-    val baggage: String = ""
-  ) : Compatible {
+  private data class NotScreen(val name: String, val baggage: String = "") : Compatible {
     override val compatibilityKey: String = keyFor(this, name)
   }
 
-  private data class TestScreen(
-    val name: String,
-    val baggage: String = ""
-  ) : Screen, Compatible {
+  private data class TestScreen(val name: String, val baggage: String = "") : Screen, Compatible {
     override val compatibilityKey: String = keyFor(this, name)
   }
 
-  private data class TestContainer<T : Any>(
-    val content: List<T>
-  ) : Container<Any, T> {
+  private data class TestContainer<T : Any>(val content: List<T>) : Container<Any, T> {
     override fun asSequence(): Sequence<T> = content.asSequence()
 
     override fun <D : Any> map(transform: (T) -> D): Container<Any, D> = error("not relevant")
   }
 
-  private class TestOverlay<T : Screen>(
-    override val content: T
-  ) : ScreenOverlay<T> {
+  private class TestOverlay<T : Screen>(override val content: T) : ScreenOverlay<T> {
     override fun <ContentU : Screen> map(transform: (T) -> ContentU) = error("not relevant")
   }
 
@@ -144,11 +134,7 @@ class NavigationMonitorTest {
 
     val wizardOne = TestScreen("wizard one")
     monitor.update(
-      bodyAndOverlays(
-        body,
-        TestOverlay(firstWindowBody),
-        TestOverlay(BackStackScreen(wizardOne))
-      )
+      bodyAndOverlays(body, TestOverlay(firstWindowBody), TestOverlay(BackStackScreen(wizardOne)))
     )
     assertSame(wizardOne, lastTop)
 
@@ -156,7 +142,7 @@ class NavigationMonitorTest {
       bodyAndOverlays(
         body,
         TestOverlay(firstWindowBody),
-        TestOverlay(BackStackScreen(wizardOne.copy(baggage = "updated")))
+        TestOverlay(BackStackScreen(wizardOne.copy(baggage = "updated"))),
       )
     )
     assertSame(wizardOne, lastTop)
@@ -166,12 +152,7 @@ class NavigationMonitorTest {
       bodyAndOverlays(
         body,
         TestOverlay(firstWindowBody),
-        TestOverlay(
-          BackStackScreen(
-            wizardOne.copy(baggage = "updated"),
-            wizardTwo
-          )
-        )
+        TestOverlay(BackStackScreen(wizardOne.copy(baggage = "updated"), wizardTwo)),
       )
     )
     assertSame(wizardTwo, lastTop)
@@ -180,10 +161,7 @@ class NavigationMonitorTest {
   private fun <T : Any> container(vararg elements: T): TestContainer<T> =
     TestContainer(elements.toList())
 
-  private fun bodyAndOverlays(
-    body: Screen,
-    vararg overlays: Overlay
-  ): BodyAndOverlaysScreen<*, *> {
+  private fun bodyAndOverlays(body: Screen, vararg overlays: Overlay): BodyAndOverlaysScreen<*, *> {
     return BodyAndOverlaysScreen(body, overlays.asList())
   }
 }

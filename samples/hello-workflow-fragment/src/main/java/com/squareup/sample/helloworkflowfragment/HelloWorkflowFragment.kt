@@ -20,16 +20,14 @@ class HelloWorkflowFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): WorkflowLayout {
     // This ViewModel will survive configuration changes. It's instantiated
     // by the first call to ViewModelProvider.get(), and that original instance is returned by
     // succeeding calls, until this Fragment session ends.
     val model: HelloViewModel = ViewModelProvider(this)[HelloViewModel::class.java]
 
-    return WorkflowLayout(inflater.context).apply {
-      take(lifecycle, model.renderings)
-    }
+    return WorkflowLayout(inflater.context).apply { take(lifecycle, model.renderings) }
   }
 }
 
@@ -39,7 +37,7 @@ class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = HelloWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
     )
   }
 }

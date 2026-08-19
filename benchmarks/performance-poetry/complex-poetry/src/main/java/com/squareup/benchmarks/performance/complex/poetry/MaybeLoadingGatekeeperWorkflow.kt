@@ -17,32 +17,26 @@ typealias IsLoading = Boolean
 class MaybeLoadingGatekeeperWorkflow<T : Any>(
   private val childWithLoading: Workflow<T, *, OverviewDetailScreen<*>>,
   private val childProps: T,
-  private val isLoading: Flow<Boolean>
+  private val isLoading: Flow<Boolean>,
 ) : StatefulWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>() {
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): IsLoading = false
+  override fun initialState(props: Unit, snapshot: Snapshot?): IsLoading = false
 
   override fun render(
     renderProps: Unit,
     renderState: IsLoading,
-    context: RenderContext<Unit, IsLoading, Unit>
+    context: RenderContext<Unit, IsLoading, Unit>,
   ): MayBeLoadingScreen {
     context.runningWorker(isLoading.asTraceableWorker("GatekeeperLoading")) {
-      action("GatekeeperLoading") {
-        state = it
-      }
+      action("GatekeeperLoading") { state = it }
     }
     return MayBeLoadingScreen(
-      baseScreen = context.renderChild(childWithLoading, childProps) {
-        action(ActionHandlingTracingInterceptor.keyForTrace("GatekeeperChildFinished")) {
-          setOutput(
-            Unit
-          )
-        }
-      },
-      loaders = if (renderState) listOf(LoaderSpinner) else emptyList()
+      baseScreen =
+        context.renderChild(childWithLoading, childProps) {
+          action(ActionHandlingTracingInterceptor.keyForTrace("GatekeeperChildFinished")) {
+            setOutput(Unit)
+          }
+        },
+      loaders = if (renderState) listOf(LoaderSpinner) else emptyList(),
     )
   }
 

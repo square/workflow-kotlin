@@ -24,22 +24,22 @@ class NestedRenderingsTest {
 
   private val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun childrenAreAddedAndRemoved() {
-    composeRule.onNodeWithText(ADD_BUTTON_TEXT)
-      .assertIsDisplayed()
-      .performClick()
+  @Test
+  fun childrenAreAddedAndRemoved() {
+    composeRule.onNodeWithText(ADD_BUTTON_TEXT).assertIsDisplayed().performClick()
 
-    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
-      .assertCountEquals(2)
-      .forEach { it.performClick() }
+    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(2).forEach {
+      it.performClick()
+    }
 
-    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
-      .assertCountEquals(4)
+    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(4)
 
     resetAll()
     composeRule.onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(1)

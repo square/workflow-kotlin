@@ -27,8 +27,7 @@ public fun Parcelable.toSnapshot(): Snapshot {
  * @return a [Parcelable] previously wrapped with [toSnapshot], or `null` if the receiver is empty.
  */
 public inline fun <reified T : Parcelable> Snapshot.toParcelable(): T? {
-  return bytes.takeIf { it.size > 0 }
-    ?.toParcelable<T>()
+  return bytes.takeIf { it.size > 0 }?.toParcelable<T>()
 }
 
 public inline fun <reified T : Parcelable> ByteString.toParcelable(): T {
@@ -36,12 +35,12 @@ public inline fun <reified T : Parcelable> ByteString.toParcelable(): T {
   val byteArray = toByteArray()
   parcel.unmarshall(byteArray, 0, byteArray.size)
   parcel.setDataPosition(0)
-  val rtn = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-    parcel.readParcelable<T>(Snapshot::class.java.classLoader, T::class.java)!!
-  } else {
-    @Suppress("DEPRECATION")
-    parcel.readParcelable<T>(Snapshot::class.java.classLoader)!!
-  }
+  val rtn =
+    if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+      parcel.readParcelable<T>(Snapshot::class.java.classLoader, T::class.java)!!
+    } else {
+      @Suppress("DEPRECATION") parcel.readParcelable<T>(Snapshot::class.java.classLoader)!!
+    }
   parcel.recycle()
   return rtn
 }

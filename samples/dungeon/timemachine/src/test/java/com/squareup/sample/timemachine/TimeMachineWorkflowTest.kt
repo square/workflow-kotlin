@@ -9,30 +9,26 @@ import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Reco
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
-import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
+import org.junit.Test
 
 @OptIn(ExperimentalTime::class)
 class TimeMachineWorkflowTest {
 
-  @Test fun `records and plays back`() {
-    data class DelegateRendering(
-      val state: String,
-      val setState: (String) -> Unit
-    )
+  @Test
+  fun `records and plays back`() {
+    data class DelegateRendering(val state: String, val setState: (String) -> Unit)
 
-    val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
-      initialState = "initial",
-      render = { renderState ->
-        DelegateRendering(
-          renderState,
-          setState = eventHandler("setState") { s -> state = s }
-        )
-      }
-    )
+    val delegateWorkflow =
+      Workflow.stateful<String, Nothing, DelegateRendering>(
+        initialState = "initial",
+        render = { renderState ->
+          DelegateRendering(renderState, setState = eventHandler("setState") { s -> state = s })
+        },
+      )
     val clock = TestTimeSource()
     val tmWorkflow = TimeMachineWorkflow(delegateWorkflow, clock)
 

@@ -10,10 +10,10 @@ typealias MayBeLoadingScreen =
 
 fun MayBeLoadingScreen(
   baseScreen: OverviewDetailScreen<*>,
-  loaders: List<LoaderSpinner> = emptyList()
+  loaders: List<LoaderSpinner> = emptyList(),
 ): MayBeLoadingScreen {
   return BodyAndOverlaysScreen(
     ScrimScreen(baseScreen, dimmed = loaders.isNotEmpty()),
-    loaders.map { FullScreenModal(it) }
+    loaders.map { FullScreenModal(it) },
   )
 }

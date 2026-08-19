@@ -39,8 +39,8 @@ import com.squareup.workflow1.traceviewer.model.NodeState
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 
 /**
- * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
- * The Column holds a subtree of nodes, and the Row holds all the children of the current node
+ * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the
+ * tree The Column holds a subtree of nodes, and the Row holds all the children of the current node
  *
  * A mutable map is used to persist the expansion state of the nodes, allowing them to be open and
  * closed from user clicks.
@@ -59,16 +59,12 @@ internal fun DrawTree(
     modifier
       .padding(6.dp)
       .fillMaxSize()
-      .then(
-        if (node.children.isNotEmpty()) Modifier.border(3.dp, Color.Black) else Modifier
-      ),
+      .then(if (node.children.isNotEmpty()) Modifier.border(3.dp, Color.Black) else Modifier),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     val isAffected = affectedNodes.contains(node)
     // By default, nodes that relevant to this specific frame are expanded. All others are closed.
-    LaunchedEffect(expandedNodes) {
-      expandedNodes[node.id] = isAffected
-    }
+    LaunchedEffect(expandedNodes) { expandedNodes[node.id] = isAffected }
     val isExpanded = expandedNodes[node.id] == true
 
     DrawNode(
@@ -78,12 +74,12 @@ internal fun DrawTree(
       isExpanded = isExpanded,
       onNodeSelect = onNodeSelect,
       onExpandToggle = { expandedNodes[node.id] = !expandedNodes.getValue(node.id) },
-      storeNodeLocation = storeNodeLocation
+      storeNodeLocation = storeNodeLocation,
     )
 
     if (isExpanded) {
-      val (affectedChildren, unaffectedChildren) = node.children.values
-        .partition { affectedNodes.contains(it) }
+      val (affectedChildren, unaffectedChildren) =
+        node.children.values.partition { affectedNodes.contains(it) }
 
       UnaffectedChildrenGroup(
         node = node,
@@ -92,7 +88,7 @@ internal fun DrawTree(
         affectedNodes = affectedNodes,
         expandedNodes = expandedNodes,
         onNodeSelect = onNodeSelect,
-        storeNodeLocation = storeNodeLocation
+        storeNodeLocation = storeNodeLocation,
       )
 
       AffectedChildrenGroup(
@@ -101,7 +97,7 @@ internal fun DrawTree(
         affectedNodes = affectedNodes,
         expandedNodes = expandedNodes,
         onNodeSelect = onNodeSelect,
-        storeNodeLocation = storeNodeLocation
+        storeNodeLocation = storeNodeLocation,
       )
     }
   }
@@ -123,7 +119,7 @@ private fun UnaffectedChildrenGroup(
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
   onNodeSelect: (NodeUpdate) -> Unit,
-  storeNodeLocation: (Node, Offset) -> Unit
+  storeNodeLocation: (Node, Offset) -> Unit,
 ) {
   if (children.isEmpty()) return
 
@@ -135,8 +131,8 @@ private fun UnaffectedChildrenGroup(
   val isGroupExpanded = expandedNodes[groupKey] == true
 
   Box(
-    modifier = Modifier
-      .onPointerEvent(PointerEventType.Press) {
+    modifier =
+      Modifier.onPointerEvent(PointerEventType.Press) {
         if (it.buttons.isSecondaryPressed) {
           expandedNodes[groupKey] = !isGroupExpanded
         }
@@ -144,24 +140,22 @@ private fun UnaffectedChildrenGroup(
   ) {
     if (!isGroupExpanded) {
       Column(
-        modifier = Modifier
-          .background(Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
-          .border(1.dp, Color.Gray)
-          .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+          Modifier.background(Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
+            .border(1.dp, Color.Gray)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Text(text = "${node.name}'s", color = Color.DarkGray)
         Text(
           text = "${children.size} unaffected children",
           color = Color.DarkGray,
-          fontSize = 12.sp
+          fontSize = 12.sp,
         )
       }
     } else {
       Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(6.dp),
+        modifier = Modifier.fillMaxWidth().padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         DrawChildrenInGroups(
@@ -171,16 +165,14 @@ private fun UnaffectedChildrenGroup(
           expandedNodes = expandedNodes,
           unaffected = true,
           onNodeSelect = onNodeSelect,
-          storeNodeLocation = storeNodeLocation
+          storeNodeLocation = storeNodeLocation,
         )
       }
     }
   }
 }
 
-/**
- * Draws the group of affected children
- */
+/** Draws the group of affected children */
 @Composable
 private fun AffectedChildrenGroup(
   children: List<Node>,
@@ -188,7 +180,7 @@ private fun AffectedChildrenGroup(
   affectedNodes: Set<Node>,
   expandedNodes: MutableMap<String, Boolean>,
   onNodeSelect: (NodeUpdate) -> Unit,
-  storeNodeLocation: (Node, Offset) -> Unit
+  storeNodeLocation: (Node, Offset) -> Unit,
 ) {
   if (children.isEmpty()) return
 
@@ -198,15 +190,15 @@ private fun AffectedChildrenGroup(
     affectedNodes = affectedNodes,
     expandedNodes = expandedNodes,
     onNodeSelect = onNodeSelect,
-    storeNodeLocation = storeNodeLocation
+    storeNodeLocation = storeNodeLocation,
   )
 }
 
 /**
  * Draws the children in a grid manner, to avoid horizontal clutter and make better use of space.
  *
- * Unaffected children group would call this with `unaffected = true`, which means that simple/nested
- * nodes don't matter since we can't open nested ones, so we just simply group in 5's
+ * Unaffected children group would call this with `unaffected = true`, which means that
+ * simple/nested nodes don't matter since we can't open nested ones, so we just simply group in 5's
  */
 @Composable
 private fun DrawChildrenInGroups(
@@ -227,21 +219,16 @@ private fun DrawChildrenInGroups(
     simpleChildren = children
   }
 
-  Column(
-    verticalArrangement = Arrangement.spacedBy(16.dp)
-  ) {
+  Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
     // Draw simple children in a grid at the top
     if (simpleChildren.isNotEmpty()) {
       val groupedSimpleChildren = simpleChildren.chunked(5)
 
       groupedSimpleChildren.forEach { group ->
         Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .align(Alignment.CenterHorizontally),
+          modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.CenterHorizontally),
           horizontalArrangement = Arrangement.SpaceEvenly,
-          verticalAlignment = Alignment.Top
+          verticalAlignment = Alignment.Top,
         ) {
           group.forEach { childNode ->
             DrawTree(
@@ -250,7 +237,7 @@ private fun DrawChildrenInGroups(
               affectedNodes = affectedNodes,
               expandedNodes = expandedNodes,
               onNodeSelect = onNodeSelect,
-              storeNodeLocation = storeNodeLocation
+              storeNodeLocation = storeNodeLocation,
             )
           }
         }
@@ -260,12 +247,10 @@ private fun DrawChildrenInGroups(
     // Draw nested children in a single row at the bottom
     if (nestedChildren.isNotEmpty()) {
       Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 8.dp)
-          .align(Alignment.CenterHorizontally),
+        modifier =
+          Modifier.fillMaxWidth().padding(horizontal = 8.dp).align(Alignment.CenterHorizontally),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.Top,
       ) {
         nestedChildren.forEach { childNode ->
           DrawTree(
@@ -274,7 +259,7 @@ private fun DrawChildrenInGroups(
             affectedNodes = affectedNodes,
             expandedNodes = expandedNodes,
             onNodeSelect = onNodeSelect,
-            storeNodeLocation = storeNodeLocation
+            storeNodeLocation = storeNodeLocation,
           )
         }
       }
@@ -282,9 +267,7 @@ private fun DrawChildrenInGroups(
   }
 }
 
-/**
- * A basic box that represents a workflow node
- */
+/** A basic box that represents a workflow node */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun DrawNode(
@@ -294,45 +277,40 @@ private fun DrawNode(
   isExpanded: Boolean,
   onNodeSelect: (NodeUpdate) -> Unit,
   onExpandToggle: (Node) -> Unit,
-  storeNodeLocation: (Node, Offset) -> Unit
+  storeNodeLocation: (Node, Offset) -> Unit,
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   val isHovered by interactionSource.collectIsHoveredAsState()
 
-  val nodeUpdate = NodeUpdate.create(
-    current = node,
-    past = nodePast,
-    isAffected = isAffected
-  )
+  val nodeUpdate = NodeUpdate.create(current = node, past = nodePast, isAffected = isAffected)
 
   Box {
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
-      modifier = Modifier
-        .wrapContentSize()
-        .hoverable(interactionSource)
-        .background(nodeUpdate.state.color)
-        .clickable {
-          onNodeSelect(nodeUpdate)
-        }
-        .onPointerEvent(PointerEventType.Press) {
-          if (it.buttons.isSecondaryPressed) {
-            onExpandToggle(node)
+      modifier =
+        Modifier.wrapContentSize()
+          .hoverable(interactionSource)
+          .background(nodeUpdate.state.color)
+          .clickable { onNodeSelect(nodeUpdate) }
+          .onPointerEvent(PointerEventType.Press) {
+            if (it.buttons.isSecondaryPressed) {
+              onExpandToggle(node)
+            }
           }
-        }
-        .padding(16.dp)
-        .onGloballyPositioned { coords ->
-          val offsetToTopLeft = coords.positionInRoot()
-          val offsetToCenter = Offset(
-            x = offsetToTopLeft.x + coords.size.width / 2,
-            y = offsetToTopLeft.y + coords.size.height / 2
-          )
-          storeNodeLocation(node, offsetToCenter)
-        }
+          .padding(16.dp)
+          .onGloballyPositioned { coords ->
+            val offsetToTopLeft = coords.positionInRoot()
+            val offsetToCenter =
+              Offset(
+                x = offsetToTopLeft.x + coords.size.width / 2,
+                y = offsetToTopLeft.y + coords.size.height / 2,
+              )
+            storeNodeLocation(node, offsetToCenter)
+          },
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
       ) {
         if (node.children.isNotEmpty()) {
           Text(text = if (isExpanded) "▼" else "▶")
@@ -345,30 +323,24 @@ private fun DrawNode(
     if (isHovered) {
       NodeTooltip(
         nodeState = nodeUpdate.state,
-        modifier = Modifier
-          .align(Alignment.TopEnd)
-          .background(nodeUpdate.state.color)
+        modifier = Modifier.align(Alignment.TopEnd).background(nodeUpdate.state.color),
       )
     }
   }
 }
 
-/**
- * A tooltip that appears on hover showing the node state type
- */
+/** A tooltip that appears on hover showing the node state type */
 @Composable
-private fun NodeTooltip(
-  nodeState: NodeState,
-  modifier: Modifier = Modifier
-) {
+private fun NodeTooltip(nodeState: NodeState, modifier: Modifier = Modifier) {
   Text(
-    modifier = modifier
-      .wrapContentSize()
-      .clip(RoundedCornerShape(4.dp))
-      .background(Color.Black.copy(alpha = 0.3f))
-      .padding(horizontal = 8.dp, vertical = 4.dp),
+    modifier =
+      modifier
+        .wrapContentSize()
+        .clip(RoundedCornerShape(4.dp))
+        .background(Color.Black.copy(alpha = 0.3f))
+        .padding(horizontal = 8.dp, vertical = 4.dp),
     text = nodeState.name,
     color = Color.White,
-    fontSize = 12.sp
+    fontSize = 12.sp,
   )
 }

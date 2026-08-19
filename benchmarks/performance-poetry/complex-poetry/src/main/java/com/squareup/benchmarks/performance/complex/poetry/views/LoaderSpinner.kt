@@ -13,15 +13,15 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 object LoaderSpinner : AndroidScreen<LoaderSpinner> {
   override val viewFactory =
     ScreenViewFactory.fromCode<LoaderSpinner> { _, initialEnvironment, context, _ ->
-      val progressBar = ProgressBar(context).apply {
-        id = R.id.loading_progress_bar
-        layoutParams = FrameLayout.LayoutParams(
-          ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        ).apply {
-          gravity = CENTER
+      val progressBar =
+        ProgressBar(context).apply {
+          id = R.id.loading_progress_bar
+          layoutParams =
+            FrameLayout.LayoutParams(ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)).apply {
+              gravity = CENTER
+            }
+          isIndeterminate = true
         }
-        isIndeterminate = true
-      }
 
       FrameLayout(context).let { view ->
         view.addView(progressBar)

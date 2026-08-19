@@ -25,55 +25,42 @@ import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 
 /**
  * A [ScreenComposableFactory] that will be used any time a [PreviewScreenComposableFactoryFinder]
- * is asked to show a rendering. It displays a placeholder graphic and the rendering's
- * `toString()` result.
+ * is asked to show a rendering. It displays a placeholder graphic and the rendering's `toString()`
+ * result.
  */
 internal fun placeholderScreenComposableFactory(
   modifier: Modifier
-): ScreenComposableFactory<Screen> =
-  ScreenComposableFactory { rendering ->
-    BasicText(
-      modifier = modifier
+): ScreenComposableFactory<Screen> = ScreenComposableFactory { rendering ->
+  BasicText(
+    modifier =
+      modifier
         .clipToBounds()
         .drawBehind {
           drawIntoCanvas { canvas ->
             canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
               canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-              drawCrossHatch(
-                color = Color.Red,
-                strokeWidth = 2.dp,
-                spaceWidth = 8.dp,
-              )
+              drawCrossHatch(color = Color.Red, strokeWidth = 2.dp, spaceWidth = 8.dp)
             }
           }
         }
         .padding(8.dp),
-      text = rendering.toString(),
-      style = TextStyle(
+    text = rendering.toString(),
+    style =
+      TextStyle(
         textAlign = TextAlign.Center,
         color = Color.White,
-        shadow = Shadow(blurRadius = 5f, color = Color.Black)
-      )
-    )
-  }
-
-private fun DrawScope.drawCrossHatch(
-  color: Color,
-  strokeWidth: Dp,
-  spaceWidth: Dp,
-) {
-  drawHatch(color, strokeWidth, spaceWidth)
-  // Draw again but flipped horizontally.
-  scale(scaleX = -1f, scaleY = 1f) {
-    drawHatch(color, strokeWidth, spaceWidth)
-  }
+        shadow = Shadow(blurRadius = 5f, color = Color.Black),
+      ),
+  )
 }
 
-private fun DrawScope.drawHatch(
-  color: Color,
-  strokeWidth: Dp,
-  spaceWidth: Dp,
-) {
+private fun DrawScope.drawCrossHatch(color: Color, strokeWidth: Dp, spaceWidth: Dp) {
+  drawHatch(color, strokeWidth, spaceWidth)
+  // Draw again but flipped horizontally.
+  scale(scaleX = -1f, scaleY = 1f) { drawHatch(color, strokeWidth, spaceWidth) }
+}
+
+private fun DrawScope.drawHatch(color: Color, strokeWidth: Dp, spaceWidth: Dp) {
   val strokeWidthPx = strokeWidth.toPx()
   val spaceWidthPx = spaceWidth.roundToPx()
 
@@ -86,7 +73,7 @@ private fun DrawScope.drawHatch(
       // that.
       end = Offset(size.height - yStart, size.height),
       color = color,
-      strokeWidth = strokeWidthPx
+      strokeWidth = strokeWidthPx,
     )
   }
 
@@ -97,7 +84,7 @@ private fun DrawScope.drawHatch(
       start = Offset(xStart.toFloat(), 0f),
       end = Offset(size.width, size.width - xStart),
       color = color,
-      strokeWidth = strokeWidthPx
+      strokeWidth = strokeWidthPx,
     )
   }
 }

@@ -12,20 +12,16 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
  * Returns a [LifecycleOwner] that is a mirror of the current [LocalLifecycleOwner] until this
- * function leaves the composition. Similar to [WorkflowLifecycleOwner] for views, but a
- * bit simpler since we don't need to worry about attachment state.
+ * function leaves the composition. Similar to [WorkflowLifecycleOwner] for views, but a bit simpler
+ * since we don't need to worry about attachment state.
  */
-@Composable internal fun rememberChildLifecycleOwner(
+@Composable
+internal fun rememberChildLifecycleOwner(
   parentLifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle
 ): LifecycleOwner {
-  val owner = remember {
-    ComposeLifecycleOwner.installOn(
-      initialParentLifecycle = parentLifecycle
-    )
-  }
-  val lifecycleOwner = remember(parentLifecycle) {
-    owner.apply { updateParentLifecycle(parentLifecycle) }
-  }
+  val owner = remember { ComposeLifecycleOwner.installOn(initialParentLifecycle = parentLifecycle) }
+  val lifecycleOwner =
+    remember(parentLifecycle) { owner.apply { updateParentLifecycle(parentLifecycle) } }
   return lifecycleOwner
 }
 
@@ -42,10 +38,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  *
  * ## Key Features
  *
- * - Lifecycle Synchronization: Mirrors lifecycle events from the provided `parentLifecycle` to
- *   its own [LifecycleRegistry], ensuring consistent state transitions.
- * - Compose Integration: Implements [RememberObserver] to align with the composable's lifecycle
- *   in the Compose memory model.
+ * - Lifecycle Synchronization: Mirrors lifecycle events from the provided `parentLifecycle` to its
+ *   own [LifecycleRegistry], ensuring consistent state transitions.
+ * - Compose Integration: Implements [RememberObserver] to align with the composable's lifecycle in
+ *   the Compose memory model.
  * - Automatic Observer Management: Adds and removes a [LifecycleEventObserver] to the parent
  *   lifecycle, preventing leaks and ensuring proper disposal.
  * - **State Transition Safety:** Carefully manages lifecycle state changes to avoid illegal
@@ -59,12 +55,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  *   the composable leaves the composition.
  *
  * @param initialParentLifecycle The parent [Lifecycle] with which this lifecycle owner should
- * synchronize with initially. If new parent lifecycles are provided, they should be passed to
- * [updateParentLifecycle].
+ *   synchronize with initially. If new parent lifecycles are provided, they should be passed to
+ *   [updateParentLifecycle].
  */
-private class ComposeLifecycleOwner(
-  initialParentLifecycle: Lifecycle
-) : LifecycleOwner, RememberObserver, LifecycleEventObserver {
+private class ComposeLifecycleOwner(initialParentLifecycle: Lifecycle) :
+  LifecycleOwner, RememberObserver, LifecycleEventObserver {
 
   private var parentLifecycle: Lifecycle = initialParentLifecycle
 
@@ -72,8 +67,7 @@ private class ComposeLifecycleOwner(
   override val lifecycle: Lifecycle
     get() = registry
 
-  override fun onRemembered() {
-  }
+  override fun onRemembered() {}
 
   override fun onAbandoned() {
     onForgotten()
@@ -94,10 +88,7 @@ private class ComposeLifecycleOwner(
     parentLifecycle.addObserver(this)
   }
 
-  override fun onStateChanged(
-    source: LifecycleOwner,
-    event: Event
-  ) {
+  override fun onStateChanged(source: LifecycleOwner, event: Event) {
     registry.handleLifecycleEvent(event)
   }
 

@@ -30,7 +30,8 @@ internal fun mockView(): View {
 }
 
 internal object SomeEnvValue : ViewEnvironmentKey<String>() {
-  override val default: String get() = error("Unset")
+  override val default: String
+    get() = error("Unset")
 }
 
 internal class WrappedScreen : AndroidScreen<WrappedScreen> {
@@ -47,12 +48,12 @@ internal class WrappedFactory : ScreenViewFactory<WrappedScreen> {
     initialRendering: WrappedScreen,
     initialEnvironment: ViewEnvironment,
     context: Context,
-    container: ViewGroup?
+    container: ViewGroup?,
   ): ScreenViewHolder<WrappedScreen> {
     lastEnv = initialEnvironment
     return RealScreenViewHolder(
       view = mockView().also { lastView = it },
-      initialEnvironment = initialEnvironment
+      initialEnvironment = initialEnvironment,
     ) { _, newEnvironment ->
       lastEnv = newEnvironment
     }

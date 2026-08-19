@@ -15,13 +15,12 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
  * Renders [rendering] into the composition using the [ViewEnvironment] found in
- * [LocalWorkflowEnvironment] to source a [ScreenComposableFactoryFinder] to generate
- * the view.
+ * [LocalWorkflowEnvironment] to source a [ScreenComposableFactoryFinder] to generate the view.
  *
- * This function fulfills a similar role as [ScreenViewHolder] and [WorkflowViewStub],
- * but is much more convenient to use from Composable functions. Note that,
- * just as with [ScreenViewHolder] and [WorkflowViewStub], it doesn't matter whether
- * the factory registered for the rendering is using classic Android views or Compose.
+ * This function fulfills a similar role as [ScreenViewHolder] and [WorkflowViewStub], but is much
+ * more convenient to use from Composable functions. Note that, just as with [ScreenViewHolder] and
+ * [WorkflowViewStub], it doesn't matter whether the factory registered for the rendering is using
+ * classic Android views or Compose.
  *
  * ## Example
  *
@@ -30,7 +29,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  *       val borderColor: Color,
  *       val child: R
  *     ) : ComposeRendering {
- *
  *       @Composable override fun Content() {
  *         Surface(border = Border(borderColor, 8.dp)) {
  *           WorkflowRendering(child)
@@ -41,14 +39,10 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  *
  * @param rendering The workflow rendering to display.
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
- *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
 @Composable
-public fun WorkflowRendering(
-  rendering: Screen,
-  modifier: Modifier = Modifier
-) {
+public fun WorkflowRendering(rendering: Screen, modifier: Modifier = Modifier) {
   // This will fetch a new view factory any time the new rendering is incompatible with the previous
   // one, as determined by Compatible. This corresponds to WorkflowViewStub's canShowRendering
   // check.
@@ -62,10 +56,12 @@ public fun WorkflowRendering(
   // before replacing it with the new one.
   key(renderingCompatibilityKey) {
     val composableFactory = remember {
-      // The view registry may return a new factory instance for a rendering every time we ask it, for
+      // The view registry may return a new factory instance for a rendering every time we ask it,
+      // for
       // example if an AndroidScreen doesn't share its factory between rendering instances. We
       // intentionally don't ask it for a new instance every time to match the behavior of
-      // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
+      // WorkflowViewStub and other containers, which only ask for a new factory when the rendering
+      // is
       // incompatible.
       rendering.toComposableFactory(viewEnvironment)
     }
@@ -80,9 +76,7 @@ public fun WorkflowRendering(
       // We need to propagate min constraints because one of the likely uses for the modifier passed
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
-      Box(modifier, propagateMinConstraints = true) {
-        composableFactory.Content(rendering)
-      }
+      Box(modifier, propagateMinConstraints = true) { composableFactory.Content(rendering) }
     }
   }
 }

@@ -43,13 +43,12 @@ class PoetryActivity : AppCompatActivity() {
 class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
   val renderings: Flow<Screen> by lazy {
     renderWorkflowIn(
-      workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),
-      scope = viewModelScope,
-      prop = 0 to 0 to Poem.allPoems,
-      savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-    ).reportNavigation {
-      Timber.i("Navigated to %s", it)
-    }
+        workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),
+        scope = viewModelScope,
+        prop = 0 to 0 to Poem.allPoems,
+        savedStateHandle = savedState,
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      )
+      .reportNavigation { Timber.i("Navigated to %s", it) }
   }
 }

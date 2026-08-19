@@ -6,15 +6,15 @@ import kotlin.time.ExperimentalTime
 
 /**
  * @param rendering The rendering of the
- * [delegate workflow][com.squareup.sample.timemachine.TimeMachineWorkflow.delegateWorkflow].
+ *   [delegate workflow][com.squareup.sample.timemachine.TimeMachineWorkflow.delegateWorkflow].
  * @param totalDuration The total duration of the recorded session.
  * @param playbackPosition The timestamp of the rendering currently being played back, or
- * [Duration.INFINITE] if not recording.
+ *   [Duration.INFINITE] if not recording.
  * @param recording If false, the time travelling UI should be shown.
  * @param onSeek Event handler that will be called when [recording] is false and the timeline is
- * scrubbed.
+ *   scrubbed.
  * @param onResumeRecording Event handler that will be called when [recording] is false and the user
- * wants to go back to the live delegate workflow.
+ *   wants to go back to the live delegate workflow.
  */
 @ExperimentalTime
 data class ShakeableTimeMachineScreen(
@@ -23,5 +23,5 @@ data class ShakeableTimeMachineScreen(
   val playbackPosition: Duration,
   val recording: Boolean,
   val onSeek: (Duration) -> Unit = {},
-  val onResumeRecording: () -> Unit
+  val onResumeRecording: () -> Unit,
 ) : Screen

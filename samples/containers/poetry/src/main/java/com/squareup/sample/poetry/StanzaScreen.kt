@@ -26,7 +26,7 @@ data class StanzaScreen(
   val lines: List<String>,
   val onGoUp: () -> Unit,
   val onGoBack: (() -> Unit)? = null,
-  val onGoForth: (() -> Unit)? = null
+  val onGoForth: (() -> Unit)? = null,
 ) : AndroidScreen<StanzaScreen>, Compatible {
   override val compatibilityKey = "$title: $stanzaNumber"
 
@@ -35,21 +35,20 @@ data class StanzaScreen(
 }
 
 private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<StanzaScreen> {
-  private val tabSize = TypedValue
-    .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
-    .toInt()
+  private val tabSize =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
+      .toInt()
 
-  private val toolbar = view.findViewById<Toolbar>(R.id.stanza_toolbar)
-    // Hack works around strange TransitionManager behavior until I figure it out properly.
-    .apply { id = -1 }
+  private val toolbar =
+    view
+      .findViewById<Toolbar>(R.id.stanza_toolbar)
+      // Hack works around strange TransitionManager behavior until I figure it out properly.
+      .apply { id = -1 }
   private val lines = view.findViewById<TextView>(R.id.stanza_lines)
   private val more = view.findViewById<TextView>(R.id.stanza_more)
   private val goBack = view.findViewById<TextView>(R.id.stanza_back)
 
-  override fun showRendering(
-    rendering: StanzaScreen,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: StanzaScreen, environment: ViewEnvironment) {
     if (environment[OverviewDetailConfig] == Detail) {
       toolbar.title = "Stanza ${rendering.stanzaNumber}"
       toolbar.subtitle = null
@@ -60,38 +59,34 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
 
     lines.setTabulatedText(rendering.lines)
 
-    rendering.onGoForth
-      ?.let {
-        lines.setOnClickListener { it() }
-        more.setOnClickListener { it() }
-        more.visibility = View.VISIBLE
-      }
+    rendering.onGoForth?.let {
+      lines.setOnClickListener { it() }
+      more.setOnClickListener { it() }
+      more.visibility = View.VISIBLE
+    }
       ?: run {
         lines.setOnClickListener(null)
         more.setOnClickListener(null)
         more.visibility = View.GONE
       }
 
-    rendering.onGoBack
-      ?.let {
-        goBack.setOnClickListener { it() }
-        goBack.visibility = View.VISIBLE
-      }
+    rendering.onGoBack?.let {
+      goBack.setOnClickListener { it() }
+      goBack.visibility = View.VISIBLE
+    }
       ?: run {
         goBack.setOnClickListener(null)
         goBack.visibility = View.INVISIBLE
       }
 
-    if (environment[OverviewDetailConfig] != Detail &&
-      environment[BackStackConfig] != None
-    ) {
+    if (environment[OverviewDetailConfig] != Detail && environment[BackStackConfig] != None) {
       toolbar.setNavigationOnClickListener { rendering.onGoUp.invoke() }
     } else {
       toolbar.navigationIcon = null
     }
 
-    val goBackOrUp = rendering.onGoBack
-      ?: rendering.onGoUp.takeIf { environment[OverviewDetailConfig] != Detail }
+    val goBackOrUp =
+      rendering.onGoBack ?: rendering.onGoUp.takeIf { environment[OverviewDetailConfig] != Detail }
 
     view.setBackHandler(goBackOrUp)
   }
@@ -101,11 +96,12 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
 
     lines.forEach {
       if (spans.isNotEmpty()) spans.append("\n")
-      val span = SpannableStringBuilder(it).apply {
-        for (i in 1..5) {
-          setSpan(TabStopSpan.Standard(tabSize * 1), 0, length, SPAN_EXCLUSIVE_EXCLUSIVE)
+      val span =
+        SpannableStringBuilder(it).apply {
+          for (i in 1..5) {
+            setSpan(TabStopSpan.Standard(tabSize * 1), 0, length, SPAN_EXCLUSIVE_EXCLUSIVE)
+          }
         }
-      }
       spans.append(span)
     }
     setText(spans, SPANNABLE)
