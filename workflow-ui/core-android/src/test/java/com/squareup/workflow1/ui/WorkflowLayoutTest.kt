@@ -15,6 +15,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.navigation.WrappedScreen
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onEach
@@ -25,9 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import kotlin.coroutines.AbstractCoroutineContextElement
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
 @RunWith(RobolectricTestRunner::class)
 // SDK 28 required for the four-arg constructor we use in our custom view classes.
@@ -36,19 +36,24 @@ import kotlin.coroutines.coroutineContext
 internal class WorkflowLayoutTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
 
-  private val workflowLayout = WorkflowLayout(context).apply {
-    id = 42
-    setViewTreeOnBackPressedDispatcherOwner(object : OnBackPressedDispatcherOwner {
-      override val onBackPressedDispatcher: OnBackPressedDispatcher
-        get() {
-          error("yeah no")
+  private val workflowLayout =
+    WorkflowLayout(context).apply {
+      id = 42
+      setViewTreeOnBackPressedDispatcherOwner(
+        object : OnBackPressedDispatcherOwner {
+          override val onBackPressedDispatcher: OnBackPressedDispatcher
+            get() {
+              error("yeah no")
+            }
+
+          override val lifecycle: Lifecycle
+            get() = error("nope")
         }
+      )
+    }
 
-      override val lifecycle: Lifecycle get() = error("nope")
-    })
-  }
-
-  @Test fun ignoresAlienViewState() {
+  @Test
+  fun ignoresAlienViewState() {
     val weirdView = BundleSavingView(context)
 
     val viewState = SparseArray<Parcelable>()
@@ -59,7 +64,8 @@ internal class WorkflowLayoutTest {
     // No crash, no bug.
   }
 
-  @Test fun ignoresNestedViewStateMistakes() {
+  @Test
+  fun ignoresNestedViewStateMistakes() {
     class AScreen : AndroidScreen<AScreen> {
       override val viewFactory =
         ScreenViewFactory.fromCode<AScreen> { _, initialEnvironment, context, _ ->
@@ -74,13 +80,16 @@ internal class WorkflowLayoutTest {
         }
     }
 
-    val onBack = object : OnBackPressedDispatcherOwner {
-      override val onBackPressedDispatcher: OnBackPressedDispatcher
-        get() {
-          error("nope")
-        }
-      override val lifecycle: Lifecycle get() = error("also nope")
-    }
+    val onBack =
+      object : OnBackPressedDispatcherOwner {
+        override val onBackPressedDispatcher: OnBackPressedDispatcher
+          get() {
+            error("nope")
+          }
+
+        override val lifecycle: Lifecycle
+          get() = error("also nope")
+      }
 
     val env = ViewEnvironment.EMPTY + (OnBackPressedDispatcherOwnerKey to onBack)
 
@@ -95,19 +104,18 @@ internal class WorkflowLayoutTest {
     unoriginal.show(BScreen(), env)
   }
 
-  @Test fun takes() {
+  @Test
+  fun takes() {
     val lifecycleDispatcher = StandardTestDispatcher()
-    val testLifecycle = TestLifecycleOwner(
-      initialState = Lifecycle.State.RESUMED,
-      coroutineDispatcher = lifecycleDispatcher
-    )
+    val testLifecycle =
+      TestLifecycleOwner(
+        initialState = Lifecycle.State.RESUMED,
+        coroutineDispatcher = lifecycleDispatcher,
+      )
     val flow = MutableSharedFlow<Screen>()
 
     runTest(lifecycleDispatcher) {
-      workflowLayout.take(
-        lifecycle = testLifecycle.lifecycle,
-        renderings = flow,
-      )
+      workflowLayout.take(lifecycle = testLifecycle.lifecycle, renderings = flow)
       // Start the collector coroutine so it subscribes to the SharedFlow before we emit.
       advanceUntilIdle()
       assertThat(workflowLayout[0]).isInstanceOf(WorkflowViewStub::class.java)
@@ -118,19 +126,18 @@ internal class WorkflowLayoutTest {
     }
   }
 
-  @Test fun canStopTaking() {
+  @Test
+  fun canStopTaking() {
     val lifecycleDispatcher = StandardTestDispatcher()
-    val testLifecycle = TestLifecycleOwner(
-      initialState = Lifecycle.State.RESUMED,
-      coroutineDispatcher = lifecycleDispatcher
-    )
+    val testLifecycle =
+      TestLifecycleOwner(
+        initialState = Lifecycle.State.RESUMED,
+        coroutineDispatcher = lifecycleDispatcher,
+      )
     val flow = MutableSharedFlow<Screen>()
 
     runTest(lifecycleDispatcher) {
-      val job = workflowLayout.take(
-        lifecycle = testLifecycle.lifecycle,
-        renderings = flow,
-      )
+      val job = workflowLayout.take(lifecycle = testLifecycle.lifecycle, renderings = flow)
       // Start the collector, then cancel and process cancellation so it unsubscribes from the
       // SharedFlow. Without this, emit() would deadlock waiting for the cancelled subscriber.
       advanceUntilIdle()
@@ -144,12 +151,14 @@ internal class WorkflowLayoutTest {
     }
   }
 
-  @Test fun usesProvidedCoroutineContext() {
+  @Test
+  fun usesProvidedCoroutineContext() {
     val lifecycleDispatcher = StandardTestDispatcher()
-    val testLifecycle = TestLifecycleOwner(
-      initialState = Lifecycle.State.RESUMED,
-      coroutineDispatcher = lifecycleDispatcher
-    )
+    val testLifecycle =
+      TestLifecycleOwner(
+        initialState = Lifecycle.State.RESUMED,
+        coroutineDispatcher = lifecycleDispatcher,
+      )
     val flow = MutableSharedFlow<Screen>()
 
     val testElement = TestContextElement()
@@ -164,7 +173,7 @@ internal class WorkflowLayoutTest {
       workflowLayout.take(
         lifecycle = testLifecycle.lifecycle,
         renderings = trackedFlow,
-        collectionContext = testElement
+        collectionContext = testElement,
       )
       // Start the collector coroutine so it subscribes to the SharedFlow before we emit.
       advanceUntilIdle()
@@ -199,7 +208,6 @@ internal class WorkflowLayoutTest {
   private class TestContextElement : AbstractCoroutineContextElement(Key) {
     companion object Key : CoroutineContext.Key<TestContextElement>
 
-    @Volatile
-    var wasUsed = false
+    @Volatile var wasUsed = false
   }
 }

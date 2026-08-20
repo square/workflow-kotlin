@@ -36,12 +36,13 @@ class InlineRenderingActivity : AppCompatActivity() {
   class HelloBindingModel(savedState: SavedStateHandle) : ViewModel() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
-        workflow = InlineRenderingWorkflow.mapRendering {
-          it.withEnvironment(ViewEnvironment.EMPTY.withComposeInteropSupport())
-        },
+        workflow =
+          InlineRenderingWorkflow.mapRendering {
+            it.withEnvironment(ViewEnvironment.EMPTY.withComposeInteropSupport())
+          },
         scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
       )
     }
   }

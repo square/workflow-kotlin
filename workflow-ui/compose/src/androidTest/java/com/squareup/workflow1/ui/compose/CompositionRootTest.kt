@@ -20,12 +20,15 @@ internal class CompositionRootTest {
 
   private val composeRule = createComposeRule()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun wrappedWithRootIfNecessary_wrapsWhenNecessary() {
+  @Test
+  fun wrappedWithRootIfNecessary_wrapsWhenNecessary() {
     val root: CompositionRoot = { content ->
       Column {
         BasicText("one")
@@ -33,11 +36,7 @@ internal class CompositionRootTest {
       }
     }
 
-    composeRule.setContent {
-      WrappedWithRootIfNecessary(root) {
-        BasicText("two")
-      }
-    }
+    composeRule.setContent { WrappedWithRootIfNecessary(root) { BasicText("two") } }
 
     // These semantics used to merge, but as of dev15, they don't, which seems to be a bug.
     // https://issuetracker.google.com/issues/161979921
@@ -45,7 +44,8 @@ internal class CompositionRootTest {
     composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
-  @Test fun wrappedWithRootIfNecessary_onlyWrapsOnce() {
+  @Test
+  fun wrappedWithRootIfNecessary_onlyWrapsOnce() {
     val root: CompositionRoot = { content ->
       Column {
         BasicText("one")
@@ -56,9 +56,7 @@ internal class CompositionRootTest {
     composeRule.setContent {
       WrappedWithRootIfNecessary(root) {
         BasicText("two")
-        WrappedWithRootIfNecessary(root) {
-          BasicText("three")
-        }
+        WrappedWithRootIfNecessary(root) { BasicText("three") }
       }
     }
 
@@ -67,7 +65,8 @@ internal class CompositionRootTest {
     composeRule.onNodeWithText("three").assertIsDisplayed()
   }
 
-  @Test fun wrappedWithRootIfNecessary_seesUpdatesFromRootWrapper() {
+  @Test
+  fun wrappedWithRootIfNecessary_seesUpdatesFromRootWrapper() {
     val wrapperText = mutableStateOf("one")
     val root: CompositionRoot = { content ->
       Column {
@@ -76,11 +75,7 @@ internal class CompositionRootTest {
       }
     }
 
-    composeRule.setContent {
-      WrappedWithRootIfNecessary(root) {
-        BasicText("two")
-      }
-    }
+    composeRule.setContent { WrappedWithRootIfNecessary(root) { BasicText("two") } }
 
     composeRule.onNodeWithText("one").assertIsDisplayed()
     composeRule.onNodeWithText("two").assertIsDisplayed()
@@ -89,7 +84,8 @@ internal class CompositionRootTest {
     composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
-  @Test fun wrappedWithRootIfNecessary_rewrapsWhenDifferentRoot() {
+  @Test
+  fun wrappedWithRootIfNecessary_rewrapsWhenDifferentRoot() {
     val root1: CompositionRoot = { content ->
       Column {
         BasicText("one")
@@ -105,9 +101,7 @@ internal class CompositionRootTest {
     val viewEnvironment = mutableStateOf(root1)
 
     composeRule.setContent {
-      WrappedWithRootIfNecessary(viewEnvironment.value) {
-        BasicText("two")
-      }
+      WrappedWithRootIfNecessary(viewEnvironment.value) { BasicText("two") }
     }
 
     composeRule.onNodeWithText("one").assertIsDisplayed()

@@ -8,9 +8,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.compose"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.compose" }
   namespace = "com.squareup.sample.compose"
 }
 

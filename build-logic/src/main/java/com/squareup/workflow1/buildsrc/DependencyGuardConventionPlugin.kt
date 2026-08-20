@@ -13,28 +13,29 @@ class DependencyGuardConventionPlugin : Plugin<Project> {
     // later in the configuration phase.  If we were to try looking up those configurations eagerly
     // as soon as this convention plugin is applied, there would be nothing there.
     target.afterEvaluate {
-      val configurationNames = when {
-        // record the root project's *build* classpath
-        target == target.rootProject -> listOf("classpath")
+      val configurationNames =
+        when {
+          // record the root project's *build* classpath
+          target == target.rootProject -> listOf("classpath")
 
-        // For Android modules, just hard-code `releaseRuntimeClasspath` for the release variant.
-        // This is actually pretty robust, since if this configuration ever changes,
-        // dependency-guard will fail when trying to look it up.
-        target.extensions.findByType(TestedExtension::class.java) != null -> listOf(
-          "releaseRuntimeClasspath"
-        )
+          // For Android modules, just hard-code `releaseRuntimeClasspath` for the release variant.
+          // This is actually pretty robust, since if this configuration ever changes,
+          // dependency-guard will fail when trying to look it up.
+          target.extensions.findByType(TestedExtension::class.java) != null ->
+            listOf("releaseRuntimeClasspath")
 
-        // If we got here, we're either in an empty "parent" module without a build plugin (and no
-        // configurations), or we're in a vanilla Kotlin module.  In this case, we can just look at
-        // configuration names.
-        else ->
-          target.configurations
-            .map { it.name }
-            .filter {
-              it.endsWith("runtimeClasspath", ignoreCase = true) &&
-                !it.endsWith("testRuntimeClasspath", ignoreCase = true)
-            }
-      }
+          // If we got here, we're either in an empty "parent" module without a build plugin (and no
+          // configurations), or we're in a vanilla Kotlin module.  In this case, we can just look
+          // at
+          // configuration names.
+          else ->
+            target.configurations
+              .map { it.name }
+              .filter {
+                it.endsWith("runtimeClasspath", ignoreCase = true) &&
+                  !it.endsWith("testRuntimeClasspath", ignoreCase = true)
+              }
+        }
 
       if (configurationNames.isNotEmpty()) {
         target.plugins.apply("com.dropbox.dependency-guard")

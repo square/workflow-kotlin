@@ -22,7 +22,6 @@ import me.saket.telephoto.zoomable.zoomable
  * is not realistic way to fit everything on the screen at once. Having the liberty to pan across
  * the whole tree as well as zoom into specific subtrees means there's a lot more control when
  * analyzing the traces.
- *
  */
 @Composable
 internal fun SandboxBackground(
@@ -39,9 +38,7 @@ internal fun SandboxBackground(
       .zoomable(state = zoomableState)
       .pointerInput(Unit) {
         // Panning capabilities: watches for drag gestures and applies the translation
-        detectDragGestures { _, translation ->
-          sandboxState.offset += translation
-        }
+        detectDragGestures { _, translation -> sandboxState.offset += translation }
       }
       .pointerInput(appWindowSize) {
         // Zooming capabilities: watches for any scroll events and immediately consumes changes.
@@ -50,7 +47,8 @@ internal fun SandboxBackground(
           val event = awaitPointerEvent()
           if (event.type == PointerEventType.Scroll) {
             val pointerInput = event.changes.first()
-            // Applies zoom factor based on the actual delta change rather than just the act of scrolling
+            // Applies zoom factor based on the actual delta change rather than just the act of
+            // scrolling
             // This helps to normalize mouse scrolling and touchpad scrolling, since touchpad will
             // fire a lot more scroll events.
             val factor = 1f + (-pointerInput.scrollDelta.y * 0.1f)
@@ -66,9 +64,8 @@ internal fun SandboxBackground(
       }
   ) {
     Box(
-      modifier = Modifier
-        .wrapContentSize(unbounded = true, align = Alignment.Center)
-        .graphicsLayer {
+      modifier =
+        Modifier.wrapContentSize(unbounded = true, align = Alignment.Center).graphicsLayer {
           translationX = sandboxState.offset.x
           translationY = sandboxState.offset.y
         }

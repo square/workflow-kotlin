@@ -23,12 +23,12 @@ import kotlin.reflect.KClass
  * Base activity class to help test container view implementations' [LifecycleOwner] behaviors.
  *
  * Create an `ActivityScenarioRule` in your test that launches your subclass of this activity, and
- * then have your subclass expose a method that calls [setRendering] with whatever rendering type your
- * test wants to use. Then call [consumeLifecycleEvents] to get a list of strings back that describe
- * what lifecycle-related events occurred since the last call.
+ * then have your subclass expose a method that calls [setRendering] with whatever rendering type
+ * your test wants to use. Then call [consumeLifecycleEvents] to get a list of strings back that
+ * describe what lifecycle-related events occurred since the last call.
  *
- * Subclasses must override [viewRegistry] to specify the [ScreenViewFactory]s they require.
- * All views will be hosted inside a [WorkflowViewStub].
+ * Subclasses must override [viewRegistry] to specify the [ScreenViewFactory]s they require. All
+ * views will be hosted inside a [WorkflowViewStub].
  */
 public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
@@ -37,15 +37,14 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
   protected abstract val viewRegistry: ViewRegistry
 
   /**
-   * Returns a list of strings describing what lifecycle-related events occurred since the last
-   * call to this method. Use this list to validate the ordering of lifecycle events in your tests.
+   * Returns a list of strings describing what lifecycle-related events occurred since the last call
+   * to this method. Use this list to validate the ordering of lifecycle events in your tests.
    *
    * Hint: Start by expecting this list to be empty, then copy-paste the actual strings from the
    * test failure into your test and making sure they look reasonable.
    */
-  public fun consumeLifecycleEvents(): List<String> = lifecycleEvents.toList().also {
-    lifecycleEvents.clear()
-  }
+  public fun consumeLifecycleEvents(): List<String> =
+    lifecycleEvents.toList().also { lifecycleEvents.clear() }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -89,100 +88,64 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
   protected fun <R : Screen> leafViewBinding(
     type: KClass<R>,
     viewObserver: ViewObserver<R>,
-    viewConstructor: (Context) -> LeafView<R> = ::LeafView
-  ): ScreenViewFactory<R> = object : ScreenViewFactory<R> {
-    override val type = type
+    viewConstructor: (Context) -> LeafView<R> = ::LeafView,
+  ): ScreenViewFactory<R> =
+    object : ScreenViewFactory<R> {
+      override val type = type
 
-    override fun buildView(
-      initialRendering: R,
-      initialEnvironment: ViewEnvironment,
-      context: Context,
-      container: ViewGroup?
-    ): ScreenViewHolder<R> {
-      val view = viewConstructor(context).apply {
-        this.viewObserver = viewObserver
-        viewObserver.onViewCreated(this, initialRendering)
-      }
+      override fun buildView(
+        initialRendering: R,
+        initialEnvironment: ViewEnvironment,
+        context: Context,
+        container: ViewGroup?,
+      ): ScreenViewHolder<R> {
+        val view =
+          viewConstructor(context).apply {
+            this.viewObserver = viewObserver
+            viewObserver.onViewCreated(this, initialRendering)
+          }
 
-      return ScreenViewHolder(initialEnvironment, view) { r, _ ->
-        view.rendering = r
-        viewObserver.onShowRendering(view, r)
+        return ScreenViewHolder(initialEnvironment, view) { r, _ ->
+          view.rendering = r
+          viewObserver.onShowRendering(view, r)
+        }
       }
     }
-  }
 
   protected fun <R : Any> lifecycleLoggingViewObserver(
     describeRendering: (R) -> String
-  ): ViewObserver<R> = object : ViewObserver<R> {
-    override fun onAttachedToWindow(
-      view: View,
-      rendering: R
-    ) {
-      logEvent("LeafView ${describeRendering(rendering)} onAttached")
-    }
+  ): ViewObserver<R> =
+    object : ViewObserver<R> {
+      override fun onAttachedToWindow(view: View, rendering: R) {
+        logEvent("LeafView ${describeRendering(rendering)} onAttached")
+      }
 
-    override fun onDetachedFromWindow(
-      view: View,
-      rendering: R
-    ) {
-      logEvent("LeafView ${describeRendering(rendering)} onDetached")
-    }
+      override fun onDetachedFromWindow(view: View, rendering: R) {
+        logEvent("LeafView ${describeRendering(rendering)} onDetached")
+      }
 
-    override fun onViewTreeLifecycleStateChanged(
-      rendering: R,
-      event: Event
-    ) {
-      logEvent("LeafView ${describeRendering(rendering)} $event")
+      override fun onViewTreeLifecycleStateChanged(rendering: R, event: Event) {
+        logEvent("LeafView ${describeRendering(rendering)} $event")
+      }
     }
-  }
 
   public interface ViewObserver<R : Any> {
-    public fun onViewCreated(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onViewCreated(view: View, rendering: R) {}
 
-    public fun onShowRendering(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onShowRendering(view: View, rendering: R) {}
 
-    public fun onAttachedToWindow(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onAttachedToWindow(view: View, rendering: R) {}
 
-    public fun onDetachedFromWindow(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onDetachedFromWindow(view: View, rendering: R) {}
 
-    public fun onViewTreeLifecycleStateChanged(
-      rendering: R,
-      event: Event
-    ) {
-    }
+    public fun onViewTreeLifecycleStateChanged(rendering: R, event: Event) {}
 
-    public fun onSaveInstanceState(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onSaveInstanceState(view: View, rendering: R) {}
 
-    public fun onRestoreInstanceState(
-      view: View,
-      rendering: R
-    ) {
-    }
+    public fun onRestoreInstanceState(view: View, rendering: R) {}
   }
 
-  public open class LeafView<R : Any>(
-    context: Context
-  ) : FrameLayout(context) {
+  public open class LeafView<R : Any>(context: Context) : FrameLayout(context) {
 
     public var viewObserver: ViewObserver<R>? = null
 

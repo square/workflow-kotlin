@@ -6,6 +6,7 @@ package com.squareup.workflow1.internal
  */
 internal class IdCounter {
   private var nextId = 0L
+
   fun createId(): Long = nextId++
 }
 

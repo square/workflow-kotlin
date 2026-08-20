@@ -10,15 +10,10 @@ import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-/**
- * A [ScreenViewRunner] that renders [LegacyRendering]s using the legacy view framework.
- */
+/** A [ScreenViewRunner] that renders [LegacyRendering]s using the legacy view framework. */
 class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<LegacyRendering> {
 
-  override fun showRendering(
-    rendering: LegacyRendering,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: LegacyRendering, environment: ViewEnvironment) {
     binding.stub.show(rendering.rendering, environment)
   }
 }
@@ -26,7 +21,5 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
 @Preview(widthDp = 200, heightDp = 150, showBackground = true)
 @Composable
 private fun LegacyRunnerPreview() {
-  LegacyRendering(StringRendering("child")).Preview(
-    placeholderModifier = Modifier.fillMaxSize()
-  )
+  LegacyRendering(StringRendering("child")).Preview(placeholderModifier = Modifier.fillMaxSize())
 }

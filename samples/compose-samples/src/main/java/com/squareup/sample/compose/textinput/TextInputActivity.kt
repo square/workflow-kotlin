@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 class TextInputActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent {
-      TextInputApp()
-    }
+    setContent { TextInputApp() }
   }
 }

@@ -8,23 +8,18 @@ import com.squareup.workflow1.internal.threadLocalOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 
-/**
- * A [WorkflowInterceptor] that just prints all method calls using [log].
- */
+/** A [WorkflowInterceptor] that just prints all method calls using [log]. */
 public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   private var indentLevel by threadLocalOf { 0 }
 
-  override fun onSessionStarted(
-    workflowScope: CoroutineScope,
-    session: WorkflowSession
-  ) {
+  override fun onSessionStarted(workflowScope: CoroutineScope, session: WorkflowSession) {
     invokeSafely("logBeforeMethod") { logBeforeMethod("onInstanceStarted", session) }
   }
 
   override fun <P, S, O> onSessionCancelled(
     cause: CancellationException?,
     droppedActions: List<WorkflowAction<P, S, O>>,
-    session: WorkflowSession
+    session: WorkflowSession,
   ) {
     invokeSafely("logAfterMethod") { logAfterMethod("onInstanceStarted", session) }
   }
@@ -34,44 +29,39 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     snapshot: Snapshot?,
     workflowScope: CoroutineScope,
     proceed: (P, Snapshot?, CoroutineScope) -> S,
-    session: WorkflowSession
-  ): S = logMethod("onInitialState", session) {
-    proceed(props, snapshot, workflowScope)
-  }
+    session: WorkflowSession,
+  ): S = logMethod("onInitialState", session) { proceed(props, snapshot, workflowScope) }
 
   override fun <P, S> onPropsChanged(
     old: P,
     new: P,
     state: S,
     proceed: (P, P, S) -> S,
-    session: WorkflowSession
-  ): S = logMethod("onPropsChanged", session) {
-    proceed(old, new, state)
-  }
+    session: WorkflowSession,
+  ): S = logMethod("onPropsChanged", session) { proceed(old, new, state) }
 
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
-  ): R = logMethod("onRender", session) {
-    proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session))
-  }
+    session: WorkflowSession,
+  ): R =
+    logMethod("onRender", session) {
+      proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session))
+    }
 
   override fun <S> onSnapshotState(
     state: S,
     proceed: (S) -> Snapshot?,
-    session: WorkflowSession
-  ): Snapshot? = logMethod("onSnapshotState", session) {
-    proceed(state)
-  }
+    session: WorkflowSession,
+  ): Snapshot? = logMethod("onSnapshotState", session) { proceed(state) }
 
   private inline fun <T> logMethod(
     name: String,
     session: WorkflowSession,
     vararg extras: Pair<String, Any?>,
-    block: () -> T
+    block: () -> T,
   ): T {
     val currentIndentLevel = indentLevel
     invokeSafely("logBeforeMethod") { logBeforeMethod(name, session, *extras) }
@@ -85,10 +75,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   /**
    * Executes [function], catching and printing any exceptions it throws without rethrowing them.
    */
-  private inline fun invokeSafely(
-    name: String,
-    function: () -> Unit
-  ) {
+  private inline fun invokeSafely(name: String, function: () -> Unit) {
     try {
       function()
     } catch (e: Throwable) {
@@ -98,9 +85,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     }
   }
 
-  /**
-   * Called with descriptions of every event. Default implementation just calls [log].
-   */
+  /** Called with descriptions of every event. Default implementation just calls [log]. */
   protected open fun logBeforeMethod(
     name: String,
     session: WorkflowSession,
@@ -109,9 +94,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     log("START| ${" ".repeat(indentLevel)}${formatLogMessage(name, session, extras)}")
   }
 
-  /**
-   * Called with descriptions of every event. Default implementation just calls [log].
-   */
+  /** Called with descriptions of every event. Default implementation just calls [log]. */
   protected open fun logAfterMethod(
     name: String,
     session: WorkflowSession,
@@ -120,9 +103,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     log("  END| ${" ".repeat(indentLevel)}${formatLogMessage(name, session, extras)}")
   }
 
-  /**
-   * Called by [logBeforeMethod] and [logAfterMethod] to display a log message.
-   */
+  /** Called by [logBeforeMethod] and [logAfterMethod] to display a log message. */
   protected open fun log(text: String) {
     println(text)
   }
@@ -132,12 +113,13 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   private fun formatLogMessage(
     name: String,
     session: WorkflowSession,
-    extras: Array<out Pair<String, Any?>>
-  ): String = if (extras.isEmpty()) {
-    "$name($session)"
-  } else {
-    "$name($session, ${extras.toMap()})"
-  }
+    extras: Array<out Pair<String, Any?>>,
+  ): String =
+    if (extras.isEmpty()) {
+      "$name($session)"
+    } else {
+      "$name($session, ${extras.toMap()})"
+    }
 
   private inner class SimpleLoggingContextInterceptor<P, S, O>(
     private val session: WorkflowSession
@@ -145,23 +127,17 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
 
     override fun onActionSent(
       action: WorkflowAction<P, S, O>,
-      proceed: (WorkflowAction<P, S, O>) -> Unit
+      proceed: (WorkflowAction<P, S, O>) -> Unit,
     ) {
-      logMethod("onActionSent", session, "action" to action) {
-        proceed(action)
-      }
+      logMethod("onActionSent", session, "action" to action) { proceed(action) }
     }
 
     override fun onRunningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit,
-      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit,
     ) {
-      proceed(key) {
-        logMethod("onSideEffectRunning", session, "key" to key) {
-          sideEffect()
-        }
-      }
+      proceed(key) { logMethod("onSideEffectRunning", session, "key" to key) { sideEffect() } }
     }
   }
 }

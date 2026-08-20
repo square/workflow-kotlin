@@ -13,9 +13,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
-/**
- * Namespace for some helper functions for interacting with the AndroidX libraries.
- */
+/** Namespace for some helper functions for interacting with the AndroidX libraries. */
 public object WorkflowAndroidXSupport {
   /**
    * Returns the [LifecycleOwner] managing [context].
@@ -28,9 +26,9 @@ public object WorkflowAndroidXSupport {
     }
 
   /**
-   * Tries to get the parent lifecycle from the current view via [findViewTreeLifecycleOwner], if that
-   * fails it looks up the context chain for a [LifecycleOwner], and if that fails it just returns
-   * null. This differs from [findViewTreeLifecycleOwner] because it will check the
+   * Tries to get the parent lifecycle from the current view via [findViewTreeLifecycleOwner], if
+   * that fails it looks up the context chain for a [LifecycleOwner], and if that fails it just
+   * returns null. This differs from [findViewTreeLifecycleOwner] because it will check the
    * [View.getContext] if no owner is found in the view tree.
    */
   public fun lifecycleOwnerFromViewTreeOrContextOrNull(view: View): LifecycleOwner? =
@@ -38,8 +36,8 @@ public object WorkflowAndroidXSupport {
 
   /**
    * Tries to get the parent [SavedStateRegistryOwner] from the current view via
-   * [findViewTreeSavedStateRegistryOwner], if that fails it looks up the context chain for a registry
-   * owner, and if that fails it just returns null. This differs from
+   * [findViewTreeSavedStateRegistryOwner], if that fails it looks up the context chain for a
+   * registry owner, and if that fails it just returns null. This differs from
    * [findViewTreeSavedStateRegistryOwner] because it will check the [View.getContext] if no owner
    * is found in the view tree.
    */
@@ -49,14 +47,13 @@ public object WorkflowAndroidXSupport {
     }
 
   /**
-   * Looks for an [OnBackPressedDispatcherOwner] in the receiving [ViewEnvironment].
-   * Failing that, falls through to [View.onBackPressedDispatcherOwnerOrNull].
-   * Patterned after the heuristic in Compose's `LocalOnBackPressedDispatcherOwner`.
+   * Looks for an [OnBackPressedDispatcherOwner] in the receiving [ViewEnvironment]. Failing that,
+   * falls through to [View.onBackPressedDispatcherOwnerOrNull]. Patterned after the heuristic in
+   * Compose's `LocalOnBackPressedDispatcherOwner`.
    *
-   * Mainly intended as support for finding the [OnBackPressedDispatcherOwner] parameter
-   * required by [WorkflowLifecycleOwner.installOn]. That is, this is for
-   * use by custom containers that can't use
-   * [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] or other standard
+   * Mainly intended as support for finding the [OnBackPressedDispatcherOwner] parameter required by
+   * [WorkflowLifecycleOwner.installOn]. That is, this is for use by custom containers that can't
+   * use [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] or other standard
    * containers, which have this call built in.
    *
    * @throws IllegalArgumentException if no [OnBackPressedDispatcherOwner] can be found
@@ -76,8 +73,8 @@ public object WorkflowAndroidXSupport {
 
   /**
    * Looks for a [View]'s [OnBackPressedDispatcherOwner] via the usual
-   * [findViewTreeOnBackPressedDispatcherOwner] method, and if that fails
-   * checks its [Context][View.getContext].
+   * [findViewTreeOnBackPressedDispatcherOwner] method, and if that fails checks its
+   * [Context][View.getContext].
    */
   public fun View.onBackPressedDispatcherOwnerOrNull(): OnBackPressedDispatcherOwner? {
     return findViewTreeOnBackPressedDispatcherOwner()
@@ -86,14 +83,12 @@ public object WorkflowAndroidXSupport {
 
   /**
    * Tries to get the parent [SavedStateRegistryOwner] from the current view via
-   * [findViewTreeSavedStateRegistryOwner], if that fails it looks up the context chain for a registry
-   * owner, and if that fails it just returns null. This differs from
+   * [findViewTreeSavedStateRegistryOwner], if that fails it looks up the context chain for a
+   * registry owner, and if that fails it just returns null. This differs from
    * [findViewTreeSavedStateRegistryOwner] because it will check the [View.getContext] if no owner
    * is found in the view tree.
    */
-  private fun stateRegistryOwnerFromViewTreeOrContextOrNull(
-    view: View
-  ): SavedStateRegistryOwner? =
+  private fun stateRegistryOwnerFromViewTreeOrContextOrNull(view: View): SavedStateRegistryOwner? =
     (view.findViewTreeSavedStateRegistryOwner())
       ?: view.context.ownerOrNull(SavedStateRegistryOwner::class)
 

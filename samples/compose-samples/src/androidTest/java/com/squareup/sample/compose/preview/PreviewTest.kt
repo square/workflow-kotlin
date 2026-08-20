@@ -18,13 +18,17 @@ class PreviewTest {
 
   private val composeRule = createAndroidComposeRule<PreviewActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun showsPreviewRendering() {
-    composeRule.onNodeWithText(ContactDetailsScreen::class.java.simpleName, substring = true)
+  @Test
+  fun showsPreviewRendering() {
+    composeRule
+      .onNodeWithText(ContactDetailsScreen::class.java.simpleName, substring = true)
       .assertIsDisplayed()
       .assertTextContains(previewContactScreen.details.phoneNumber, substring = true)
       .assertTextContains(previewContactScreen.details.address, substring = true)

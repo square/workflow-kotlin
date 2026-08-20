@@ -9,14 +9,14 @@ import com.squareup.workflow1.buildsrc.Color.LIGHT_YELLOW
 fun diffString(oldStr: String, newStr: String): String {
 
   return buildString {
-
-    val rows = DiffRowGenerator.create()
-      .showInlineDiffs(true)
-      .inlineDiffByWord(true)
-      .oldTag { _: Boolean? -> "" }
-      .newTag { _: Boolean? -> "" }
-      .build()
-      .generateDiffRows(oldStr.lines(), newStr.lines())
+    val rows =
+      DiffRowGenerator.create()
+        .showInlineDiffs(true)
+        .inlineDiffByWord(true)
+        .oldTag { _: Boolean? -> "" }
+        .newTag { _: Boolean? -> "" }
+        .build()
+        .generateDiffRows(oldStr.lines(), newStr.lines())
 
     val linePadding = rows.size.toString().length + 1
 
@@ -47,10 +47,11 @@ internal enum class Color(val code: Int) {
 
     private val supported = "win" !in System.getProperty("os.name").lowercase()
 
-    fun String.colorized(color: Color) = if (supported) {
-      "\u001B[${color.code}m$this\u001B[0m"
-    } else {
-      this
-    }
+    fun String.colorized(color: Color) =
+      if (supported) {
+        "\u001B[${color.code}m$this\u001B[0m"
+      } else {
+        this
+      }
   }
 }

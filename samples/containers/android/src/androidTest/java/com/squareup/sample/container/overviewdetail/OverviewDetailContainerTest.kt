@@ -7,45 +7,47 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.WorkflowViewStub
+import kotlin.test.assertFailsWith
 import org.junit.Rule
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 internal class OverviewDetailContainerTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private val scenario
+    get() = scenarioRule.scenario
 
-  @Test fun throwsUsefulMessageOnNoChildren() {
+  @Test
+  fun throwsUsefulMessageOnNoChildren() {
     scenario.onActivity { activity ->
       val view = View(activity)
 
-      val exception = assertFailsWith<IllegalStateException> {
-        OverviewDetailContainer(view)
-      }
-      Truth.assertThat(exception.message).isEqualTo(
-        "Layout must define only R.id.overview_detail_single_stub, " +
-          "or else both R.id.overview_stub and R.id.detail_stub. " +
-          "Found: overviewStub: null (parent null); detailStub: null (parent null); " +
-          "singleStub: null (parent null)"
-      )
+      val exception = assertFailsWith<IllegalStateException> { OverviewDetailContainer(view) }
+      Truth.assertThat(exception.message)
+        .isEqualTo(
+          "Layout must define only R.id.overview_detail_single_stub, " +
+            "or else both R.id.overview_stub and R.id.detail_stub. " +
+            "Found: overviewStub: null (parent null); detailStub: null (parent null); " +
+            "singleStub: null (parent null)"
+        )
     }
   }
 
-  @Test fun throwsUsefulMessageOnTooManyChildren() {
+  @Test
+  fun throwsUsefulMessageOnTooManyChildren() {
     scenario.onActivity { activity ->
-      val view = FrameLayout(activity).apply {
-        addView(WorkflowViewStub(context).apply { id = R.id.overview_stub })
-        addView(WorkflowViewStub(context).apply { id = R.id.detail_stub })
-        addView(WorkflowViewStub(context).apply { id = R.id.overview_detail_single_stub })
-      }
+      val view =
+        FrameLayout(activity).apply {
+          addView(WorkflowViewStub(context).apply { id = R.id.overview_stub })
+          addView(WorkflowViewStub(context).apply { id = R.id.detail_stub })
+          addView(WorkflowViewStub(context).apply { id = R.id.overview_detail_single_stub })
+        }
 
-      val exception = assertFailsWith<IllegalStateException> {
-        OverviewDetailContainer(view)
-      }
-      Truth.assertThat(exception.message).startsWith(
-        "Layout must define only R.id.overview_detail_single_stub, " +
-          "or else both R.id.overview_stub and R.id.detail_stub. "
-      )
+      val exception = assertFailsWith<IllegalStateException> { OverviewDetailContainer(view) }
+      Truth.assertThat(exception.message)
+        .startsWith(
+          "Layout must define only R.id.overview_detail_single_stub, " +
+            "or else both R.id.overview_stub and R.id.detail_stub. "
+        )
       Truth.assertThat(exception.message)
         .contains("overviewStub: com.squareup.workflow1.ui.WorkflowViewStub")
       Truth.assertThat(exception.message)
@@ -56,28 +58,27 @@ internal class OverviewDetailContainerTest {
         .contains("app:id/detail_stub} (parent android.widget.FrameLayout")
       Truth.assertThat(exception.message)
         .contains("singleStub: com.squareup.workflow1.ui.WorkflowViewStub")
-      Truth.assertThat(exception.message).contains(
-        "app:id/overview_detail_single_stub} (parent android.widget.FrameLayout"
-      )
+      Truth.assertThat(exception.message)
+        .contains("app:id/overview_detail_single_stub} (parent android.widget.FrameLayout")
     }
   }
 
-  @Test fun throwsUsefulMessageOnMissingOverview() {
+  @Test
+  fun throwsUsefulMessageOnMissingOverview() {
     scenario.onActivity { activity ->
-      val view = FrameLayout(activity).apply {
-        addView(WorkflowViewStub(context).apply { id = R.id.overview_stub })
-      }
+      val view =
+        FrameLayout(activity).apply {
+          addView(WorkflowViewStub(context).apply { id = R.id.overview_stub })
+        }
 
-      val exception = assertFailsWith<IllegalStateException> {
-        OverviewDetailContainer(view)
-      }
-      Truth.assertThat(exception.message).startsWith(
-        "Layout must define only R.id.overview_detail_single_stub, " +
-          "or else both R.id.overview_stub and R.id.detail_stub. "
-      )
-      Truth.assertThat(exception.message).endsWith(
-        "detailStub: null (parent null); singleStub: null (parent null)"
-      )
+      val exception = assertFailsWith<IllegalStateException> { OverviewDetailContainer(view) }
+      Truth.assertThat(exception.message)
+        .startsWith(
+          "Layout must define only R.id.overview_detail_single_stub, " +
+            "or else both R.id.overview_stub and R.id.detail_stub. "
+        )
+      Truth.assertThat(exception.message)
+        .endsWith("detailStub: null (parent null); singleStub: null (parent null)")
 
       Truth.assertThat(exception.message)
         .contains("overviewStub: com.squareup.workflow1.ui.WorkflowViewStub")
@@ -86,23 +87,22 @@ internal class OverviewDetailContainerTest {
     }
   }
 
-  @Test fun throwsUsefulMessageOnMissingDetail() {
+  @Test
+  fun throwsUsefulMessageOnMissingDetail() {
     scenario.onActivity { activity ->
-      val view = FrameLayout(activity).apply {
-        addView(WorkflowViewStub(context).apply { id = R.id.detail_stub })
-      }
+      val view =
+        FrameLayout(activity).apply {
+          addView(WorkflowViewStub(context).apply { id = R.id.detail_stub })
+        }
 
-      val exception = assertFailsWith<IllegalStateException> {
-        OverviewDetailContainer(view)
-      }
-      Truth.assertThat(exception.message).startsWith(
-        "Layout must define only R.id.overview_detail_single_stub, " +
-          "or else both R.id.overview_stub and R.id.detail_stub. " +
-          "Found: overviewStub: null (parent null); "
-      )
-      Truth.assertThat(exception.message).endsWith(
-        "singleStub: null (parent null)"
-      )
+      val exception = assertFailsWith<IllegalStateException> { OverviewDetailContainer(view) }
+      Truth.assertThat(exception.message)
+        .startsWith(
+          "Layout must define only R.id.overview_detail_single_stub, " +
+            "or else both R.id.overview_stub and R.id.detail_stub. " +
+            "Found: overviewStub: null (parent null); "
+        )
+      Truth.assertThat(exception.message).endsWith("singleStub: null (parent null)")
 
       Truth.assertThat(exception.message)
         .contains("detailStub: com.squareup.workflow1.ui.WorkflowViewStub")

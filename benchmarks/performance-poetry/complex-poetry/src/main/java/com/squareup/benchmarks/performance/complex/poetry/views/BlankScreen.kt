@@ -9,11 +9,12 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 
 object BlankScreen : AndroidScreen<BlankScreen> {
   override val viewFactory: ScreenViewFactory<BlankScreen>
-    get() = ScreenViewFactory.fromCode<BlankScreen> { _, initialEnvironment, context, container ->
-      FrameLayout(context).let { view ->
-        view.layoutParams =
-          container?.layoutParams ?: ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-        ScreenViewHolder(initialEnvironment, view) { _, _ -> }
+    get() =
+      ScreenViewFactory.fromCode<BlankScreen> { _, initialEnvironment, context, container ->
+        FrameLayout(context).let { view ->
+          view.layoutParams =
+            container?.layoutParams ?: ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          ScreenViewHolder(initialEnvironment, view) { _, _ -> }
+        }
       }
-    }
 }

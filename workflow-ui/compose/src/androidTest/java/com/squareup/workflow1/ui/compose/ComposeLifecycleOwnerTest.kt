@@ -20,8 +20,7 @@ import org.junit.Test
 
 class ComposeLifecycleOwnerTest {
 
-  @get:Rule
-  val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
   private var mParentLifecycle: LifecycleRegistry? = null
 
@@ -46,8 +45,7 @@ class ComposeLifecycleOwnerTest {
     composeTestRule.waitForIdle()
 
     // Outside the composition, assert the lifecycle state again
-    assertThat(childLifecycleOwner.lifecycle.currentState)
-      .isEqualTo(Lifecycle.State.RESUMED)
+    assertThat(childLifecycleOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.RESUMED)
   }
 
   @Test
@@ -58,9 +56,7 @@ class ComposeLifecycleOwnerTest {
     composeTestRule.setContent {
       childLifecycleOwner = rememberChildLifecycleOwner(parentLifecycle)
       parentLifecycle.currentState = CREATED
-      CompositionLocalProvider(
-        LocalLifecycleOwner provides childLifecycleOwner
-      ) {
+      CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) {
         val currentState by childLifecycleOwner.lifecycle.currentStateAsState()
         // let's assert right away as things are composing, because we want to ensure that
         // the lifecycle is in the correct state as soon as possible & not just after composition
@@ -73,8 +69,7 @@ class ComposeLifecycleOwnerTest {
     composeTestRule.waitForIdle()
 
     // Outside the composition, assert the lifecycle state again
-    assertThat(childLifecycleOwner.lifecycle.currentState)
-      .isEqualTo(Lifecycle.State.CREATED)
+    assertThat(childLifecycleOwner.lifecycle.currentState).isEqualTo(Lifecycle.State.CREATED)
   }
 
   @Test
@@ -82,11 +77,12 @@ class ComposeLifecycleOwnerTest {
     lateinit var updatedChildLifecycleOwner: LifecycleOwner
     lateinit var tempChildLifecycleOwner: LifecycleOwner
 
-    val customParentLifecycleOwner: LifecycleOwner = object : LifecycleOwner {
-      private val registry = LifecycleRegistry(this)
-      override val lifecycle: Lifecycle
-        get() = registry
-    }
+    val customParentLifecycleOwner: LifecycleOwner =
+      object : LifecycleOwner {
+        private val registry = LifecycleRegistry(this)
+        override val lifecycle: Lifecycle
+          get() = registry
+      }
 
     composeTestRule.setContent {
       var seenRecomposition by remember { mutableStateOf(false) }
@@ -99,7 +95,6 @@ class ComposeLifecycleOwnerTest {
           LocalLifecycleOwner provides LocalLifecycleOwner.current
         }
       ) {
-
         updatedChildLifecycleOwner = rememberChildLifecycleOwner()
         // let's save the original reference to lifecycle owner on first pass
         if (!seenRecomposition) {
@@ -117,9 +112,10 @@ class ComposeLifecycleOwnerTest {
 
   private fun ensureParentLifecycle(): LifecycleRegistry {
     if (mParentLifecycle == null) {
-      val owner = object : LifecycleOwner {
-        override val lifecycle = LifecycleRegistry.createUnsafe(this)
-      }
+      val owner =
+        object : LifecycleOwner {
+          override val lifecycle = LifecycleRegistry.createUnsafe(this)
+        }
       mParentLifecycle = owner.lifecycle
     }
     return mParentLifecycle!!

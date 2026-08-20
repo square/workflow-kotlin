@@ -6,9 +6,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.stubvisibility"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.stubvisibility" }
   namespace = "com.squareup.sample.stubvisibility"
 }
 

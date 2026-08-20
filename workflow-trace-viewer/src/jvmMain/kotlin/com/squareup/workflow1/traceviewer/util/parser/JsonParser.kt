@@ -13,30 +13,30 @@ import kotlin.reflect.jvm.javaType
 import kotlin.reflect.typeOf
 
 /*
- The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
- parentId, the root node will have -1 as a fake parent ID. This is reflected inside android-register.
- */
+The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
+parentId, the root node will have -1 as a fake parent ID. This is reflected inside android-register.
+*/
 internal const val ROOT_ID: String = "-1"
 
 /**
  * Parses a given file's JSON String into a list of [Node]s with Moshi adapters. Each of these nodes
  * count as the root of a tree which forms a Frame.
  *
- * @return A [ParseResult] representing result of parsing, either an error related to the
- * format of the JSON, or a success and a parsed trace.
+ * @return A [ParseResult] representing result of parsing, either an error related to the format of
+ *   the JSON, or a success and a parsed trace.
  */
-internal suspend fun parseFileTrace(
-  file: PlatformFile,
-): ParseResult {
+internal suspend fun parseFileTrace(file: PlatformFile): ParseResult {
   val jsonString = file.readString()
   val workflowAdapter = createMoshiAdapter<List<Node>>()
-  val parsedRenderPasses = try {
-    workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
-      IllegalArgumentException("Provided trace file is empty or malformed.")
-    )
-  } catch (e: Exception) {
-    return ParseResult.Failure(e)
-  }
+  val parsedRenderPasses =
+    try {
+      workflowAdapter.fromJson(jsonString)
+        ?: return ParseResult.Failure(
+          IllegalArgumentException("Provided trace file is empty or malformed.")
+        )
+    } catch (e: Exception) {
+      return ParseResult.Failure(e)
+    }
 
   val parsedFrames = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
   val frameTrees = mutableListOf<Node>()
@@ -48,53 +48,52 @@ internal suspend fun parseFileTrace(
   return ParseResult.Success(
     trace = parsedFrames,
     trees = frameTrees,
-    affectedNodes = parsedRenderPasses
+    affectedNodes = parsedRenderPasses,
   )
 }
 
 /**
- * Parses a single render pass from a live trace stream.
- * Similar to parseFileTrace but handles one render pass at a time.
+ * Parses a single render pass from a live trace stream. Similar to parseFileTrace but handles one
+ * render pass at a time.
  *
  * @return [ParseResult] containing the new frame, merged tree, and current render pass nodes.
  */
 internal fun parseLiveTrace(
   renderPass: String,
   adapter: JsonAdapter<List<Node>>,
-  currentTree: Node? = null
+  currentTree: Node? = null,
 ): ParseResult {
-  val parsedRenderPass = try {
-    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
-      IllegalArgumentException("Provided trace data is empty or malformed.")
-    )
-  } catch (e: Exception) {
-    return ParseResult.Failure(e)
-  }
+  val parsedRenderPass =
+    try {
+      adapter.fromJson(renderPass)
+        ?: return ParseResult.Failure(
+          IllegalArgumentException("Provided trace data is empty or malformed.")
+        )
+    } catch (e: Exception) {
+      return ParseResult.Failure(e)
+    }
 
   val parsedFrame = getFrameFromRenderPass(parsedRenderPass)
 
   // Merge Frame into full tree if we have an existing tree
-  val mergedTree = if (currentTree == null) {
-    parsedFrame
-  } else {
-    mergeFrameIntoMainTree(parsedFrame, currentTree)
-  }
+  val mergedTree =
+    if (currentTree == null) {
+      parsedFrame
+    } else {
+      mergeFrameIntoMainTree(parsedFrame, currentTree)
+    }
 
   // Since live tracing handles one frame at a time, we generalize and return listOf for each.
   return ParseResult.Success(
     trace = listOf(parsedFrame),
     trees = listOf(mergedTree),
-    affectedNodes = listOf(parsedRenderPass)
+    affectedNodes = listOf(parsedRenderPass),
   )
 }
 
-/**
- * Creates a Moshi adapter for parsing the JSON trace file.
- */
+/** Creates a Moshi adapter for parsing the JSON trace file. */
 internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
-  val moshi = Moshi.Builder()
-    .add(KotlinJsonAdapterFactory())
-    .build()
+  val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
   val workflowList = Types.newParameterizedType(List::class.java, typeOf<T>().javaType)
   val adapter: JsonAdapter<List<T>> = moshi.adapter(workflowList)
   return adapter
@@ -111,12 +110,9 @@ private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
   return buildTree(root!!, childrenByParent)
 }
 
-/**
- * Recursively builds a tree using each node's children.
- */
+/** Recursively builds a tree using each node's children. */
 private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
-  val children = (childrenByParent[node.id] ?: emptyList())
-    .map { buildTree(it, childrenByParent) }
+  val children = (childrenByParent[node.id] ?: emptyList()).map { buildTree(it, childrenByParent) }
   return Node(
     name = node.name,
     id = node.id,
@@ -135,10 +131,7 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
  *
  * @return Node the newly formed tree with the frame merged into it.
  */
-internal fun mergeFrameIntoMainTree(
-  frame: Node,
-  main: Node
-): Node {
+internal fun mergeFrameIntoMainTree(frame: Node, main: Node): Node {
   require(frame.id == main.id)
   val updatedNode = frame.copy(children = main.children)
 
@@ -153,11 +146,8 @@ internal fun mergeFrameIntoMainTree(
 }
 
 internal sealed interface ParseResult {
-  class Success(
-    val trace: List<Node>,
-    val trees: List<Node>,
-    affectedNodes: List<List<Node>>
-  ) : ParseResult {
+  class Success(val trace: List<Node>, val trees: List<Node>, affectedNodes: List<List<Node>>) :
+    ParseResult {
     val affectedNodes = affectedNodes.map { it.toSet() }
   }
 

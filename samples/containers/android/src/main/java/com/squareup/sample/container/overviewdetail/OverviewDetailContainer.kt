@@ -15,13 +15,13 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.plus
 
 /**
- * Displays [OverviewDetailScreen] renderings in either split pane or single pane
- * treatment, depending on the setup of the given [View]. The view must provide
- * either a single [WorkflowViewStub] with id [R.id.overview_detail_single_stub],
- * or else two with ids [R.id.overview_stub] and [R.id.detail_stub].
+ * Displays [OverviewDetailScreen] renderings in either split pane or single pane treatment,
+ * depending on the setup of the given [View]. The view must provide either a single
+ * [WorkflowViewStub] with id [R.id.overview_detail_single_stub], or else two with ids
+ * [R.id.overview_stub] and [R.id.detail_stub].
  *
- * For single pane layouts, [OverviewDetailScreen] is repackaged as a [BackStackScreen]
- * with [OverviewDetailScreen.overviewRendering] as the base of the stack.
+ * For single pane layouts, [OverviewDetailScreen] is repackaged as a [BackStackScreen] with
+ * [OverviewDetailScreen.overviewRendering] as the base of the stack.
  */
 class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen<*>> {
 
@@ -39,10 +39,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
     }
   }
 
-  override fun showRendering(
-    rendering: OverviewDetailScreen<*>,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: OverviewDetailScreen<*>, environment: ViewEnvironment) {
     if (singleStub == null) {
       renderSplitView(rendering, environment)
     } else {
@@ -52,7 +49,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
 
   private fun renderSplitView(
     rendering: OverviewDetailScreen<*>,
-    viewEnvironment: ViewEnvironment
+    viewEnvironment: ViewEnvironment,
   ) {
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
       rendering.selectDefault!!.invoke()
@@ -64,34 +61,28 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
       val overviewRendering = rendering.overviewRendering.withName("Overview")
       overviewStub!!.show(overviewRendering, overviewViewEnvironment)
 
-      rendering.detailRendering
-        ?.let { detail ->
-          detailStub!!.actual.visibility = VISIBLE
-          detailStub.show(
-            detail,
-            viewEnvironment + Detail
-          )
-        }
-        ?: run {
-          detailStub!!.actual.visibility = INVISIBLE
-        }
+      rendering.detailRendering?.let { detail ->
+        detailStub!!.actual.visibility = VISIBLE
+        detailStub.show(detail, viewEnvironment + Detail)
+      } ?: run { detailStub!!.actual.visibility = INVISIBLE }
     }
   }
 
   private fun renderSingleView(
     rendering: OverviewDetailScreen<*>,
     viewEnvironment: ViewEnvironment,
-    stub: WorkflowViewStub
+    stub: WorkflowViewStub,
   ) {
-    val combined: BackStackScreen<*> = rendering.detailRendering
-      ?.let { rendering.overviewRendering + it }
-      ?: rendering.overviewRendering
+    val combined: BackStackScreen<*> =
+      rendering.detailRendering?.let { rendering.overviewRendering + it }
+        ?: rendering.overviewRendering
 
     stub.show(combined, viewEnvironment + Single)
   }
 
-  companion object : ScreenViewFactory<OverviewDetailScreen<*>> by ScreenViewFactory.fromLayout(
-    layoutId = R.layout.overview_detail,
-    constructor = ::OverviewDetailContainer
-  )
+  companion object :
+    ScreenViewFactory<OverviewDetailScreen<*>> by ScreenViewFactory.fromLayout(
+      layoutId = R.layout.overview_detail,
+      constructor = ::OverviewDetailContainer,
+    )
 }

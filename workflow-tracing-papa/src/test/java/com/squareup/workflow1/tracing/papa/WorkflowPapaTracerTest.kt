@@ -18,13 +18,13 @@ import com.squareup.workflow1.tracing.RuntimeUpdateLogLine
 import com.squareup.workflow1.tracing.WorkflowSessionInfo
 import com.squareup.workflow1.tracing.WorkflowTrace
 import com.squareup.workflow1.tracing.WorkflowTracer
-import kotlinx.coroutines.test.TestScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.TestScope
 
 internal class WorkflowPapaTracerTest {
 
@@ -64,13 +64,14 @@ internal class WorkflowPapaTracerTest {
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[rootSession.sessionId] = WorkflowSessionInfo(rootSession)
 
-    val result = tracer.onInitialState(
-      props = "testProps",
-      snapshot = null,
-      workflowScope = testScope,
-      proceed = { _, _, _ -> "initialState" },
-      session = rootSession
-    )
+    val result =
+      tracer.onInitialState(
+        props = "testProps",
+        snapshot = null,
+        workflowScope = testScope,
+        proceed = { _, _, _ -> "initialState" },
+        session = rootSession,
+      )
 
     assertEquals("initialState", result)
     val beginSectionCalls = fakeTrace.traceCalls.filter { it.type == "beginSection" }
@@ -91,11 +92,12 @@ internal class WorkflowPapaTracerTest {
     val expectedSnapshot = TreeSnapshot.forRootOnly(null)
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
-    val result = tracer.onRenderAndSnapshot(
-      renderProps = "props",
-      proceed = { renderingAndSnapshot },
-      session = rootSession
-    )
+    val result =
+      tracer.onRenderAndSnapshot(
+        renderProps = "props",
+        proceed = { renderingAndSnapshot },
+        session = rootSession,
+      )
 
     assertEquals(renderingAndSnapshot, result)
     val beginSectionCalls = fakeTrace.traceCalls.filter { it.type == "beginSection" }
@@ -132,7 +134,7 @@ internal class WorkflowPapaTracerTest {
     tracer.attachRuntimeContext(TestRuntimeTraceContext())
     tracer.onSnapshotStateWithChildren(
       proceed = { TreeSnapshot.forRootOnly(null) },
-      session = TestWorkflow().createMockSession()
+      session = TestWorkflow().createMockSession(),
     )
 
     assertTrue(customTrace.traceCalls.any { it.type == "beginSection" })
@@ -147,7 +149,7 @@ internal class WorkflowPapaTracerTest {
     tracer.attachRuntimeContext(TestRuntimeTraceContext())
     tracer.onSnapshotStateWithChildren(
       proceed = { TreeSnapshot.forRootOnly(null) },
-      session = TestWorkflow().createMockSession()
+      session = TestWorkflow().createMockSession(),
     )
 
     assertTrue(customTrace.traceCalls.any { it.type == "beginSection" })
@@ -165,13 +167,14 @@ internal class WorkflowPapaTracerTest {
     // Add session info to the context as would normally be done by WorkflowRuntimeMonitor
     testContext.workflowSessionInfo[mockSession.sessionId] = WorkflowSessionInfo(mockSession)
 
-    val result = tracer.onPropsChanged(
-      old = "old",
-      new = "new",
-      state = "current",
-      proceed = { _, _, state -> state },
-      session = mockSession
-    )
+    val result =
+      tracer.onPropsChanged(
+        old = "old",
+        new = "new",
+        state = "current",
+        proceed = { _, _, state -> state },
+        session = mockSession,
+      )
 
     assertEquals("current", result)
   }
@@ -188,11 +191,12 @@ internal class WorkflowPapaTracerTest {
     val expectedSnapshot = TreeSnapshot.forRootOnly(null)
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
-    val result = tracer.onRenderAndSnapshot(
-      renderProps = "props",
-      proceed = { renderingAndSnapshot },
-      session = mockSession
-    )
+    val result =
+      tracer.onRenderAndSnapshot(
+        renderProps = "props",
+        proceed = { renderingAndSnapshot },
+        session = mockSession,
+      )
 
     assertEquals(renderingAndSnapshot, result)
   }
@@ -208,10 +212,8 @@ internal class WorkflowPapaTracerTest {
 
     val treeSnapshot = TreeSnapshot.forRootOnly(null)
 
-    val result = tracer.onSnapshotStateWithChildren(
-      proceed = { treeSnapshot },
-      session = mockSession
-    )
+    val result =
+      tracer.onSnapshotStateWithChildren(proceed = { treeSnapshot }, session = mockSession)
 
     assertEquals(treeSnapshot, result)
   }
@@ -265,32 +267,21 @@ internal class WorkflowPapaTracerTest {
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, String>() {
 
-    override fun initialState(
-      props: String,
-      snapshot: Snapshot?
-    ): String = props
+    override fun initialState(props: String, snapshot: Snapshot?): String = props
 
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext<String, String, String>
+      context: RenderContext<String, String, String>,
     ): String = renderState
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
 
-    fun createRootSession(): WorkflowSession = TestWorkflowSession(
-      workflow = this,
-      sessionId = 1L,
-      renderKey = "root",
-      parent = null
-    )
+    fun createRootSession(): WorkflowSession =
+      TestWorkflowSession(workflow = this, sessionId = 1L, renderKey = "root", parent = null)
 
-    fun createMockSession() = TestWorkflowSession(
-      workflow = this,
-      sessionId = 123L,
-      renderKey = "test",
-      parent = null
-    )
+    fun createMockSession() =
+      TestWorkflowSession(workflow = this, sessionId = 123L, renderKey = "test", parent = null)
   }
 
   private class TestWorkflowSession(
@@ -298,7 +289,7 @@ internal class WorkflowPapaTracerTest {
     override val sessionId: Long,
     override val renderKey: String,
     override val parent: WorkflowSession?,
-    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext,
   ) : WorkflowSession {
     override val identifier = workflow.identifier
     override val runtimeConfig = TestRuntimeConfig()
@@ -307,11 +298,16 @@ internal class WorkflowPapaTracerTest {
 
   private class TestRuntimeConfig : RuntimeConfig {
     override fun contains(element: RuntimeConfigOptions): Boolean = false
+
     override val size: Int = 0
+
     override fun containsAll(elements: Collection<RuntimeConfigOptions>): Boolean = false
+
     override fun isEmpty(): Boolean = true
+
     override fun iterator(): Iterator<RuntimeConfigOptions> =
       emptyList<RuntimeConfigOptions>().iterator()
+
     override fun toString(): String = "TestRuntimeConfig"
   }
 

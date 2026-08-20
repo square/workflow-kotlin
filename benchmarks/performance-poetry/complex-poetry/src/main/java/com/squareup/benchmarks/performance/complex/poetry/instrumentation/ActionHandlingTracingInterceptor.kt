@@ -11,14 +11,13 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * We use this [WorkflowInterceptor] to add in tracing for the main thread messages that handle
  * particular events.
  *
- * If you want to trace how long Workflow takes to process a UI event, then
- * annotate the `RenderContext.eventHandler` name argument with [keyForTrace]. That will cause
- * this interceptor to pick it up when the action is sent into the sink and trace that main thread
- * message.
+ * If you want to trace how long Workflow takes to process a UI event, then annotate the
+ * `RenderContext.eventHandler` name argument with [keyForTrace]. That will cause this interceptor
+ * to pick it up when the action is sent into the sink and trace that main thread message.
  *
- * If you want to trace how long Workflow takes to process the result of a `Worker`, then
- * annotate the `Worker` using [TraceableWorker] which will set it up with a key such that when
- * the action for the result is sent to the sink the main thread message will be traced.
+ * If you want to trace how long Workflow takes to process the result of a `Worker`, then annotate
+ * the `Worker` using [TraceableWorker] which will set it up with a key such that when the action
+ * for the result is sent to the sink the main thread message will be traced.
  */
 class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
 
@@ -29,14 +28,12 @@ class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
   ) : RenderContextInterceptor<P, S, O> {
     override fun onActionSent(
       action: WorkflowAction<P, S, O>,
-      proceed: (WorkflowAction<P, S, O>) -> Unit
+      proceed: (WorkflowAction<P, S, O>) -> Unit,
     ) {
       // This will capture the entire main thread frame where the event is handled.
       val tag = action.actionName
       if (tag.isNotEmpty()) {
-        trace(tag) {
-          proceed(action)
-        }
+        trace(tag) { proceed(action) }
       } else {
         proceed(action)
       }
@@ -61,12 +58,12 @@ class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): R {
     return proceed(
       renderProps,
       renderState,
-      EventHandlingTracingRenderContextInterceptor(actionCounts)
+      EventHandlingTracingRenderContextInterceptor(actionCounts),
     )
   }
 
@@ -76,7 +73,9 @@ class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
 
   companion object {
     private const val TRACE_KEY = "trace_key"
+
     fun keyForTrace(tag: String): String = "$TRACE_KEY:$tag:"
+
     private fun extractTraceTag(fullTag: String): String =
       fullTag.substringAfter("$TRACE_KEY:", "").substringBefore(':', "")
   }

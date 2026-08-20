@@ -20,20 +20,18 @@ class HelloWorkflowFragmentAppTest {
 
   private val scenarioRule = ActivityScenarioRule(HelloWorkflowFragmentActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun togglesHelloAndGoodbye() {
-    onView(withText(containsString("Hello")))
-      .check(matches(isDisplayed()))
-      .perform(click())
+  @Test
+  fun togglesHelloAndGoodbye() {
+    onView(withText(containsString("Hello"))).check(matches(isDisplayed())).perform(click())
 
-    onView(withText(containsString("Goodbye")))
-      .check(matches(isDisplayed()))
-      .perform(click())
+    onView(withText(containsString("Goodbye"))).check(matches(isDisplayed())).perform(click())
 
-    onView(withText(containsString("Hello")))
-      .check(matches(isDisplayed()))
+    onView(withText(containsString("Hello"))).check(matches(isDisplayed()))
   }
 }

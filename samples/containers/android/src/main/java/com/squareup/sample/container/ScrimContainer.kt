@@ -14,26 +14,28 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
- * A view that renders only its first child, behind a smoke scrim if
- * [isDimmed] is true (tablets only). Other children are ignored.
+ * A view that renders only its first child, behind a smoke scrim if [isDimmed] is true (tablets
+ * only). Other children are ignored.
  *
  * Able to [render][com.squareup.workflow1.ui.showRendering] [ScrimScreen].
  */
-internal class ScrimContainer @JvmOverloads constructor(
+internal class ScrimContainer
+@JvmOverloads
+constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
-  defStyleRes: Int = 0
+  defStyleRes: Int = 0,
 ) : ViewGroup(context, attributeSet, defStyle, defStyleRes) {
-  private val scrim = object : View(context, attributeSet, defStyle, defStyleRes) {
-    init {
-      setBackgroundColor(ContextCompat.getColor(context, R.color.scrim))
+  private val scrim =
+    object : View(context, attributeSet, defStyle, defStyleRes) {
+      init {
+        setBackgroundColor(ContextCompat.getColor(context, R.color.scrim))
+      }
     }
-  }
 
   private val child: View
-    get() = getChildAt(0)
-      ?: error("Child must be set immediately upon creation.")
+    get() = getChildAt(0) ?: error("Child must be set immediately upon creation.")
 
   var isDimmed: Boolean = false
     set(value) {
@@ -53,21 +55,12 @@ internal class ScrimContainer @JvmOverloads constructor(
     super.addView(scrim)
   }
 
-  override fun onLayout(
-    changed: Boolean,
-    l: Int,
-    t: Int,
-    r: Int,
-    b: Int
-  ) {
+  override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
     child.layout(0, 0, measuredWidth, measuredHeight)
     scrim.layout(0, 0, measuredWidth, measuredHeight)
   }
 
-  override fun onMeasure(
-    widthMeasureSpec: Int,
-    heightMeasureSpec: Int
-  ) {
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     child.measure(widthMeasureSpec, heightMeasureSpec)
     scrim.measure(widthMeasureSpec, heightMeasureSpec)
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -79,28 +72,29 @@ internal class ScrimContainer @JvmOverloads constructor(
 
   private fun updateAnimated() {
     if (isDimmed) {
-      ValueAnimator.ofFloat(0f, 1f)
-    } else {
-      ValueAnimator.ofFloat(1f, 0f)
-    }.apply {
-      duration = resources.getInteger(android.R.integer.config_shortAnimTime)
-        .toLong()
-      addUpdateListener { animation -> scrim.alpha = animation.animatedValue as Float }
-      start()
-    }
+        ValueAnimator.ofFloat(0f, 1f)
+      } else {
+        ValueAnimator.ofFloat(1f, 0f)
+      }
+      .apply {
+        duration = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+        addUpdateListener { animation -> scrim.alpha = animation.animatedValue as Float }
+        start()
+      }
   }
 
-  companion object : ScreenViewFactory<ScrimScreen<*>> by fromCode(
-    buildView = { _, initialEnvironment, context, _ ->
-      val stub = WorkflowViewStub(context)
-      val scrimContainer = ScrimContainer(context)
-      scrimContainer.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-      scrimContainer.addView(stub)
+  companion object :
+    ScreenViewFactory<ScrimScreen<*>> by fromCode(
+      buildView = { _, initialEnvironment, context, _ ->
+        val stub = WorkflowViewStub(context)
+        val scrimContainer = ScrimContainer(context)
+        scrimContainer.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        scrimContainer.addView(stub)
 
-      ScreenViewHolder(initialEnvironment, scrimContainer) { rendering, viewEnvironment ->
-        stub.show(rendering.content, viewEnvironment)
-        scrimContainer.isDimmed = rendering.dimmed
+        ScreenViewHolder(initialEnvironment, scrimContainer) { rendering, viewEnvironment ->
+          stub.show(rendering.content, viewEnvironment)
+          scrimContainer.isDimmed = rendering.dimmed
+        }
       }
-    }
-  )
+    )
 }

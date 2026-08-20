@@ -22,40 +22,32 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
+import kotlin.math.roundToLong
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlin.math.roundToLong
-import kotlin.random.Random
 
 private val ignoreInput: (Direction) -> Unit = {}
 
 class GameWorkflow(
   private val playerWorkflow: PlayerWorkflow,
   private val aiWorkflows: List<ActorWorkflow>,
-  private val random: Random
+  private val random: Random,
 ) : StatefulWorkflow<Props, State, Output, GameRendering>() {
 
   /**
    * @param board Should not change while the game is running.
    * @param paused If true, the game will still be rendered but none of the AI will tick and no
-   * input events will be accepted. After the game is finished, this flag has no effect (this
-   * workflow will effectively operate as "paused" until it's torn down).
+   *   input events will be accepted. After the game is finished, this flag has no effect (this
+   *   workflow will effectively operate as "paused" until it's torn down).
    */
-  data class Props(
-    val board: Board,
-    val ticksPerSecond: Int = 15,
-    val paused: Boolean = false
-  )
+  data class Props(val board: Board, val ticksPerSecond: Int = 15, val paused: Boolean = false)
 
-  data class State(
-    val game: Game
-  )
+  data class State(val game: Game)
 
   sealed class Output {
-    /**
-     * Emitted by [GameWorkflow] if the controller should be vibrated.
-     */
+    /** Emitted by [GameWorkflow] if the controller should be vibrated. */
     object Vibrate : Output()
 
     object PlayerWasEaten : Output()
@@ -65,27 +57,21 @@ class GameWorkflow(
     val board: Board,
     val gameOver: Boolean = false,
     val onStartMoving: (Direction) -> Unit,
-    val onStopMoving: (Direction) -> Unit
+    val onStopMoving: (Direction) -> Unit,
   ) : Screen
 
-  override fun initialState(
-    props: Props,
-    snapshot: Snapshot?
-  ): State {
+  override fun initialState(props: Props, snapshot: Snapshot?): State {
     val board = props.board
     return State(
-      game = Game(
-        playerLocation = random.nextEmptyLocation(board),
-        aiLocations = aiWorkflows.map { random.nextEmptyLocation(board) }
-      )
+      game =
+        Game(
+          playerLocation = random.nextEmptyLocation(board),
+          aiLocations = aiWorkflows.map { random.nextEmptyLocation(board) },
+        )
     )
   }
 
-  override fun onPropsChanged(
-    old: Props,
-    new: Props,
-    state: State
-  ): State {
+  override fun onPropsChanged(old: Props, new: Props, state: State): State {
     check(old.board == new.board) { "Expected board to not change during the game." }
     return state
   }
@@ -93,7 +79,7 @@ class GameWorkflow(
   override fun render(
     renderProps: Props,
     renderState: State,
-    context: RenderContext<Props, State, Output>
+    context: RenderContext<Props, State, Output>,
   ): GameRendering {
     val running = !renderProps.paused && !renderState.game.isPlayerEaten
     // Stop actors from ticking if the game is paused or finished.
@@ -107,8 +93,8 @@ class GameWorkflow(
     val playerRendering = context.renderChild(playerWorkflow, playerInput)
 
     // Render all the other actors.
-    val aiRenderings = aiWorkflows.zip(game.aiLocations)
-      .mapIndexed { index, (aiWorkflow, aiLocation) ->
+    val aiRenderings =
+      aiWorkflows.zip(game.aiLocations).mapIndexed { index, (aiWorkflow, aiLocation) ->
         val aiInput = ActorProps(board, aiLocation, ticker)
         aiLocation to context.renderChild(aiWorkflow, aiInput, key = index.toString())
       }
@@ -120,93 +106,84 @@ class GameWorkflow(
           renderProps.ticksPerSecond,
           tick,
           playerRendering,
-          aiRenderings
+          aiRenderings,
         )
       }
     }
 
-    val aiOverlay = aiRenderings.map { (a, b) -> a to b.avatar }
-      .toMap()
-    val renderedBoard = board.withOverlay(
-      aiOverlay + (game.playerLocation to playerRendering.actorRendering.avatar)
-    )
+    val aiOverlay = aiRenderings.map { (a, b) -> a to b.avatar }.toMap()
+    val renderedBoard =
+      board.withOverlay(aiOverlay + (game.playerLocation to playerRendering.actorRendering.avatar))
     return GameRendering(
       board = renderedBoard,
       onStartMoving = if (running) playerRendering.onStartMoving else ignoreInput,
-      onStopMoving = if (running) playerRendering.onStopMoving else ignoreInput
+      onStopMoving = if (running) playerRendering.onStopMoving else ignoreInput,
     )
   }
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  /**
-   * Calculate new locations for player and other actors.
-   */
+  /** Calculate new locations for player and other actors. */
   private fun updateGame(
     ticksPerSecond: Int,
     tick: Long,
     playerRendering: Rendering,
-    aiRenderings: List<Pair<Location, ActorRendering>>
-  ) = action("updateGame") {
-    // Calculate if this tick should result in movement based on the movement's speed.
-    fun Movement.isTimeToMove(): Boolean {
-      val ticksPerCell = (ticksPerSecond / cellsPerSecond).roundToLong()
-      return tick % ticksPerCell == 0L
-    }
+    aiRenderings: List<Pair<Location, ActorRendering>>,
+  ) =
+    action("updateGame") {
+      // Calculate if this tick should result in movement based on the movement's speed.
+      fun Movement.isTimeToMove(): Boolean {
+        val ticksPerCell = (ticksPerSecond / cellsPerSecond).roundToLong()
+        return tick % ticksPerCell == 0L
+      }
 
-    // Execute player movement.
-    var output: Output? = null
-    var newPlayerLocation: Location = state.game.playerLocation
-    if (playerRendering.actorRendering.movement.isTimeToMove()) {
-      val moveResult = state.game.playerLocation.move(
-        playerRendering.actorRendering.movement,
-        props.board
-      )
-      newPlayerLocation = moveResult.newLocation
-      if (moveResult.collisionDetected) output = Vibrate
-    }
+      // Execute player movement.
+      var output: Output? = null
+      var newPlayerLocation: Location = state.game.playerLocation
+      if (playerRendering.actorRendering.movement.isTimeToMove()) {
+        val moveResult =
+          state.game.playerLocation.move(playerRendering.actorRendering.movement, props.board)
+        newPlayerLocation = moveResult.newLocation
+        if (moveResult.collisionDetected) output = Vibrate
+      }
 
-    // Execute AI movement.
-    val newAiLocations = aiRenderings.map { (location, rendering) ->
-      return@map if (rendering.movement.isTimeToMove()) {
-        location.move(rendering.movement, props.board)
-          // Don't care about collisions.
-          .newLocation
+      // Execute AI movement.
+      val newAiLocations = aiRenderings.map { (location, rendering) ->
+        return@map if (rendering.movement.isTimeToMove()) {
+          location
+            .move(rendering.movement, props.board)
+            // Don't care about collisions.
+            .newLocation
+        } else {
+          location
+        }
+      }
+
+      val newGame =
+        state.game.copy(playerLocation = newPlayerLocation, aiLocations = newAiLocations)
+
+      // Check if AI captured player.
+      if (newGame.isPlayerEaten) {
+        state = state.copy(game = newGame)
+        setOutput(PlayerWasEaten)
       } else {
-        location
+        state = state.copy(game = newGame)
+        output?.let { setOutput(it) }
       }
     }
-
-    val newGame = state.game.copy(
-      playerLocation = newPlayerLocation,
-      aiLocations = newAiLocations
-    )
-
-    // Check if AI captured player.
-    if (newGame.isPlayerEaten) {
-      state = state.copy(game = newGame)
-      setOutput(PlayerWasEaten)
-    } else {
-      state = state.copy(game = newGame)
-      output?.let { setOutput(it) }
-    }
-  }
 }
 
 private fun Random.nextEmptyLocation(board: Board): Location =
   generateSequence { nextLocation(board.width, board.height) }
     .first { (x, y) -> board[x, y].isEmpty }
 
-private fun Random.nextLocation(
-  width: Int,
-  height: Int
-) = Location(nextInt(width), nextInt(height))
+private fun Random.nextLocation(width: Int, height: Int) = Location(nextInt(width), nextInt(height))
 
 /**
  * Creates a [Worker] that emits [ticksPerSecond] ticks every second.
  *
- * The emitted value is a monotonically-increasing integer.
- * Workers that have the same [ticksPerSecond] value will be considered equivalent.
+ * The emitted value is a monotonically-increasing integer. Workers that have the same
+ * [ticksPerSecond] value will be considered equivalent.
  */
 private class TickerWorker(private val ticksPerSecond: Int) : Worker<Long> {
 
@@ -225,15 +202,9 @@ private class TickerWorker(private val ticksPerSecond: Int) : Worker<Long> {
   override fun toString(): String = "TickerWorker(ticksPerSecond=$ticksPerSecond)"
 }
 
-private data class MoveResult(
-  val newLocation: Location,
-  val collisionDetected: Boolean
-)
+private data class MoveResult(val newLocation: Location, val collisionDetected: Boolean)
 
-private fun Location.move(
-  movement: Movement,
-  board: Board
-): MoveResult {
+private fun Location.move(movement: Movement, board: Board): MoveResult {
   var collisionDetected = false
   var (x, y) = this
   if (LEFT in movement) x -= 1

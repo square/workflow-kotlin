@@ -14,10 +14,6 @@ import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.test.Test
@@ -28,6 +24,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 
 internal class RealRenderContextTest {
 
@@ -37,7 +37,7 @@ internal class RealRenderContextTest {
       val child: Workflow<*, *, *>,
       val props: Any?,
       val key: String,
-      val handler: (Any) -> WorkflowAction<String, String, String>
+      val handler: (Any) -> WorkflowAction<String, String, String>,
     )
 
     @Suppress("UNCHECKED_CAST")
@@ -45,20 +45,14 @@ internal class RealRenderContextTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-    ): ChildRenderingT = Rendering(
-      child,
-      props,
-      key,
-      handler as (Any) -> WorkflowAction<String, String, String>
-    ) as ChildRenderingT
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>,
+    ): ChildRenderingT =
+      Rendering(child, props, key, handler as (Any) -> WorkflowAction<String, String, String>)
+        as ChildRenderingT
   }
 
   private class TestRunner : SideEffectRunner {
-    override fun runningSideEffect(
-      key: String,
-      sideEffect: suspend CoroutineScope.() -> Unit
-    ) {
+    override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
       // No-op
     }
   }
@@ -68,22 +62,19 @@ internal class RealRenderContextTest {
       key: String,
       resultType: KType,
       vararg inputs: Any?,
-      calculation: () -> ResultT
+      calculation: () -> ResultT,
     ): ResultT {
       return calculation()
     }
   }
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {
-    override fun initialState(
-      props: String,
-      snapshot: Snapshot?
-    ): String = fail()
+    override fun initialState(props: String, snapshot: Snapshot?): String = fail()
 
     override fun render(
       renderProps: String,
       renderState: String,
-      context: StatefulWorkflow.RenderContext<String, String, String>
+      context: StatefulWorkflow.RenderContext<String, String, String>,
     ): Rendering {
       fail("This shouldn't actually be called.")
     }
@@ -96,15 +87,12 @@ internal class RealRenderContextTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<P, S, O>
+      handler: (ChildOutputT) -> WorkflowAction<P, S, O>,
     ): ChildRenderingT = fail()
   }
 
   private class PoisonRunner : SideEffectRunner {
-    override fun runningSideEffect(
-      key: String,
-      sideEffect: suspend CoroutineScope.() -> Unit
-    ) {
+    override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
       fail()
     }
   }
@@ -116,7 +104,7 @@ internal class RealRenderContextTest {
   @Test
   fun send_completes_update() {
     val context = createdPoisonedContext()
-    val stringAction = action<String, String, String>({ "stringAction" }) { }
+    val stringAction = action<String, String, String>({ "stringAction" }) {}
 
     // Enable sink sends.
     context.freeze()
@@ -130,16 +118,21 @@ internal class RealRenderContextTest {
     assertSame(stringAction, actualAction)
   }
 
-  @Test fun send_allows_multiple_sends() {
+  @Test
+  fun send_allows_multiple_sends() {
     val context = createdPoisonedContext()
-    val firstAction = object : WorkflowAction<String, String, String>() {
-      override val debuggingName: String = "firstAction"
-      override fun Updater.apply() = Unit
-    }
-    val secondAction = object : WorkflowAction<String, String, String>() {
-      override val debuggingName: String = "secondAction"
-      override fun Updater.apply() = Unit
-    }
+    val firstAction =
+      object : WorkflowAction<String, String, String>() {
+        override val debuggingName: String = "firstAction"
+
+        override fun Updater.apply() = Unit
+      }
+    val secondAction =
+      object : WorkflowAction<String, String, String>() {
+        override val debuggingName: String = "secondAction"
+
+        override fun Updater.apply() = Unit
+      }
     // Enable sink sends.
     context.freeze()
 
@@ -149,72 +142,70 @@ internal class RealRenderContextTest {
     context.actionSink.send(secondAction)
   }
 
-  @Test fun send_throws_before_render_returns() {
+  @Test
+  fun send_throws_before_render_returns() {
     val context = createdPoisonedContext()
-    val action = object : WorkflowAction<String, String, String>() {
-      override val debuggingName: String = "action"
-      override fun Updater.apply() = Unit
-    }
+    val action =
+      object : WorkflowAction<String, String, String>() {
+        override val debuggingName: String = "action"
 
-    val error = assertFailsWith<UnsupportedOperationException> {
-      context.actionSink.send(action)
-    }
+        override fun Updater.apply() = Unit
+      }
+
+    val error = assertFailsWith<UnsupportedOperationException> { context.actionSink.send(action) }
     assertEquals(
       "Expected sink to not be sent to until after the render pass. Received action: action",
-      error.message
+      error.message,
     )
   }
 
-  @Test fun renderChild_works() {
+  @Test
+  fun renderChild_works() {
     val context = createTestContext()
     val workflow = TestWorkflow()
 
-    val (child, props, key, handler) = context.renderChild(workflow, "props", "key") { output ->
-      action("") { setOutput("output:$output") }
-    }
+    val (child, props, key, handler) =
+      context.renderChild(workflow, "props", "key") { output ->
+        action("") { setOutput("output:$output") }
+      }
 
     assertSame(workflow, child)
     assertEquals("props", props)
     assertEquals("key", key)
 
-    val (state, result) = handler.invoke("output")
-      .applyTo("props", "state")
+    val (state, result) = handler.invoke("output").applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("output:output", result.output!!.value)
     assertFalse(result.stateChanged)
   }
 
-  @Test fun remember_passes_through_to_remember_store() {
+  @Test
+  fun remember_passes_through_to_remember_store() {
     val context = createTestContext()
 
-    assertEquals(
-      "value",
-      context.remember("key", typeOf<String>()) { "value" }
-    )
+    assertEquals("value", context.remember("key", typeOf<String>()) { "value" })
   }
 
-  @Test fun renderChild_handler_tracks_state_change() {
+  @Test
+  fun renderChild_handler_tracks_state_change() {
     val context = createTestContext()
     val workflow = TestWorkflow()
 
-    val (child, props, key, handler) = context.renderChild(workflow, "props", "key") {
-      action("") {
-        state = "new"
-      }
-    }
+    val (child, props, key, handler) =
+      context.renderChild(workflow, "props", "key") { action("") { state = "new" } }
 
     assertSame(workflow, child)
     assertEquals("props", props)
     assertEquals("key", key)
 
-    val (state, result) = handler.invoke("output")
-      .applyTo("props", "state")
+    val (state, result) = handler.invoke("output").applyTo("props", "state")
     assertEquals("new", state)
     assertNull(result.output)
     assertTrue(result.stateChanged)
   }
 
-  @Test fun all_methods_throw_after_freeze() {
+  @Test
+  fun all_methods_throw_after_freeze() {
     val context = createTestContext()
     context.freeze()
 
@@ -230,29 +221,27 @@ internal class RealRenderContextTest {
     val sideEffectRunner = PoisonRunner()
     val rememberStore = TestRememberStore()
     return RealRenderContext(
-      PoisonRenderer(),
-      sideEffectRunner,
-      rememberStore,
-      eventActionsChannel,
-      workflowTracer = null,
-      runtimeConfig = emptySet(),
-    ).apply {
-      unfreeze()
-    }
+        PoisonRenderer(),
+        sideEffectRunner,
+        rememberStore,
+        eventActionsChannel,
+        workflowTracer = null,
+        runtimeConfig = emptySet(),
+      )
+      .apply { unfreeze() }
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
     val sideEffectRunner = TestRunner()
     val rememberStore = TestRememberStore()
     return RealRenderContext(
-      TestRenderer(),
-      sideEffectRunner,
-      rememberStore,
-      eventActionsChannel,
-      workflowTracer = null,
-      runtimeConfig = emptySet(),
-    ).apply {
-      unfreeze()
-    }
+        TestRenderer(),
+        sideEffectRunner,
+        rememberStore,
+        eventActionsChannel,
+        workflowTracer = null,
+        runtimeConfig = emptySet(),
+      )
+      .apply { unfreeze() }
   }
 }

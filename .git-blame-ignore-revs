@@ -1,0 +1,9 @@
+# Commits that should be ignored by git blame, e.g. mass mechanical reformats.
+#
+# https://docs.github.com/en/repositories/working-with-files/using-files/viewing-and-understanding-files#ignore-commits-in-the-blame-view
+#
+# To make local `git blame` respect this file:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# ktlint -> ktfmt migration reformat
+40d22c9eb443adb0b00bbf653e6fab7898ccf052

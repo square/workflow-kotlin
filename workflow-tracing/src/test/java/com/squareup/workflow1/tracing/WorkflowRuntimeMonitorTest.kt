@@ -23,10 +23,6 @@ import com.squareup.workflow1.identifier
 import com.squareup.workflow1.tracing.ActionAppliedLogLine.WorkflowActionLogType.RENDERING_CALLBACK
 import com.squareup.workflow1.tracing.RenderCause.RootCreation
 import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
@@ -37,6 +33,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 
 internal class WorkflowRuntimeMonitorTest {
 
@@ -50,23 +50,21 @@ internal class WorkflowRuntimeMonitorTest {
     val monitor = WorkflowRuntimeMonitor(runtimeName)
     assertNotNull(monitor)
     assertEquals(runtimeName, monitor.runtimeName)
-    assertEquals(
-      WorkflowRuntimeMonitor.DEFAULT_MAX_LOG_LINE_LENGTH,
-      monitor.maxLogLineLength
-    )
+    assertEquals(WorkflowRuntimeMonitor.DEFAULT_MAX_LOG_LINE_LENGTH, monitor.maxLogLineLength)
     assertFalse(monitor.crashOnLogLineOverflow)
   }
 
   @Test
   fun `monitor can be instantiated with all dependencies`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = fakeRenderPassTracker,
-      runtimeLoopListener = fakeRuntimeLoopListener,
-      maxLogLineLength = 2048,
-      crashOnLogLineOverflow = true
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = fakeRenderPassTracker,
+        runtimeLoopListener = fakeRuntimeLoopListener,
+        maxLogLineLength = 2048,
+        crashOnLogLineOverflow = true,
+      )
     assertNotNull(monitor)
     assertEquals(runtimeName, monitor.runtimeName)
     assertEquals(2048, monitor.maxLogLineLength)
@@ -75,10 +73,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onSessionStarted handles root workflow session`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -94,10 +93,11 @@ internal class WorkflowRuntimeMonitorTest {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `onSessionStarted captures runtime context`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val testCoroutineDispatcher = StandardTestDispatcher()
     val rootSession = testWorkflow.createRootSession(testCoroutineDispatcher)
@@ -110,10 +110,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onSessionStarted handles child workflow session`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val childSession = testWorkflow.createChildSession(rootSession)
@@ -132,21 +133,23 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onInitialState delegates to tracers and handles root workflow`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
 
-    val result = monitor.onInitialState(
-      props = "testProps",
-      snapshot = null,
-      workflowScope = testScope,
-      proceed = { _, _, _ -> "initialState" },
-      session = rootSession
-    )
+    val result =
+      monitor.onInitialState(
+        props = "testProps",
+        snapshot = null,
+        workflowScope = testScope,
+        proceed = { _, _, _ -> "initialState" },
+        session = rootSession,
+      )
 
     assertEquals("initialState", result)
     assertTrue(fakeRuntimeTracer.onInitialStateCalled)
@@ -154,20 +157,22 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onPropsChanged delegates to tracers`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val session = testWorkflow.createRootSession()
 
-    val result = monitor.onPropsChanged(
-      old = "oldProps",
-      new = "newProps",
-      state = "currentState",
-      proceed = { _, _, state -> state },
-      session = session
-    )
+    val result =
+      monitor.onPropsChanged(
+        old = "oldProps",
+        new = "newProps",
+        state = "currentState",
+        proceed = { _, _, state -> state },
+        session = session,
+      )
 
     assertEquals("currentState", result)
     assertTrue(fakeRuntimeTracer.onPropsChangedCalled)
@@ -175,11 +180,12 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRenderAndSnapshot handles root workflow rendering`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = fakeRenderPassTracker
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = fakeRenderPassTracker,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -193,11 +199,12 @@ internal class WorkflowRuntimeMonitorTest {
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
     // Use the same props reference to simulate normal rendering (not props change)
-    val result = monitor.onRenderAndSnapshot(
-      renderProps = initialProps,
-      proceed = { renderingAndSnapshot },
-      session = rootSession
-    )
+    val result =
+      monitor.onRenderAndSnapshot(
+        renderProps = initialProps,
+        proceed = { renderingAndSnapshot },
+        session = rootSession,
+      )
 
     assertEquals(renderingAndSnapshot, result)
     assertTrue(fakeRuntimeTracer.onRenderAndSnapshotCalled)
@@ -207,10 +214,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRenderAndSnapshot handles props change`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -226,11 +234,12 @@ internal class WorkflowRuntimeMonitorTest {
     val renderingAndSnapshot = RenderingAndSnapshot("rendering", expectedSnapshot)
 
     // Render with different props - this should trigger props change detection
-    val result = monitor.onRenderAndSnapshot(
-      renderProps = "newProps",
-      proceed = { renderingAndSnapshot },
-      session = rootSession
-    )
+    val result =
+      monitor.onRenderAndSnapshot(
+        renderProps = "newProps",
+        proceed = { renderingAndSnapshot },
+        session = rootSession,
+      )
 
     assertEquals(renderingAndSnapshot, result)
     assertTrue(monitor.renderIncomingCauses.any { it is RootPropsChanged })
@@ -239,10 +248,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRender creates monitoring interceptor`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -253,16 +263,17 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.currentRenderCause = RootCreation(runtimeName, "TestWorkflow")
 
     var interceptorReceived: Any? = null
-    val result = monitor.onRender(
-      renderProps = "props",
-      renderState = "state",
-      context = mockContext,
-      proceed = { _, _, interceptor ->
-        interceptorReceived = interceptor
-        "rendered"
-      },
-      session = rootSession
-    )
+    val result =
+      monitor.onRender(
+        renderProps = "props",
+        renderState = "state",
+        context = mockContext,
+        proceed = { _, _, interceptor ->
+          interceptorReceived = interceptor
+          "rendered"
+        },
+        session = rootSession,
+      )
 
     assertEquals("rendered", result)
     assertNotNull(interceptorReceived)
@@ -271,18 +282,16 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onSnapshotStateWithChildren delegates to tracers`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val session = testWorkflow.createRootSession()
     val treeSnapshot = TreeSnapshot.forRootOnly(null)
 
-    val result = monitor.onSnapshotStateWithChildren(
-      proceed = { treeSnapshot },
-      session = session
-    )
+    val result = monitor.onSnapshotStateWithChildren(proceed = { treeSnapshot }, session = session)
 
     assertEquals(treeSnapshot, result)
     assertTrue(fakeRuntimeTracer.onSnapshotStateWithChildrenCalled)
@@ -290,10 +299,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRuntimeUpdate handles RenderPassSkipped`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -312,11 +322,12 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRuntimeUpdate handles RuntimeLoopSettled`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      runtimeLoopListener = fakeRuntimeLoopListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        runtimeLoopListener = fakeRuntimeLoopListener,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -334,21 +345,21 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `RuntimeSettled logs and clears stale worker output`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(runtimeName = runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val interceptor = monitor.createMonitoringInterceptor(rootSession)
 
-    interceptor.queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
+    interceptor
+      .queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
       .applyTo("props", "state")
 
     monitor.onRuntimeUpdate(RuntimeSettled)
 
     val staleLogLines =
-      runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+      runtimeListener.runtimeUpdatesReceived!!
+        .readAndClear()
         .filterIsInstance<StaleWorkerOutputLogLine>()
     assertEquals(1, staleLogLines.size)
     assertEquals("RuntimeSettled", staleLogLines.single().detectionPoint)
@@ -361,22 +372,22 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `queued callback logs and clears stale worker output`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(runtimeName = runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val interceptor = monitor.createMonitoringInterceptor(rootSession)
 
-    interceptor.queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
+    interceptor
+      .queuedAction("EmitWorkerOutputAction(worker=test, key=test)")
       .applyTo("props", "state")
     interceptor.queuedAction("callbackAction").applyTo("props", "state")
     interceptor.cascadeAction(testWorkflow, "parentHandler").applyTo("props", "state")
     monitor.onRuntimeUpdate(RuntimeSettled)
 
     val staleLogLines =
-      runtimeListener.runtimeUpdatesReceived!!.readAndClear()
+      runtimeListener.runtimeUpdatesReceived!!
+        .readAndClear()
         .filterIsInstance<StaleWorkerOutputLogLine>()
     assertEquals(1, staleLogLines.size)
     assertEquals("QueuedAction", staleLogLines.single().detectionPoint)
@@ -386,10 +397,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onRuntimeUpdate handles RenderingConflated and RenderingProduced`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -407,10 +419,7 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `addRuntimeUpdate adds to runtime updates`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor = WorkflowRuntimeMonitor(runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -431,12 +440,13 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `oversized runtime update log line is truncated when overflow crash is disabled`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener,
-      maxLogLineLength = 32,
-      crashOnLogLineOverflow = false
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName,
+        runtimeLoopListener = runtimeListener,
+        maxLogLineLength = 32,
+        crashOnLogLineOverflow = false,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
 
@@ -458,12 +468,13 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `configured log limits do not mutate added log lines`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener,
-      maxLogLineLength = 32,
-      crashOnLogLineOverflow = false
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName,
+        runtimeLoopListener = runtimeListener,
+        maxLogLineLength = 32,
+        crashOnLogLineOverflow = false,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val logLine = UiUpdateLogLine("x".repeat(128))
@@ -487,10 +498,7 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `fixed runtime update markers keep their concrete types under small limits`() {
-    val runtimeUpdates = RuntimeUpdates(
-      maxLogLineLength = 1,
-      crashOnLogLineOverflow = false
-    )
+    val runtimeUpdates = RuntimeUpdates(maxLogLineLength = 1, crashOnLogLineOverflow = false)
 
     runtimeUpdates.logUpdate(RenderLogLine)
     runtimeUpdates.logUpdate(SkipLogLine)
@@ -502,19 +510,18 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `oversized action log line is truncated with final newline preserved`() {
-    val logLine = ActionAppliedLogLine(
-      type = RENDERING_CALLBACK,
-      name = "W(TestWorkflow)",
-      actionName = "testAction",
-      propsOrNull = "props-" + "p".repeat(2048),
-      oldState = "old-" + "o".repeat(2048),
-      newState = "new-" + "n".repeat(2048),
-      outputOrNull = WorkflowOutput("output-" + "x".repeat(2048)),
-      outputReceivedString = null,
-    ).withLogLimits(
-      maxLogLineLength = 64,
-      crashOnLogLineOverflow = false
-    )
+    val logLine =
+      ActionAppliedLogLine(
+          type = RENDERING_CALLBACK,
+          name = "W(TestWorkflow)",
+          actionName = "testAction",
+          propsOrNull = "props-" + "p".repeat(2048),
+          oldState = "old-" + "o".repeat(2048),
+          newState = "new-" + "n".repeat(2048),
+          outputOrNull = WorkflowOutput("output-" + "x".repeat(2048)),
+          outputReceivedString = null,
+        )
+        .withLogLimits(maxLogLineLength = 64, crashOnLogLineOverflow = false)
     val builder = StringBuilder()
 
     logLine.log(builder)
@@ -527,12 +534,13 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `oversized runtime update log line crashes when overflow crash is enabled`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener,
-      maxLogLineLength = 32,
-      crashOnLogLineOverflow = true
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName,
+        runtimeLoopListener = runtimeListener,
+        maxLogLineLength = 32,
+        crashOnLogLineOverflow = true,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
 
@@ -542,9 +550,7 @@ internal class WorkflowRuntimeMonitorTest {
 
     val logLine = runtimeListener.runtimeUpdatesReceived!!.readAndClear().single()
 
-    val error = assertFailsWith<IllegalStateException> {
-      logLine.log(StringBuilder())
-    }
+    val error = assertFailsWith<IllegalStateException> { logLine.log(StringBuilder()) }
     assertContains(error.message!!, "UiUpdateLogLine")
     assertContains(error.message!!, "maxLogLineLength=32")
     assertContains(error.message!!, "actualLength=140")
@@ -555,16 +561,17 @@ internal class WorkflowRuntimeMonitorTest {
     val oversizedOutput = "output-" + "o".repeat(2048)
     val oversizedState = "state-" + "s".repeat(2048)
     val stateLoggable = TestLoggable(oversizedState)
-    val logLine = ActionAppliedLogLine(
-      type = RENDERING_CALLBACK,
-      name = "W(TestWorkflow)",
-      actionName = "testAction",
-      propsOrNull = null,
-      oldState = stateLoggable,
-      newState = stateLoggable,
-      outputOrNull = WorkflowOutput(TestLoggable(oversizedOutput)),
-      outputReceivedString = null,
-    )
+    val logLine =
+      ActionAppliedLogLine(
+        type = RENDERING_CALLBACK,
+        name = "W(TestWorkflow)",
+        actionName = "testAction",
+        propsOrNull = null,
+        oldState = stateLoggable,
+        newState = stateLoggable,
+        outputOrNull = WorkflowOutput(TestLoggable(oversizedOutput)),
+        outputReceivedString = null,
+      )
     val builder = StringBuilder()
 
     logLine.log(builder)
@@ -579,10 +586,7 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `RenderPassSkipped adds to runtime updates`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor = WorkflowRuntimeMonitor(runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -603,10 +607,7 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `RenderingConflated does not add to runtime updates`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor = WorkflowRuntimeMonitor(runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -625,10 +626,7 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `RenderingProduced does not add to runtime updates`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor = WorkflowRuntimeMonitor(runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -647,10 +645,7 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `onRenderAndSnapshot adds RenderLogLine to runtime updates`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor = WorkflowRuntimeMonitor(runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -667,7 +662,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = initialProps,
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     monitor.onRuntimeUpdate(RuntimeSettled)
@@ -689,11 +684,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `render pass tracker receives correct RenderPassInfo for root creation`() {
     val renderPassTracker = TestWorkflowRenderPassTracker()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = renderPassTracker
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = renderPassTracker,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -710,7 +706,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = initialProps,
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     // Verify render pass was recorded
@@ -726,11 +722,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `render pass tracker receives correct RenderPassInfo for props change`() {
     val renderPassTracker = TestWorkflowRenderPassTracker()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = renderPassTracker
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = renderPassTracker,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -753,7 +750,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = "newProps",
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     // Verify render pass was recorded with props change cause
@@ -769,11 +766,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `render pass tracker receives correct RenderPassInfo for action-triggered render`() {
     val renderPassTracker = TestWorkflowRenderPassTracker()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = renderPassTracker
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = renderPassTracker,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -799,7 +797,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = initialProps,
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     // Verify render pass was recorded with callback cause
@@ -817,11 +815,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `render pass tracker tracks multiple render passes`() {
     val renderPassTracker = TestWorkflowRenderPassTracker()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      renderPassTracker = renderPassTracker
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        renderPassTracker = renderPassTracker,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -838,7 +837,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = initialProps,
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     assertEquals(1, renderPassTracker.renderPassCount)
@@ -849,7 +848,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onRenderAndSnapshot(
       renderProps = "differentProps",
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     assertEquals(2, renderPassTracker.renderPassCount)
@@ -862,7 +861,7 @@ internal class WorkflowRuntimeMonitorTest {
       // Same props to avoid props change detection
       renderProps = "differentProps",
       proceed = { renderingAndSnapshot },
-      session = rootSession
+      session = rootSession,
     )
 
     assertEquals(3, renderPassTracker.renderPassCount)
@@ -872,11 +871,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `onSessionCancelled logs dropped actions`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        runtimeLoopListener = runtimeListener,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -890,11 +890,7 @@ internal class WorkflowRuntimeMonitorTest {
     val droppedActions = listOf(action1, action2)
 
     // Call onSessionCancelled with dropped actions
-    monitor.onSessionCancelled(
-      cause = null,
-      droppedActions = droppedActions,
-      session = rootSession
-    )
+    monitor.onSessionCancelled(cause = null, droppedActions = droppedActions, session = rootSession)
 
     // Settle the runtime to flush updates
     monitor.onRuntimeUpdate(RuntimeSettled)
@@ -911,11 +907,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `onSessionCancelled logs no actions when list is empty`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        runtimeLoopListener = runtimeListener,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -927,7 +924,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionCancelled(
       cause = null,
       droppedActions = emptyList<WorkflowAction<String, String, String>>(),
-      session = rootSession
+      session = rootSession,
     )
 
     // Settle the runtime to flush updates
@@ -942,10 +939,11 @@ internal class WorkflowRuntimeMonitorTest {
 
   @Test
   fun `onSessionCancelled calls tracer onWorkflowSessionStopped`() {
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer)
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -960,7 +958,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionCancelled(
       cause = null,
       droppedActions = emptyList<WorkflowAction<String, String, String>>(),
-      session = rootSession
+      session = rootSession,
     )
 
     // Verify session was removed from tracking
@@ -971,11 +969,12 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `onSessionCancelled with CancellationException logs dropped actions`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      workflowRuntimeTracers = listOf(fakeRuntimeTracer),
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(
+        runtimeName = runtimeName,
+        workflowRuntimeTracers = listOf(fakeRuntimeTracer),
+        runtimeLoopListener = runtimeListener,
+      )
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -992,7 +991,7 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionCancelled(
       cause = cancellationException,
       droppedActions = droppedActions,
-      session = rootSession
+      session = rootSession,
     )
 
     // Settle the runtime to flush updates
@@ -1021,10 +1020,8 @@ internal class WorkflowRuntimeMonitorTest {
   @Test
   fun `onSessionCancelled with multiple actions logs all in order`() {
     val runtimeListener = TestWorkflowRuntimeLoopListener()
-    val monitor = WorkflowRuntimeMonitor(
-      runtimeName = runtimeName,
-      runtimeLoopListener = runtimeListener
-    )
+    val monitor =
+      WorkflowRuntimeMonitor(runtimeName = runtimeName, runtimeLoopListener = runtimeListener)
     val testWorkflow = TestWorkflow()
     val rootSession = testWorkflow.createRootSession()
     val testScope = TestScope()
@@ -1033,18 +1030,11 @@ internal class WorkflowRuntimeMonitorTest {
     monitor.onSessionStarted(testScope, rootSession)
 
     // Create multiple test actions with distinct names
-    val actions = listOf(
-      TestAction("firstAction"),
-      TestAction("secondAction"),
-      TestAction("thirdAction")
-    )
+    val actions =
+      listOf(TestAction("firstAction"), TestAction("secondAction"), TestAction("thirdAction"))
 
     // Call onSessionCancelled with multiple dropped actions
-    monitor.onSessionCancelled(
-      cause = null,
-      droppedActions = actions,
-      session = rootSession
-    )
+    monitor.onSessionCancelled(cause = null, droppedActions = actions, session = rootSession)
 
     // Settle the runtime to flush updates
     monitor.onRuntimeUpdate(RuntimeSettled)
@@ -1076,7 +1066,7 @@ internal class WorkflowRuntimeMonitorTest {
         interceptor = receivedInterceptor!!
         "rendered"
       },
-      session = rootSession
+      session = rootSession,
     )
     renderIncomingCauses.clear()
     return interceptor
@@ -1086,15 +1076,13 @@ internal class WorkflowRuntimeMonitorTest {
     actionName: String
   ): WorkflowAction<String, String, String> {
     lateinit var interceptedAction: WorkflowAction<String, String, String>
-    onActionSent(TestAction(actionName)) { action ->
-      interceptedAction = action
-    }
+    onActionSent(TestAction(actionName)) { action -> interceptedAction = action }
     return interceptedAction
   }
 
   private fun RenderContextInterceptor<String, String, String>.cascadeAction(
     testWorkflow: TestWorkflow,
-    actionName: String
+    actionName: String,
   ): WorkflowAction<String, String, String> {
     lateinit var interceptedAction: WorkflowAction<String, String, String>
     onRenderChild(
@@ -1105,22 +1093,19 @@ internal class WorkflowRuntimeMonitorTest {
       proceed = { _, _, _, handler ->
         interceptedAction = handler("childOutput")
         "childRendering"
-      }
+      },
     )
     return interceptedAction
   }
 
   // Test helper classes
   private class TestWorkflow : StatefulWorkflow<String, String, String, String>() {
-    override fun initialState(
-      props: String,
-      snapshot: Snapshot?
-    ): String = props
+    override fun initialState(props: String, snapshot: Snapshot?): String = props
 
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext<String, String, String>
+      context: RenderContext<String, String, String>,
     ): String = renderState
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
@@ -1131,19 +1116,20 @@ internal class WorkflowRuntimeMonitorTest {
         sessionId = 1L,
         renderKey = "root",
         parent = null,
-        runtimeContext = context
+        runtimeContext = context,
       )
 
     fun createChildSession(
       parent: WorkflowSession,
-      context: CoroutineContext = EmptyCoroutineContext
-    ): WorkflowSession = TestWorkflowSession(
-      workflow = this,
-      sessionId = 2L,
-      renderKey = "child",
-      parent = parent,
-      runtimeContext = context
-    )
+      context: CoroutineContext = EmptyCoroutineContext,
+    ): WorkflowSession =
+      TestWorkflowSession(
+        workflow = this,
+        sessionId = 2L,
+        renderKey = "child",
+        parent = parent,
+        runtimeContext = context,
+      )
   }
 
   private class TestWorkflowSession(
@@ -1151,7 +1137,7 @@ internal class WorkflowRuntimeMonitorTest {
     override val sessionId: Long,
     override val renderKey: String,
     override val parent: WorkflowSession?,
-    override val runtimeContext: CoroutineContext = EmptyCoroutineContext
+    override val runtimeContext: CoroutineContext = EmptyCoroutineContext,
   ) : WorkflowSession {
     override val identifier = workflow.identifier
     override val runtimeConfig = TestRuntimeConfig()
@@ -1160,9 +1146,13 @@ internal class WorkflowRuntimeMonitorTest {
 
   private class TestRuntimeConfig : RuntimeConfig {
     override fun contains(element: RuntimeConfigOptions): Boolean = false
+
     override val size: Int = 0
+
     override fun containsAll(elements: Collection<RuntimeConfigOptions>): Boolean = false
+
     override fun isEmpty(): Boolean = true
+
     override fun iterator(): Iterator<RuntimeConfigOptions> =
       emptyList<RuntimeConfigOptions>().iterator()
 
@@ -1178,15 +1168,12 @@ internal class WorkflowRuntimeMonitorTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>,
     ): ChildRenderingT {
       throw NotImplementedError("Not implemented for testing")
     }
 
-    override fun runningSideEffect(
-      key: String,
-      sideEffect: suspend CoroutineScope.() -> Unit
-    ) {
+    override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
       throw NotImplementedError("Not implemented for testing")
     }
 
@@ -1194,7 +1181,7 @@ internal class WorkflowRuntimeMonitorTest {
       key: String,
       resultType: KType,
       vararg inputs: Any?,
-      calculation: () -> ResultT
+      calculation: () -> ResultT,
     ): ResultT {
       throw NotImplementedError("Not implemented for testing")
     }
@@ -1214,9 +1201,7 @@ internal class WorkflowRuntimeMonitorTest {
     override val debuggingName: String = name
   }
 
-  private class TestLoggable(
-    private val value: String,
-  ) : Loggable {
+  private class TestLoggable(private val value: String) : Loggable {
     override fun toLogString(): String = value
   }
 
@@ -1233,10 +1218,7 @@ internal class WorkflowRuntimeMonitorTest {
     var onRuntimeUpdateEnhancedCallCount = 0
     var onRootPropsChangedCalled = false
 
-    override fun onWorkflowSessionStarted(
-      workflowScope: CoroutineScope,
-      session: WorkflowSession
-    ) {
+    override fun onWorkflowSessionStarted(workflowScope: CoroutineScope, session: WorkflowSession) {
       onWorkflowSessionStartedCalled = true
       onWorkflowSessionStartedCallCount++
     }
@@ -1250,7 +1232,7 @@ internal class WorkflowRuntimeMonitorTest {
       snapshot: Snapshot?,
       workflowScope: CoroutineScope,
       proceed: (P, Snapshot?, CoroutineScope) -> S,
-      session: WorkflowSession
+      session: WorkflowSession,
     ): S {
       onInitialStateCalled = true
       return proceed(props, snapshot, workflowScope)
@@ -1261,7 +1243,7 @@ internal class WorkflowRuntimeMonitorTest {
       new: P,
       state: S,
       proceed: (P, P, S) -> S,
-      session: WorkflowSession
+      session: WorkflowSession,
     ): S {
       onPropsChangedCalled = true
       return proceed(old, new, state)
@@ -1270,7 +1252,7 @@ internal class WorkflowRuntimeMonitorTest {
     override fun <P, R> onRenderAndSnapshot(
       renderProps: P,
       proceed: (P) -> RenderingAndSnapshot<R>,
-      session: WorkflowSession
+      session: WorkflowSession,
     ): RenderingAndSnapshot<R> {
       onRenderAndSnapshotCalled = true
       return proceed(renderProps)
@@ -1281,7 +1263,7 @@ internal class WorkflowRuntimeMonitorTest {
       renderState: S,
       context: BaseRenderContext<P, S, O>,
       proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-      session: WorkflowSession
+      session: WorkflowSession,
     ): R {
       onRenderCalled = true
       return proceed(renderProps, renderState, null)
@@ -1289,7 +1271,7 @@ internal class WorkflowRuntimeMonitorTest {
 
     override fun onSnapshotStateWithChildren(
       proceed: () -> TreeSnapshot,
-      session: WorkflowSession
+      session: WorkflowSession,
     ): TreeSnapshot {
       onSnapshotStateWithChildrenCalled = true
       return proceed()
@@ -1298,7 +1280,7 @@ internal class WorkflowRuntimeMonitorTest {
     override fun onRuntimeUpdateEnhanced(
       runtimeUpdate: RuntimeUpdate,
       currentActionHandlingChangedState: Boolean,
-      configSnapshot: ConfigSnapshot
+      configSnapshot: ConfigSnapshot,
     ) {
       onRuntimeUpdateEnhancedCalled = true
       onRuntimeUpdateEnhancedCallCount++
@@ -1325,7 +1307,7 @@ internal class WorkflowRuntimeMonitorTest {
 
     override fun onRuntimeLoopSettled(
       configSnapshot: ConfigSnapshot,
-      runtimeUpdates: RuntimeUpdates
+      runtimeUpdates: RuntimeUpdates,
     ) {
       onRuntimeLoopSettledCalled = true
       runtimeUpdatesReceived = runtimeUpdates

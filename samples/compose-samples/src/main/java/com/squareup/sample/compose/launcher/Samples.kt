@@ -20,48 +20,63 @@ import com.squareup.sample.compose.textinput.TextInputActivity
 import com.squareup.sample.compose.textinput.TextInputAppPreview
 import kotlin.reflect.KClass
 
-val samples = listOf(
-  Sample(
-    "Compose Workflow",
-    HelloComposeWorkflowActivity::class,
-    "Demonstrates a special implementation of Workflow that lets the workflow define " +
-      "its own composable content inline."
-  ) { HelloComposeWorkflowPreview() },
-  Sample(
-    "Hello Compose",
-    HelloComposeActivity::class,
-    "A pure Compose app that launches its root Workflow from inside Compose."
-  ) { App() },
-  Sample(
-    "Hello Compose Binding",
-    HelloBindingActivity::class,
-    "Binds a Screen to a UI factory using ScreenComposableFactory()."
-  ) { DrawHelloRenderingPreview() },
-  Sample(
-    "Nested Renderings",
-    NestedRenderingsActivity::class,
-    "Demonstrates recursive view factories using both Compose and legacy view factories."
-  ) { RecursiveViewFactoryPreview() },
-  Sample(
-    "Text Input",
-    TextInputActivity::class,
-    "Demonstrates a workflow that drives a TextField."
-  ) { TextInputAppPreview() },
-  Sample(
-    "ViewFactory Preview",
-    PreviewActivity::class,
-    "Demonstrates displaying @Previews of ViewFactories."
-  ) { PreviewApp() },
-  Sample(
-    "Inline ComposeRendering",
-    InlineRenderingActivity::class,
-    "Demonstrates a workflow that returns an anonymous ComposeRendering."
-  ) { InlineRenderingWorkflowPreview() },
-)
+val samples =
+  listOf(
+    Sample(
+      "Compose Workflow",
+      HelloComposeWorkflowActivity::class,
+      "Demonstrates a special implementation of Workflow that lets the workflow define " +
+        "its own composable content inline.",
+    ) {
+      HelloComposeWorkflowPreview()
+    },
+    Sample(
+      "Hello Compose",
+      HelloComposeActivity::class,
+      "A pure Compose app that launches its root Workflow from inside Compose.",
+    ) {
+      App()
+    },
+    Sample(
+      "Hello Compose Binding",
+      HelloBindingActivity::class,
+      "Binds a Screen to a UI factory using ScreenComposableFactory().",
+    ) {
+      DrawHelloRenderingPreview()
+    },
+    Sample(
+      "Nested Renderings",
+      NestedRenderingsActivity::class,
+      "Demonstrates recursive view factories using both Compose and legacy view factories.",
+    ) {
+      RecursiveViewFactoryPreview()
+    },
+    Sample(
+      "Text Input",
+      TextInputActivity::class,
+      "Demonstrates a workflow that drives a TextField.",
+    ) {
+      TextInputAppPreview()
+    },
+    Sample(
+      "ViewFactory Preview",
+      PreviewActivity::class,
+      "Demonstrates displaying @Previews of ViewFactories.",
+    ) {
+      PreviewApp()
+    },
+    Sample(
+      "Inline ComposeRendering",
+      InlineRenderingActivity::class,
+      "Demonstrates a workflow that returns an anonymous ComposeRendering.",
+    ) {
+      InlineRenderingWorkflowPreview()
+    },
+  )
 
 data class Sample(
   val name: String,
   val activityClass: KClass<out ComponentActivity>,
   val description: String,
-  val preview: @Composable () -> Unit
+  val preview: @Composable () -> Unit,
 )

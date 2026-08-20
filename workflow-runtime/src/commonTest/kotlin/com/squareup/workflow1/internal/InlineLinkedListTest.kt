@@ -7,14 +7,16 @@ import kotlin.test.assertNull
 
 internal class InlineLinkedListTest {
 
-  @Test fun forEach_empty_list() {
+  @Test
+  fun forEach_empty_list() {
     val list = InlineLinkedList<StringElement>()
     var count = 0
     list.forEach { count++ }
     assertEquals(0, count)
   }
 
-  @Test fun plusAssign_on_empty_list() {
+  @Test
+  fun plusAssign_on_empty_list() {
     val list = InlineLinkedList<StringElement>()
 
     list += StringElement("foo")
@@ -22,7 +24,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo"), list.toList())
   }
 
-  @Test fun removeFirst_on_empty_list() {
+  @Test
+  fun removeFirst_on_empty_list() {
     val list = InlineLinkedList<StringElement>()
 
     list.removeFirst { true }
@@ -30,7 +33,8 @@ internal class InlineLinkedListTest {
     assertEquals(emptyList(), list.toList())
   }
 
-  @Test fun removeFirst_on_single_item_list() {
+  @Test
+  fun removeFirst_on_single_item_list() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
 
@@ -39,7 +43,8 @@ internal class InlineLinkedListTest {
     assertEquals(emptyList(), list.toList())
   }
 
-  @Test fun removeFirst_head_on_list_with_2_items() {
+  @Test
+  fun removeFirst_head_on_list_with_2_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -49,7 +54,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("bar"), list.toList())
   }
 
-  @Test fun removeFirst_tail_on_list_with_2_items() {
+  @Test
+  fun removeFirst_tail_on_list_with_2_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -59,7 +65,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo"), list.toList())
   }
 
-  @Test fun removeFirst_head_on_list_with_3_items() {
+  @Test
+  fun removeFirst_head_on_list_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -70,7 +77,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("bar", "baz"), list.toList())
   }
 
-  @Test fun removeFirst_middle_on_list_with_3_items() {
+  @Test
+  fun removeFirst_middle_on_list_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -81,7 +89,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "baz"), list.toList())
   }
 
-  @Test fun removeFirst_tail_on_list_with_3_items() {
+  @Test
+  fun removeFirst_tail_on_list_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -92,7 +101,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "bar"), list.toList())
   }
 
-  @Test fun removeFirst_when_multiple_matches() {
+  @Test
+  fun removeFirst_when_multiple_matches() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("foo")
@@ -103,7 +113,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "bar"), list.toList())
   }
 
-  @Test fun removeFirst_when_no_matches() {
+  @Test
+  fun removeFirst_when_no_matches() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -113,7 +124,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "bar"), list.toList())
   }
 
-  @Test fun plusAssign_on_non_empty_list() {
+  @Test
+  fun plusAssign_on_non_empty_list() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
 
@@ -122,7 +134,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "bar"), list.toList())
   }
 
-  @Test fun plusAssign_after_remove_head_with_2_items() {
+  @Test
+  fun plusAssign_after_remove_head_with_2_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -133,7 +146,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("bar", "buzz"), list.toList())
   }
 
-  @Test fun plusAssign_after_remove_tail_with_2_items() {
+  @Test
+  fun plusAssign_after_remove_tail_with_2_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -144,7 +158,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "buzz"), list.toList())
   }
 
-  @Test fun plusAssign_after_remove_head_with_3_items() {
+  @Test
+  fun plusAssign_after_remove_head_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -156,7 +171,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("bar", "baz", "buzz"), list.toList())
   }
 
-  @Test fun plusAssign_after_remove_middle_with_3_items() {
+  @Test
+  fun plusAssign_after_remove_middle_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -168,7 +184,8 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "baz", "buzz"), list.toList())
   }
 
-  @Test fun plusAssign_after_remove_tail_with_3_items() {
+  @Test
+  fun plusAssign_after_remove_tail_with_3_items() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -180,20 +197,23 @@ internal class InlineLinkedListTest {
     assertEquals(listOf("foo", "bar", "buzz"), list.toList())
   }
 
-  @Test fun clear_empty_list() {
+  @Test
+  fun clear_empty_list() {
     val list = InlineLinkedList<StringElement>()
     list.clear()
     assertEquals(emptyList(), list.toList())
   }
 
-  @Test fun clear_single_item_list() {
+  @Test
+  fun clear_single_item_list() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list.clear()
     assertEquals(emptyList(), list.toList())
   }
 
-  @Test fun clear_multi_item_list() {
+  @Test
+  fun clear_multi_item_list() {
     val list = InlineLinkedList<StringElement>()
     list += StringElement("foo")
     list += StringElement("bar")
@@ -208,8 +228,6 @@ internal class InlineLinkedListTest {
   }
 }
 
-private class StringElement(
-  val value: String
-) : InlineListNode<StringElement> {
+private class StringElement(val value: String) : InlineListNode<StringElement> {
   override var nextListNode: StringElement? = null
 }

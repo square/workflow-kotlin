@@ -32,26 +32,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * Version of [PoemsBrowserWorkflow] that takes in a [SimulatedPerfConfig] to control the
  * performance behavior of the Workflow.
  *
- * @param [simulatedPerfConfig] specifies whether to make the Workflow more 'complex' by
- * introducing some asynchronous delays. See [SimulatedPerfConfig] for more details.
- *
+ * @param [simulatedPerfConfig] specifies whether to make the Workflow more 'complex' by introducing
+ *   some asynchronous delays. See [SimulatedPerfConfig] for more details.
  * @param [isLoading] will be set to true while this workflow is 'loading'. This is so that another
- * component, such as a [MaybeLoadingGatekeeperWorkflow] can overlay the screen with a visual
- * loading state. N.B. that whether or not this is loading could be included in the
- * RenderingT if the interface [PoemsBrowserWorkflow] had been left more flexible.
+ *   component, such as a [MaybeLoadingGatekeeperWorkflow] can overlay the screen with a visual
+ *   loading state. N.B. that whether or not this is loading could be included in the RenderingT if
+ *   the interface [PoemsBrowserWorkflow] had been left more flexible.
  *
- * ** Also note that raw mutable state sharing like this will almost always be a smell. It would
- * be better to inject an interface of a 'Loading' service that could trigger this and likely
- * break ties/conflicts with a token in the start/stop requests. We leave that complexity out
- * here. **
+ * ** Also note that raw mutable state sharing like this will almost always be a smell. It would be
+ * better to inject an interface of a 'Loading' service that could trigger this and likely break
+ * ties/conflicts with a token in the start/stop requests. We leave that complexity out here. **
  */
 class PerformancePoemsBrowserWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig,
   private val poemWorkflow: PoemWorkflow,
   private val isLoading: MutableStateFlow<Boolean>,
-) :
-  PoemsBrowserWorkflow,
-  StatefulWorkflow<ConfigAndPoems, State, Unit, OverviewDetailScreen<*>>() {
+) : PoemsBrowserWorkflow, StatefulWorkflow<ConfigAndPoems, State, Unit, OverviewDetailScreen<*>>() {
 
   sealed class State {
     data object Recurse : State()
@@ -60,20 +56,17 @@ class PerformancePoemsBrowserWorkflow(
     // we encounter in real life. Best practice would be to fold it
     // into [NoSelection] at the very least.
     data object Initializing : State()
-    data class ComplexCall(
-      val payload: Int
-    ) : State()
+
+    data class ComplexCall(val payload: Int) : State()
 
     data object NoSelection : State()
+
     data class Selected(val poemIndex: Int) : State()
   }
 
-  override fun initialState(
-    props: ConfigAndPoems,
-    snapshot: Snapshot?
-  ): State {
-    return if (props.first.first > 0 &&
-      props.first.second == simulatedPerfConfig.recursionGraph.second
+  override fun initialState(props: ConfigAndPoems, snapshot: Snapshot?): State {
+    return if (
+      props.first.first > 0 && props.first.second == simulatedPerfConfig.recursionGraph.second
     ) {
       Recurse
     } else if (simulatedPerfConfig.useInitializingState) {
@@ -86,19 +79,14 @@ class PerformancePoemsBrowserWorkflow(
   override fun render(
     renderProps: ConfigAndPoems,
     renderState: State,
-    context: RenderContext<ConfigAndPoems, State, Unit>
+    context: RenderContext<ConfigAndPoems, State, Unit>,
   ): OverviewDetailScreen<*> {
     when (renderState) {
       is Recurse -> {
-        val recursiveChild = PerformancePoemsBrowserWorkflow(
-          simulatedPerfConfig,
-          poemWorkflow,
-          isLoading,
-        )
+        val recursiveChild =
+          PerformancePoemsBrowserWorkflow(simulatedPerfConfig, poemWorkflow, isLoading)
         repeat(renderProps.first.second) { breadth ->
-          val nextProps = renderProps.copy(
-            first = renderProps.first.first - 1 to breadth
-          )
+          val nextProps = renderProps.copy(first = renderProps.first.first - 1 to breadth)
           // When we repeat horizontally we ask the runtime to 'render' these Workflow nodes but
           // we don't use their renderings in what is passed to the UI layer as this is just to
           // fill out the Workflow tree to give the runtime more work to do. As such, we call
@@ -112,17 +100,14 @@ class PerformancePoemsBrowserWorkflow(
             noAction()
           }
         }
-        val nextProps = renderProps.copy(
-          first = renderProps.first.first - 1 to renderProps.first.second
-        )
+        val nextProps =
+          renderProps.copy(first = renderProps.first.first - 1 to renderProps.first.second)
         return context.renderChild(
           child = recursiveChild,
           props = nextProps,
           key = "${nextProps.first},${nextProps.second}",
         ) {
-          action("setOutput") {
-            setOutput(it)
-          }
+          action("setOutput") { setOutput(it) }
         }
       }
       // Again, then entire `Initializing` state is a smell, which is most obvious from the
@@ -140,30 +125,31 @@ class PerformancePoemsBrowserWorkflow(
         return OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
       }
 
-      is ComplexCall, is NoSelection, is Selected -> {
+      is ComplexCall,
+      is NoSelection,
+      is Selected -> {
         if (simulatedPerfConfig.simultaneousActions > 0) {
           repeat(simulatedPerfConfig.simultaneousActions) { index ->
             context.runningWorker(
               worker = isLoading.asTraceableWorker("SimultaneousSubscribeBrowser-$index"),
-              key = "Browser-$index"
+              key = "Browser-$index",
             ) {
               noAction()
             }
           }
         }
-        val poemListProps = Props(
-          poems = renderProps.second,
-          eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
-        )
-        val poemListRendering = context.renderChild(PoemListWorkflow, poemListProps) { selected ->
-          choosePoem(selected)
-        }
+        val poemListProps =
+          Props(
+            poems = renderProps.second,
+            eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace,
+          )
+        val poemListRendering =
+          context.renderChild(PoemListWorkflow, poemListProps) { selected -> choosePoem(selected) }
         when (renderState) {
           is NoSelection -> {
             return OverviewDetailScreen(
-              overviewRendering = BackStackScreen(
-                poemListRendering.copy(selection = NO_POEM_SELECTED)
-              )
+              overviewRendering =
+                BackStackScreen(poemListRendering.copy(selection = NO_POEM_SELECTED))
             )
           }
 
@@ -179,39 +165,40 @@ class PerformancePoemsBrowserWorkflow(
               action("onComplexCall") {
                 isLoading.value = false
                 (state as? ComplexCall)?.let { currentState ->
-                  state = if (currentState.payload != NO_POEM_SELECTED) {
-                    Selected(currentState.payload)
-                  } else {
-                    NoSelection
-                  }
+                  state =
+                    if (currentState.payload != NO_POEM_SELECTED) {
+                      Selected(currentState.payload)
+                    } else {
+                      NoSelection
+                    }
                 }
               }
             }
-            var poems: OverviewDetailScreen<*> = OverviewDetailScreen(
-              overviewRendering = BackStackScreen(
-                poemListRendering.copy(selection = renderState.payload)
+            var poems: OverviewDetailScreen<*> =
+              OverviewDetailScreen(
+                overviewRendering =
+                  BackStackScreen(poemListRendering.copy(selection = renderState.payload))
               )
-            )
             if (renderState.payload != NO_POEM_SELECTED) {
-              val poem = context.renderChild(
-                poemWorkflow,
-                renderProps.second[renderState.payload]
-              ) { clearSelection }
+              val poem =
+                context.renderChild(poemWorkflow, renderProps.second[renderState.payload]) {
+                  clearSelection
+                }
               poems += poem
             }
             return poems
           }
 
           is Selected -> {
-            val poems = OverviewDetailScreen(
-              overviewRendering = BackStackScreen(
-                poemListRendering.copy(selection = renderState.poemIndex)
+            val poems =
+              OverviewDetailScreen(
+                overviewRendering =
+                  BackStackScreen(poemListRendering.copy(selection = renderState.poemIndex))
               )
-            )
-            val poem = context.renderChild(
-              poemWorkflow,
-              renderProps.second[renderState.poemIndex]
-            ) { clearSelection }
+            val poem =
+              context.renderChild(poemWorkflow, renderProps.second[renderState.poemIndex]) {
+                clearSelection
+              }
             return poems + poem
           }
         }
@@ -221,19 +208,19 @@ class PerformancePoemsBrowserWorkflow(
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun choosePoem(
-    index: Int
-  ) = action("choosePoem") {
-    state = if (simulatedPerfConfig.isComplex) {
-      ComplexCall(payload = index)
-    } else {
-      if (index != NO_POEM_SELECTED) {
-        Selected(index)
-      } else {
-        NoSelection
-      }
+  private fun choosePoem(index: Int) =
+    action("choosePoem") {
+      state =
+        if (simulatedPerfConfig.isComplex) {
+          ComplexCall(payload = index)
+        } else {
+          if (index != NO_POEM_SELECTED) {
+            Selected(index)
+          } else {
+            NoSelection
+          }
+        }
     }
-  }
 
   private val clearSelection = choosePoem(NO_POEM_SELECTED)
 }

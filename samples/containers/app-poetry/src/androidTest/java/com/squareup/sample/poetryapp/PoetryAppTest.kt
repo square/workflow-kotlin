@@ -19,11 +19,14 @@ class PoetryAppTest {
 
   private val scenarioRule = ActivityScenarioRule(PoetryActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun launches() {
+  @Test
+  fun launches() {
     onView(withText(R.string.poems)).check(matches(isDisplayed()))
   }
 }

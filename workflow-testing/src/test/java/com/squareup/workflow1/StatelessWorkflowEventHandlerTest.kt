@@ -12,9 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 
-/**
- * A lot of duplication here with [StatefulWorkflowEventHandlerTest]
- */
+/** A lot of duplication here with [StatefulWorkflowEventHandlerTest] */
 @OptIn(WorkflowExperimentalRuntime::class)
 @Burst
 class StatelessWorkflowEventHandlerTest(
@@ -22,237 +20,266 @@ class StatelessWorkflowEventHandlerTest(
   stableEventHandlers: Boolean = false,
 ) {
 
-  private val runtimeConfig = if (stableEventHandlers) {
-    setOf(
-      STABLE_EVENT_HANDLERS
-    )
-  } else {
-    RENDER_PER_ACTION
-  }
+  private val runtimeConfig =
+    if (stableEventHandlers) {
+      setOf(STABLE_EVENT_HANDLERS)
+    } else {
+      RENDER_PER_ACTION
+    }
 
-  @Test fun eventHandler0() {
+  @Test
+  fun eventHandler0() {
     Workflow.stateless<Unit, S, () -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { setOutput("yay") }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke()
-      assertEquals("yay", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+        eventHandler("name", remember = remembering, key = "key") { setOutput("yay") }
       }
-    }
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke()
+        assertEquals("yay", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
+      }
   }
 
-  @Test fun eventHandler1() {
+  @Test
+  fun eventHandler1() {
     Workflow.stateless<Unit, S, (S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1 ->
-        setOutput(e1)
+        eventHandler("name", remember = remembering, key = "key") { e1 -> setOutput(e1) }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("yay")
-      assertEquals("yay", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("yay")
+        assertEquals("yay", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler2() {
+  @Test
+  fun eventHandler2() {
     Workflow.stateless<Unit, S, (S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2 ->
-        setOutput("$e1-$e2")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2 -> setOutput("$e1-$e2") }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b")
-      assertEquals("a-b", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b")
+        assertEquals("a-b", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler3() {
+  @Test
+  fun eventHandler3() {
     Workflow.stateless<Unit, S, (S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3 ->
-        setOutput("$e1-$e2-$e3")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3 ->
+          setOutput("$e1-$e2-$e3")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c")
-      assertEquals("a-b-c", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c")
+        assertEquals("a-b-c", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler4() {
+  @Test
+  fun eventHandler4() {
     Workflow.stateless<Unit, S, (S, S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4 ->
-        setOutput("$e1-$e2-$e3-$e4")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4 ->
+          setOutput("$e1-$e2-$e3-$e4")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d")
-      assertEquals("a-b-c-d", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d")
+        assertEquals("a-b-c-d", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler5() {
+  @Test
+  fun eventHandler5() {
     Workflow.stateless<Unit, S, (S, S, S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5 ->
+          setOutput("$e1-$e2-$e3-$e4-$e5")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e")
-      assertEquals("a-b-c-d-e", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e")
+        assertEquals("a-b-c-d-e", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler6() {
+  @Test
+  fun eventHandler6() {
     Workflow.stateless<Unit, S, (S, S, S, S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5-$e6")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6 ->
+          setOutput("$e1-$e2-$e3-$e4-$e5-$e6")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e", "f")
-      assertEquals("a-b-c-d-e-f", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e", "f")
+        assertEquals("a-b-c-d-e-f", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler7() {
+  @Test
+  fun eventHandler7() {
     Workflow.stateless<Unit, S, (S, S, S, S, S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6, e7 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6, e7 ->
+          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e", "f", "g")
-      assertEquals("a-b-c-d-e-f-g", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e", "f", "g")
+        assertEquals("a-b-c-d-e-f-g", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler8() {
+  @Test
+  fun eventHandler8() {
     Workflow.stateless<Unit, S, (S, S, S, S, S, S, S, S) -> Unit> {
-      eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6, e7, e8 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8")
+        eventHandler("name", remember = remembering, key = "key") { e1, e2, e3, e4, e5, e6, e7, e8
+          ->
+          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e", "f", "g", "h")
-      assertEquals("a-b-c-d-e-f-g-h", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e", "f", "g", "h")
+        assertEquals("a-b-c-d-e-f-g-h", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler9() {
+  @Test
+  fun eventHandler9() {
     Workflow.stateless<Unit, S, (S, S, S, S, S, S, S, S, S) -> Unit> {
-      eventHandler(
-        "name",
-        remember = remembering,
-        key = "key"
-      ) { e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9")
+        eventHandler("name", remember = remembering, key = "key") {
+          e1,
+          e2,
+          e3,
+          e4,
+          e5,
+          e6,
+          e7,
+          e8,
+          e9 ->
+          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i")
-      assertEquals("a-b-c-d-e-f-g-h-i", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i")
+        assertEquals("a-b-c-d-e-f-g-h-i", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 
-  @Test fun eventHandler10() {
+  @Test
+  fun eventHandler10() {
     Workflow.stateless<Unit, S, (S, S, S, S, S, S, S, S, S, S) -> Unit> {
-      eventHandler(
-        "name",
-        remember = remembering,
-        key = "key"
-      ) { e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
-        setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9-$e10")
+        eventHandler("name", remember = remembering, key = "key") {
+          e1,
+          e2,
+          e3,
+          e4,
+          e5,
+          e6,
+          e7,
+          e8,
+          e9,
+          e10 ->
+          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9-$e10")
+        }
       }
-    }.launchForTestingFromStartWith(
-      testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
-    ) {
-      val first = awaitNextRendering()
-      first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i", "k")
-      assertEquals("a-b-c-d-e-f-g-h-i-k", awaitNextOutput())
-      val next = awaitNextRendering()
-      if (remembering) {
-        assertSame(first, next)
-      } else {
-        assertNotSame(first, next)
+      .launchForTestingFromStartWith(
+        testParams = WorkflowTestParams(runtimeConfig = runtimeConfig)
+      ) {
+        val first = awaitNextRendering()
+        first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i", "k")
+        assertEquals("a-b-c-d-e-f-g-h-i-k", awaitNextOutput())
+        val next = awaitNextRendering()
+        if (remembering) {
+          assertSame(first, next)
+        } else {
+          assertNotSame(first, next)
+        }
       }
-    }
   }
 }

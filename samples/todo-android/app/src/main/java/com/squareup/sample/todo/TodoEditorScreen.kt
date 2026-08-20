@@ -18,7 +18,7 @@ data class TodoEditorScreen(
   val session: TodoEditingSession,
   val onCheckboxClicked: (index: Int) -> Unit,
   val onDeleteClicked: (index: Int) -> Unit,
-  val onGoBackClicked: () -> Unit
+  val onGoBackClicked: () -> Unit,
 ) : AndroidScreen<TodoEditorScreen>, Compatible {
 
   override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
@@ -26,9 +26,8 @@ data class TodoEditorScreen(
     ScreenViewFactory.fromViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
-private class Runner(
-  private val binding: TodoEditorLayoutBinding
-) : ScreenViewRunner<TodoEditorScreen> {
+private class Runner(private val binding: TodoEditorLayoutBinding) :
+  ScreenViewRunner<TodoEditorScreen> {
 
   private val itemListView = ItemListView.fromLinearLayout(binding.itemContainer)
 
@@ -46,10 +45,7 @@ private class Runner(
     }
   }
 
-  override fun showRendering(
-    rendering: TodoEditorScreen,
-    environment: ViewEnvironment
-  ) {
+  override fun showRendering(rendering: TodoEditorScreen, environment: ViewEnvironment) {
     with(binding) {
       todoEditorToolbar.title = rendering.session.title.textValue
       rendering.session.title.control(todoTitle)
@@ -62,12 +58,8 @@ private class Runner(
         todoEditorToolbar.navigationIcon = null
       }
 
-      itemListView.onDoneClickedListener = { index ->
-        rendering.onCheckboxClicked(index)
-      }
-      itemListView.onDeleteClickedListener = { index ->
-        rendering.onDeleteClicked(index)
-      }
+      itemListView.onDoneClickedListener = { index -> rendering.onCheckboxClicked(index) }
+      itemListView.onDeleteClickedListener = { index -> rendering.onDeleteClicked(index) }
     }
   }
 }

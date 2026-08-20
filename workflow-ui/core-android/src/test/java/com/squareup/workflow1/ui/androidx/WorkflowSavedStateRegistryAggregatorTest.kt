@@ -17,23 +17,26 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertFailsWith
 
 @RunWith(RobolectricTestRunner::class)
 internal class WorkflowSavedStateRegistryAggregatorTest {
-  private val fakeOnBack = object : OnBackPressedDispatcherOwner {
-    override val lifecycle: Lifecycle
-      get() = error("")
-    override val onBackPressedDispatcher: OnBackPressedDispatcher
-      get() {
-        error("")
-      }
-  }
+  private val fakeOnBack =
+    object : OnBackPressedDispatcherOwner {
+      override val lifecycle: Lifecycle
+        get() = error("")
 
-  @Test fun `attach stops observing previous parent when called multiple times without detach`() {
+      override val onBackPressedDispatcher: OnBackPressedDispatcher
+        get() {
+          error("")
+        }
+    }
+
+  @Test
+  fun `attach stops observing previous parent when called multiple times without detach`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     val parent1 = SimpleStateRegistry()
     val parent2 = SimpleStateRegistry()
@@ -45,61 +48,72 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(parent1.lifecycleRegistry.observerCount).isEqualTo(0)
   }
 
-  @Test fun `attach throws more helpful exception when key already registered`() {
+  @Test
+  fun `attach throws more helpful exception when key already registered`() {
     val key = "fizzbuz"
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.savedStateRegistry.registerSavedStateProvider(key) { Bundle() }
-    }
+    val parent =
+      SimpleStateRegistry().apply {
+        stateRegistryController.savedStateRegistry.registerSavedStateProvider(key) { Bundle() }
+      }
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      aggregator.attachToParentRegistry(key, parent)
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> { aggregator.attachToParentRegistry(key, parent) }
 
-    assertThat(error).hasMessageThat()
+    assertThat(error)
+      .hasMessageThat()
       .contains("Error registering SavedStateProvider: key \"$key\" is already in use")
   }
 
-  @Test fun `install throws when missing WorkflowLifecycleOwner`() {
+  @Test
+  fun `install throws when missing WorkflowLifecycleOwner`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      aggregator.installChildRegistryOwnerOn(
-        View(ApplicationProvider.getApplicationContext()),
-        "key"
-      )
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> {
+        aggregator.installChildRegistryOwnerOn(
+          View(ApplicationProvider.getApplicationContext()),
+          "key",
+        )
+      }
 
     assertThat(error).hasMessageThat().startsWith("Expected android.view.View{")
-    assertThat(error).hasMessageThat()
+    assertThat(error)
+      .hasMessageThat()
       .endsWith("(key) to have a ViewTreeLifecycleOwner. Use WorkflowLifecycleOwner to fix that.")
   }
 
-  @Test fun `install throws on redundant call`() {
-    val view = View(ApplicationProvider.getApplicationContext()).apply {
-      this.setViewTreeSavedStateRegistryOwner(SimpleStateRegistry())
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
-    }
+  @Test
+  fun `install throws on redundant call`() {
+    val view =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        this.setViewTreeSavedStateRegistryOwner(SimpleStateRegistry())
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+      }
 
     val aggregator = WorkflowSavedStateRegistryAggregator()
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      aggregator.installChildRegistryOwnerOn(view, "key")
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> {
+        aggregator.installChildRegistryOwnerOn(view, "key")
+      }
 
-    assertThat(error).hasMessageThat()
+    assertThat(error)
+      .hasMessageThat()
       .contains(
         "already has SavedStateRegistryOwner: com.squareup.workflow1.ui.androidx." +
           "WorkflowSavedStateRegistryAggregatorTest\$SimpleStateRegistry"
       )
   }
 
-  @Test fun `double install okay if forced`() {
+  @Test
+  fun `double install okay if forced`() {
     val originalRegistry = SimpleStateRegistry()
-    val view = View(ApplicationProvider.getApplicationContext()).apply {
-      this.setViewTreeSavedStateRegistryOwner(originalRegistry)
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
-    }
+    val view =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        this.setViewTreeSavedStateRegistryOwner(originalRegistry)
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+      }
 
     val aggregator = WorkflowSavedStateRegistryAggregator()
     aggregator.installChildRegistryOwnerOn(view, "key", force = true)
@@ -107,29 +121,30 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       .isInstanceOf(KeyedSavedStateRegistryOwner::class.java)
   }
 
-  @Test fun `forced install throws on redundant call of our own method`() {
+  @Test
+  fun `forced install throws on redundant call of our own method`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
 
-    val view = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
-      aggregator.installChildRegistryOwnerOn(this, "key1")
-    }
+    val view =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+        aggregator.installChildRegistryOwnerOn(this, "key1")
+      }
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      aggregator.installChildRegistryOwnerOn(view, "key2", force = true)
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> {
+        aggregator.installChildRegistryOwnerOn(view, "key2", force = true)
+      }
 
-    assertThat(error).hasMessageThat()
-      .contains(
-        "already has SavedStateRegistryOwner: KeyedSavedStateRegistryOwner(key='key1"
-      )
+    assertThat(error)
+      .hasMessageThat()
+      .contains("already has SavedStateRegistryOwner: KeyedSavedStateRegistryOwner(key='key1")
   }
 
-  @Test fun `attach observes parent lifecycle`() {
+  @Test
+  fun `attach observes parent lifecycle`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(null)
-    }
+    val parent = SimpleStateRegistry().apply { stateRegistryController.performRestore(null) }
 
     aggregator.attachToParentRegistry("key", parent)
 
@@ -138,11 +153,10 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(parent.lifecycleRegistry.observerCount).isEqualTo(3)
   }
 
-  @Test fun `attach doesn't observe parent when already restored`() {
+  @Test
+  fun `attach doesn't observe parent when already restored`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(null)
-    }
+    val parent = SimpleStateRegistry().apply { stateRegistryController.performRestore(null) }
 
     // Restore the aggregator.
     aggregator.attachToParentRegistry("key", parent)
@@ -157,12 +171,14 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(parent.lifecycleRegistry.observerCount).isEqualTo(1)
   }
 
-  @Test fun `stops observing parent after ON_CREATED`() {
+  @Test
+  fun `stops observing parent after ON_CREATED`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      // Must restore parent in order to advance lifecycle.
-      stateRegistryController.performRestore(null)
-    }
+    val parent =
+      SimpleStateRegistry().apply {
+        // Must restore parent in order to advance lifecycle.
+        stateRegistryController.performRestore(null)
+      }
 
     aggregator.attachToParentRegistry("key", parent)
     parent.lifecycleRegistry.handleLifecycleEvent(ON_CREATE)
@@ -172,7 +188,8 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(parent.lifecycleRegistry.observerCount).isEqualTo(1)
   }
 
-  @Test fun `detach stops observing parent lifecycle`() {
+  @Test
+  fun `detach stops observing parent lifecycle`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     val parent = SimpleStateRegistry()
 
@@ -182,15 +199,18 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(parent.lifecycleRegistry.observerCount).isEqualTo(0)
   }
 
-  @Test fun `saveRegistryController saves when parent is restored`() {
+  @Test
+  fun `saveRegistryController saves when parent is restored`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      // Must restore the parent controller in order to initialize the aggregator.
-      stateRegistryController.performRestore(null)
-    }
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
-    }
+    val parent =
+      SimpleStateRegistry().apply {
+        // Must restore the parent controller in order to initialize the aggregator.
+        stateRegistryController.performRestore(null)
+      }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
+      }
 
     var childSaveCount = 0
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
@@ -208,14 +228,14 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(childSaveCount).isEqualTo(1)
   }
 
-  @Test fun `saveRegistryController doesn't save if not restored`() {
+  @Test
+  fun `saveRegistryController doesn't save if not restored`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(null)
-    }
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
-    }
+    val parent = SimpleStateRegistry().apply { stateRegistryController.performRestore(null) }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
+      }
 
     var childSaveCount = 0
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
@@ -232,14 +252,14 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(childSaveCount).isEqualTo(0)
   }
 
-  @Test fun `restores only when parent is restored`() {
+  @Test
+  fun `restores only when parent is restored`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(null)
-    }
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
-    }
+    val parent = SimpleStateRegistry().apply { stateRegistryController.performRestore(null) }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
+      }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
     assertThat(childView.savedStateRegistry.isRestored).isFalse()
 
@@ -252,19 +272,22 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   }
 
   // This is really more of an integration test.
-  @Test fun `saves and restores child state controller`() {
+  @Test
+  fun `saves and restores child state controller`() {
     val aggregatorToSave = WorkflowSavedStateRegistryAggregator()
-    val parentToSave = SimpleStateRegistry().apply {
-      // Need to call restore before moving lifecycle state past INITIALIZED.
-      stateRegistryController.performRestore(null)
-    }
+    val parentToSave =
+      SimpleStateRegistry().apply {
+        // Need to call restore before moving lifecycle state past INITIALIZED.
+        stateRegistryController.performRestore(null)
+      }
     aggregatorToSave.attachToParentRegistry("parentKey", parentToSave)
     parentToSave.lifecycleRegistry.currentState = RESUMED
 
     // Store some data in the system.
-    val viewToSave = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToSave.lifecycle }
-    }
+    val viewToSave =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToSave.lifecycle }
+      }
     aggregatorToSave.installChildRegistryOwnerOn(viewToSave, "childKey")
     viewToSave.savedStateRegistry.registerSavedStateProvider("key") { bundleOf("data" to "value") }
 
@@ -273,13 +296,13 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
 
     // Create a whole new tree, restored from our bundle.
     val aggregatorToRestore = WorkflowSavedStateRegistryAggregator()
-    val parentToRestore = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(parentSavedBundle)
-    }
+    val parentToRestore =
+      SimpleStateRegistry().apply { stateRegistryController.performRestore(parentSavedBundle) }
     aggregatorToRestore.attachToParentRegistry("parentKey", parentToRestore)
-    val viewToRestore = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToRestore.lifecycle }
-    }
+    val viewToRestore =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToRestore.lifecycle }
+      }
     aggregatorToRestore.installChildRegistryOwnerOn(viewToRestore, "childKey")
     parentToRestore.lifecycleRegistry.currentState = RESUMED
 
@@ -288,31 +311,35 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(restoredChildContent.getString("data")).isEqualTo("value")
   }
 
-  @Test fun `restores child state controller`() {
+  @Test
+  fun `restores child state controller`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = stateRegistryOf(
-      "parentKey" to bundleOf(
-        // The childKey is associated with a "saved" SavedStateRegistryController, so we need to
-        // give it the special internal bundle structure instead of just using bundleOf() directly.
-        "childKey" to stateRegistryOf(
-          "key" to bundleOf("data" to "value")
-        ).saveToBundle()
+    val parent =
+      stateRegistryOf(
+        "parentKey" to
+          bundleOf(
+            // The childKey is associated with a "saved" SavedStateRegistryController, so we need to
+            // give it the special internal bundle structure instead of just using bundleOf()
+            // directly.
+            "childKey" to stateRegistryOf("key" to bundleOf("data" to "value")).saveToBundle()
+          )
       )
-    )
 
     aggregator.attachToParentRegistry("parentKey", parent)
     parent.lifecycleRegistry.handleLifecycleEvent(ON_CREATE)
 
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
-    }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
+      }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
 
     val childState = childView.savedStateRegistry.consumeRestoredStateForKey("key")!!
     assertThat(childState.getString("data")).isEqualTo("value")
   }
 
-  @Test fun `detach doesn't throws when called without attach`() {
+  @Test
+  fun `detach doesn't throws when called without attach`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
 
     aggregator.detachFromParentRegistry()
@@ -324,22 +351,24 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   // ComposeView's composition) can advance before the aggregator's restore observer on the
   // parent lifecycle ever fires. The child registry must nonetheless be restored -- with its
   // real saved state -- by the time its lifecycle leaves INITIALIZED.
-  @Test fun `child advancing before parent ON_CREATE is restored just in time with saved state`() {
+  @Test
+  fun `child advancing before parent ON_CREATE is restored just in time with saved state`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     // Parent registry is restored (contains real state for our child), but its lifecycle is
     // still INITIALIZED -- exactly the state observed in the failing scenario.
-    val parent = stateRegistryOf(
-      "parentKey" to bundleOf(
-        "childKey" to stateRegistryOf(
-          "key" to bundleOf("data" to "value")
-        ).saveToBundle()
+    val parent =
+      stateRegistryOf(
+        "parentKey" to
+          bundleOf(
+            "childKey" to stateRegistryOf("key" to bundleOf("data" to "value")).saveToBundle()
+          )
       )
-    )
 
     val childLifecycle = SimpleLifecycleOwner()
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      setViewTreeLifecycleOwner(childLifecycle)
-    }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        setViewTreeLifecycleOwner(childLifecycle)
+      }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
     aggregator.attachToParentRegistry("parentKey", parent)
     assertThat(childView.savedStateRegistry.isRestored).isFalse()
@@ -355,16 +384,16 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(childState.getString("data")).isEqualTo("value")
   }
 
-  @Test fun `child owner lifecycle stays INITIALIZED until restored`() {
+  @Test
+  fun `child owner lifecycle stays INITIALIZED until restored`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
-    val parent = SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(null)
-    }
+    val parent = SimpleStateRegistry().apply { stateRegistryController.performRestore(null) }
 
     val childLifecycle = SimpleLifecycleOwner()
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      setViewTreeLifecycleOwner(childLifecycle)
-    }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        setViewTreeLifecycleOwner(childLifecycle)
+      }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
     aggregator.attachToParentRegistry("parentKey", parent)
 
@@ -381,12 +410,14 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(childOwner.lifecycle.currentState).isEqualTo(RESUMED)
   }
 
-  @Test fun `child advancing with no attached parent restores empty without throwing`() {
+  @Test
+  fun `child advancing with no attached parent restores empty without throwing`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     val childLifecycle = SimpleLifecycleOwner()
-    val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      setViewTreeLifecycleOwner(childLifecycle)
-    }
+    val childView =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        setViewTreeLifecycleOwner(childLifecycle)
+      }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
 
     // There is nowhere to restore from, but the lifecycle is advancing now: the contract
@@ -399,19 +430,22 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     assertThat(childOwner.lifecycle.currentState).isEqualTo(RESUMED)
   }
 
-  @Test fun `pruned child advancing late does not consume replacement's saved state`() {
+  @Test
+  fun `pruned child advancing late does not consume replacement's saved state`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     val childALifecycle = SimpleLifecycleOwner()
-    val childViewA = View(ApplicationProvider.getApplicationContext()).apply {
-      setViewTreeLifecycleOwner(childALifecycle)
-    }
+    val childViewA =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        setViewTreeLifecycleOwner(childALifecycle)
+      }
     aggregator.installChildRegistryOwnerOn(childViewA, "childKey")
     val childOwnerA = childViewA.findViewTreeSavedStateRegistryOwner()!!
     aggregator.saveAndPruneChildRegistryOwner("childKey")
 
-    val childViewB = View(ApplicationProvider.getApplicationContext()).apply {
-      setViewTreeLifecycleOwner(SimpleLifecycleOwner())
-    }
+    val childViewB =
+      View(ApplicationProvider.getApplicationContext()).apply {
+        setViewTreeLifecycleOwner(SimpleLifecycleOwner())
+      }
     aggregator.installChildRegistryOwnerOn(childViewB, "childKey")
     val childOwnerB = childViewB.findViewTreeSavedStateRegistryOwner()!!
 
@@ -421,13 +455,13 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     childALifecycle.lifecycleRegistry.currentState = RESUMED
     assertThat(childOwnerA.savedStateRegistry.isRestored).isTrue()
 
-    val parent = stateRegistryOf(
-      "parentKey" to bundleOf(
-        "childKey" to stateRegistryOf(
-          "key" to bundleOf("data" to "value")
-        ).saveToBundle()
+    val parent =
+      stateRegistryOf(
+        "parentKey" to
+          bundleOf(
+            "childKey" to stateRegistryOf("key" to bundleOf("data" to "value")).saveToBundle()
+          )
       )
-    )
     aggregator.attachToParentRegistry("parentKey", parent)
     parent.lifecycleRegistry.currentState = RESUMED
 
@@ -436,10 +470,9 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   }
 
   /**
-   * Creates a [SimpleStateRegistry] that is seeded with [pairs], where each key
-   * in the pair is the state registry key passed to
-   * [SavedStateRegistry.consumeRestoredStateForKey], and each value
-   * in the pair is the [Bundle] returned from that consume method.
+   * Creates a [SimpleStateRegistry] that is seeded with [pairs], where each key in the pair is the
+   * state registry key passed to [SavedStateRegistry.consumeRestoredStateForKey], and each value in
+   * the pair is the [Bundle] returned from that consume method.
    */
   private fun stateRegistryOf(vararg pairs: Pair<String, Bundle>): SimpleStateRegistry {
     val stagingRegistry = SimpleStateRegistry()
@@ -447,24 +480,16 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       stagingRegistry.savedStateRegistry.registerSavedStateProvider(key) { bundle }
     }
     val savedBundle = stagingRegistry.saveToBundle()
-    return SimpleStateRegistry().apply {
-      stateRegistryController.performRestore(savedBundle)
-    }
+    return SimpleStateRegistry().apply { stateRegistryController.performRestore(savedBundle) }
   }
 
   @JvmName("bundleOfBundles")
-  private fun bundleOf(vararg pairs: Pair<String, Bundle?>): Bundle = Bundle().apply {
-    pairs.forEach { (key, bundle) ->
-      putBundle(key, bundle)
-    }
-  }
+  private fun bundleOf(vararg pairs: Pair<String, Bundle?>): Bundle =
+    Bundle().apply { pairs.forEach { (key, bundle) -> putBundle(key, bundle) } }
 
   @JvmName("bundleOfStrings")
-  private fun bundleOf(vararg pairs: Pair<String, String>): Bundle = Bundle().apply {
-    pairs.forEach { (key, string) ->
-      putString(key, string)
-    }
-  }
+  private fun bundleOf(vararg pairs: Pair<String, String>): Bundle =
+    Bundle().apply { pairs.forEach { (key, string) -> putString(key, string) } }
 
   /** A [LifecycleOwner] whose state the test can drive directly. */
   private class SimpleLifecycleOwner : LifecycleOwner {
@@ -482,9 +507,8 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     override val lifecycle: Lifecycle
       get() = lifecycleRegistry
 
-    fun saveToBundle(): Bundle = Bundle().also { bundle ->
-      stateRegistryController.performSave(bundle)
-    }
+    fun saveToBundle(): Bundle =
+      Bundle().also { bundle -> stateRegistryController.performSave(bundle) }
   }
 
   private val View.savedStateRegistry: SavedStateRegistry

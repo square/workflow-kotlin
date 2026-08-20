@@ -9,11 +9,12 @@ import kotlin.test.assertEquals
 
 class NativeWorkflowIdentifierTest {
 
-  @Test fun `flat identifier toString`() {
+  @Test
+  fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
     assertEquals(
       "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
+      id.toString(),
     )
   }
 
@@ -21,6 +22,7 @@ class NativeWorkflowIdentifierTest {
   fun `impostor identifier toString uses full chain when describeRealIdentifier returns null`() {
     class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
+
       override fun describeRealIdentifier(): String? = null
 
       override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
@@ -31,32 +33,32 @@ class NativeWorkflowIdentifierTest {
     assertEquals(
       "WorkflowIdentifier(${TestImpostor::class}, " +
         "com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
+      id.toString(),
     )
   }
 
-  @Test fun `impostor identifier description`() {
+  @Test
+  fun `impostor identifier description`() {
     val id = TestImpostor1(TestWorkflow1).identifier
     assertEquals(
       "TestImpostor1(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
+      id.toString(),
     )
   }
 
-  @Test fun `unsnapshottable identifier toString`() {
+  @Test
+  fun `unsnapshottable identifier toString`() {
     val id = unsnapshottableIdentifier(typeOf<String>())
-    assertEquals(
-      "WorkflowIdentifier(${String::class.qualifiedName})",
-      id.toString()
-    )
+    assertEquals("WorkflowIdentifier(${String::class.qualifiedName})", id.toString())
   }
 
-  @Test fun `unsnapshottable impostor identifier toString`() {
+  @Test
+  fun `unsnapshottable impostor identifier toString`() {
     val id = TestUnsnapshottableImpostor(typeOf<String>()).identifier
     assertEquals(
       "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.qualifiedName}, " +
         "${String::class.qualifiedName})",
-      id.toString()
+      id.toString(),
     )
   }
 }

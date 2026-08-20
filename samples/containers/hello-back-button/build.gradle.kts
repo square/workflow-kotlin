@@ -7,9 +7,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.hellobackbutton"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.hellobackbutton" }
   namespace = "com.squareup.sample.hellobackbutton"
 }
 

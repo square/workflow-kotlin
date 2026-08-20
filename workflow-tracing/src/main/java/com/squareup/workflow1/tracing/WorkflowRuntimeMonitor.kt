@@ -29,10 +29,10 @@ import com.squareup.workflow1.tracing.RenderCause.RootPropsChanged
 import com.squareup.workflow1.tracing.RenderCause.WaitingForOutput
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.CascadeAction
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.QueuedAction
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlin.time.Duration.Companion.nanoseconds
 
 /**
  * This class has the following responsibilities:
@@ -40,7 +40,8 @@ import kotlin.time.Duration.Companion.nanoseconds
  *    by the [RuntimeTraceContext].)
  * 2. Forwards that information and the runtime update events to any [workflowRuntimeTracers].
  * 3. Tracks render passes via [renderPassTracker].
- * 4. Sends an update of all events that have occurred for each runtime loop to the [runtimeLoopListener].
+ * 4. Sends an update of all events that have occurred for each runtime loop to the
+ *    [runtimeLoopListener].
  */
 public class WorkflowRuntimeMonitor(
   override val runtimeName: String,
@@ -48,14 +49,14 @@ public class WorkflowRuntimeMonitor(
   private val renderPassTracker: WorkflowRenderPassTracker? = null,
   private val runtimeLoopListener: WorkflowRuntimeLoopListener? = null,
   /**
-   * Maximum length for a single log line produced by [RuntimeUpdateLogLine.log].
-   * When a log line exceeds this length it will be truncated using [wfEllipsizeEnd].
-   * Set to [Int.MAX_VALUE] to disable truncation.
+   * Maximum length for a single log line produced by [RuntimeUpdateLogLine.log]. When a log line
+   * exceeds this length it will be truncated using [wfEllipsizeEnd]. Set to [Int.MAX_VALUE] to
+   * disable truncation.
    */
   public val maxLogLineLength: Int = DEFAULT_MAX_LOG_LINE_LENGTH,
   /**
-   * When true, throws an [IllegalStateException] if a log line exceeds [maxLogLineLength]
-   * instead of silently truncating.
+   * When true, throws an [IllegalStateException] if a log line exceeds [maxLogLineLength] instead
+   * of silently truncating.
    */
   public val crashOnLogLineOverflow: Boolean = false,
 ) : WorkflowInterceptor, RuntimeTraceContext {
@@ -71,25 +72,22 @@ public class WorkflowRuntimeMonitor(
     renderPassTracker = renderPassTracker,
     runtimeLoopListener = runtimeLoopListener,
     maxLogLineLength = DEFAULT_MAX_LOG_LINE_LENGTH,
-    crashOnLogLineOverflow = false
+    crashOnLogLineOverflow = false,
   )
 
   init {
-    require(maxLogLineLength > 0) {
-      "maxLogLineLength must be greater than 0."
-    }
+    require(maxLogLineLength > 0) { "maxLogLineLength must be greater than 0." }
   }
 
-  private val chainedWorkflowRuntimeTracer: WorkflowRuntimeTracer = workflowRuntimeTracers
-    .chained().apply {
-      attachRuntimeContext(this@WorkflowRuntimeMonitor)
-    }
+  private val chainedWorkflowRuntimeTracer: WorkflowRuntimeTracer =
+    workflowRuntimeTracers.chained().apply { attachRuntimeContext(this@WorkflowRuntimeMonitor) }
 
   private var workerIncomingName: String? = null
-  private val runtimeUpdates = RuntimeUpdates(
-    maxLogLineLength = maxLogLineLength,
-    crashOnLogLineOverflow = crashOnLogLineOverflow
-  )
+  private val runtimeUpdates =
+    RuntimeUpdates(
+      maxLogLineLength = maxLogLineLength,
+      crashOnLogLineOverflow = crashOnLogLineOverflow,
+    )
 
   private val rendering: Boolean
     get() = currentRenderCause != null
@@ -128,12 +126,10 @@ public class WorkflowRuntimeMonitor(
 
   /**
    * Called the first time any Workflow is rendered - which starts its 'session'.
+   *
    * @see [WorkflowSession] for more information on the lifecycle of a session.
    */
-  override fun onSessionStarted(
-    workflowScope: CoroutineScope,
-    session: WorkflowSession
-  ) {
+  override fun onSessionStarted(workflowScope: CoroutineScope, session: WorkflowSession) {
     onWorkflowStarted(session)
     chainedWorkflowRuntimeTracer.onWorkflowSessionStarted(workflowScope, session)
   }
@@ -141,13 +137,11 @@ public class WorkflowRuntimeMonitor(
   override fun <P, S, O> onSessionCancelled(
     cause: CancellationException?,
     droppedActions: List<WorkflowAction<P, S, O>>,
-    session: WorkflowSession
+    session: WorkflowSession,
   ) {
     droppedActions.forEach { droppedAction ->
       runtimeUpdates.logUpdate(
-        updateLine = ActionDroppedLogLine(
-          actionName = droppedAction.toLoggingShortName()
-        )
+        updateLine = ActionDroppedLogLine(actionName = droppedAction.toLoggingShortName())
       )
     }
     onWorkflowStopped(session.sessionId)
@@ -161,24 +155,20 @@ public class WorkflowRuntimeMonitor(
    * before [onRenderAndSnapshot] as the root workflow's node is created.
    */
   @OptIn(ExperimentalStdlibApi::class)
-  private fun onWorkflowStarted(
-    session: WorkflowSession
-  ) {
+  private fun onWorkflowStarted(session: WorkflowSession) {
     val sessionInfo = WorkflowSessionInfo(session)
     workflowSessionInfo[session.sessionId] = sessionInfo
 
     if (session.isRootWorkflow) {
       // Cache the config snapshot for this whole runtime.
-      configSnapshot = ConfigSnapshot(session.runtimeConfig, session.runtimeContext[CoroutineDispatcher])
+      configSnapshot =
+        ConfigSnapshot(session.runtimeConfig, session.runtimeContext[CoroutineDispatcher])
       check(renderIncomingCauses.isEmpty()) {
         "Workflow runtime for $runtimeName already has incoming render on creation triggered by " +
           "${renderIncomingCauses.lastOrNull()}"
       }
       renderIncomingCauses.add(
-        RootCreation(
-          runnerName = runtimeName,
-          workflowName = sessionInfo.logName
-        )
+        RootCreation(runnerName = runtimeName, workflowName = sessionInfo.logName)
       )
     } else {
       check(rendering) {
@@ -188,22 +178,18 @@ public class WorkflowRuntimeMonitor(
     }
   }
 
-  /**
-   * Helper function called when the job backing the [WorkflowSession] ends.
-   */
+  /** Helper function called when the job backing the [WorkflowSession] ends. */
   private fun onWorkflowStopped(workflowSessionId: Long) {
     workflowSessionInfo -= workflowSessionId
   }
 
-  /**
-   * Forwards calls to [Workflow::initialState] to [workflowRuntimeTracers].
-   */
+  /** Forwards calls to [Workflow::initialState] to [workflowRuntimeTracers]. */
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
     workflowScope: CoroutineScope,
     proceed: (P, Snapshot?, CoroutineScope) -> S,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): S {
     if (session.isRootWorkflow) {
       // For the root workflow, this is called before [onRenderAndSnapshot]. Setup the 'lastProps'
@@ -216,19 +202,17 @@ public class WorkflowRuntimeMonitor(
       snapshot,
       workflowScope,
       proceed,
-      session
+      session,
     )
   }
 
-  /**
-   * Forwards all calls to [Workflow::onPropsChanged] to the [workflowRuntimeTracers].
-   */
+  /** Forwards all calls to [Workflow::onPropsChanged] to the [workflowRuntimeTracers]. */
   override fun <P, S> onPropsChanged(
     old: P,
     new: P,
     state: S,
     proceed: (P, P, S) -> S,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): S {
     return chainedWorkflowRuntimeTracer.onPropsChanged(old, new, state, proceed, session)
   }
@@ -241,7 +225,7 @@ public class WorkflowRuntimeMonitor(
   override fun <P, R> onRenderAndSnapshot(
     renderProps: P,
     proceed: (P) -> RenderingAndSnapshot<R>,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): RenderingAndSnapshot<R> {
     // Workflow deduplicates new props that are equal, so we don't need to do an equality check here
     // we know that !== is semantically equivalent to != (and faster)
@@ -273,41 +257,38 @@ public class WorkflowRuntimeMonitor(
     workerIncomingName = null
 
     val renderPassStartUptimeNanos = System.nanoTime()
-    return chainedWorkflowRuntimeTracer
-      .onRenderAndSnapshot(renderProps, proceed, session)
-      .also {
-        currentRenderCause = null
-        runtimeUpdates.logUpdate(RenderLogLine)
-        val renderPassDurationUptimeNanos = System.nanoTime() - renderPassStartUptimeNanos
-        renderPassTracker?.recordRenderPass(
-          RenderPassInfo(
-            runnerName = runtimeName,
-            renderCause = localCurrentRenderCause,
-            durationUptime = renderPassDurationUptimeNanos.nanoseconds,
-          )
+    return chainedWorkflowRuntimeTracer.onRenderAndSnapshot(renderProps, proceed, session).also {
+      currentRenderCause = null
+      runtimeUpdates.logUpdate(RenderLogLine)
+      val renderPassDurationUptimeNanos = System.nanoTime() - renderPassStartUptimeNanos
+      renderPassTracker?.recordRenderPass(
+        RenderPassInfo(
+          runnerName = runtimeName,
+          renderCause = localCurrentRenderCause,
+          durationUptime = renderPassDurationUptimeNanos.nanoseconds,
         )
-      }
+      )
+    }
   }
 
-  /**
-   * Instruments all calls to [Workflow::render], forwarding them to [workflowRuntimeTracers].
-   */
+  /** Instruments all calls to [Workflow::render], forwarding them to [workflowRuntimeTracers]. */
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): R {
-    check(rendering) {
-      "$runtimeName should be rendering"
-    }
+    check(rendering) { "$runtimeName should be rendering" }
 
-    val monitoringRenderContextInterceptor = MonitoringRenderContextInterceptor<P, S, O>(
-      workflowName = requireNotNull(workflowSessionInfo[session.sessionId]) {
-        "Expected session info for sessionId ${session.sessionId} but found none."
-      }.logName
-    )
+    val monitoringRenderContextInterceptor =
+      MonitoringRenderContextInterceptor<P, S, O>(
+        workflowName =
+          requireNotNull(workflowSessionInfo[session.sessionId]) {
+              "Expected session info for sessionId ${session.sessionId} but found none."
+            }
+            .logName
+      )
     return chainedWorkflowRuntimeTracer.onRender(
       renderProps = renderProps,
       renderState = renderState,
@@ -318,30 +299,29 @@ public class WorkflowRuntimeMonitor(
           p,
           s,
           rci?.let { monitoringRenderContextInterceptor.wrap(rci) }
-            ?: monitoringRenderContextInterceptor
+            ?: monitoringRenderContextInterceptor,
         )
-      }
+      },
     )
   }
 
   /**
-   * Instruments all calls to [Workflow::snapshotState], forwarding them to [workflowRuntimeTracers].
+   * Instruments all calls to [Workflow::snapshotState], forwarding them to
+   * [workflowRuntimeTracers].
    */
   override fun onSnapshotStateWithChildren(
     proceed: () -> TreeSnapshot,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): TreeSnapshot {
     return chainedWorkflowRuntimeTracer.onSnapshotStateWithChildren(proceed, session)
   }
 
-  /**
-   * Updates the [runtimeLoopListener], instruments the render pass or skip.
-   */
+  /** Updates the [runtimeLoopListener], instruments the render pass or skip. */
   override fun onRuntimeUpdate(update: RuntimeUpdate) {
     chainedWorkflowRuntimeTracer.onRuntimeUpdateEnhanced(
       update,
       currentActionHandlingChangedState,
-      configSnapshot
+      configSnapshot,
     )
     when (update) {
       RenderPassSkipped -> {
@@ -359,10 +339,7 @@ public class WorkflowRuntimeMonitor(
 
       RuntimeSettled -> {
         logStaleWorkerOutput(detectionPoint = "RuntimeSettled")
-        runtimeLoopListener?.onRuntimeLoopSettled(
-          configSnapshot,
-          runtimeUpdates
-        )
+        runtimeLoopListener?.onRuntimeLoopSettled(configSnapshot, runtimeUpdates)
         currentActionHandlingChangedState = false
         workerIncomingName = null
         renderIncomingCauses.clear()
@@ -371,30 +348,30 @@ public class WorkflowRuntimeMonitor(
   }
 
   /**
-   * Wrapped [RenderContextInterceptor] that adds needed metadata tracking for children, side effects,
-   * and actions.
+   * Wrapped [RenderContextInterceptor] that adds needed metadata tracking for children, side
+   * effects, and actions.
    */
   private inner class MonitoringRenderContextInterceptor<P, S, O>(
     private val workflowName: String
   ) : RenderContextInterceptor<P, S, O> {
 
     /**
-     * Instruments when an action is sent to the actionSink by a Workflow's handler (either
-     * an event handler from the UI, or `renderChild`/`runningWorker` output handler).
+     * Instruments when an action is sent to the actionSink by a Workflow's handler (either an event
+     * handler from the UI, or `renderChild`/`runningWorker` output handler).
      *
      * We wrap the action here with a [RuntimeMonitoringAction] so that we can monitor when it gets
-     * applied.
-     * Any action sent to the RenderContext's actionSink will become part of the global "queue" of
-     * actions that the Workflow runtime is looping over to process. The runtime will resume the loop
-     * when any of these actions can be processed, which then initiates a render pass to update the
-     * rendering after the (presumed) state change. Because these actions are coming off the queue to
-     * start an action cascade, we call these types of actions [QueuedAction].
+     * applied. Any action sent to the RenderContext's actionSink will become part of the global
+     * "queue" of actions that the Workflow runtime is looping over to process. The runtime will
+     * resume the loop when any of these actions can be processed, which then initiates a render
+     * pass to update the rendering after the (presumed) state change. Because these actions are
+     * coming off the queue to start an action cascade, we call these types of actions
+     * [QueuedAction].
      *
      * The render pass will not occur if it is skipped due to the state equality optimization.
      */
     override fun onActionSent(
       action: WorkflowAction<P, S, O>,
-      proceed: (WorkflowAction<P, S, O>) -> Unit
+      proceed: (WorkflowAction<P, S, O>) -> Unit,
     ) {
       proceed(
         RuntimeMonitoringAction(
@@ -406,63 +383,61 @@ public class WorkflowRuntimeMonitor(
     }
 
     /**
-     * This intercepts the corresponding output handler for the child to add wrapping
-     * to the action that is produced from it. We wrap this action with [RuntimeMonitoringAction]
-     * but we specify it as a [CascadeAction] as this is an action that is applied synchronously
-     * as part of an action cascade that originated with a [QueuedAction].
+     * This intercepts the corresponding output handler for the child to add wrapping to the action
+     * that is produced from it. We wrap this action with [RuntimeMonitoringAction] but we specify
+     * it as a [CascadeAction] as this is an action that is applied synchronously as part of an
+     * action cascade that originated with a [QueuedAction].
      *
-     * Note that for every [Worker] a child workflow is created and rendered,
-     * so this will be part of the callstack for that. In that case the output of the handler will
-     * contain the worker action signature. We can detect that with
-     * [Worker.WORKER_OUTPUT_ACTION_NAME].
+     * Note that for every [Worker] a child workflow is created and rendered, so this will be part
+     * of the callstack for that. In that case the output of the handler will contain the worker
+     * action signature. We can detect that with [Worker.WORKER_OUTPUT_ACTION_NAME].
      */
     override fun <CP, CO, CR> onRenderChild(
       child: Workflow<CP, CO, CR>,
       childProps: CP,
       key: String,
       handler: (CO) -> WorkflowAction<P, S, O>,
-      proceed: (
-        child: Workflow<CP, CO, CR>,
-        childProps: CP,
-        key: String,
-        handler: (CO) -> WorkflowAction<P, S, O>
-      ) -> CR
+      proceed:
+        (
+          child: Workflow<CP, CO, CR>,
+          childProps: CP,
+          key: String,
+          handler: (CO) -> WorkflowAction<P, S, O>,
+        ) -> CR,
     ): CR {
       return proceed(child, childProps, key) { output ->
-        val childOutputString = getWfLogString(output)
-          .wfEllipsizeEnd(MAX_LOG_FIELD_LENGTH)
+        val childOutputString = getWfLogString(output).wfEllipsizeEnd(MAX_LOG_FIELD_LENGTH)
         val delegateAction = handler(output)
         val actionName = delegateAction.toLoggingShortName()
         RuntimeMonitoringAction(
           delegateAction = delegateAction,
           actionName = actionName,
-          actionType = CascadeAction(
-            childOutputString = childOutputString
-          ),
+          actionType = CascadeAction(childOutputString = childOutputString),
         )
       }
     }
 
     /**
      * Class to instrument the application of actions. We simply wrap the [delegateAction] with
-     * meta-data that helps us trace it. This class is used for both a [QueuedAction] that was sent to
-     * the actionSink by an asynchronous event, and for a [CascadeAction] that is applied synchronously
-     * as part of the action cascade. That is specified by [actionType].
+     * meta-data that helps us trace it. This class is used for both a [QueuedAction] that was sent
+     * to the actionSink by an asynchronous event, and for a [CascadeAction] that is applied
+     * synchronously as part of the action cascade. That is specified by [actionType].
      */
     private inner class RuntimeMonitoringAction<P, S, O>(
       private val delegateAction: WorkflowAction<P, S, O>,
       private val actionName: String,
-      private val actionType: ActionType
+      private val actionType: ActionType,
     ) : WorkflowAction<P, S, O>() {
-      // Use the delegate [debuggingName] so from the perspective of breadcrumbs this tracing wrapper
+      // Use the delegate [debuggingName] so from the perspective of breadcrumbs this tracing
+      // wrapper
       // is invisible.
       override val debuggingName: String
         get() = delegateAction.debuggingName
 
       /**
-       * Adds instrumentation to the application of an action (a state change).
-       * This is also where we establish rendering causes from whatever [QueuedAction] was applied
-       * to start the action cascade.
+       * Adds instrumentation to the application of an action (a state change). This is also where
+       * we establish rendering causes from whatever [QueuedAction] was applied to start the action
+       * cascade.
        */
       override fun Updater.apply() {
         // See https://github.com/square/workflow-kotlin/issues/391. We have to listen to the 2nd
@@ -485,17 +460,15 @@ public class WorkflowRuntimeMonitor(
             workerIncomingName = null
             workerLogName = null
           }
-          val newRenderingCause: RenderCause = if (isWorkerQueuedAction) {
-            workerIncomingName = workflowName
-            WaitingForOutput(workflowName)
-          } else {
-            Callback(actionName, workflowName)
-          }
+          val newRenderingCause: RenderCause =
+            if (isWorkerQueuedAction) {
+              workerIncomingName = workflowName
+              WaitingForOutput(workflowName)
+            } else {
+              Callback(actionName, workflowName)
+            }
           renderIncomingCauses.add(newRenderingCause)
-        } else if (
-          actionType is CascadeAction &&
-          workerIncomingName != null
-        ) {
+        } else if (actionType is CascadeAction && workerIncomingName != null) {
           // WaitingForOutput should be the last cause added.
           val renderIncomingCausesSnapshot = renderIncomingCauses.toList()
           val lastCause = renderIncomingCauses.removeLastOrNull()
@@ -511,15 +484,14 @@ public class WorkflowRuntimeMonitor(
         }
         val oldState = state
         // Apply the actual action!
-        val (newState, actionApplied) = delegateAction.applyTo(props, state)
-          .also { (newState, actionApplied) ->
+        val (newState, actionApplied) =
+          delegateAction.applyTo(props, state).also { (newState, actionApplied) ->
             state = newState
             actionApplied.output?.let { setOutput(it.value) }
           }
         currentActionHandlingChangedState =
           // In a cascade from a child or applying multiple actions.
-          currentActionHandlingChangedState ||
-          actionApplied.stateChanged
+          currentActionHandlingChangedState || actionApplied.stateChanged
 
         if (!isWorkerQueuedAction) {
           // Do not log for the first 'QueueAction' of the Worker (implementation detail that is
@@ -531,7 +503,7 @@ public class WorkflowRuntimeMonitor(
             props = props,
             oldState = oldState,
             newState = newState,
-            actionApplied = actionApplied
+            actionApplied = actionApplied,
           )
         }
       }
@@ -545,24 +517,28 @@ public class WorkflowRuntimeMonitor(
         newState: S,
         actionApplied: ActionApplied<O>,
       ) {
-        val workflowLogType: WorkflowActionLogType = if (workerCause != null) {
-          WORKER_OUTPUT
-        } else if (actionType is QueuedAction) {
-          // We don't call `logOutcome` for the initial Worker queued action. So all are callbacks.
-          RENDERING_CALLBACK
-        } else {
-          CASCADE
-        }
-        val outputReceivedString: String? = if (actionType is CascadeAction) {
-          actionType.childOutputString
-        } else {
-          null
-        }
-        val name = if (workerCause != null) {
-          "R($workerCause)/W($workflowName)"
-        } else {
-          "W($workflowName)"
-        }
+        val workflowLogType: WorkflowActionLogType =
+          if (workerCause != null) {
+            WORKER_OUTPUT
+          } else if (actionType is QueuedAction) {
+            // We don't call `logOutcome` for the initial Worker queued action. So all are
+            // callbacks.
+            RENDERING_CALLBACK
+          } else {
+            CASCADE
+          }
+        val outputReceivedString: String? =
+          if (actionType is CascadeAction) {
+            actionType.childOutputString
+          } else {
+            null
+          }
+        val name =
+          if (workerCause != null) {
+            "R($workerCause)/W($workflowName)"
+          } else {
+            "W($workflowName)"
+          }
         runtimeUpdates.logUpdate(
           ActionAppliedLogLine(
             type = workflowLogType,
@@ -591,9 +567,7 @@ public class WorkflowRuntimeMonitor(
      *
      * @param childOutputString contains debug info about the output received by this action.
      */
-    public class CascadeAction(
-      val childOutputString: String,
-    ) : ActionType
+    public class CascadeAction(val childOutputString: String) : ActionType
   }
 
   public companion object {

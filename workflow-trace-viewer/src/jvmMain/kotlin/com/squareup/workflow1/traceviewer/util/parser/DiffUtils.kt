@@ -9,26 +9,21 @@ import com.github.difflib.text.DiffRowGenerator
 import com.squareup.workflow1.traceviewer.util.parser.DiffStyles.buildStringWithStyle
 
 /**
- * Matching for the type name of a field. This is used to pull out the name to compare
- * Loading() -> Loading; Idle() -> Idle; CheckoutAppletWorkflow() -> CheckoutAppletWorkflow
+ * Matching for the type name of a field. This is used to pull out the name to compare Loading() ->
+ * Loading; Idle() -> Idle; CheckoutAppletWorkflow() -> CheckoutAppletWorkflow
  */
 private val stateRegex = Regex("""^(\w+)\(""")
 
-/**
- * Generates a field-level word-diff for each node's states.
- *
- */
-internal fun computeAnnotatedDiff(
-  past: String,
-  current: String
-): AnnotatedString {
-  val diffGenerator = DiffRowGenerator.create()
-    .showInlineDiffs(true)
-    .inlineDiffByWord(true)
-    .mergeOriginalRevised(true)
-    .oldTag { _ -> "--" }
-    .newTag { _ -> "++" }
-    .build()
+/** Generates a field-level word-diff for each node's states. */
+internal fun computeAnnotatedDiff(past: String, current: String): AnnotatedString {
+  val diffGenerator =
+    DiffRowGenerator.create()
+      .showInlineDiffs(true)
+      .inlineDiffByWord(true)
+      .mergeOriginalRevised(true)
+      .oldTag { _ -> "--" }
+      .newTag { _ -> "++" }
+      .build()
 
   val pastName = extractTypeName(past)
   val currentName = extractTypeName(current)
@@ -41,23 +36,16 @@ internal fun computeAnnotatedDiff(
     // A full change in the type means all internal data will be changed, so it's easier to just
     // generalize and show the diff in the type's name
     if (pastName != currentName) {
-      buildStringWithStyle(
-        style = DiffStyles.DELETE,
-        text = "$pastName(...)",
-        builder = this
-      )
+      buildStringWithStyle(style = DiffStyles.DELETE, text = "$pastName(...)", builder = this)
       append(" → ")
-      buildStringWithStyle(
-        style = DiffStyles.INSERT,
-        text = "$currentName(...)",
-        builder = this
-      )
+      buildStringWithStyle(style = DiffStyles.INSERT, text = "$currentName(...)", builder = this)
       return@buildAnnotatedString
     }
 
     diffRows.forEach { row ->
       val tag = row.tag!!
-      // The 'mergeOriginalRevised' flag changes the semantics of the data, but the API still returns
+      // The 'mergeOriginalRevised' flag changes the semantics of the data, but the API still
+      // returns
       // the same components
       val fullDiff = row.oldLine
 
@@ -73,11 +61,7 @@ internal fun computeAnnotatedDiff(
         Tag.CHANGE -> {
           existsDiff = true
           parseChangedDiff(fullDiff).forEach { (style, text) ->
-            buildStringWithStyle(
-              style = style,
-              text = text,
-              builder = this
-            )
+            buildStringWithStyle(style = style, text = text, builder = this)
           }
           append("\n\n")
         }
@@ -87,7 +71,7 @@ internal fun computeAnnotatedDiff(
           buildStringWithStyle(
             text = fullDiff.replace("++", ""),
             style = DiffStyles.INSERT,
-            builder = this
+            builder = this,
           )
           append("\n\n")
         }
@@ -97,7 +81,7 @@ internal fun computeAnnotatedDiff(
           buildStringWithStyle(
             text = fullDiff.replace("--", ""),
             style = DiffStyles.DELETE,
-            builder = this
+            builder = this,
           )
           append("\n\n")
         }
@@ -109,18 +93,12 @@ internal fun computeAnnotatedDiff(
     }
 
     if (!existsDiff) {
-      buildStringWithStyle(
-        style = DiffStyles.NO_CHANGE,
-        text = "No Diff",
-        builder = this
-      )
+      buildStringWithStyle(style = DiffStyles.NO_CHANGE, text = "No Diff", builder = this)
     }
   }
 }
 
-/**
- * Parses the full diff within Tag.CHANGED to give back a list of operations to perform
- */
+/** Parses the full diff within Tag.CHANGED to give back a list of operations to perform */
 private fun parseChangedDiff(fullDiff: String): List<Pair<SpanStyle, String>> {
   val operations = buildList {
     var i = 0
@@ -145,10 +123,10 @@ private fun parseChangedDiff(fullDiff: String): List<Pair<SpanStyle, String>> {
         }
 
         else -> {
-          val nextTagStart = listOf(
-            fullDiff.indexOf("--", i),
-            fullDiff.indexOf("++", i)
-          ).filter { it >= 0 }.minOrNull() ?: fullDiff.length
+          val nextTagStart =
+            listOf(fullDiff.indexOf("--", i), fullDiff.indexOf("++", i))
+              .filter { it >= 0 }
+              .minOrNull() ?: fullDiff.length
           add(DiffStyles.UNCHANGED to fullDiff.substring(i, nextTagStart))
           i = nextTagStart
         }
@@ -165,11 +143,7 @@ internal object DiffStyles {
   val NO_CHANGE = SpanStyle(background = Color.LightGray)
   val UNCHANGED = SpanStyle()
 
-  fun buildStringWithStyle(
-    style: SpanStyle,
-    text: String,
-    builder: AnnotatedString.Builder
-  ) {
+  fun buildStringWithStyle(style: SpanStyle, text: String, builder: AnnotatedString.Builder) {
     builder.pushStyle(style)
     builder.append(text)
     builder.pop()
@@ -192,12 +166,16 @@ private fun getFieldsAsList(field: String): List<String> {
   while (i < field.length) {
     val char = field[i]
     when (char) {
-      '(', '[', '{' -> {
+      '(',
+      '[',
+      '{' -> {
         depth++
         currentField.append(char)
       }
 
-      ')', ']', '}' -> {
+      ')',
+      ']',
+      '}' -> {
         depth--
         currentField.append(char)
       }

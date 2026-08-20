@@ -38,10 +38,7 @@ private val viewEnvironment = EMPTY + (ViewRegistry to SampleContainers)
 
 class PerformancePoetryActivity : AppCompatActivity() {
 
-  class NavigationHolder(
-    val originScreenName: String?,
-    var destinationScreenName: String,
-  )
+  class NavigationHolder(val originScreenName: String?, var destinationScreenName: String)
 
   private val mainHandler = Handler(Looper.getMainLooper())
   private var navigationInFlight: NavigationHolder? = null
@@ -59,17 +56,18 @@ class PerformancePoetryActivity : AppCompatActivity() {
     val recursiveBreadth = intent.getIntExtra(EXTRA_PERF_CONFIG_RECURSION_BREADTH, 0)
 
     // Default is just to have the basic 'delay' complexity.
-    val simulatedPerfConfig = SimulatedPerfConfig(
-      isComplex = true,
-      complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
-      useInitializingState = intent.getBooleanExtra(EXTRA_SCENARIO_CONFIG_INITIALIZING, false),
-      recursionGraph = recursiveDepth to recursiveBreadth,
-      repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
-      simultaneousActions = intent.getIntExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, 0),
-      traceFrameLatency = intent.getBooleanExtra(EXTRA_TRACE_FRAME_LATENCY, false),
-      traceEventLatency = intent.getBooleanExtra(EXTRA_TRACE_ACTION_TRACING, false),
-      traceRenderingPasses = intent.getBooleanExtra(EXTRA_TRACE_RENDER_PASSES, false)
-    )
+    val simulatedPerfConfig =
+      SimulatedPerfConfig(
+        isComplex = true,
+        complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
+        useInitializingState = intent.getBooleanExtra(EXTRA_SCENARIO_CONFIG_INITIALIZING, false),
+        recursionGraph = recursiveDepth to recursiveBreadth,
+        repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
+        simultaneousActions = intent.getIntExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, 0),
+        traceFrameLatency = intent.getBooleanExtra(EXTRA_TRACE_FRAME_LATENCY, false),
+        traceEventLatency = intent.getBooleanExtra(EXTRA_TRACE_ACTION_TRACING, false),
+        traceRenderingPasses = intent.getBooleanExtra(EXTRA_TRACE_RENDER_PASSES, false),
+      )
 
     require(!(simulatedPerfConfig.traceFrameLatency && simulatedPerfConfig.traceRenderingPasses)) {
       "Only trace render latency OR rendering passes."
@@ -89,17 +87,16 @@ class PerformancePoetryActivity : AppCompatActivity() {
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)
     val model: PoetryModel by viewModels { component.poetryModelFactory() }
 
-    val instrumentedRenderings = if (simulatedPerfConfig.traceFrameLatency) {
-      model.renderings.onEach { screen ->
-        traceRenderingLatency(screen)
+    val instrumentedRenderings =
+      if (simulatedPerfConfig.traceFrameLatency) {
+        model.renderings.onEach { screen -> traceRenderingLatency(screen) }
+      } else {
+        model.renderings
       }
-    } else {
-      model.renderings
-    }
 
     workflowContentView.take(
       lifecycle,
-      instrumentedRenderings.map { it.withEnvironment(viewEnvironment) }
+      instrumentedRenderings.map { it.withEnvironment(viewEnvironment) },
     )
 
     // We can report this here as the first rendering from the Workflow is rendered synchronously.
@@ -161,21 +158,16 @@ class PerformancePoetryActivity : AppCompatActivity() {
     val navigationHolder = navigationInFlight
     if (navigationHolder == null) {
       val tag = "$FRAME_LATENCY_SECTION-${frameCount.pad()}_"
-      Trace.beginAsyncSection(
-        tag,
-        TRACE_COOKIE
-      )
-      navigationInFlight = NavigationHolder(
-        originScreenName = lastScreenName,
-        destinationScreenName = screen.toString(),
-      )
+      Trace.beginAsyncSection(tag, TRACE_COOKIE)
+      navigationInFlight =
+        NavigationHolder(
+          originScreenName = lastScreenName,
+          destinationScreenName = screen.toString(),
+        )
       postFrameRenderedCallback {
         navigationInFlight = null
         // End the trace sections for new rendering produced -> shown.
-        Trace.endAsyncSection(
-          tag,
-          TRACE_COOKIE
-        )
+        Trace.endAsyncSection(tag, TRACE_COOKIE)
         frameCount++
       }
     } else {
@@ -189,25 +181,21 @@ class PerformancePoetryActivity : AppCompatActivity() {
     // The frame callback runs somewhat in the middle of rendering, so by posting at the front
     // of the queue from there we get the timestamp for right when the next frame is done
     // rendering.
-    Choreographer.getInstance().postFrameCallback {
-      mainHandler.postAtFrontOfQueue {
-        block()
-      }
-    }
+    Choreographer.getInstance().postFrameCallback { mainHandler.postAtFrontOfQueue { block() } }
   }
 
-  /**
-   * See methodology from Py - https://py.hashnode.dev/tracing-main-thread-messages
-   */
+  /** See methodology from Py - https://py.hashnode.dev/tracing-main-thread-messages */
   private fun buildSectionLabel(log: String): String {
     val logNoPrefix = log.removePrefix(">>>>> Dispatching to ")
     val indexOfWhat = logNoPrefix.lastIndexOf(": ")
     val indexOfCallback = logNoPrefix.indexOf("} ")
 
     val targetHandler = logNoPrefix.substring(0, indexOfCallback + 1)
-    val callback = logNoPrefix.substring(indexOfCallback + 2, indexOfWhat)
-      .removePrefix("DispatchedContinuation[Dispatchers.Main, Continuation at ")
-      .removePrefix("DispatchedContinuation[Dispatchers.Main.immediate, Continuation at ")
+    val callback =
+      logNoPrefix
+        .substring(indexOfCallback + 2, indexOfWhat)
+        .removePrefix("DispatchedContinuation[Dispatchers.Main, Continuation at ")
+        .removePrefix("DispatchedContinuation[Dispatchers.Main.immediate, Continuation at ")
     val what = logNoPrefix.substring(indexOfWhat + 2)
 
     return if (callback != "null") {
@@ -218,6 +206,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
   }
 
   private fun Long.pad() = toString().padStart(3, '0')
+
   private fun Int.pad() = toString().padStart(3, '0')
 
   companion object {
@@ -229,10 +218,8 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES = "complex.poetry.performance.config.trace.main"
     const val EXTRA_SCENARIO_CONFIG_INITIALIZING =
       "complex.poetry.performance.config.use.initializing"
-    const val EXTRA_TRACE_ACTION_TRACING =
-      "complex.poetry.performance.config.track.action.tracing"
-    const val EXTRA_TRACE_FRAME_LATENCY =
-      "complex.poetry.performance.config.track.frame.latency"
+    const val EXTRA_TRACE_ACTION_TRACING = "complex.poetry.performance.config.track.action.tracing"
+    const val EXTRA_TRACE_FRAME_LATENCY = "complex.poetry.performance.config.track.frame.latency"
     const val EXTRA_TRACE_RENDER_PASSES = "complex.poetry.performance.config.track.rendering"
     const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
@@ -258,7 +245,7 @@ class PoetryModel(
   savedState: SavedStateHandle,
   workflow: MaybeLoadingGatekeeperWorkflow<Pair<Pair<Int, Int>, List<Poem>>>,
   interceptor: WorkflowInterceptor?,
-  runtimeConfig: RuntimeConfig
+  runtimeConfig: RuntimeConfig,
 ) : ViewModel() {
   val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
@@ -266,27 +253,25 @@ class PoetryModel(
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = interceptor?.let { listOf(it) } ?: emptyList(),
-      runtimeConfig = runtimeConfig
+      runtimeConfig = runtimeConfig,
     )
   }
 
   class Factory(
     private val workflow: MaybeLoadingGatekeeperWorkflow<Pair<Pair<Int, Int>, List<Poem>>>,
     private val workflowInterceptor: WorkflowInterceptor?,
-    private val runtimeConfig: RuntimeConfig
+    private val runtimeConfig: RuntimeConfig,
   ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(
-      modelClass: Class<T>,
-      extras: CreationExtras
-    ): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
       if (modelClass == PoetryModel::class.java) {
         @Suppress("UNCHECKED_CAST")
         return PoetryModel(
           extras.createSavedStateHandle(),
           workflow,
           workflowInterceptor,
-          runtimeConfig
-        ) as T
+          runtimeConfig,
+        )
+          as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

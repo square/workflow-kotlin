@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Button as ButtonView
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.annotation.ColorRes
@@ -12,12 +13,8 @@ import androidx.core.view.get
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import android.widget.Button as ButtonView
 
-data class Button(
-  @param:StringRes val name: Int,
-  val onClick: () -> Unit
-)
+data class Button(@param:StringRes val name: Int, val onClick: () -> Unit)
 
 class ButtonBar(
   vararg buttons: Button?,
@@ -47,11 +44,12 @@ class ButtonBar(
           val existingButtonCount = view.childCount - 1
 
           newBar.buttons.forEachIndexed { index, button ->
-            val buttonView = if (index < existingButtonCount) {
-              view[index + 1] as ButtonView
-            } else {
-              ButtonView(context).also { view.addView(it) }
-            }
+            val buttonView =
+              if (index < existingButtonCount) {
+                view[index + 1] as ButtonView
+              } else {
+                ButtonView(context).also { view.addView(it) }
+              }
             with(buttonView) {
               text = view.resources.getText(button.name)
               setOnClickListener { button.onClick() }

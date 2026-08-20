@@ -13,6 +13,7 @@ import kotlin.test.assertEquals
 class StatefulWorkflowSafeEventHandlerTest {
   private sealed interface State {
     data object Able : State
+
     data object Baker : State
   }
 
@@ -22,14 +23,12 @@ class StatefulWorkflowSafeEventHandlerTest {
       failedCast = "$name expected: ${expectedType.simpleName} got: $state"
     }
 
-  @Test fun safeEventHandler0() {
-    val w = Workflow.stateful<State, S, () -> Unit>(Able) {
-      safeEventHandler<Able>(
-        "name",
-        update = { setOutput("yay") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler0() {
+    val w =
+      Workflow.stateful<State, S, () -> Unit>(Able) {
+        safeEventHandler<Able>("name", update = { setOutput("yay") }, onFailedCast = onFailedCast)
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke()
@@ -44,14 +43,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler1() {
-    val w = Workflow.stateful<State, S, (S) -> Unit>(Able) {
-      safeEventHandler<Able, S>(
-        "name",
-        update = { _, e1 -> setOutput(e1) },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler1() {
+    val w =
+      Workflow.stateful<State, S, (S) -> Unit>(Able) {
+        safeEventHandler<Able, S>(
+          "name",
+          update = { _, e1 -> setOutput(e1) },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("yay")
@@ -66,14 +67,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler2() {
-    val w = Workflow.stateful<State, S, (S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S>(
-        "name",
-        update = { _, e1, e2 -> setOutput("$e1-$e2") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler2() {
+    val w =
+      Workflow.stateful<State, S, (S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S>(
+          "name",
+          update = { _, e1, e2 -> setOutput("$e1-$e2") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b")
@@ -88,14 +91,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler3() {
-    val w = Workflow.stateful<State, S, (S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3 -> setOutput("$e1-$e2-$e3") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler3() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3 -> setOutput("$e1-$e2-$e3") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c")
@@ -110,14 +115,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler4() {
-    val w = Workflow.stateful<State, S, (S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4 -> setOutput("$e1-$e2-$e3-$e4") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler4() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4 -> setOutput("$e1-$e2-$e3-$e4") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d")
@@ -132,14 +139,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler5() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5 -> setOutput("$e1-$e2-$e3-$e4-$e5") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler5() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5 -> setOutput("$e1-$e2-$e3-$e4-$e5") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e")
@@ -154,14 +163,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler6() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5, e6 -> setOutput("$e1-$e2-$e3-$e4-$e5-$e6") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler6() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5, e6 -> setOutput("$e1-$e2-$e3-$e4-$e5-$e6") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e", "f")
@@ -176,14 +187,16 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler7() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5, e6, e7 -> setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7") },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler7() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5, e6, e7 -> setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7") },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e", "f", "g")
@@ -198,16 +211,18 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler8() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5, e6, e7, e8 ->
-          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8")
-        },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler8() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5, e6, e7, e8 ->
+            setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8")
+          },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e", "f", "g", "h")
@@ -222,16 +237,18 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler9() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
-          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9")
-        },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler9() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
+            setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9")
+          },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i")
@@ -246,16 +263,18 @@ class StatefulWorkflowSafeEventHandlerTest {
     }
   }
 
-  @Test fun safeEventHandler10() {
-    val w = Workflow.stateful<State, S, (S, S, S, S, S, S, S, S, S, S) -> Unit>(Able) {
-      safeEventHandler<Able, S, S, S, S, S, S, S, S, S, S>(
-        "name",
-        update = { _, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
-          setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9-$e10")
-        },
-        onFailedCast = onFailedCast
-      )
-    }
+  @Test
+  fun safeEventHandler10() {
+    val w =
+      Workflow.stateful<State, S, (S, S, S, S, S, S, S, S, S, S) -> Unit>(Able) {
+        safeEventHandler<Able, S, S, S, S, S, S, S, S, S, S>(
+          "name",
+          update = { _, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
+            setOutput("$e1-$e2-$e3-$e4-$e5-$e6-$e7-$e8-$e9-$e10")
+          },
+          onFailedCast = onFailedCast,
+        )
+      }
     w.launchForTestingFromStartWith {
       val first = awaitNextRendering()
       first.invoke("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")

@@ -4,9 +4,7 @@ plugins {
   id("android-defaults")
 }
 
-android {
-  namespace = "com.squareup.sample.container.poetry"
-}
+android { namespace = "com.squareup.sample.container.poetry" }
 
 dependencies {
   api(libs.androidx.transition)

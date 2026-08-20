@@ -27,26 +27,22 @@ import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.parcelize.Parcelize
 
 /**
- * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation alert when the back
- * button is pressed.
+ * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation alert when the back button is
+ * pressed.
  */
 object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, Rendering>() {
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.toParcelable() ?: Running
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.toParcelable() ?: Running
 
-  class Rendering(
-    private val base: Screen,
-    private val alert: AlertOverlay? = null
-  ) : AndroidScreen<Rendering>, Unwrappable {
+  class Rendering(private val base: Screen, private val alert: AlertOverlay? = null) :
+    AndroidScreen<Rendering>, Unwrappable {
     override val viewFactory: ScreenViewFactory<Rendering> = map { newRendering ->
       BodyAndOverlaysScreen(newRendering.base, listOfNotNull(newRendering.alert))
     }
 
     /**
-     * For nicer logging. See the call to [unwrap][com.squareup.workflow1.ui.unwrap]
-     * in [HelloBackButtonActivity].
+     * For nicer logging. See the call to [unwrap][com.squareup.workflow1.ui.unwrap] in
+     * [HelloBackButtonActivity].
      */
     override val unwrapped: Any
       get() = alert ?: base
@@ -55,7 +51,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, Rendering>()
   @Parcelize
   enum class State : Parcelable {
     Running,
-    Quitting
+    Quitting,
   }
 
   object Finished
@@ -63,7 +59,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, Rendering>()
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Finished>
+    context: RenderContext<Unit, State, Finished>,
   ): Rendering {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 
@@ -80,24 +76,23 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, Rendering>()
         )
       }
       Quitting -> {
-        val alert = AlertOverlay(
-          buttons = mapOf(
-            POSITIVE to "I'm Positive",
-            NEGATIVE to "Negatory"
-          ),
-          message = "Are you sure you want to do this thing?",
-          onEvent = { alertEvent ->
-            context.actionSink.send(
-              when (alertEvent) {
-                is ButtonClicked -> when (alertEvent.button) {
-                  POSITIVE -> confirmQuit
-                  else -> cancelQuit
+        val alert =
+          AlertOverlay(
+            buttons = mapOf(POSITIVE to "I'm Positive", NEGATIVE to "Negatory"),
+            message = "Are you sure you want to do this thing?",
+            onEvent = { alertEvent ->
+              context.actionSink.send(
+                when (alertEvent) {
+                  is ButtonClicked ->
+                    when (alertEvent.button) {
+                      POSITIVE -> confirmQuit
+                      else -> cancelQuit
+                    }
+                  Canceled -> cancelQuit
                 }
-                Canceled -> cancelQuit
-              }
-            )
-          }
-        )
+              )
+            },
+          )
 
         Rendering(ableBakerCharlie, alert)
       }

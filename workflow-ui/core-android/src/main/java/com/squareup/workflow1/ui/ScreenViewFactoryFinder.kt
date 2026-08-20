@@ -11,49 +11,42 @@ import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 
 /**
  * [ViewEnvironment] service object used by [Screen.toViewFactory] to find the right
- * [ScreenViewFactory] to build and manage a [View][android.view.View] to display
- * [Screen]s of the type of the receiver. The default implementation makes [AndroidScreen]
- * work, and provides default bindings for [NamedScreen], [EnvironmentScreen], [BackStackScreen],
- * etc.
+ * [ScreenViewFactory] to build and manage a [View][android.view.View] to display [Screen]s of the
+ * type of the receiver. The default implementation makes [AndroidScreen] work, and provides default
+ * bindings for [NamedScreen], [EnvironmentScreen], [BackStackScreen], etc.
  *
  * Here is how this hook could be used to provide a custom view to handle [BackStackScreen]:
  *
- *    object MyViewFactory : ScreenViewFactory<BackStackScreen<*>>
- *    by ScreenViewFactory(
- *      buildView = { environment, context, _ ->
- *        val view = MyBackStackContainer(context)
- *        ScreenViewHolder(environment, view) { rendering, environment ->
- *          view.update(rendering, environment)
- *        }
- *      }
- *    )
+ * object MyViewFactory : ScreenViewFactory<BackStackScreen<*>> by ScreenViewFactory( buildView = {
+ * environment, context, _ -> val view = MyBackStackContainer(context) ScreenViewHolder(environment,
+ * view) { rendering, environment -> view.update(rendering, environment) } } )
  *
- *    object MyFinder : ScreenViewFactoryFinder {
- *      override fun <ScreenT : Screen> getViewFactoryForRendering(
- *        environment: ViewEnvironment,
- *        rendering: ScreenT
- *      ): ScreenViewFactory<ScreenT> {
- *        @Suppress("UNCHECKED_CAST")
+ * object MyFinder : ScreenViewFactoryFinder { override fun <ScreenT : Screen>
+ * getViewFactoryForRendering( environment: ViewEnvironment, rendering: ScreenT ):
+ * ScreenViewFactory<ScreenT> {
+ *
+ * @Suppress("UNCHECKED_CAST")
+ *
+ *        ```
  *        if (rendering is BackStackScreen<*>) return MyViewFactory as ScreenViewFactory<ScreenT>
  *        return super.getViewFactoryForRendering(environment, rendering)
- *      }
- *    }
+ *        ```
  *
- *    class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
- *      val renderings: StateFlow<MyRootRendering> by lazy {
- *        val env = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder to MyFinder)
- *        renderWorkflowIn(
- *          workflow = MyRootWorkflow.mapRenderings { it.withEnvironment(env) },
- *          scope = viewModelScope,
- *          savedStateHandle = savedState
- *        )
- *      }
- *    }
+ *   ``` }
+ *
+ *      ```
+ *
+ *   }
+ *
+ *   class MyViewModel(savedState: SavedStateHandle) : ViewModel() { val renderings:
+ *   StateFlow<MyRootRendering> by lazy { val env = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder
+ *   to MyFinder) renderWorkflowIn( workflow = MyRootWorkflow.mapRenderings {
+ *   it.withEnvironment(env) }, scope = viewModelScope, savedStateHandle = savedState ) } }
  */
 public interface ScreenViewFactoryFinder {
   public fun <ScreenT : Screen> getViewFactoryForRendering(
     environment: ViewEnvironment,
-    rendering: ScreenT
+    rendering: ScreenT,
   ): ScreenViewFactory<ScreenT>? {
     val factoryOrNull: ScreenViewFactory<ScreenT>? =
       environment[ViewRegistry].getFactoryFor(rendering)
@@ -75,7 +68,8 @@ public interface ScreenViewFactoryFinder {
           prepEnvironment = { e -> e + rendering.environment }
         ) { _, envScreen, environment, showContent ->
           showContent(envScreen.content, environment + envScreen.environment)
-        } as ScreenViewFactory<ScreenT>
+        }
+          as ScreenViewFactory<ScreenT>
       }
   }
 
@@ -87,18 +81,19 @@ public interface ScreenViewFactoryFinder {
 
 public fun <ScreenT : Screen> ScreenViewFactoryFinder.requireViewFactoryForRendering(
   environment: ViewEnvironment,
-  rendering: ScreenT
+  rendering: ScreenT,
 ): ScreenViewFactory<ScreenT> {
   return getViewFactoryForRendering(environment, rendering)
     ?: throw IllegalArgumentException(
-      "A ScreenViewFactory should have been registered to display $rendering, " +
-        "or that class should implement AndroidScreen. Instead found " +
-        "${
+        "A ScreenViewFactory should have been registered to display $rendering, " +
+          "or that class should implement AndroidScreen. Instead found " +
+          "${
           environment[ViewRegistry]
             .getEntryFor(Key(rendering::class, ScreenViewFactory::class))
         }. If this rendering is Compose based, you may be missing a call to " +
-        "ViewEnvironment.withComposeInteropSupport() " +
-        "from module com.squareup.workflow1:workflow-ui-compose at the top " +
-        "of your Android view hierarchy."
-    ).withKey(keyFor(rendering))
+          "ViewEnvironment.withComposeInteropSupport() " +
+          "from module com.squareup.workflow1:workflow-ui-compose at the top " +
+          "of your Android view hierarchy."
+      )
+      .withKey(keyFor(rendering))
 }

@@ -29,11 +29,14 @@ class NestedOverlaysAppTest {
 
   private val scenarioRule = ActivityScenarioRule(NestedOverlaysActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun basics() {
+  @Test
+  fun basics() {
     onTopCoverBody().assertDisplayed()
     onTopCoverEverything().assertDisplayed()
     onBottomCoverBody().assertDisplayed()
@@ -57,7 +60,8 @@ class NestedOverlaysAppTest {
     onBottomCoverEverything().assertNotDisplayed()
   }
 
-  @Test fun backButtonWorks() {
+  @Test
+  fun backButtonWorks() {
     onTopCoverEverything().perform(click())
     onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
 
@@ -67,7 +71,8 @@ class NestedOverlaysAppTest {
     onTopCoverBody().assertDisplayed()
   }
 
-  @Test fun backButtonWorksAfterConfigChange() {
+  @Test
+  fun backButtonWorksAfterConfigChange() {
     onTopCoverEverything().perform(click())
     onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
 
@@ -80,7 +85,8 @@ class NestedOverlaysAppTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/966
-  @Test fun canInsertDialog() {
+  @Test
+  fun canInsertDialog() {
     onTopCoverEverything().perform(click())
 
     // Cannot see the inner dialog.
@@ -100,7 +106,8 @@ class NestedOverlaysAppTest {
     onTopCoverEverything().check(matches(isDisplayed()))
   }
 
-  @Test fun canInsertAndRemoveCoveredDialog() {
+  @Test
+  fun canInsertAndRemoveCoveredDialog() {
     // Show the outer dialog
     onTopCoverEverything().perform(click())
     // Show the inner dialog behind it
@@ -113,24 +120,24 @@ class NestedOverlaysAppTest {
     onTopCoverEverything().check(matches(isDisplayed()))
   }
 
-  @Test fun whenReorderingViewStateIsPreserved() {
+  @Test
+  fun whenReorderingViewStateIsPreserved() {
     // Show the outer dialog
     onTopCoverEverything().perform(click())
 
     // Type something on it
-    onView(withId(R.id.button_bar_text)).inRoot(isDialog())
-      .perform(typeText("banana"))
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).perform(typeText("banana"))
 
     // Click the outer dialog's button to show the inner dialog.
     onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
 
     // The original outer dialog was destroyed and replaced.
     // Check that the text we entered made it to the replacement dialog via view state.
-    onView(withId(R.id.button_bar_text)).inRoot(isDialog())
-      .check(matches(withText("banana")))
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).check(matches(withText("banana")))
   }
 
-  @Test fun orderPreservedOnConfigChange() {
+  @Test
+  fun orderPreservedOnConfigChange() {
     // Show the outer dialog
     onTopCoverEverything().perform(click())
 
@@ -145,7 +152,8 @@ class NestedOverlaysAppTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/314
-  @Test fun whenBodyAndOverlaysStopsBeingRenderedDialogsAreDismissed() {
+  @Test
+  fun whenBodyAndOverlaysStopsBeingRenderedDialogsAreDismissed() {
     onBottomCoverBody().perform(click())
     onView(withText("💣")).inRoot(isDialog()).perform(click())
 

@@ -13,8 +13,8 @@ import org.reactivestreams.Publisher
  *
  * If you're using RxJava, [Flowable] is a [Publisher].
  *
- * Subclassing this is equivalent to just implementing [Worker.run] directly and calling [asFlow]
- * on your [Publisher].
+ * Subclassing this is equivalent to just implementing [Worker.run] directly and calling [asFlow] on
+ * your [Publisher].
  */
 public abstract class PublisherWorker<out OutputT : Any> : Worker<OutputT> {
 
@@ -24,8 +24,8 @@ public abstract class PublisherWorker<out OutputT : Any> : Worker<OutputT> {
    * If you have an [io.reactivex.Observable] instead, just call
    * [toFlowable][io.reactivex.Observable.toFlowable] to convert it.
    *
-   * The [Flowable] is subscribed to in the context of the workflow runtime. When this [Worker],
-   * its parent [Workflow], or any ancestor [Workflow]s are torn down, the subscription will be
+   * The [Flowable] is subscribed to in the context of the workflow runtime. When this [Worker], its
+   * parent [Workflow], or any ancestor [Workflow]s are torn down, the subscription will be
    * [disposed][io.reactivex.disposables.Disposable.dispose].
    */
   public abstract fun runPublisher(): Publisher<out OutputT>

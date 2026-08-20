@@ -11,9 +11,14 @@ data class BoardCell(val codePoint: Int) {
 
   private val string = String(Character.toChars(codePoint))
 
-  val isEmpty get() = this == EMPTY_FLOOR
-  val isWall get() = this in WALL_CELLS
-  val isToxic get() = this in TOXIC
+  val isEmpty
+    get() = this == EMPTY_FLOOR
+
+  val isWall
+    get() = this in WALL_CELLS
+
+  val isToxic
+    get() = this in TOXIC
 
   override fun toString(): String = string
 
@@ -24,13 +29,9 @@ data class BoardCell(val codePoint: Int) {
   }
 }
 
-fun String.asBoardCells(): List<BoardCell> = codePointsSequence()
-  .map(::BoardCell)
-  .toList()
+fun String.asBoardCells(): List<BoardCell> = codePointsSequence().map(::BoardCell).toList()
 
-/**
- * Algorithm taken from codePoints() method in API 24+.
- */
+/** Algorithm taken from codePoints() method in API 24+. */
 private fun String.codePointsSequence() = sequence {
   var i = 0
 

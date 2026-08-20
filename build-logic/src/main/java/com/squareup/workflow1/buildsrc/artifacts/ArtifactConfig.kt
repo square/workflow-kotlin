@@ -29,7 +29,7 @@ data class ArtifactConfig(
   val description: String,
   val packaging: String,
   val javaVersion: Int,
-  val publicationName: String
+  val publicationName: String,
 ) : Serializable {
   val key = "$gradlePath+$publicationName"
 }

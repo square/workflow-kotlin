@@ -26,7 +26,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering.Colo
 data class TerminalRendering(
   val text: String,
   val textColor: Color = DEFAULT,
-  val backgroundColor: Color = DEFAULT
+  val backgroundColor: Color = DEFAULT,
 ) {
   enum class Color {
     BLACK,
@@ -37,18 +37,19 @@ data class TerminalRendering(
     MAGENTA,
     CYAN,
     WHITE,
-    DEFAULT
+    DEFAULT,
   }
 }
 
-internal fun Color.toTextColor(): TextColor = when (this) {
-  BLACK -> ANSI.BLACK
-  RED -> ANSI.RED
-  GREEN -> ANSI.GREEN
-  YELLOW -> ANSI.YELLOW
-  BLUE -> ANSI.BLUE
-  MAGENTA -> ANSI.MAGENTA
-  CYAN -> ANSI.CYAN
-  WHITE -> ANSI.WHITE
-  DEFAULT -> ANSI.DEFAULT
-}
+internal fun Color.toTextColor(): TextColor =
+  when (this) {
+    BLACK -> ANSI.BLACK
+    RED -> ANSI.RED
+    GREEN -> ANSI.GREEN
+    YELLOW -> ANSI.YELLOW
+    BLUE -> ANSI.BLUE
+    MAGENTA -> ANSI.MAGENTA
+    CYAN -> ANSI.CYAN
+    WHITE -> ANSI.WHITE
+    DEFAULT -> ANSI.DEFAULT
+  }

@@ -28,17 +28,15 @@ internal actual inline fun <R> Lock.withLock(block: () -> R): R {
  * Implementation of [ThreadLocal] that works in a similar way to Java's, based on a thread-specific
  * map/dictionary.
  */
-internal actual class ThreadLocal<T>(
-  private val initialValue: () -> T
-) : NSObject(), NSCopyingProtocol {
+internal actual class ThreadLocal<T>(private val initialValue: () -> T) :
+  NSObject(), NSCopyingProtocol {
 
   private val threadDictionary
     get() = NSThread.currentThread().threadDictionary
 
   actual fun get(): T {
     @Suppress("UNCHECKED_CAST")
-    return (threadDictionary.objectForKey(aKey = this) as T?)
-      ?: initialValue().also(::set)
+    return (threadDictionary.objectForKey(aKey = this) as T?) ?: initialValue().also(::set)
   }
 
   actual fun set(value: T) {

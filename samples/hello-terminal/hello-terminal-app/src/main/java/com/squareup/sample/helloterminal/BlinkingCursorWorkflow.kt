@@ -11,10 +11,8 @@ import kotlinx.coroutines.delay
  * A simple workflow that renders either a cursor character or an empty string, changing after every
  * [delayMs] milliseconds.
  */
-class BlinkingCursorWorkflow(
-  cursor: Char,
-  private val delayMs: Long
-) : StatefulWorkflow<Unit, Boolean, Nothing, String>() {
+class BlinkingCursorWorkflow(cursor: Char, private val delayMs: Long) :
+  StatefulWorkflow<Unit, Boolean, Nothing, String>() {
 
   private val cursorString = cursor.toString()
 
@@ -27,15 +25,12 @@ class BlinkingCursorWorkflow(
     }
   }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): Boolean = true
+  override fun initialState(props: Unit, snapshot: Snapshot?): Boolean = true
 
   override fun render(
     renderProps: Unit,
     renderState: Boolean,
-    context: RenderContext<Unit, Boolean, Nothing>
+    context: RenderContext<Unit, Boolean, Nothing>,
   ): String {
     context.runningWorker(intervalWorker) { setCursorShowing(it) }
     return if (renderState) cursorString else ""
@@ -43,7 +38,5 @@ class BlinkingCursorWorkflow(
 
   override fun snapshotState(state: Boolean): Snapshot? = null
 
-  private fun setCursorShowing(showing: Boolean) = action("setCursorShowing") {
-    state = showing
-  }
+  private fun setCursorShowing(showing: Boolean) = action("setCursorShowing") { state = showing }
 }

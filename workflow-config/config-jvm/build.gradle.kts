@@ -5,12 +5,9 @@ plugins {
 }
 
 tasks.withType<Test> {
-  project
-    .properties
+  project.properties
     .asSequence()
-    .filter { (key, value) ->
-      key.startsWith("workflow.runtime") && value != null
-    }
+    .filter { (key, value) -> key.startsWith("workflow.runtime") && value != null }
     .forEach { (key, value) ->
       println("Workflow Runtime Configuration via test: '$key': '$value'")
       System.setProperty(key, value as String)
@@ -18,6 +15,4 @@ tasks.withType<Test> {
     }
 }
 
-dependencies {
-  api(project(":workflow-runtime"))
-}
+dependencies { api(project(":workflow-runtime")) }

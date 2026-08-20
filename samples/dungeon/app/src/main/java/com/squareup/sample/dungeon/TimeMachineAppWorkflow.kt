@@ -12,29 +12,21 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
 /**
- * A workflow that wraps [DungeonAppWorkflow] with a [ShakeableTimeMachineWorkflow] to enable
- * time travel debugging.
+ * A workflow that wraps [DungeonAppWorkflow] with a [ShakeableTimeMachineWorkflow] to enable time
+ * travel debugging.
  */
 @OptIn(ExperimentalTime::class)
-class TimeMachineAppWorkflow(
-  appWorkflow: DungeonAppWorkflow,
-  clock: TimeSource,
-  context: Context
-) : StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
+class TimeMachineAppWorkflow(appWorkflow: DungeonAppWorkflow, clock: TimeSource, context: Context) :
+  StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
 
   private val timeMachineWorkflow =
-    ShakeableTimeMachineWorkflow(
-      TimeMachineWorkflow(appWorkflow, clock),
-      context
-    )
+    ShakeableTimeMachineWorkflow(TimeMachineWorkflow(appWorkflow, clock), context)
 
   override fun render(
     renderProps: BoardPath,
-    context: RenderContext<BoardPath, Nothing>
+    context: RenderContext<BoardPath, Nothing>,
   ): ShakeableTimeMachineScreen {
-    val propsFactory = PropsFactory { recording ->
-      Props(paused = !recording)
-    }
+    val propsFactory = PropsFactory { recording -> Props(paused = !recording) }
     return context.renderChild(timeMachineWorkflow, propsFactory)
   }
 }

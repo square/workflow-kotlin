@@ -1,13 +1,11 @@
 package com.squareup.sample.dungeon
 
 import android.content.Context
-import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.delay
 
-/**
- * Interface for TestApplication to implement to configure fake loading delay for UI tests.
- */
+/** Interface for TestApplication to implement to configure fake loading delay for UI tests. */
 interface DungeonApplication {
   suspend fun delayForFakeLoad()
 }

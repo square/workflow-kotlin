@@ -60,9 +60,7 @@ kotlin {
     }
 
     // Shared source set for JVM-based targets (Android and JVM)
-    val jvmCommon = create("jvmCommon") {
-      dependsOn(commonMain.get())
-    }
+    val jvmCommon = create("jvmCommon") { dependsOn(commonMain.get()) }
 
     androidMain {
       dependsOn(jvmCommon)
@@ -79,22 +77,14 @@ kotlin {
       }
     }
 
-    jvmMain {
-      dependsOn(jvmCommon)
-    }
+    jvmMain { dependsOn(jvmCommon) }
 
     // Configure native/apple source sets hierarchy (replacing the default hierarchy template)
-    val nativeMain = maybeCreate("nativeMain").apply {
-      dependsOn(commonMain.get())
-    }
+    val nativeMain = maybeCreate("nativeMain").apply { dependsOn(commonMain.get()) }
 
-    val appleMain = maybeCreate("appleMain").apply {
-      dependsOn(nativeMain)
-    }
+    val appleMain = maybeCreate("appleMain").apply { dependsOn(nativeMain) }
 
-    val iosMain = maybeCreate("iosMain").apply {
-      dependsOn(appleMain)
-    }
+    val iosMain = maybeCreate("iosMain").apply { dependsOn(appleMain) }
 
     // Individual iOS target source sets depend on iosMain
     maybeCreate("iosArm64Main").apply { dependsOn(iosMain) }
@@ -102,9 +92,7 @@ kotlin {
     maybeCreate("iosSimulatorArm64Main").apply { dependsOn(iosMain) }
 
     // JS source set depends on commonMain
-    maybeCreate("jsMain").apply {
-      dependsOn(commonMain.get())
-    }
+    maybeCreate("jsMain").apply { dependsOn(commonMain.get()) }
 
     getByName("androidDeviceTest") {
       dependencies {

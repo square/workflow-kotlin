@@ -15,9 +15,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.compile.JavaCompile
 
-abstract class ArtifactsTask(
-  private val projectLayout: ProjectLayout
-) : DefaultTask() {
+abstract class ArtifactsTask(private val projectLayout: ProjectLayout) : DefaultTask() {
 
   /**
    * This file contains all definitions for published artifacts.
@@ -36,67 +34,59 @@ abstract class ArtifactsTask(
    * doesn't allow direct references to `project` in task properties or inside task actions.
    * Somehow, it doesn't complain about this even though it's definitely accessed at runtime.
    */
-  @get:Internal
-  protected val currentList by lazy { project.createArtifactList() }
+  @get:Internal protected val currentList by lazy { project.createArtifactList() }
 
   @get:Internal
   protected val moshiAdapter: JsonAdapter<List<ArtifactConfig>> by lazy {
+    val type = Types.newParameterizedType(List::class.java, ArtifactConfig::class.java)
 
-    val type = Types.newParameterizedType(
-      List::class.java,
-      ArtifactConfig::class.java
-    )
-
-    Moshi.Builder()
-      .build()
-      .adapter(type)
+    Moshi.Builder().build().adapter(type)
   }
 
   private fun Project.createArtifactList(): List<ArtifactConfig> {
 
-    val map = subprojects
-      .flatMap { sub ->
-        sub.extensions.findByType(PublishingExtension::class.java)
-          ?.publications
-          ?.filterIsInstance<MavenPublication>()
-          .orEmpty()
-          .map { publication -> sub to publication }
-      }
-      .mapNotNull { (sub, publication) ->
+    val map =
+      subprojects
+        .flatMap { sub ->
+          sub.extensions
+            .findByType(PublishingExtension::class.java)
+            ?.publications
+            ?.filterIsInstance<MavenPublication>()
+            .orEmpty()
+            .map { publication -> sub to publication }
+        }
+        .mapNotNull { (sub, publication) ->
+          val group: String? = publication.groupId
+          val artifactId: String? = publication.artifactId
+          val pomDescription: String? = publication.pom.name.orNull
+          val packaging: String? = publication.pom.packaging
 
-        val group: String? = publication.groupId
-        val artifactId: String? = publication.artifactId
-        val pomDescription: String? = publication.pom.name.orNull
-        val packaging: String? = publication.pom.packaging
-
-        listOfNotNull(group, artifactId, pomDescription, packaging)
-          .also { allProperties ->
-
-            require(allProperties.isEmpty() || allProperties.size == 4) {
-              "expected all properties to be null or none to be null for project `${sub.path}, " +
-                "but got:\n" +
-                "group : $group\n" +
-                "artifactId : $artifactId\n" +
-                "pom description : $pomDescription\n" +
-                "packaging : $packaging"
+          listOfNotNull(group, artifactId, pomDescription, packaging)
+            .also { allProperties ->
+              require(allProperties.isEmpty() || allProperties.size == 4) {
+                "expected all properties to be null or none to be null for project `${sub.path}, " +
+                  "but got:\n" +
+                  "group : $group\n" +
+                  "artifactId : $artifactId\n" +
+                  "pom description : $pomDescription\n" +
+                  "packaging : $packaging"
+              }
             }
-          }
-          .takeIf { it.size == 4 }
-          ?.let { (group, artifactId, pomDescription, packaging) ->
+            .takeIf { it.size == 4 }
+            ?.let { (group, artifactId, pomDescription, packaging) ->
+              val javaVersion = sub.getJavaReleaseVersion()
 
-            val javaVersion = sub.getJavaReleaseVersion()
-
-            ArtifactConfig(
-              gradlePath = sub.path,
-              group = group,
-              artifactId = artifactId,
-              description = pomDescription,
-              packaging = packaging,
-              javaVersion = javaVersion,
-              publicationName = publication.name
-            )
-          }
-      }
+              ArtifactConfig(
+                gradlePath = sub.path,
+                group = group,
+                artifactId = artifactId,
+                description = pomDescription,
+                packaging = packaging,
+                javaVersion = javaVersion,
+                publicationName = publication.name,
+              )
+            }
+        }
 
     return map
   }
@@ -110,24 +100,28 @@ abstract class ArtifactsTask(
    * 3. [org.gradle.api.plugins.JavaPluginExtension.getTargetCompatibility.getMajorVersion]
    */
   private fun Project.getJavaReleaseVersion(): Int {
-    val releaseVersion = tasks.withType(JavaCompile::class.java)
-      .mapNotNull { it.options.release.orNull }
-      .distinct()
-      .also { versions ->
-        check(versions.size < 2) {
-          "Multiple JDK release versions are not supported.  We found: $versions"
+    val releaseVersion =
+      tasks
+        .withType(JavaCompile::class.java)
+        .mapNotNull { it.options.release.orNull }
+        .distinct()
+        .also { versions ->
+          check(versions.size < 2) {
+            "Multiple JDK release versions are not supported.  We found: $versions"
+          }
         }
-      }
-      .singleOrNull()
+        .singleOrNull()
 
     if (releaseVersion != null) {
       return releaseVersion
     }
 
-    val androidVersion = extensions.findByType(TestedExtension::class.java)
-      ?.compileOptions
-      ?.targetCompatibility
-      ?.majorVersion
+    val androidVersion =
+      extensions
+        .findByType(TestedExtension::class.java)
+        ?.compileOptions
+        ?.targetCompatibility
+        ?.majorVersion
 
     if (androidVersion != null) {
       return androidVersion.toInt()

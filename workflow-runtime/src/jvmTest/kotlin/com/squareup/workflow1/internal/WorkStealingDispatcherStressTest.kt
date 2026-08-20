@@ -2,15 +2,15 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.awaitUntilDone
 import com.squareup.workflow1.calculateSaturatingTestThreadCount
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.StandardTestDispatcher
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
 
 /**
  * Returns the maximum number of threads that can be ran in parallel on the host system, rounded
@@ -30,7 +30,8 @@ class WorkStealingDispatcherStressTest {
    * tasks from the queue until all dispatches are done. Only dispatches are done in parallel.
    */
   @Suppress("CheckResult")
-  @Test fun stressTestDispatchingFromMultipleThreadsNoExecuting() {
+  @Test
+  fun stressTestDispatchingFromMultipleThreadsNoExecuting() {
     // Use a test dispatcher so we can pause time.
     val baseDispatcher = StandardTestDispatcher()
     val dispatcher = WorkStealingDispatcher(baseDispatcher)
@@ -51,9 +52,7 @@ class WorkStealingDispatcherStressTest {
 
         // Launch a storm of coroutines to hammer the dispatcher.
         repeat(dispatchesPerThread) {
-          dispatcher.dispatch(scope.coroutineContext, Runnable {
-            finishedDispatches.countDown()
-          })
+          dispatcher.dispatch(scope.coroutineContext, Runnable { finishedDispatches.countDown() })
         }
         doneDispatching.countDown()
       }
@@ -76,7 +75,8 @@ class WorkStealingDispatcherStressTest {
    * [WorkStealingDispatcher.advanceUntilIdle]. Both methods are ran in parallel.
    */
   @Suppress("CheckResult")
-  @Test fun stressTestDispatchingFromMultipleThreadsWithAdvanceUntilIdle() {
+  @Test
+  fun stressTestDispatchingFromMultipleThreadsWithAdvanceUntilIdle() {
     // Use a test dispatcher so we can pause time.
     val baseDispatcher = StandardTestDispatcher()
     val dispatcher = WorkStealingDispatcher(baseDispatcher)
@@ -101,10 +101,13 @@ class WorkStealingDispatcherStressTest {
 
         // Launch a storm of coroutines to hammer the dispatcher.
         repeat(dispatchesPerThread) { dispatchNum ->
-          dispatcher.dispatch(scope.coroutineContext, Runnable {
-            statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
-            finishedDispatches.countDown()
-          })
+          dispatcher.dispatch(
+            scope.coroutineContext,
+            Runnable {
+              statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
+              finishedDispatches.countDown()
+            },
+          )
         }
         doneDispatching.countDown()
       }
@@ -142,7 +145,8 @@ class WorkStealingDispatcherStressTest {
    * [WorkStealingDispatcher.advanceUntilIdle]. Both methods are ran in parallel.
    */
   @Suppress("CheckResult")
-  @Test fun stressTestDispatchingFromMultipleThreadsWithDispatch() {
+  @Test
+  fun stressTestDispatchingFromMultipleThreadsWithDispatch() {
     // Use a test dispatcher so we can pause time.
     val baseDispatcher = StandardTestDispatcher()
     val dispatcher = WorkStealingDispatcher(baseDispatcher)
@@ -167,10 +171,13 @@ class WorkStealingDispatcherStressTest {
 
         // Launch a storm of coroutines to hammer the dispatcher.
         repeat(dispatchesPerThread) { dispatchNum ->
-          dispatcher.dispatch(scope.coroutineContext, Runnable {
-            statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
-            finishedDispatches.countDown()
-          })
+          dispatcher.dispatch(
+            scope.coroutineContext,
+            Runnable {
+              statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
+              finishedDispatches.countDown()
+            },
+          )
         }
         doneDispatching.countDown()
       }
@@ -208,7 +215,8 @@ class WorkStealingDispatcherStressTest {
    * [WorkStealingDispatcher.advanceUntilIdle]. Both methods are ran in parallel.
    */
   @Suppress("CheckResult")
-  @Test fun stressTestDispatchingFromMultipleThreadsWithUnconfined() {
+  @Test
+  fun stressTestDispatchingFromMultipleThreadsWithUnconfined() {
     // Use a test dispatcher so we can pause time.
     val dispatcher = WorkStealingDispatcher(Dispatchers.Unconfined)
     val scope = CoroutineScope(dispatcher)
@@ -230,10 +238,13 @@ class WorkStealingDispatcherStressTest {
 
         // Launch a storm of coroutines to hammer the dispatcher.
         repeat(dispatchesPerThread) { dispatchNum ->
-          dispatcher.dispatch(scope.coroutineContext, Runnable {
-            statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
-            finishedDispatches.countDown()
-          })
+          dispatcher.dispatch(
+            scope.coroutineContext,
+            Runnable {
+              statuses[(threadNum * dispatchesPerThread) + dispatchNum].incrementAndGet()
+              finishedDispatches.countDown()
+            },
+          )
         }
         doneDispatching.countDown()
       }

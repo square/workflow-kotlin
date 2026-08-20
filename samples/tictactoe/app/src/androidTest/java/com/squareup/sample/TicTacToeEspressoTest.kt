@@ -31,20 +31,21 @@ import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 /**
- * This app is our most complex sample, which makes it a great candidate for
- * integration testing — especially of modals, back stacks, back button handling,
- * and view state management.
+ * This app is our most complex sample, which makes it a great candidate for integration testing —
+ * especially of modals, back stacks, back button handling, and view state management.
  */
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
   private val scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
 
   @get:Rule
-  val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  private val scenario get() = scenarioRule.scenario
+  private val scenario
+    get() = scenarioRule.scenario
 
   @Before
   fun setUp() {
@@ -60,18 +61,22 @@ class TicTacToeEspressoTest {
     }
   }
 
-  @Test fun configChangeReflectsWorkflowState() {
+  @Test
+  fun configChangeReflectsWorkflowState() {
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("bad email")
     onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    onView(withId(R.id.login_error_message)).inRoot(isDialog())
+    onView(withId(R.id.login_error_message))
+      .inRoot(isDialog())
       .check(matches(withText("Invalid address")))
     scenario.recreate()
-    onView(withId(R.id.login_error_message)).inRoot(isDialog())
+    onView(withId(R.id.login_error_message))
+      .inRoot(isDialog())
       .check(matches(withText("Invalid address")))
   }
 
-  @Test fun editTextSurvivesConfigChange() {
+  @Test
+  fun editTextSurvivesConfigChange() {
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
     scenario.recreate()
@@ -80,7 +85,8 @@ class TicTacToeEspressoTest {
     onView(withId(R.id.login_password)).inRoot(isDialog()).check(matches(withText("")))
   }
 
-  @Test fun backStackPopRestoresViewState() {
+  @Test
+  fun backStackPopRestoresViewState() {
     // The loading screen is pushed onto the back stack.
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("bad password")
@@ -89,11 +95,13 @@ class TicTacToeEspressoTest {
     // Loading ends with an error, and we pop back to login. The
     // email should have been restored from view state.
     onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@bar")))
-    onView(withId(R.id.login_error_message)).inRoot(isDialog())
+    onView(withId(R.id.login_error_message))
+      .inRoot(isDialog())
       .check(matches(withText("Unknown email or invalid password")))
   }
 
-  @Test fun dialogSurvivesConfigChange() {
+  @Test
+  fun dialogSurvivesConfigChange() {
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
     onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
@@ -104,14 +112,17 @@ class TicTacToeEspressoTest {
 
     onGameView().perform(pressBack())
 
-    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
+    onView(withText("Do you really want to concede the game?"))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
     scenario.recreate()
-    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
+    onView(withText("Do you really want to concede the game?"))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
   }
 
-  @Test fun canGoBackFromAlert() {
+  @Test
+  fun canGoBackFromAlert() {
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
     onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
@@ -122,10 +133,12 @@ class TicTacToeEspressoTest {
 
     onGameView().perform(pressBack())
 
-    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
+    onView(withText("Do you really want to concede the game?"))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
     onView(withText("I QUIT")).inRoot(isDialog()).perform(click())
-    onView(withText("Really?")).inRoot(isDialog())
+    onView(withText("Really?"))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
       .perform(pressBack())
 
@@ -133,14 +146,16 @@ class TicTacToeEspressoTest {
     clickCell(0)
   }
 
-  @Test fun canGoBackInModalViewAndSeeRestoredViewState() {
+  @Test
+  fun canGoBackInModalViewAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@2fa")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
     onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
     // See 2nd factor, then use the back button to go back and see the login screen again.
-    onView(withId(R.id.second_factor)).inRoot(isDialog())
+    onView(withId(R.id.second_factor))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
       .perform(pressBack())
 
@@ -148,7 +163,8 @@ class TicTacToeEspressoTest {
     onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@2fa")))
   }
 
-  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
+  @Test
+  fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@2fa")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
@@ -167,7 +183,8 @@ class TicTacToeEspressoTest {
    * On tablets this revealed a problem with SavedStateRegistry.
    * https://github.com/square/workflow-kotlin/pull/656#issuecomment-1027274391
    */
-  @Test fun fullJourney() {
+  @Test
+  fun fullJourney() {
     onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
     onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
     onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
@@ -181,7 +198,8 @@ class TicTacToeEspressoTest {
     clickCell(2)
 
     onView(withText(R.string.exit)).perform(click())
-    onView(withId(R.id.start_game)).inRoot(isDialog())
+    onView(withId(R.id.start_game))
+      .inRoot(isDialog())
       .check(matches(isDisplayed()))
       .perform(pressBack())
 
@@ -193,12 +211,8 @@ class TicTacToeEspressoTest {
   }
 
   private fun clickCell(index: Int) {
-    onView(
-      allOf(
-        withParent(withClassName(endsWith("GridLayout"))),
-        withParentIndex(index)
-      )
-    ).perform((click()))
+    onView(allOf(withParent(withClassName(endsWith("GridLayout"))), withParentIndex(index)))
+      .perform((click()))
   }
 
   private fun ViewInteraction.type(text: String) {

@@ -53,11 +53,7 @@ internal fun RenderTrace(
     val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
     // Updates current state with the new data from trace source.
-    fun addToStates(
-      frame: List<Node>,
-      tree: List<Node>,
-      affected: List<Set<Node>>
-    ) {
+    fun addToStates(frame: List<Node>, tree: List<Node>, affected: List<Set<Node>>) {
       frames.addAll(frame)
       fullTree.addAll(tree)
       affectedNodes.addAll(affected)
@@ -69,7 +65,7 @@ internal fun RenderTrace(
     fun handleParseResult(
       parseResult: ParseResult,
       rawRenderPass: String? = null,
-      onNewFrame: (() -> Unit)? = null
+      onNewFrame: (() -> Unit)? = null,
     ) {
       when (parseResult) {
         is ParseResult.Failure -> {
@@ -80,7 +76,7 @@ internal fun RenderTrace(
           addToStates(
             frame = parseResult.trace,
             tree = parseResult.trees,
-            affected = parseResult.affectedNodes
+            affected = parseResult.affectedNodes,
           )
           // Only increment the frame index and add the raw data during Live tracing mode.
           onNewFrame?.invoke()
@@ -93,17 +89,13 @@ internal fun RenderTrace(
     LaunchedEffect(traceSource) {
       when (traceSource) {
         is TraceMode.File -> {
-          checkNotNull(traceSource.file) {
-            "TraceMode.File should have a non-null file to parse."
-          }
+          checkNotNull(traceSource.file) { "TraceMode.File should have a non-null file to parse." }
           val parseResult = parseFileTrace(traceSource.file)
           handleParseResult(parseResult)
         }
 
         is TraceMode.Live -> {
-          checkNotNull(traceSource.device) {
-            "TraceMode.Live requires a selected device"
-          }
+          checkNotNull(traceSource.device) { "TraceMode.Live requires a selected device" }
           val adapter: JsonAdapter<List<Node>> = createMoshiAdapter<Node>()
           streamRenderPassesFromDevice(traceSource.device) { rawRenderPass ->
             val currentTree = fullTree.lastOrNull()
@@ -116,7 +108,8 @@ internal fun RenderTrace(
     }
 
     // This will only happen in the initial switch to Live Mode, where a socket error bubbled up and
-    // the lambda call to parse the data was immediately cancelled, meaning handleParseResult was never
+    // the lambda call to parse the data was immediately cancelled, meaning handleParseResult was
+    // never
     // called to set isLoading to false.
     if (isLoading && error != null) {
       Error("Device Connection Failed:\n$error")
@@ -139,10 +132,11 @@ internal fun RenderTrace(
         affectedNodes = affectedNodes[frameInd],
         expandedNodes = remember(frameInd) { mutableStateMapOf() },
         onNodeSelect = onNodeSelect,
-        storeNodeLocation = storeNodeLocation
+        storeNodeLocation = storeNodeLocation,
       )
 
-      // This error happens when there has already been previous data parsed, but some exception bubbled
+      // This error happens when there has already been previous data parsed, but some exception
+      // bubbled
       // up again, meaning it has to be a socket closure in Live mode.
       error?.let { Error("Lost Connection:\n$error") }
     }
@@ -155,7 +149,7 @@ fun Error(message: String) {
     Text(
       text = message,
       fontSize = 20.sp,
-      modifier = Modifier.align(Alignment.Center).padding(200.dp)
+      modifier = Modifier.align(Alignment.Center).padding(200.dp),
     )
   }
 }

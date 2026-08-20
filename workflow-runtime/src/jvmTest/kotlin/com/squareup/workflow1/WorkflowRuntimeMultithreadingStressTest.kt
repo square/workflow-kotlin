@@ -1,6 +1,8 @@
 package com.squareup.workflow1
 
 import app.cash.burst.Burst
+import java.util.concurrent.CountDownLatch
+import kotlin.test.Test
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
@@ -11,13 +13,12 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import java.util.concurrent.CountDownLatch
-import kotlin.test.Test
 
 @OptIn(WorkflowExperimentalRuntime::class)
 @Burst
 class WorkflowRuntimeMultithreadingStressTest(
-  private val runtime: RuntimeConfigOptions.Companion.RuntimeOptions = RuntimeConfigOptions.Companion.RuntimeOptions.NONE
+  private val runtime: RuntimeConfigOptions.Companion.RuntimeOptions =
+    RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 ) {
 
   @OptIn(DelicateCoroutinesApi::class)
@@ -59,26 +60,29 @@ class WorkflowRuntimeMultithreadingStressTest(
         emittersReadyLatch.countDown()
       }
     }
-    val root = Workflow.stateful(
-      initialState = { _, _ -> 0 },
-      snapshot = { null },
-      render = { _, count ->
-        val action = action<Unit, Int, Nothing>("countChild") { this.state++ }
-        repeat(childCount) { childIndex ->
-          renderChild(child, props = childIndex, key = "child-$childIndex", handler = { action })
-        }
-        return@stateful count
-      })
+    val root =
+      Workflow.stateful(
+        initialState = { _, _ -> 0 },
+        snapshot = { null },
+        render = { _, count ->
+          val action = action<Unit, Int, Nothing>("countChild") { this.state++ }
+          repeat(childCount) { childIndex ->
+            renderChild(child, props = childIndex, key = "child-$childIndex", handler = { action })
+          }
+          return@stateful count
+        },
+      )
 
     val testDispatcher = newFixedThreadPoolContext(nThreads = testThreadCount, name = "test")
     testDispatcher.use {
-      val renderings = renderWorkflowIn(
-        workflow = root,
-        scope = backgroundScope + testDispatcher,
-        props = MutableStateFlow(Unit),
-        runtimeConfig = runtime.runtimeConfig,
-        onOutput = {}
-      )
+      val renderings =
+        renderWorkflowIn(
+          workflow = root,
+          scope = backgroundScope + testDispatcher,
+          props = MutableStateFlow(Unit),
+          runtimeConfig = runtime.runtimeConfig,
+          onOutput = {},
+        )
 
       // Wait for all workers to spin up.
       emittersReadyLatch.awaitUntilDone()

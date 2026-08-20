@@ -28,17 +28,15 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 
   object Toggle
 
-  @Composable override fun RenderingContent(
-    props: String,
-    outputSink: Sink<Toggle>,
-  ) {
+  @Composable
+  override fun RenderingContent(props: String, outputSink: Sink<Toggle>) {
     MaterialTheme {
       Text(
         text = props,
-        modifier = Modifier
-          .clickable(onClick = { outputSink.send(Toggle) })
-          .fillMaxSize()
-          .wrapContentSize(Alignment.Center)
+        modifier =
+          Modifier.clickable(onClick = { outputSink.send(Toggle) })
+            .fillMaxSize()
+            .wrapContentSize(Alignment.Center),
       )
     }
   }
@@ -47,10 +45,11 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 @Preview(showBackground = true)
 @Composable
 fun HelloComposeWorkflowPreview() {
-  val rendering by HelloComposeWorkflow.renderAsState(
-    props = "hello",
-    onOutput = {},
-    runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-  )
+  val rendering by
+    HelloComposeWorkflow.renderAsState(
+      props = "hello",
+      onOutput = {},
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+    )
   WorkflowRendering(rendering)
 }

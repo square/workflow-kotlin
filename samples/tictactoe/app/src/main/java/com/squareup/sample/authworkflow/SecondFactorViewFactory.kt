@@ -12,7 +12,5 @@ internal val SecondFactorViewFactory: ScreenViewFactory<SecondFactorScreen> =
 
     secondFactorErrorMessage.text = rendering.errorMessage
 
-    secondFactorSubmitButton.setOnClickListener {
-      rendering.onSubmit(secondFactor.text.toString())
-    }
+    secondFactorSubmitButton.setOnClickListener { rendering.onSubmit(secondFactor.text.toString()) }
   }

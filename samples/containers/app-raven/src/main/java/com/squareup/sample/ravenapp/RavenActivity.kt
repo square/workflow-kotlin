@@ -52,16 +52,15 @@ class RavenModel(savedState: SavedStateHandle) : ViewModel() {
 
   val renderings: Flow<Screen> by lazy {
     renderWorkflowIn(
-      workflow = RealPoemWorkflow(),
-      scope = viewModelScope,
-      savedStateHandle = savedState,
-      prop = Raven,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-    ) {
-      running.complete()
-    }.reportNavigation {
-      Timber.i("Navigated to %s", it)
-    }
+        workflow = RealPoemWorkflow(),
+        scope = viewModelScope,
+        savedStateHandle = savedState,
+        prop = Raven,
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      ) {
+        running.complete()
+      }
+      .reportNavigation { Timber.i("Navigated to %s", it) }
   }
 
   suspend fun waitForExit() = running.join()

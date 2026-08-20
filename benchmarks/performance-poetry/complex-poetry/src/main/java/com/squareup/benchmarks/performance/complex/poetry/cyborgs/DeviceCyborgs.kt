@@ -8,34 +8,30 @@ import java.io.ByteArrayOutputStream
 
 const val DEFAULT_UI_AUTOMATOR_TIMEOUT: Long = 5_000
 
-fun UiDevice.waitForAndClick(
-  selector: BySelector,
-  timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT
-) {
+fun UiDevice.waitForAndClick(selector: BySelector, timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   val uiObject = wait(Until.findObject(selector), timeout)
   check(uiObject != null) {
-    "Waited $timeout ms for $selector and could not find it in window\n" +
-      windowHierarchy()
+    "Waited $timeout ms for $selector and could not find it in window\n" + windowHierarchy()
   }
   uiObject.click()
 }
 
 fun UiDevice.waitFor(
   selector: BySelector,
-  timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT
+  timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT,
 ): UiObject2 {
   val uiObject = wait(Until.findObject(selector), timeout)
   check(uiObject != null) {
-    "Waited $timeout ms for $selector and could not find it in window\n" +
-      windowHierarchy()
+    "Waited $timeout ms for $selector and could not find it in window\n" + windowHierarchy()
   }
   return uiObject
 }
 
-fun UiDevice.windowHierarchy(): String? = ByteArrayOutputStream().run {
-  dumpWindowHierarchy(this)
-  toString("UTF-8")
-}
+fun UiDevice.windowHierarchy(): String? =
+  ByteArrayOutputStream().run {
+    dumpWindowHierarchy(this)
+    toString("UTF-8")
+  }
 
 fun UiDevice.landscapeOrientation() {
   // Landscape Orientation.

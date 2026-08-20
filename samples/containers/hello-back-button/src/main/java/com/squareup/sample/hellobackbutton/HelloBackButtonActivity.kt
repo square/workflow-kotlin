@@ -50,17 +50,16 @@ class HelloBackButtonModel(savedState: SavedStateHandle) : ViewModel() {
 
   val renderings: Flow<Screen> by lazy {
     renderWorkflowIn(
-      workflow = AreYouSureWorkflow,
-      scope = viewModelScope,
-      savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-    ) {
-      // This workflow handles the back button itself, so the activity can't.
-      // Instead, the workflow emits an output to signal that it's time to shut things down.
-      running.complete()
-    }.reportNavigation {
-      Timber.i("Navigated to %s", it)
-    }
+        workflow = AreYouSureWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState,
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      ) {
+        // This workflow handles the back button itself, so the activity can't.
+        // Instead, the workflow emits an output to signal that it's time to shut things down.
+        running.complete()
+      }
+      .reportNavigation { Timber.i("Navigated to %s", it) }
   }
 
   /** Blocks until the workflow signals that it's time to shut things down. */

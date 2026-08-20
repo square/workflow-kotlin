@@ -8,12 +8,12 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * List elements must implement [InlineListNode].
  *
  * It supports a limited number of operations:
- *  - [forEach]: Iterate over the list. This is an inline function, so has no lambda allocation
- *    overhead.
- *  - [removeFirst]: Find the first element that matches a predicate, remove it, and return it.
- *    This function is also inline and so has no lambda allocation overhead.
- *  - [plusAssign]
- *  - [clear]
+ * - [forEach]: Iterate over the list. This is an inline function, so has no lambda allocation
+ *   overhead.
+ * - [removeFirst]: Find the first element that matches a predicate, remove it, and return it. This
+ *   function is also inline and so has no lambda allocation overhead.
+ * - [plusAssign]
+ * - [clear]
  */
 internal class InlineLinkedList<T : InlineListNode<T>> {
 
@@ -21,7 +21,7 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
    * Interface to be implemented by something that can be stored in an [InlineLinkedList].
    *
    * @property nextListNode For use by [InlineLinkedList] only – implementors should never mutate
-   * this property. It's default value should be null.
+   *   this property. It's default value should be null.
    */
   interface InlineListNode<T : InlineListNode<T>> {
     var nextListNode: T?
@@ -84,9 +84,7 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
     return null
   }
 
-  /**
-   * Iterates over the list.
-   */
+  /** Iterates over the list. */
   inline fun forEach(block: (T) -> Unit) {
     var currentNode = head
     while (currentNode != null) {
@@ -95,9 +93,7 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
     }
   }
 
-  /**
-   * Removes all elements from the list.
-   */
+  /** Removes all elements from the list. */
   fun clear() {
     head = null
     tail = null

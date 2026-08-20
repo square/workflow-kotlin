@@ -39,7 +39,8 @@ class JsonParserTest {
     // Create frame with new nested child
     val frameNestedChild1 = createNode("nested1", "child1", "2")
     val frameNestedChild2 = createNode("nested2", "child1", "3")
-    val frameChild = createNode("child1", "root", "1", "0", mutableListOf(frameNestedChild1, frameNestedChild2))
+    val frameChild =
+      createNode("child1", "root", "1", "0", mutableListOf(frameNestedChild1, frameNestedChild2))
     val frame = createNode("root", "root", "0", "0", listOf(frameChild))
 
     // Merge frame into main tree
@@ -92,7 +93,7 @@ class JsonParserTest {
     parent: String,
     id: String,
     parentId: String = "0",
-    children: List<Node> = emptyList()
+    children: List<Node> = emptyList(),
   ): Node {
     return Node(
       name = name,
@@ -102,9 +103,7 @@ class JsonParserTest {
       props = "",
       state = "",
       rendering = "",
-      children = LinkedHashMap<String, Node>().apply {
-        children.forEach { put(it.id, it) }
-      }
+      children = LinkedHashMap<String, Node>().apply { children.forEach { put(it.id, it) } },
     )
   }
 }

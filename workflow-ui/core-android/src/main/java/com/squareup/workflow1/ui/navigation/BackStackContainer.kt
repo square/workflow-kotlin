@@ -39,15 +39,17 @@ import com.squareup.workflow1.ui.toViewFactory
  *
  * This container supports saving and restoring the view state of each of its subviews corresponding
  * to the renderings in its [BackStackScreen]. It supports two distinct state mechanisms:
- *  1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
- *  2. AndroidX [SavedStateRegistry] via
- *  [SavedStateRegistryOwner][androidx.savedstate.SavedStateRegistryOwner].
+ * 1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
+ * 2. AndroidX [SavedStateRegistry] via
+ *    [SavedStateRegistryOwner][androidx.savedstate.SavedStateRegistryOwner].
  */
-public open class BackStackContainer @JvmOverloads constructor(
+public open class BackStackContainer
+@JvmOverloads
+constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
-  defStyleRes: Int = 0
+  defStyleRes: Int = 0,
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
 
   private val viewStateCache = ViewStateCache()
@@ -57,25 +59,24 @@ public open class BackStackContainer @JvmOverloads constructor(
 
   /**
    * Unique identifier for this view for SavedStateRegistry purposes. Based on the
-   * [Compatible.keyFor] the current rendering. Taking this approach allows
-   * feature developers to take control over naming, e.g. by wrapping renderings
-   * with [NamedScreen][com.squareup.workflow1.ui.NamedScreen].
+   * [Compatible.keyFor] the current rendering. Taking this approach allows feature developers to
+   * take control over naming, e.g. by wrapping renderings with
+   * [NamedScreen][com.squareup.workflow1.ui.NamedScreen].
    */
   private lateinit var savedStateParentKey: String
 
-  public fun update(
-    newRendering: BackStackScreen<*>,
-    newViewEnvironment: ViewEnvironment
-  ) {
+  public fun update(newRendering: BackStackScreen<*>, newViewEnvironment: ViewEnvironment) {
     savedStateParentKey = keyFor(screen)
 
     val config = if (newRendering.backStack.isEmpty()) First else CanGoBack
     val environment = newViewEnvironment + config
 
     val named: BackStackScreen<NamedScreen<*>> = newRendering
-      // ViewStateCache requires that everything be Named.
-      // It's fine if client code is already using Named for its own purposes, recursion works.
-      .map { NamedScreen(it, "backstack") }
+    // ViewStateCache requires that everything be Named.
+    // It's fine if client code is already using Named for its own purposes, recursion works.
+    .map {
+      NamedScreen(it, "backstack")
+    }
 
     val oldViewHolderMaybe = currentViewHolder
 
@@ -88,16 +89,19 @@ public open class BackStackContainer @JvmOverloads constructor(
         return
       }
 
-    val newViewHolder = named.top.toViewFactory(environment).startShowing(
-      initialRendering = named.top,
-      initialEnvironment = environment,
-      contextForNewView = this.context,
-      container = this,
-      viewStarter = { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view, environment.onBackPressedDispatcherOwner(this))
-        doStart()
-      }
-    )
+    val newViewHolder =
+      named.top
+        .toViewFactory(environment)
+        .startShowing(
+          initialRendering = named.top,
+          initialEnvironment = environment,
+          contextForNewView = this.context,
+          container = this,
+          viewStarter = { view, doStart ->
+            WorkflowLifecycleOwner.installOn(view, environment.onBackPressedDispatcherOwner(this))
+            doStart()
+          },
+        )
     viewStateCache.update(named.backStack, oldViewHolderMaybe, newViewHolder)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
@@ -111,69 +115,66 @@ public open class BackStackContainer @JvmOverloads constructor(
   }
 
   /**
-   * Called from [update] (via [ScreenViewHolder.show] to swap between views. Subclasses
-   * can override to customize visual effects. There is no need to call super. Note that
-   * views are showing renderings of type [NamedScreen]`<*>`.
+   * Called from [update] (via [ScreenViewHolder.show] to swap between views. Subclasses can
+   * override to customize visual effects. There is no need to call super. Note that views are
+   * showing renderings of type [NamedScreen]`<*>`.
    *
    * @param oldHolderMaybe the outgoing view, or null if this is the initial rendering.
-   * @param newHolder the view that should replace [oldHolderMaybe] (if it exists), and become
-   * this view's only child
+   * @param newHolder the view that should replace [oldHolderMaybe] (if it exists), and become this
+   *   view's only child
    * @param popped true if we should give the appearance of popping "back" to a previous rendering,
-   * false if a new rendering is being "pushed". Should be ignored if [oldHolderMaybe] is null.
+   *   false if a new rendering is being "pushed". Should be ignored if [oldHolderMaybe] is null.
    */
   protected open fun performTransition(
     oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
     newHolder: ScreenViewHolder<NamedScreen<*>>,
-    popped: Boolean
+    popped: Boolean,
   ) {
     // Showing something already, transition with push or pop effect.
-    oldHolderMaybe
-      ?.let { oldHolder ->
-        val oldBody: View? = oldHolder.view.findViewById(R.id.back_stack_body)
-        val newBody: View? = newHolder.view.findViewById(R.id.back_stack_body)
+    oldHolderMaybe?.let { oldHolder ->
+      val oldBody: View? = oldHolder.view.findViewById(R.id.back_stack_body)
+      val newBody: View? = newHolder.view.findViewById(R.id.back_stack_body)
 
-        val oldTarget: View
-        val newTarget: View
-        if (oldBody != null && newBody != null) {
-          oldTarget = oldBody
-          newTarget = newBody
-        } else {
-          oldTarget = oldHolder.view
-          newTarget = newHolder.view
-        }
+      val oldTarget: View
+      val newTarget: View
+      if (oldBody != null && newBody != null) {
+        oldTarget = oldBody
+        newTarget = newBody
+      } else {
+        oldTarget = oldHolder.view
+        newTarget = newHolder.view
+      }
 
-        val (outEdge, inEdge) = when (popped) {
+      val (outEdge, inEdge) =
+        when (popped) {
           false -> Gravity.START to Gravity.END
           true -> Gravity.END to Gravity.START
         }
 
-        val transition = TransitionSet()
+      val transition =
+        TransitionSet()
           .addTransition(Slide(outEdge).addTarget(oldTarget))
           .addTransition(Slide(inEdge).addTarget(newTarget))
           .setInterpolator(AccelerateDecelerateInterpolator())
 
-        TransitionManager.endTransitions(this)
-        TransitionManager.go(Scene(this, newHolder.view), transition)
-        return
-      }
+      TransitionManager.endTransitions(this)
+      TransitionManager.go(Scene(this, newHolder.view), transition)
+      return
+    }
 
     // This is the first view, just show it.
     addView(newHolder.view)
   }
 
   override fun onSaveInstanceState(): Parcelable? {
-    return super.onSaveInstanceState()?.let {
-      SavedState(it, viewStateCache.save())
-    }
+    return super.onSaveInstanceState()?.let { SavedState(it, viewStateCache.save()) }
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
-    (state as? SavedState)
-      ?.let {
-        viewStateCache.restore(it.savedViewState)
-        super.onRestoreInstanceState(state.superState)
-      }
-      ?: super.onRestoreInstanceState(super.onSaveInstanceState())
+    (state as? SavedState)?.let {
+      viewStateCache.restore(it.savedViewState)
+      super.onRestoreInstanceState(state.superState)
+    } ?: super.onRestoreInstanceState(super.onSaveInstanceState())
     // Some other class wrote state, but we're not allowed to skip
     // the call to super. Make a no-op call.
   }
@@ -196,36 +197,33 @@ public open class BackStackContainer @JvmOverloads constructor(
   public class SavedState : BaseSavedState {
     public constructor(
       superState: Parcelable,
-      savedViewState: ViewStateCache.Saved
+      savedViewState: ViewStateCache.Saved,
     ) : super(superState) {
       this.savedViewState = savedViewState
     }
 
     public constructor(source: Parcel) : super(source) {
-      savedViewState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-        source.readParcelable(
-          ViewStateCache.Saved::class.java.classLoader,
-          ViewStateCache.Saved::class.java
-        )!!
-      } else {
-        @Suppress("DEPRECATION")
-        source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
-      }
+      savedViewState =
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+          source.readParcelable(
+            ViewStateCache.Saved::class.java.classLoader,
+            ViewStateCache.Saved::class.java,
+          )!!
+        } else {
+          @Suppress("DEPRECATION")
+          source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+        }
     }
 
     public val savedViewState: ViewStateCache.Saved
 
-    override fun writeToParcel(
-      out: Parcel,
-      flags: Int
-    ) {
+    override fun writeToParcel(out: Parcel, flags: Int) {
       super.writeToParcel(out, flags)
       out.writeParcelable(savedViewState, flags)
     }
 
     public companion object CREATOR : Creator<SavedState> {
-      override fun createFromParcel(source: Parcel): SavedState =
-        SavedState(source)
+      override fun createFromParcel(source: Parcel): SavedState = SavedState(source)
 
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }

@@ -20,27 +20,29 @@ import org.mockito.kotlin.whenever
 internal class RealWorkflowLifecycleOwnerTest {
 
   private val rootContext = mock<Context>()
-  private val view = mock<View> {
-    on { context } doReturn rootContext
-  }
+  private val view = mock<View> { on { context } doReturn rootContext }
   private var parentLifecycle: LifecycleRegistry? = null
-  private val owner = RealWorkflowLifecycleOwner(
-    enforceMainThread = false,
-    findParentLifecycle = { parentLifecycle!! }
-  )
+  private val owner =
+    RealWorkflowLifecycleOwner(
+      enforceMainThread = false,
+      findParentLifecycle = { parentLifecycle!! },
+    )
 
-  @Test fun `lifecycle starts initialized`() {
+  @Test
+  fun `lifecycle starts initialized`() {
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
   }
 
-  @Test fun `lifecycle not destroyed when detached`() {
+  @Test
+  fun `lifecycle not destroyed when detached`() {
     ensureParentLifecycle()
     makeViewAttached()
     makeViewDetached()
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
   }
 
-  @Test fun `lifecycle is not destroyed after detachOnDestroy while attached`() {
+  @Test
+  fun `lifecycle is not destroyed after detachOnDestroy while attached`() {
     ensureParentLifecycle()
     makeViewAttached()
 
@@ -49,7 +51,8 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
   }
 
-  @Test fun `lifecycle is destroyed after detachOnDestroy and detach`() {
+  @Test
+  fun `lifecycle is destroyed after detachOnDestroy and detach`() {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = CREATED
     makeViewAttached()
@@ -60,7 +63,8 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
-  @Test fun `lifecycle is destroyed after detachOnDestroy when already detached`() {
+  @Test
+  fun `lifecycle is destroyed after detachOnDestroy when already detached`() {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = CREATED
     // Attach and detach the view to move past the INITIALIZED state by synchronizing with the
@@ -73,19 +77,19 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
-  @Test fun `lifecycle is destroyed by detachOnDestroy from a downstream onDetached handler`() {
+  @Test
+  fun `lifecycle is destroyed by detachOnDestroy from a downstream onDetached handler`() {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = CREATED
 
     makeViewAttached()
-    makeViewDetached {
-      owner.destroyOnDetach()
-    }
+    makeViewDetached { owner.destroyOnDetach() }
 
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
-  @Test fun `lifecycle doesn't resume after destroy`() {
+  @Test
+  fun `lifecycle doesn't resume after destroy`() {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = CREATED
     // Attach and detach the view to move past the INITIALIZED state by synchronizing with the
@@ -99,50 +103,56 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
-  @Test fun `lifecycle moves to parent state when attached`() {
+  @Test
+  fun `lifecycle moves to parent state when attached`() {
     ensureParentLifecycle().currentState = STARTED
     makeViewAttached()
     assertThat(owner.lifecycle.currentState).isEqualTo(STARTED)
   }
 
-  @Test fun `lifecycle follows parent state while attached`() {
+  @Test
+  fun `lifecycle follows parent state while attached`() {
     ensureParentLifecycle().currentState = INITIALIZED
     makeViewAttached()
 
     listOf(
-      // Going up…
-      CREATED,
-      STARTED,
-      RESUMED,
-      // …and back down.
-      CREATED,
-      DESTROYED,
-    ).forEach { state ->
-      ensureParentLifecycle().currentState = state
-      assertThat(owner.lifecycle.currentState).isEqualTo(state)
-    }
+        // Going up…
+        CREATED,
+        STARTED,
+        RESUMED,
+        // …and back down.
+        CREATED,
+        DESTROYED,
+      )
+      .forEach { state ->
+        ensureParentLifecycle().currentState = state
+        assertThat(owner.lifecycle.currentState).isEqualTo(state)
+      }
   }
 
-  @Test fun `lifecycle follows parent state while detached`() {
+  @Test
+  fun `lifecycle follows parent state while detached`() {
     ensureParentLifecycle().currentState = INITIALIZED
     makeViewAttached()
     makeViewDetached()
 
     listOf(
-      // Going up…
-      CREATED,
-      STARTED,
-      RESUMED,
-      // …and back down.
-      CREATED,
-      DESTROYED,
-    ).forEach { state ->
-      ensureParentLifecycle().currentState = state
-      assertThat(owner.lifecycle.currentState).isEqualTo(state)
-    }
+        // Going up…
+        CREATED,
+        STARTED,
+        RESUMED,
+        // …and back down.
+        CREATED,
+        DESTROYED,
+      )
+      .forEach { state ->
+        ensureParentLifecycle().currentState = state
+        assertThat(owner.lifecycle.currentState).isEqualTo(state)
+      }
   }
 
-  @Test fun `lifecycle stays destroyed after parent destroyed`() {
+  @Test
+  fun `lifecycle stays destroyed after parent destroyed`() {
     val destroyedParent = ensureParentLifecycle()
     destroyedParent.currentState = RESUMED
     makeViewAttached()
@@ -156,7 +166,8 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
-  @Test fun `lifecycle stops observing parent when destroyed`() {
+  @Test
+  fun `lifecycle stops observing parent when destroyed`() {
     ensureParentLifecycle().currentState = RESUMED
     makeViewAttached()
     assertThat(ensureParentLifecycle().observerCount).isEqualTo(1)
@@ -168,7 +179,8 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(ensureParentLifecycle().observerCount).isEqualTo(0)
   }
 
-  @Test fun `lifecycle switches subscription to new parent when reattached`() {
+  @Test
+  fun `lifecycle switches subscription to new parent when reattached`() {
     val originalParent = ensureParentLifecycle()
     originalParent.currentState = CREATED
     makeViewAttached()
@@ -186,18 +198,15 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(STARTED)
   }
 
-  @Test fun `lifecycle stays in INITIALIZED when moved immediately to DESTROYED`() {
+  @Test
+  fun `lifecycle stays in INITIALIZED when moved immediately to DESTROYED`() {
     val events = mutableListOf<Event>()
     ensureParentLifecycle()
     // Cannot go directly to DESTROYED
     parentLifecycle!!.currentState = CREATED
     parentLifecycle!!.currentState = DESTROYED
     // The lifecycle is more strict when there's at least one observer, so add one.
-    owner.lifecycle.addObserver(
-      LifecycleEventObserver { _, event ->
-        events += event
-      }
-    )
+    owner.lifecycle.addObserver(LifecycleEventObserver { _, event -> events += event })
 
     makeViewAttached()
 
@@ -220,9 +229,10 @@ internal class RealWorkflowLifecycleOwnerTest {
 
   private fun ensureParentLifecycle(): LifecycleRegistry {
     if (parentLifecycle == null) {
-      val owner = object : LifecycleOwner {
-        override val lifecycle = LifecycleRegistry.createUnsafe(this)
-      }
+      val owner =
+        object : LifecycleOwner {
+          override val lifecycle = LifecycleRegistry.createUnsafe(this)
+        }
       parentLifecycle = owner.lifecycle
     }
     return parentLifecycle!!

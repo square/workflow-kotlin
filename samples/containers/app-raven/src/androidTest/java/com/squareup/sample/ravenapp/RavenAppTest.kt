@@ -18,12 +18,14 @@ class RavenAppTest {
 
   private val scenarioRule = ActivityScenarioRule(RavenActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun launches() {
-    onView(withText("The Raven"))
-      .check(matches(isDisplayed()))
+  @Test
+  fun launches() {
+    onView(withText("The Raven")).check(matches(isDisplayed()))
   }
 }

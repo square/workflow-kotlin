@@ -24,12 +24,12 @@ import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorke
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
-import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.full.isSupertypeOf
+import kotlinx.coroutines.CoroutineScope
 
 private const val WORKFLOW_INTERFACE_NAME = "com.squareup.workflow1.Workflow"
 
@@ -49,16 +49,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
    * has `exactMatch` set to true, it is moved from [expectations] to this list.
    */
   private val consumedExpectations: MutableList<Expectation<*>> = mutableListOf(),
-  /**
-   * Flag that is set as soon as an expectation is registered that emits an output.
-   */
+  /** Flag that is set as soon as an expectation is registered that emits an output. */
   private var childWillEmitOutput: Boolean = false,
   /**
    * If an expectation includes a [WorkflowOutput], then when that expectation is matched, this
    * property stores the [WorkflowAction] that was specified to handle that output.
    */
   private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null,
-) : RenderTester<PropsT, StateT, OutputT, RenderingT>(),
+) :
+  RenderTester<PropsT, StateT, OutputT, RenderingT>(),
   BaseRenderContext<PropsT, StateT, OutputT>,
   RenderTestResult<PropsT, StateT, OutputT, RenderingT>,
   Sink<WorkflowAction<PropsT, StateT, OutputT>> {
@@ -71,7 +70,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     data class ExpectedWorkflow(
       val matcher: (RenderChildInvocation) -> ChildWorkflowMatch,
       val exactMatch: Boolean,
-      val description: String
+      val description: String,
     ) : Expectation<Any?>() {
       override fun describe(): String = description
     }
@@ -80,7 +79,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       val matchesWhen: (otherWorker: Worker<*>) -> Boolean,
       val key: String,
       override val output: WorkflowOutput<OutputT>?,
-      val description: String
+      val description: String,
     ) : Expectation<OutputT>() {
       override fun describe(): String = description.ifBlank { "worker key=$key, output=$output" }
     }
@@ -88,7 +87,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     data class ExpectedSideEffect(
       val matcher: (String) -> Boolean,
       val exactMatch: Boolean,
-      val description: String
+      val description: String,
     ) : Expectation<Nothing>() {
       override fun describe(): String = description
     }
@@ -126,18 +125,20 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val runSideEffects: MutableList<String> = mutableListOf()
 
   /**
-   * Tracks the invocations all calls to [remember], so it can emulate the behavior
-   * of the real runtime and throw if duplicate keys are found.
+   * Tracks the invocations all calls to [remember], so it can emulate the behavior of the real
+   * runtime and throw if duplicate keys are found.
    */
   private val rememberSet = mutableSetOf<RememberInvocation>()
 
-  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
+  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
+    get() = this
+
   override val workflowTracer: WorkflowTracer? = null
 
   override fun expectWorkflow(
     description: String,
     exactMatch: Boolean,
-    matcher: (RenderChildInvocation) -> ChildWorkflowMatch
+    matcher: (RenderChildInvocation) -> ChildWorkflowMatch,
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> = apply {
     expectations += ExpectedWorkflow(matcher, exactMatch, description)
   }
@@ -145,7 +146,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun expectSideEffect(
     description: String,
     exactMatch: Boolean,
-    matcher: (key: String) -> Boolean
+    matcher: (key: String) -> Boolean,
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> = apply {
     expectations += ExpectedSideEffect(matcher, exactMatch, description)
   }
@@ -153,7 +154,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun expectRemember(
     description: String,
     exactMatch: Boolean,
-    matcher: (RememberInvocation) -> Boolean
+    matcher: (RememberInvocation) -> Boolean,
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> = apply {
     expectations += ExpectedRemember(matcher, exactMatch, description)
   }
@@ -209,7 +210,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
   ): ChildRenderingT {
     checkNotFrozen { "renderChild(${child.identifier})" }
     val identifierPair = Pair(child.identifier, key)
@@ -226,8 +227,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       }
     }
     val invocation = createRenderChildInvocation(child, props, key)
-    val matches = expectations.filterIsInstance<ExpectedWorkflow>()
-      .mapNotNull {
+    val matches =
+      expectations.filterIsInstance<ExpectedWorkflow>().mapNotNull {
         val matchResult = it.matcher(invocation)
         if (matchResult is Matched) Pair(it, matchResult) else null
       }
@@ -236,24 +237,24 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
 
     val exactMatches = matches.filter { it.first.exactMatch }
-    val (_, match) = when {
-      exactMatches.size == 1 -> {
-        exactMatches.single()
-          .also { (expected, _) ->
+    val (_, match) =
+      when {
+        exactMatches.size == 1 -> {
+          exactMatches.single().also { (expected, _) ->
             expectations -= expected
             consumedExpectations += expected
           }
-      }
+        }
 
-      exactMatches.size > 1 -> {
-        throw AssertionError(
-          "Multiple expectations matched $description:\n" +
-            exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
-        )
+        exactMatches.size > 1 -> {
+          throw AssertionError(
+            "Multiple expectations matched $description:\n" +
+              exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
+          )
+        }
+        // Inexact matches are not consumable.
+        else -> matches.first()
       }
-      // Inexact matches are not consumable.
-      else -> matches.first()
-    }
 
     if (match.output != null) {
       check(processedAction == null) {
@@ -268,18 +269,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     return match.childRendering as ChildRenderingT
   }
 
-  override fun runningSideEffect(
-    key: String,
-    sideEffect: suspend CoroutineScope.() -> Unit
-  ) {
+  override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
     checkNotFrozen { "runningSideEffect($key)" }
     require(key !in runSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
     runSideEffects += key
 
     val description = "side effect with key \"$key\""
 
-    val matches = expectations.filterIsInstance<ExpectedSideEffect>()
-      .mapNotNull {
+    val matches =
+      expectations.filterIsInstance<ExpectedSideEffect>().mapNotNull {
         if (it.matcher(key)) it else null
       }
     if (matches.isEmpty()) {
@@ -295,18 +293,17 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
 
     // Inexact matches are not consumable.
-    exactMatches.singleOrNull()
-      ?.let { expected ->
-        expectations -= expected
-        consumedExpectations += expected
-      }
+    exactMatches.singleOrNull()?.let { expected ->
+      expectations -= expected
+      consumedExpectations += expected
+    }
   }
 
   override fun <ResultT> remember(
     key: String,
     resultType: KType,
     vararg inputs: Any?,
-    calculation: () -> ResultT
+    calculation: () -> ResultT,
   ): ResultT {
     checkNotFrozen { "remember($key)" }
     val invocation = RememberInvocation(key, resultType, inputs.asList())
@@ -316,8 +313,10 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     val description = "remember with key \"$key\""
 
-    val matches = expectations.filterIsInstance<ExpectedRemember>()
-      .mapNotNull { if (it.matcher(invocation)) it else null }
+    val matches =
+      expectations.filterIsInstance<ExpectedRemember>().mapNotNull {
+        if (it.matcher(invocation)) it else null
+      }
     if (matches.isEmpty()) {
       throw AssertionError("Unexpected $description")
     }
@@ -331,29 +330,25 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
 
     // Inexact matches are not consumable.
-    exactMatches.singleOrNull()
-      ?.let { expected ->
-        expectations -= expected
-        consumedExpectations += expected
-      }
+    exactMatches.singleOrNull()?.let { expected ->
+      expectations -= expected
+      consumedExpectations += expected
+    }
 
     return calculation()
   }
 
   override fun requireExplicitWorkerExpectations():
-    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
-    explicitWorkerExpectationsRequired = true
-  }
+    RenderTester<PropsT, StateT, OutputT, RenderingT> =
+    this.apply { explicitWorkerExpectationsRequired = true }
 
   override fun requireExplicitSideEffectExpectations():
-    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
-    explicitSideEffectExpectationsRequired = true
-  }
+    RenderTester<PropsT, StateT, OutputT, RenderingT> =
+    this.apply { explicitSideEffectExpectationsRequired = true }
 
   override fun requireExplicitRememberExpectations():
-    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
-    explicitRememberExpectationsRequired = true
-  }
+    RenderTester<PropsT, StateT, OutputT, RenderingT> =
+    this.apply { explicitRememberExpectationsRequired = true }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     if (!frozen) {
@@ -395,60 +390,61 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     newProps: PropsT
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
     val (stateAfterRender, _) = stateAndOutput
-    val newState = if (props != newProps) {
-      workflow.onPropsChanged(props, newProps, stateAfterRender)
-    } else {
-      stateAfterRender
-    }
+    val newState =
+      if (props != newProps) {
+        workflow.onPropsChanged(props, newProps, stateAfterRender)
+      } else {
+        stateAfterRender
+      }
     return RealRenderTester(
       workflow = workflow,
       props = newProps,
       state = newState,
-      runtimeConfig = runtimeConfig
+      runtimeConfig = runtimeConfig,
     )
   }
 
-  private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(
-    workflow,
-    props,
-    state,
-    runtimeConfig = runtimeConfig,
-    // Copy the list of expectations since it's mutable.
-    expectations = ArrayList(expectations),
-    // Don't care about consumed expectations.
-    childWillEmitOutput = childWillEmitOutput,
-    processedAction = processedAction
-  )
+  private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> =
+    RealRenderTester(
+      workflow,
+      props,
+      state,
+      runtimeConfig = runtimeConfig,
+      // Copy the list of expectations since it's mutable.
+      expectations = ArrayList(expectations),
+      // Don't care about consumed expectations.
+      childWillEmitOutput = childWillEmitOutput,
+      processedAction = processedAction,
+    )
 
   private fun checkNoOutputs(newExpectation: Expectation<*>? = null) {
     check(!childWillEmitOutput) {
-      val expectationsWithOutputs = (expectations + listOfNotNull(newExpectation))
-        .filter { it.output != null }
+      val expectationsWithOutputs =
+        (expectations + listOfNotNull(newExpectation)).filter { it.output != null }
       "Expected only one child to emit an output:\n" +
         expectationsWithOutputs.joinToString(separator = "\n") { "  $it" }
     }
   }
 
-  private fun checkNotFrozen(reason: () -> String = { "" }) = check(!frozen) {
-    "RenderContext cannot be used after render method returns" +
-      "${reason().takeUnless { it.isBlank() }?.let { " ($it)" }}"
-  }
+  private fun checkNotFrozen(reason: () -> String = { "" }) =
+    check(!frozen) {
+      "RenderContext cannot be used after render method returns" +
+        "${reason().takeUnless { it.isBlank() }?.let { " ($it)" }}"
+    }
 }
 
 internal fun createRenderChildInvocation(
   workflow: Workflow<*, *, *>,
   props: Any?,
-  renderKey: String
+  renderKey: String,
 ): RenderChildInvocation {
   val workflowClass = workflow::class
 
   // Get the KType of the Workflow interface with the type parameters specified by this workflow
   // instance.
-  val workflowInterfaceType = workflowClass.allSupertypes
-    .single { type ->
-      (type.classifier as? KClass<*>)
-        ?.let { it.qualifiedName == WORKFLOW_INTERFACE_NAME }
-        ?: false
+  val workflowInterfaceType =
+    workflowClass.allSupertypes.single { type ->
+      (type.classifier as? KClass<*>)?.let { it.qualifiedName == WORKFLOW_INTERFACE_NAME } ?: false
     }
 
   check(workflowInterfaceType.arguments.size == 3)
@@ -469,8 +465,8 @@ internal fun WorkflowIdentifier.realTypeMatchesClassExpectation(
 }
 
 /**
- * Returns true iff this identifier's [WorkflowIdentifier.getRealIdentifierType]  has the same
- * class (or is a subtype) of the [expectedKClass].
+ * Returns true iff this identifier's [WorkflowIdentifier.getRealIdentifierType] has the same class
+ * (or is a subtype) of the [expectedKClass].
  */
 internal fun WorkflowIdentifier.realTypeMatchesClassExpectation(
   expectedKClass: KClass<*>
@@ -489,12 +485,14 @@ internal fun WorkflowIdentifierType.matchesExpectation(expected: WorkflowIdentif
 
 internal fun WorkflowIdentifierType.matchesClassExpectation(expectedKClass: KClass<*>): Boolean {
   return when (this) {
-    is Snapshottable -> kClass?.let { actualKClass ->
-      expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
-    } == true
-    is Unsnapshottable -> (kType.classifier as? KClass<*>)?.let { actualKClass ->
-      expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
-    } == true
+    is Snapshottable ->
+      kClass?.let { actualKClass ->
+        expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
+      } == true
+    is Unsnapshottable ->
+      (kType.classifier as? KClass<*>)?.let { actualKClass ->
+        expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
+      } == true
   }
 }
 
@@ -514,5 +512,4 @@ private fun Snapshottable.matchesSnapshottable(expected: Snapshottable): Boolean
  * See https://github.com/square/workflow-kotlin/issues/155 and
  * https://youtrack.jetbrains.com/issue/KT-40863.
  */
-private fun KClass<*>.isJavaMockOf(type: KClass<*>): Boolean =
-  type.java.isAssignableFrom(this.java)
+private fun KClass<*>.isJavaMockOf(type: KClass<*>): Boolean = type.java.isAssignableFrom(this.java)

@@ -13,34 +13,30 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import kotlin.math.abs
 import kotlin.math.min
 
-/**
- * Large emoji used to determine how to scale the text paint size to fill the view.
- */
+/** Large emoji used to determine how to scale the text paint size to fill the view. */
 private const val EMOJI_FOR_MEASURE = "🌳"
 
-/**
- * Custom view that can draw a [Board].
- */
+/** Custom view that can draw a [Board]. */
 class BoardView(context: Context) : View(context) {
 
-  private val textPaint = Paint().apply {
-    // Set the text color correctly in case the map contains regular text characters (emojis ignore
-    // the text paint color).
-    color = ContextCompat.getColor(
-      context,
-      com.google.android.material.R.color.design_default_color_on_primary
-    )
-  }
+  private val textPaint =
+    Paint().apply {
+      // Set the text color correctly in case the map contains regular text characters (emojis
+      // ignore
+      // the text paint color).
+      color =
+        ContextCompat.getColor(
+          context,
+          com.google.android.material.R.color.design_default_color_on_primary,
+        )
+    }
   private val glyphBounds = Rect()
   private var board: Board? = null
   private var cellWidth: Int = 0
   private var cellHeight: Int = 0
   private val fontMetrics = FontMetrics()
 
-  override fun onMeasure(
-    widthMeasureSpec: Int,
-    heightMeasureSpec: Int
-  ) {
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     // Make ourselves square.
     val requestedWidth = MeasureSpec.getSize(widthMeasureSpec)
     val requestedHeight = MeasureSpec.getSize(heightMeasureSpec)
@@ -83,13 +79,11 @@ class BoardView(context: Context) : View(context) {
     }
   }
 
-  companion object : ScreenViewFactory<Board>
-  by ScreenViewFactory.fromCode(
-    buildView = { _, initialEnvironment, context, _ ->
-      val view = BoardView(context)
-      ScreenViewHolder(initialEnvironment, view) { screen, _ ->
-        view.update(screen)
+  companion object :
+    ScreenViewFactory<Board> by ScreenViewFactory.fromCode(
+      buildView = { _, initialEnvironment, context, _ ->
+        val view = BoardView(context)
+        ScreenViewHolder(initialEnvironment, view) { screen, _ -> view.update(screen) }
       }
-    }
-  )
+    )
 }

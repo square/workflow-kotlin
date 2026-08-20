@@ -14,13 +14,12 @@ private const val YAML_DELIMITER = "---"
  * @see parseBoardMetadataOrNull
  */
 fun BufferedSource.parseBoardMetadata(): BoardMetadata =
-  parseBoardMetadataOrNull() ?: throw IllegalArgumentException(
-    "No board metadata found in stream, expected \"$YAML_DELIMITER\" but found \"${peekLine()}\""
-  )
+  parseBoardMetadataOrNull()
+    ?: throw IllegalArgumentException(
+      "No board metadata found in stream, expected \"$YAML_DELIMITER\" but found \"${peekLine()}\""
+    )
 
-private val JSON = Json {
-  isLenient = true
-}
+private val JSON = Json { isLenient = true }
 
 /**
  * Parses the [BoardMetadata] from this source.
@@ -28,34 +27,32 @@ private val JSON = Json {
  * @return The [BoardMetadata], or null if the source does not start with "`---\n`".
  * @see parseBoardMetadata
  */
-fun BufferedSource.parseBoardMetadataOrNull(): BoardMetadata? = readHeader()?.let { header ->
-  try {
-    JSON.decodeFromString(BoardMetadata.serializer(), header)
-  } catch (e: SerializationException) {
-    throw IllegalArgumentException("Error parsing board metadata.", e)
+fun BufferedSource.parseBoardMetadataOrNull(): BoardMetadata? =
+  readHeader()?.let { header ->
+    try {
+      JSON.decodeFromString(BoardMetadata.serializer(), header)
+    } catch (e: SerializationException) {
+      throw IllegalArgumentException("Error parsing board metadata.", e)
+    }
   }
-}
 
 /**
  * Parses a [Board] from this source.
  *
  * @param metadata The [BoardMetadata] that describes this board. If not explicitly passed, the
- * metadata will be read from the source.
+ *   metadata will be read from the source.
  * @throws IllegalArgumentException If no metadata is passed and the stream does not start with
- * metadata.
+ *   metadata.
  */
 fun BufferedSource.parseBoard(metadata: BoardMetadata = parseBoardMetadata()): Board {
   var lines = generateSequence { readUtf8Line() }.toList()
 
   // Trim leading and trailing empty lines.
-  lines = lines.dropWhile { it.isBlank() }
-    .dropLastWhile { it.isBlank() }
+  lines = lines.dropWhile { it.isBlank() }.dropLastWhile { it.isBlank() }
 
   var rows = lines.map { it.asBoardCells() }
   val height = rows.size
-  val width = rows.asSequence()
-    .map { it.size }
-    .maxOrNull()!!
+  val width = rows.asSequence().map { it.size }.maxOrNull()!!
 
   // Pad short rows.
   rows = rows.map { row ->

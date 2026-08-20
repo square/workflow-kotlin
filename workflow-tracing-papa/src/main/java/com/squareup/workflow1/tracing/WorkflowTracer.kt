@@ -17,24 +17,20 @@ import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.CascadeAction
 import com.squareup.workflow1.tracing.WorkflowRuntimeMonitor.ActionType.QueuedAction
-import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
+import kotlinx.coroutines.CoroutineScope
 
 /**
- * [WorkflowRuntimeTracer] plugin to add [TraceInterface] traces.
- * By default this uses [WorkflowTrace] which will use [androidx.tracing.Trace] calls that
- * will be received by the system and included in Perfetto traces.
+ * [WorkflowRuntimeTracer] plugin to add [TraceInterface] traces. By default this uses
+ * [WorkflowTrace] which will use [androidx.tracing.Trace] calls that will be received by the system
+ * and included in Perfetto traces.
  *
  * @param trace The [TraceInterface] implementation to use for tracing.
  */
-open class WorkflowTracer(
-  private val trace: TraceInterface = WorkflowTrace(isTraceable = false)
-) : WorkflowRuntimeTracer() {
+open class WorkflowTracer(private val trace: TraceInterface = WorkflowTrace(isTraceable = false)) :
+  WorkflowRuntimeTracer() {
 
-  private data class NameAndCookie(
-    val name: String,
-    val cookie: Int
-  )
+  private data class NameAndCookie(val name: String, val cookie: Int)
 
   private class SystemTraceState {
     var renderPassCount = 0
@@ -45,11 +41,12 @@ open class WorkflowTracer(
     val workflowShortNamesById = mutableLongObjectMapOf<String>()
   }
 
-  private val systemTraceState = if (trace.isTraceable) {
-    SystemTraceState()
-  } else {
-    null
-  }
+  private val systemTraceState =
+    if (trace.isTraceable) {
+      SystemTraceState()
+    } else {
+      null
+    }
 
   private val isSystemTraceable: Boolean
     get() = systemTraceState != null
@@ -58,8 +55,8 @@ open class WorkflowTracer(
     get() = systemTraceState != null && trace.isCurrentlyTracing
 
   /**
-   * If the build is traceable but we're not currently tracing, reset so that we start at 0 in
-   * new traces.
+   * If the build is traceable but we're not currently tracing, reset so that we start at 0 in new
+   * traces.
    */
   private fun SystemTraceState.resetTraceCountsIfNotTracing() {
     if (!trace.isCurrentlyTracing) {
@@ -86,21 +83,16 @@ open class WorkflowTracer(
     trace.logSection(info)
   }
 
-  /** SECTION: [WorkflowRuntimeTracer] specific methods. **/
-
-  override fun onWorkflowSessionStarted(
-    workflowScope: CoroutineScope,
-    session: WorkflowSession
-  ) {
+  /** SECTION: [WorkflowRuntimeTracer] specific methods. * */
+  override fun onWorkflowSessionStarted(workflowScope: CoroutineScope, session: WorkflowSession) {
     systemTraceState?.let {
       val sessionId = session.sessionId
       // We are tracing, so set up some initial components for this workflow.
       val shortName = "WKF$sessionId ${session.name}"
       val nameWithKey = "WKF$sessionId ${session.logName}"
 
-      val parentPart = session.parent?.let { parentSession ->
-        " parent:${parentSession.traceName}"
-      } ?: ""
+      val parentPart =
+        session.parent?.let { parentSession -> " parent:${parentSession.traceName}" } ?: ""
       val asyncSectionName = "$nameWithKey$parentPart"
 
       val atraceCookie = workflowRuntimeTraceContext.runtimeName.hashCode() * sessionId.toInt()
@@ -111,7 +103,8 @@ open class WorkflowTracer(
 
       // Reason for render pass if we are the root.
       if (session.isRootWorkflow) {
-        // This could be the first thing that happens after a trace has finished, so check if we need
+        // This could be the first thing that happens after a trace has finished, so check if we
+        // need
         // to reset it here.
         it.resetTraceCountsIfNotTracing()
         it.renderPassTriggerCount++
@@ -126,9 +119,7 @@ open class WorkflowTracer(
     }
   }
 
-  override fun onWorkflowSessionStopped(
-    sessionId: Long
-  ) {
+  override fun onWorkflowSessionStopped(sessionId: Long) {
     systemTraceState?.let {
       val asyncSection = it.workflowAsyncSections.remove(sessionId)
       // TODO (RF-9493) Investigate asyncSection being null instead of ignoring the problem
@@ -141,7 +132,7 @@ open class WorkflowTracer(
   override fun onRuntimeUpdateEnhanced(
     runtimeUpdate: RuntimeUpdate,
     currentActionHandlingChangedState: Boolean,
-    configSnapshot: ConfigSnapshot
+    configSnapshot: ConfigSnapshot,
   ) {
     if (!isSystemTraceable) return
     if (runtimeUpdate == RenderPassSkipped) {
@@ -176,20 +167,17 @@ open class WorkflowTracer(
     }
   }
 
-  /** END SECTION: [WorkflowRuntimeTracer] specific methods. **/
+  /** END SECTION: [WorkflowRuntimeTracer] specific methods. * */
 
-  /** SECTION: [WorkflowInterceptor] override methods. **/
-
+  /** SECTION: [WorkflowInterceptor] override methods. * */
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
     workflowScope: CoroutineScope,
     proceed: (P, Snapshot?, CoroutineScope) -> S,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): S {
-    return trace(
-      systemTraceLabel = { "InitialState ${session.traceName}" },
-    ) {
+    return trace(systemTraceLabel = { "InitialState ${session.traceName}" }) {
       proceed(props, snapshot, workflowScope)
     }
   }
@@ -199,11 +187,9 @@ open class WorkflowTracer(
     new: P,
     state: S,
     proceed: (P, P, S) -> S,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): S {
-    return trace(
-      systemTraceLabel = { "PropsChanged ${session.traceName}" },
-    ) {
+    return trace(systemTraceLabel = { "PropsChanged ${session.traceName}" }) {
       proceed(old, new, state)
     }
   }
@@ -211,14 +197,14 @@ open class WorkflowTracer(
   override fun <P, R> onRenderAndSnapshot(
     renderProps: P,
     proceed: (P) -> RenderingAndSnapshot<R>,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): RenderingAndSnapshot<R> {
     systemTraceState?.resetTraceCountsIfNotTracing()
     return trace(
       systemTraceLabel = {
         "RENDER${++systemTraceState!!.renderPassCount}" +
           " ${workflowRuntimeTraceContext.runtimeName}"
-      },
+      }
     ) {
       proceed(renderProps).also {
         if (systemTraceState != null) {
@@ -234,59 +220,52 @@ open class WorkflowTracer(
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): R {
     val workflowName = session.traceName
-    return trace(
-      systemTraceLabel = { "Render $workflowName" }
-    ) {
+    return trace(systemTraceLabel = { "Render $workflowName" }) {
       proceed(
         renderProps,
         renderState,
         TracingRenderContextInterceptor(
           isRoot = session.isRootWorkflow,
-          workflowName = workflowName
-        )
+          workflowName = workflowName,
+        ),
       )
     }
   }
 
   override fun onSnapshotStateWithChildren(
     proceed: () -> TreeSnapshot,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): TreeSnapshot {
-    return trace(
-      systemTraceLabel = { "Snapshot ${workflowRuntimeTraceContext.runtimeName}" }
-    ) {
+    return trace(systemTraceLabel = { "Snapshot ${workflowRuntimeTraceContext.runtimeName}" }) {
       proceed()
     }
   }
 
-  /** END SECTION: [WorkflowInterceptor] override methods. **/
+  /** END SECTION: [WorkflowInterceptor] override methods. * */
 
-  /**
-   * [RenderContextInterceptor] that adds Perfetto tracing.
-   */
+  /** [RenderContextInterceptor] that adds Perfetto tracing. */
   private inner class TracingRenderContextInterceptor<P, S, O>(
     private val isRoot: Boolean,
-    private val workflowName: String
+    private val workflowName: String,
   ) : RenderContextInterceptor<P, S, O> {
 
     override fun onActionSent(
       action: WorkflowAction<P, S, O>,
-      proceed: (WorkflowAction<P, S, O>) -> Unit
+      proceed: (WorkflowAction<P, S, O>) -> Unit,
     ) {
       val actionName = action.toLoggingShortName()
       val actionIndexLabel = "ACT${actionIndex++}"
-      val traceActionName = if (isSystemTraceable) {
-        "$actionIndexLabel A(${actionName.ifBlank { "" }})/W($workflowName)"
-      } else {
-        null
-      }
+      val traceActionName =
+        if (isSystemTraceable) {
+          "$actionIndexLabel A(${actionName.ifBlank { "" }})/W($workflowName)"
+        } else {
+          null
+        }
       val queuedActionDetails = QueuedAction
-      trace(
-        systemTraceLabel = { "Send $traceActionName}" }
-      ) {
+      trace(systemTraceLabel = { "Send $traceActionName}" }) {
         proceed(
           PerfettoTraceWorkflowAction(
             delegateAction = action,
@@ -301,18 +280,15 @@ open class WorkflowTracer(
     override fun onRunningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit,
-      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit,
     ) {
-      val label = if (isSystemTraceable) {
-        "EFF${effectIndex++} Key[$key]"
-      } else {
-        null
-      }
-      trace(
-        systemTraceLabel = { "SideEffect $label" }
-      ) {
-        proceed(key, sideEffect)
-      }
+      val label =
+        if (isSystemTraceable) {
+          "EFF${effectIndex++} Key[$key]"
+        } else {
+          null
+        }
+      trace(systemTraceLabel = { "SideEffect $label" }) { proceed(key, sideEffect) }
     }
 
     override fun <CP, CO, CR> onRenderChild(
@@ -320,28 +296,25 @@ open class WorkflowTracer(
       childProps: CP,
       key: String,
       handler: (CO) -> WorkflowAction<P, S, O>,
-      proceed: (
-        child: Workflow<CP, CO, CR>,
-        childProps: CP,
-        key: String,
-        handler: (CO) -> WorkflowAction<P, S, O>
-      ) -> CR
+      proceed:
+        (
+          child: Workflow<CP, CO, CR>,
+          childProps: CP,
+          key: String,
+          handler: (CO) -> WorkflowAction<P, S, O>,
+        ) -> CR,
     ): CR {
       // onRenderChild is not traced (the child's own render will be traced),
       // but we trace the action handler.
       return proceed(child, childProps, key) { output ->
         val childOutputString = getWfLogString(output)
-        trace(
-          systemTraceLabel = { "Send Output[$childOutputString] to $workflowName" }
-        ) {
+        trace(systemTraceLabel = { "Send Output[$childOutputString] to $workflowName" }) {
           val delegateAction = handler(output)
           val actionName = delegateAction.toLoggingShortName()
           PerfettoTraceWorkflowAction(
             delegateAction = delegateAction,
             actionName = actionName,
-            actionType = CascadeAction(
-              childOutputString = childOutputString
-            ),
+            actionType = CascadeAction(childOutputString = childOutputString),
           )
         }
       }
@@ -352,36 +325,28 @@ open class WorkflowTracer(
       resultType: KType,
       inputs: Array<out Any?>,
       calculation: () -> CResult,
-      proceed: (
-        key: String,
-        resultType: KType,
-        inputs: Array<out Any?>,
-        calculation: () -> CResult
-      ) -> CResult
+      proceed:
+        (
+          key: String, resultType: KType, inputs: Array<out Any?>, calculation: () -> CResult,
+        ) -> CResult,
     ): CResult {
-      return trace(
-        systemTraceLabel = { "Remember $key" }
-      ) {
+      return trace(systemTraceLabel = { "Remember $key" }) {
         proceed(key, resultType, inputs, calculation)
       }
     }
 
-    /**
-     * Class to trace the application of actions.
-     */
+    /** Class to trace the application of actions. */
     private inner class PerfettoTraceWorkflowAction<P, S, O>(
       private val delegateAction: WorkflowAction<P, S, O>,
       private val actionName: String,
       private val actionType: ActionType,
-      private val actionIndex: String? = null
+      private val actionIndex: String? = null,
     ) : WorkflowAction<P, S, O>() {
       // Forward debugging name so we do not include anything about this tracing action.
       override val debuggingName: String
         get() = delegateAction.debuggingName
 
-      /**
-       * Trace application of the action.
-       */
+      /** Trace application of the action. */
       override fun Updater.apply() {
         // See https://github.com/square/workflow-kotlin/issues/391. We have to listen to the 2nd
         // action in the cascade to get a useful ref on which Worker's handler was firing. This is
@@ -398,27 +363,29 @@ open class WorkflowTracer(
             )
           }
         }
-        val (_, actionApplied) = trace(
-          systemTraceLabel = {
-            val actionNameOrBlank = actionName.ifBlank { "" }
-            val queuedApplyName = if (isWorkerQueuedAction) {
-              "$workflowName(key=${actionNameOrBlank.workerKey()})"
-            } else {
-              actionNameOrBlank
+        val (_, actionApplied) =
+          trace(
+            systemTraceLabel = {
+              val actionNameOrBlank = actionName.ifBlank { "" }
+              val queuedApplyName =
+                if (isWorkerQueuedAction) {
+                  "$workflowName(key=${actionNameOrBlank.workerKey()})"
+                } else {
+                  actionNameOrBlank
+                }
+              if (actionType is CascadeAction) {
+                "CascadeApply:$queuedApplyName," +
+                  " Cause:${workflowRuntimeTraceContext.renderIncomingCauses.lastOrNull()}"
+              } else {
+                "QueuedApply:$queuedApplyName"
+              }
             }
-            if (actionType is CascadeAction) {
-              "CascadeApply:$queuedApplyName," +
-                " Cause:${workflowRuntimeTraceContext.renderIncomingCauses.lastOrNull()}"
-            } else {
-              "QueuedApply:$queuedApplyName"
+          ) {
+            delegateAction.applyTo(props, state).also { (newState, actionApplied) ->
+              state = newState
+              actionApplied.output?.let { setOutput(it.value) }
             }
-          },
-        ) {
-          delegateAction.applyTo(props, state).also { (newState, actionApplied) ->
-            state = newState
-            actionApplied.output?.let { setOutput(it.value) }
           }
-        }
 
         if (isRoot || actionApplied.output == null) {
           // This action's application is ending a cascade, let's sum up what happened
@@ -447,7 +414,7 @@ open class WorkflowTracer(
    */
   private inline fun <T> trace(
     crossinline systemTraceLabel: () -> String,
-    crossinline block: () -> T
+    crossinline block: () -> T,
   ): T {
     val systemTrace = isCurrentlySystemTracing
     if (systemTrace) {

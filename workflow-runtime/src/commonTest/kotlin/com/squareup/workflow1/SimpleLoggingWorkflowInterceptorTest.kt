@@ -1,8 +1,6 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KType
@@ -11,10 +9,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 
 internal class SimpleLoggingWorkflowInterceptorTest {
 
-  @Test fun onSessionStarted_handles_logging_exceptions() {
+  @Test
+  fun onSessionStarted_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     val scope = CoroutineScope(EmptyCoroutineContext)
     interceptor.onSessionStarted(scope, TestWorkflowSession)
@@ -25,39 +26,43 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertAllMatch(listOf(ErrorLoggingInterceptor.EXPECTED_ERRORS.first()), interceptor.errors)
   }
 
-  @Test fun onSessionCancelled_handles_logging_exceptions() {
+  @Test
+  fun onSessionCancelled_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onSessionCancelled<Unit, Unit, Nothing>(
       cause = null,
       droppedActions = emptyList(),
-      session = TestWorkflowSession
+      session = TestWorkflowSession,
     )
 
     // Only the second error, since onSessionCancelled only calls logAfterMethod
     assertAllMatch(listOf(ErrorLoggingInterceptor.EXPECTED_ERRORS.last()), interceptor.errors)
   }
 
-  @Test fun onInitialState_handles_logging_exceptions() {
+  @Test
+  fun onInitialState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onInitialState(
       Unit,
       null,
       CoroutineScope(EmptyCoroutineContext),
       { _, _, _ -> },
-      TestWorkflowSession
+      TestWorkflowSession,
     )
 
     assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun onPropsChanged_handles_logging_exceptions() {
+  @Test
+  fun onPropsChanged_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onPropsChanged(Unit, Unit, Unit, { _, _, _ -> }, TestWorkflowSession)
 
     assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun onRender_handles_logging_exceptions() {
+  @Test
+  fun onRender_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
 
     interceptor.onRender<Unit, Unit, Nothing, Any>(
@@ -71,7 +76,8 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun onSnapshotState_handles_logging_exceptions() {
+  @Test
+  fun onSnapshotState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onSnapshotState(Unit, { null }, TestWorkflowSession)
 
@@ -90,37 +96,39 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     }
 
     companion object {
-      val EXPECTED_ERRORS = listOf(
-        (
-          "ErrorLoggingInterceptor\\.logBeforeMethod threw exception:\n" +
-            ".*IllegalArgumentException.*"
-          ).toRegex(),
-        (
-          "ErrorLoggingInterceptor\\.logAfterMethod threw exception:\n" +
-            ".*IllegalArgumentException.*"
-          ).toRegex()
-      )
+      val EXPECTED_ERRORS =
+        listOf(
+          ("ErrorLoggingInterceptor\\.logBeforeMethod threw exception:\n" +
+              ".*IllegalArgumentException.*")
+            .toRegex(),
+          ("ErrorLoggingInterceptor\\.logAfterMethod threw exception:\n" +
+              ".*IllegalArgumentException.*")
+            .toRegex(),
+        )
     }
   }
 
-  private fun assertAllMatch(
-    expected: List<Regex>,
-    actual: List<String>
-  ) {
+  private fun assertAllMatch(expected: List<Regex>, actual: List<String>) {
     assertEquals(expected.size, actual.size)
     expected.zip(actual).forEachIndexed { index, (expectedPattern, actualString) ->
       assertTrue(
         expectedPattern.matches(actualString),
-        "Expected string at index $index to match pattern /$expectedPattern/: \"$actualString\""
+        "Expected string at index $index to match pattern /$expectedPattern/: \"$actualString\"",
       )
     }
   }
 
   private object TestWorkflowSession : WorkflowSession {
     override val identifier: WorkflowIdentifier = unsnapshottableIdentifier(typeOf<Unit>())
-    override val renderKey: String get() = "key"
-    override val sessionId: Long get() = 42
-    override val parent: WorkflowSession? get() = null
+    override val renderKey: String
+      get() = "key"
+
+    override val sessionId: Long
+      get() = 42
+
+    override val parent: WorkflowSession?
+      get() = null
+
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
     override val workflowTracer: WorkflowTracer? = null
     override val runtimeContext: CoroutineContext = EmptyCoroutineContext
@@ -130,21 +138,19 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     override val runtimeConfig: RuntimeConfig = emptySet()
     override val actionSink: Sink<WorkflowAction<Unit, Unit, Nothing>>
       get() = fail()
+
     override val workflowTracer: WorkflowTracer? = null
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Nothing>
+      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Nothing>,
     ): ChildRenderingT {
       fail()
     }
 
-    override fun runningSideEffect(
-      key: String,
-      sideEffect: suspend CoroutineScope.() -> Unit
-    ) {
+    override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
       fail()
     }
 
@@ -152,7 +158,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       key: String,
       resultType: KType,
       vararg inputs: Any?,
-      calculation: () -> ResultT
+      calculation: () -> ResultT,
     ): ResultT {
       fail()
     }

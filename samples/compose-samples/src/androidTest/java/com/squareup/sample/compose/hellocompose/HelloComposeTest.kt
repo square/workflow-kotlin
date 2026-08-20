@@ -21,27 +21,21 @@ class HelloComposeTest {
 
   private val composeRule = createAndroidComposeRule<HelloComposeActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun togglesBetweenStates() {
+  @Test
+  fun togglesBetweenStates() {
     runBlocking {
-      composeRule.onNodeWithText("Hello")
-        .assertIsDisplayed()
-        .performClick()
+      composeRule.onNodeWithText("Hello").assertIsDisplayed().performClick()
       composeRule.settleForNextRendering()
-      retry {
-        composeRule.onNodeWithText("Goodbye")
-          .assertIsDisplayed()
-          .performClick()
-      }
+      retry { composeRule.onNodeWithText("Goodbye").assertIsDisplayed().performClick() }
       composeRule.settleForNextRendering()
-      retry {
-        composeRule.onNodeWithText("Hello")
-          .assertIsDisplayed()
-      }
+      retry { composeRule.onNodeWithText("Hello").assertIsDisplayed() }
     }
   }
 }

@@ -19,28 +19,26 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
  * contains information pulled from workflow traces
  */
 @Composable
-internal fun UploadFile(
-  resetOnFileSelect: (PlatformFile?) -> Unit,
-  modifier: Modifier = Modifier,
-) {
-  val launcher = rememberFilePickerLauncher(
-    type = FileKitType.File(listOf("json", "txt")),
-    title = "Select Workflow Trace File"
-  ) {
-    resetOnFileSelect(it)
-  }
+internal fun UploadFile(resetOnFileSelect: (PlatformFile?) -> Unit, modifier: Modifier = Modifier) {
+  val launcher =
+    rememberFilePickerLauncher(
+      type = FileKitType.File(listOf("json", "txt")),
+      title = "Select Workflow Trace File",
+    ) {
+      resetOnFileSelect(it)
+    }
 
   Button(
     onClick = { launcher.launch() },
     modifier = modifier.padding(16.dp),
     shape = CircleShape,
-    colors = buttonColors(Color.Black)
+    colors = buttonColors(Color.Black),
   ) {
     Text(
       text = "Open Trace File",
       color = Color.White,
       fontSize = 14.sp,
-      fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+      fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
     )
   }
 }

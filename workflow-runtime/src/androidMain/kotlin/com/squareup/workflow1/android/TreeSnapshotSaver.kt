@@ -8,13 +8,13 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.android.TreeSnapshotSaver.Companion.fromSavedStateRegistry
 
 /**
- * Persistence aid for [TreeSnapshot]. Use [fromSavedStateRegistry] to create one
- * that works with androidx [SavedStateRegistry].
+ * Persistence aid for [TreeSnapshot]. Use [fromSavedStateRegistry] to create one that works with
+ * androidx [SavedStateRegistry].
  */
 internal interface TreeSnapshotSaver {
   /**
-   * Implemented by the object that is running a workflow session, to give
-   * on demand access to the most recent [TreeSnapshot] as required for persistence.
+   * Implemented by the object that is running a workflow session, to give on demand access to the
+   * most recent [TreeSnapshot] as required for persistence.
    */
   interface HasTreeSnapshot {
     fun latestSnapshot(): TreeSnapshot?
@@ -46,9 +46,7 @@ internal interface TreeSnapshotSaver {
         override fun registerSource(source: HasTreeSnapshot) {
           savedStateRegistry.registerSavedStateProvider(BUNDLE_KEY) {
             Bundle().apply {
-              source.latestSnapshot()?.let {
-                putParcelable(BUNDLE_KEY, PickledTreesnapshot(it))
-              }
+              source.latestSnapshot()?.let { putParcelable(BUNDLE_KEY, PickledTreesnapshot(it)) }
             }
           }
         }
@@ -56,8 +54,8 @@ internal interface TreeSnapshotSaver {
 
     /**
      * Namespace key, used in two places:
-     *  - names our slot in the [SavedStateRegistry]
-     *  - and is also the key for the [PickledTreesnapshot] we write to the bundle
+     * - names our slot in the [SavedStateRegistry]
+     * - and is also the key for the [PickledTreesnapshot] we write to the bundle
      */
     val BUNDLE_KEY = TreeSnapshotSaver::class.java.name
   }

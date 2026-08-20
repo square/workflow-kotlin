@@ -32,20 +32,19 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
   private lateinit var lastRendering: Screen
 
   /**
-   * The [ViewEnvironment] used to create views for renderings passed to [setRendering].
-   * This *must* be set before the first call to [setRendering].
-   * Once set, the value is retained across configuration changes.
+   * The [ViewEnvironment] used to create views for renderings passed to [setRendering]. This *must*
+   * be set before the first call to [setRendering]. Once set, the value is retained across
+   * configuration changes.
    */
   public lateinit var viewEnvironment: ViewEnvironment
 
-  /**
-   * The [View] that was created to display the last rendering passed to [setRendering].
-   */
-  public val rootRenderedView: View get() = rootStub.actual
+  /** The [View] that was created to display the last rendering passed to [setRendering]. */
+  public val rootRenderedView: View
+    get() = rootStub.actual
 
   /**
-   * Key-value store for custom values that should be retained across configuration changes.
-   * Use this instead of using [getLastNonConfigurationInstance] or
+   * Key-value store for custom values that should be retained across configuration changes. Use
+   * this instead of using [getLastNonConfigurationInstance] or
    * [getLastCustomNonConfigurationInstance] directly.
    */
   public val customNonConfigurationData: MutableMap<String, Any?> = mutableMapOf()
@@ -60,8 +59,8 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
   public var restoreRenderingAfterConfigChange: Boolean = true
 
   /**
-   * Causes the next [setRendering] call to force a new view to be created, even if it otherwise wouldn't
-   * be (i.e. because the rendering is compatible with the previous one).
+   * Causes the next [setRendering] call to force a new view to be created, even if it otherwise
+   * wouldn't be (i.e. because the rendering is compatible with the previous one).
    */
   public fun recreateViewsOnNextRendering() {
     renderingCounter++
@@ -84,11 +83,12 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
   }
 
   @Deprecated("Deprecated in Java")
-  final override fun onRetainCustomNonConfigurationInstance(): Any = NonConfigurationData(
-    viewEnvironment = viewEnvironment,
-    lastRendering = lastRendering.takeIf { restoreRenderingAfterConfigChange },
-    customData = customNonConfigurationData,
-  )
+  final override fun onRetainCustomNonConfigurationInstance(): Any =
+    NonConfigurationData(
+      viewEnvironment = viewEnvironment,
+      lastRendering = lastRendering.takeIf { restoreRenderingAfterConfigChange },
+      customData = customNonConfigurationData,
+    )
 
   /**
    * Updates the [WorkflowViewStub] to a new rendering value.
@@ -98,10 +98,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
    */
   public fun setRendering(rendering: Screen): View {
     lastRendering = rendering
-    val named = NamedScreen(
-      content = rendering,
-      name = renderingCounter.toString()
-    )
+    val named = NamedScreen(content = rendering, name = renderingCounter.toString())
     rootStub.show(named, viewEnvironment)
     return rootStub.actual
   }

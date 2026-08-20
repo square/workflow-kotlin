@@ -6,9 +6,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.helloworkflowfragment"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.helloworkflowfragment" }
   namespace = "com.squareup.sample.helloworkflowfragment"
 }
 
