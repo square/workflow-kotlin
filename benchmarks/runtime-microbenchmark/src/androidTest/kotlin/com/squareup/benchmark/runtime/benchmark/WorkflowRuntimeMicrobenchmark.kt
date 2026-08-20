@@ -4,7 +4,6 @@ import androidx.benchmark.junit4.BenchmarkRule
 import androidx.benchmark.junit4.measureRepeated
 import androidx.tracing.Trace
 import app.cash.burst.Burst
-import com.squareup.benchmark.runtime.benchmark.BenchmarkRuntimeOptions.NoOptimizations
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.Sink
@@ -16,6 +15,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
+import com.squareup.workflow1.internal.compose.runtime.setGlobalSnapshotManagerSendApplyImmediately
 import com.squareup.workflow1.remember
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.renderWorkflowIn
@@ -25,10 +25,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.pow
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 
 /** The microbenchmarks take a while to run, so we only run with a subset of runtime configs. */
 @Suppress("unused")
@@ -36,8 +39,10 @@ import kotlin.test.assertEquals
 enum class BenchmarkRuntimeOptions(
   val runtimeConfig: RuntimeConfig
 ) {
-  NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
+  // NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
+  ComposeNoSkip(RuntimeOptions.COMPOSE_RUNTIME_NON_SKIPPING.runtimeConfig),
+  ComposeSkipping(RuntimeOptions.COMPOSE_RUNTIME_SKIPPING.runtimeConfig),
 }
 
 enum class BenchmarkTreeShape(
@@ -52,16 +57,29 @@ enum class BenchmarkTreeShape(
 @Burst
 class WorkflowRuntimeMicrobenchmark(
   private val treeShape: BenchmarkTreeShape = BenchmarkTreeShape.ShallowBushyTree,
-  private val runtime: BenchmarkRuntimeOptions = NoOptimizations,
+  private val runtime: BenchmarkRuntimeOptions = BenchmarkRuntimeOptions.AllOptimizations,
 ) {
 
   private companion object {
     const val WideSiblingCount = 250
     const val RememberEntryCount = 250
     const val StableHandlerCount = 250
+
+    // The default 1m runTest timeout fires for the slowest combinations on physical devices,
+    // surfacing as UncompletedCoroutinesError instead of a real benchmark result. The benchmark
+    // body itself is bounded by `measureRepeated` so this just lets it finish.
+    val BenchmarkRunTestTimeout = 10.minutes
   }
 
   @get:Rule val benchmarkRule = BenchmarkRule()
+
+  @Before fun setUp() {
+    setGlobalSnapshotManagerSendApplyImmediately(true)
+  }
+
+  @After fun tearDown() {
+    setGlobalSnapshotManagerSendApplyImmediately(false)
+  }
 
   @Test fun initialRenderAllChildren() = benchmarkWorkflowPropsChange(
     setupProps = BenchmarkWorkflowRoot.Props(
@@ -251,7 +269,7 @@ class WorkflowRuntimeMicrobenchmark(
     testProps: PropsT,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkRunTestTimeout) {
     val props = MutableStateFlow(setupProps)
     val workflowJob = Job(parent = coroutineContext.job)
     val renderings = renderWorkflowIn(
@@ -284,7 +302,7 @@ class WorkflowRuntimeMicrobenchmark(
   private fun benchmarkWorkflowStateChange(
     testState: (setStateForChild: (index: Int, newState: Int) -> Unit) -> Unit,
     expectedTestRendering: Int,
-  ) = runTest {
+  ) = runTest(timeout = BenchmarkRunTestTimeout) {
     val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
     val workflow = BenchmarkWorkflowRoot(
       treeShape = treeShape,

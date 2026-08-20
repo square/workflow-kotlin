@@ -113,6 +113,15 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   INDEXED_ACTIVE_STAGING_LISTS,
+
+  /**
+   * Replaces the traditional Workflow runtime with the Compose runtime.
+   */
+  @WorkflowExperimentalRuntime
+  COMPOSE_RUNTIME,
+
+  @WorkflowExperimentalRuntime
+  COMPOSE_RUNTIME_SKIPPING,
   ;
 
   public companion object {
@@ -125,10 +134,11 @@ public enum class RuntimeConfigOptions {
     public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
 
     /**
-     * Configuration that enables every [RuntimeConfig] option.
+     * Configuration that enables every [RuntimeConfig] option for the traditional (non-Compose)
+     * runtime.
      */
     @WorkflowExperimentalRuntime
-    public val ALL: RuntimeConfig = entries.toSet()
+    public val ALL: RuntimeConfig = entries.toSet() - COMPOSE_RUNTIME
 
     /**
      * Enum of all reasonable config options. Used especially for parameterized testing.
@@ -471,6 +481,14 @@ public enum class RuntimeConfigOptions {
           STABLE_EVENT_HANDLERS,
           DRAIN_EXCLUSIVE_ACTIONS,
           WORK_STEALING_DISPATCHER
+        )
+      ),
+
+      COMPOSE_RUNTIME_NON_SKIPPING(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
+      COMPOSE_RUNTIME_SKIPPING(
+        setOf(
+          RuntimeConfigOptions.COMPOSE_RUNTIME,
+          RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING
         )
       ),
 
