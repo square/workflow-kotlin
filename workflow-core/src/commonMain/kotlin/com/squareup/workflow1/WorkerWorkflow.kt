@@ -4,12 +4,12 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.Worker.Companion.WORKER_OUTPUT_ACTION_NAME
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KType
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 /**
  * The [Workflow] that implements the logic for actually running [Worker]s.
@@ -22,43 +22,34 @@ import kotlin.reflect.KType
  * increasing integer as the state, and incrementing it whenever the worker needs to be restarted.
  *
  * Note that since this workflow uses an [unsnapshottableIdentifier] as its [realIdentifier], it is
- * not snapshottable, but that's fine because the only state this workflow maintains is only used
- * to determine whether to restart workers during the lifetime of a single runtime instance.
+ * not snapshottable, but that's fine because the only state this workflow maintains is only used to
+ * determine whether to restart workers during the lifetime of a single runtime instance.
  *
  * @param workerType The [KType] representing the particular type of `Worker<OutputT>`.
- * @param key The key used to render this workflow, as passed to
- * [BaseRenderContext.runningWorker]. Used for naming the worker's coroutine.
+ * @param key The key used to render this workflow, as passed to [BaseRenderContext.runningWorker].
+ *   Used for naming the worker's coroutine.
  */
 internal class WorkerWorkflow<OutputT>(
   val workerType: KType,
   private val key: String,
-  workflowTracer: WorkflowTracer? = null
-) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
-  ImpostorWorkflow {
+  workflowTracer: WorkflowTracer? = null,
+) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(), ImpostorWorkflow {
 
   override val realIdentifier: WorkflowIdentifier =
-    workflowTracer.trace("ComputeRealIdentifier") {
-      unsnapshottableIdentifier(workerType)
-    }
+    workflowTracer.trace("ComputeRealIdentifier") { unsnapshottableIdentifier(workerType) }
 
   override fun describeRealIdentifier(): String =
     workerType.toString().replace(" (Kotlin reflection is not available)", "")
 
-  override fun initialState(
-    props: Worker<OutputT>,
-    snapshot: Snapshot?
-  ): Int = 0
+  override fun initialState(props: Worker<OutputT>, snapshot: Snapshot?): Int = 0
 
-  override fun onPropsChanged(
-    old: Worker<OutputT>,
-    new: Worker<OutputT>,
-    state: Int
-  ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
+  override fun onPropsChanged(old: Worker<OutputT>, new: Worker<OutputT>, state: Int): Int =
+    if (!old.doesSameWorkAs(new)) state + 1 else state
 
   override fun render(
     renderProps: Worker<OutputT>,
     renderState: Int,
-    context: RenderContext<Worker<OutputT>, Int, OutputT>
+    context: RenderContext<Worker<OutputT>, Int, OutputT>,
   ) {
     // Scope the side effect coroutine to the state value, so the worker will be re-started when
     // it changes (such that doesSameWorkAs returns false above).
@@ -80,13 +71,12 @@ internal class WorkerWorkflow<OutputT>(
 internal suspend fun <OutputT> runWorker(
   worker: Worker<OutputT>,
   renderKey: String,
-  actionSink: Sink<WorkflowAction<Worker<OutputT>, Int, OutputT>>
+  actionSink: Sink<WorkflowAction<Worker<OutputT>, Int, OutputT>>,
 ) {
   withContext(CoroutineName(worker.debugName(renderKey))) {
-    worker.runWithNullCheck()
-      .collectToSink(actionSink) { output ->
-        EmitWorkerOutputAction(worker, renderKey, output)
-      }
+    worker.runWithNullCheck().collectToSink(actionSink) { output ->
+      EmitWorkerOutputAction(worker, renderKey, output)
+    }
   }
 }
 
@@ -95,8 +85,7 @@ private class EmitWorkerOutputAction<P, S, O>(
   renderKey: String,
   private val output: O,
 ) : WorkflowAction<P, S, O>() {
-  override val debuggingName: String =
-    "$WORKER_OUTPUT_ACTION_NAME(worker=$worker, key=$renderKey)"
+  override val debuggingName: String = "$WORKER_OUTPUT_ACTION_NAME(worker=$worker, key=$renderKey)"
 
   override fun Updater.apply() {
     setOutput(output)
@@ -115,10 +104,11 @@ private class EmitWorkerOutputAction<P, S, O>(
  */
 @Suppress("USELESS_ELVIS")
 private fun <T> Worker<T>.runWithNullCheck(): Flow<T> =
-  run() ?: throw NullPointerException(
-    "Worker $this returned a null Flow. " +
-      "If this is a test mock, make sure you mock the run() method!"
-  )
+  run()
+    ?: throw NullPointerException(
+      "Worker $this returned a null Flow. " +
+        "If this is a test mock, make sure you mock the run() method!"
+    )
 
 private fun Worker<*>.debugName(key: String) =
   toString().let { if (key.isBlank()) it else "$it:$key" }

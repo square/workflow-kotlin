@@ -8,8 +8,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 
 const val POETRY_PACKAGE = "com.squareup.benchmarks.performance.complex.poetry"
-val PoetryPackageSelector: BySelector =
-  By.pkg(POETRY_PACKAGE)
+val PoetryPackageSelector: BySelector = By.pkg(POETRY_PACKAGE)
 val RavenPoemSelector: BySelector = By.text("The Raven").clickable(true).focusable(true)
 val NextSelector: BySelector = By.textStartsWith("next")
 val PreviousSelector: BySelector = By.textEndsWith("previous")
@@ -37,9 +36,7 @@ fun UiDevice.resetToRootPoetryList() {
   }
 }
 
-/**
- * Note this only works in landscape mode.
- */
+/** Note this only works in landscape mode. */
 fun UiDevice.openRavenAndNavigate() {
   waitForIdle()
   try {

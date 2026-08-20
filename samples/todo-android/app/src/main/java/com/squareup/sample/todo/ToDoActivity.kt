@@ -26,11 +26,10 @@ class ToDoActivity : AppCompatActivity() {
 
     val model: ToDoModel by viewModels()
 
-    workflowContentView
-      .take(
-        lifecycle,
-        model.ensureWorkflow().map { it.withRegistry(viewRegistry) }
-      )
+    workflowContentView.take(
+      lifecycle,
+      model.ensureWorkflow().map { it.withRegistry(viewRegistry) },
+    )
   }
 
   private companion object {
@@ -44,13 +43,14 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
   fun ensureWorkflow(): StateFlow<Screen> {
     if (renderings == null) {
 
-      renderings = renderWorkflowIn(
-        workflow = TodoListsAppWorkflow,
-        scope = viewModelScope,
-        savedStateHandle = savedState,
-        interceptors = emptyList(),
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-      )
+      renderings =
+        renderWorkflowIn(
+          workflow = TodoListsAppWorkflow,
+          scope = viewModelScope,
+          savedStateHandle = savedState,
+          interceptors = emptyList(),
+          runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+        )
     }
 
     return renderings!!

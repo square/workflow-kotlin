@@ -19,6 +19,8 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.remember
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.renderWorkflowIn
+import kotlin.math.pow
+import kotlin.test.assertEquals
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,23 +29,16 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import kotlin.math.pow
-import kotlin.test.assertEquals
 
 /** The microbenchmarks take a while to run, so we only run with a subset of runtime configs. */
 @Suppress("unused")
 @OptIn(WorkflowExperimentalRuntime::class)
-enum class BenchmarkRuntimeOptions(
-  val runtimeConfig: RuntimeConfig
-) {
+enum class BenchmarkRuntimeOptions(val runtimeConfig: RuntimeConfig) {
   NoOptimizations(RuntimeOptions.NONE.runtimeConfig),
   AllOptimizations(RuntimeOptions.ALL.runtimeConfig),
 }
 
-enum class BenchmarkTreeShape(
-  val degree: Int,
-  val depth: Int,
-) {
+enum class BenchmarkTreeShape(val degree: Int, val depth: Int) {
   ShallowBushyTree(degree = 75, depth = 1),
   SquareishTree(degree = 3, depth = 5),
 }
@@ -63,187 +58,201 @@ class WorkflowRuntimeMicrobenchmark(
 
   @get:Rule val benchmarkRule = BenchmarkRule()
 
-  @Test fun initialRenderAllChildren() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = false,
-      renderOtherLeaves = false,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = true,
-      renderOtherLeaves = true,
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    expectedSetupRendering = 0,
-    expectedTestRendering = treeShape.leafCount
-  )
+  @Test
+  fun initialRenderAllChildren() =
+    benchmarkWorkflowPropsChange(
+      setupProps = BenchmarkWorkflowRoot.Props(renderFirstLeaf = false, renderOtherLeaves = false),
+      testProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = true,
+          renderOtherLeaves = true,
+          firstLeafProps = 1,
+          otherLeafProps = 1,
+        ),
+      expectedSetupRendering = 0,
+      expectedTestRendering = treeShape.leafCount,
+    )
 
-  @Test fun initialRenderNewSibling() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = false,
-      renderOtherLeaves = true,
-      otherLeafProps = 1,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = true,
-      renderOtherLeaves = true,
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    expectedSetupRendering = treeShape.leafCount - 1,
-    expectedTestRendering = treeShape.leafCount
-  )
+  @Test
+  fun initialRenderNewSibling() =
+    benchmarkWorkflowPropsChange(
+      setupProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = false,
+          renderOtherLeaves = true,
+          otherLeafProps = 1,
+        ),
+      testProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = true,
+          renderOtherLeaves = true,
+          firstLeafProps = 1,
+          otherLeafProps = 1,
+        ),
+      expectedSetupRendering = treeShape.leafCount - 1,
+      expectedTestRendering = treeShape.leafCount,
+    )
 
-  @Test fun tearDownAllChildren() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = true,
-      renderOtherLeaves = true,
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = false,
-      renderOtherLeaves = false,
-    ),
-    expectedSetupRendering = treeShape.leafCount,
-    expectedTestRendering = 0
-  )
+  @Test
+  fun tearDownAllChildren() =
+    benchmarkWorkflowPropsChange(
+      setupProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = true,
+          renderOtherLeaves = true,
+          firstLeafProps = 1,
+          otherLeafProps = 1,
+        ),
+      testProps = BenchmarkWorkflowRoot.Props(renderFirstLeaf = false, renderOtherLeaves = false),
+      expectedSetupRendering = treeShape.leafCount,
+      expectedTestRendering = 0,
+    )
 
-  @Test fun tearDownSingleSibling() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = true,
-      renderOtherLeaves = true,
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      renderFirstLeaf = false,
-      renderOtherLeaves = true,
-      otherLeafProps = 1,
-    ),
-    expectedSetupRendering = treeShape.leafCount,
-    expectedTestRendering = treeShape.leafCount - 1
-  )
+  @Test
+  fun tearDownSingleSibling() =
+    benchmarkWorkflowPropsChange(
+      setupProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = true,
+          renderOtherLeaves = true,
+          firstLeafProps = 1,
+          otherLeafProps = 1,
+        ),
+      testProps =
+        BenchmarkWorkflowRoot.Props(
+          renderFirstLeaf = false,
+          renderOtherLeaves = true,
+          otherLeafProps = 1,
+        ),
+      expectedSetupRendering = treeShape.leafCount,
+      expectedTestRendering = treeShape.leafCount - 1,
+    )
 
-  @Test fun rerenderAllChildrenByPropsChange() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      firstLeafProps = 2,
-      otherLeafProps = 2,
-    ),
-    expectedSetupRendering = treeShape.leafCount,
-    expectedTestRendering = treeShape.leafCount * 2
-  )
+  @Test
+  fun rerenderAllChildrenByPropsChange() =
+    benchmarkWorkflowPropsChange(
+      setupProps = BenchmarkWorkflowRoot.Props(firstLeafProps = 1, otherLeafProps = 1),
+      testProps = BenchmarkWorkflowRoot.Props(firstLeafProps = 2, otherLeafProps = 2),
+      expectedSetupRendering = treeShape.leafCount,
+      expectedTestRendering = treeShape.leafCount * 2,
+    )
 
-  @Test fun rerenderSingleSiblingByPropsChange() = benchmarkWorkflowPropsChange(
-    setupProps = BenchmarkWorkflowRoot.Props(
-      firstLeafProps = 1,
-      otherLeafProps = 1,
-    ),
-    testProps = BenchmarkWorkflowRoot.Props(
-      firstLeafProps = 2,
-      otherLeafProps = 1,
-    ),
-    expectedSetupRendering = treeShape.leafCount,
-    expectedTestRendering = treeShape.leafCount + 1
-  )
+  @Test
+  fun rerenderSingleSiblingByPropsChange() =
+    benchmarkWorkflowPropsChange(
+      setupProps = BenchmarkWorkflowRoot.Props(firstLeafProps = 1, otherLeafProps = 1),
+      testProps = BenchmarkWorkflowRoot.Props(firstLeafProps = 2, otherLeafProps = 1),
+      expectedSetupRendering = treeShape.leafCount,
+      expectedTestRendering = treeShape.leafCount + 1,
+    )
 
-  @Test fun rerenderSingleSiblingViaStateChange() = benchmarkWorkflowStateChange(
-    // Set the first leaf's state to 1, leaving the rest at 0.
-    testState = { setStateForChild -> setStateForChild(0, 1) },
-    expectedTestRendering = 1,
-  )
+  @Test
+  fun rerenderSingleSiblingViaStateChange() =
+    benchmarkWorkflowStateChange(
+      // Set the first leaf's state to 1, leaving the rest at 0.
+      testState = { setStateForChild -> setStateForChild(0, 1) },
+      expectedTestRendering = 1,
+    )
 
-  @Test fun rerenderAllChildrenViaStateChange() = benchmarkWorkflowStateChange(
-    testState = { setStateForChild ->
-      repeat(treeShape.leafCount) {
-        setStateForChild(it, 1)
-      }
-    },
-    expectedTestRendering = treeShape.leafCount,
-  )
+  @Test
+  fun rerenderAllChildrenViaStateChange() =
+    benchmarkWorkflowStateChange(
+      testState = { setStateForChild -> repeat(treeShape.leafCount) { setStateForChild(it, 1) } },
+      expectedTestRendering = treeShape.leafCount,
+    )
 
-  @Test fun wideSiblingKeys_initialRenderAllChildren() = benchmarkPropsChange(
-    workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
-    setupProps = ShallowWideWorkflowRoot.Props(
-      renderFirstChild = false,
-      renderOtherChildren = false,
-    ),
-    testProps = ShallowWideWorkflowRoot.Props(
-      renderFirstChild = true,
-      renderOtherChildren = true,
-      firstChildProps = 1,
-      otherChildrenProps = 1,
-    ),
-    expectedSetupRendering = 0,
-    expectedTestRendering = WideSiblingCount,
-  )
+  @Test
+  fun wideSiblingKeys_initialRenderAllChildren() =
+    benchmarkPropsChange(
+      workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
+      setupProps =
+        ShallowWideWorkflowRoot.Props(renderFirstChild = false, renderOtherChildren = false),
+      testProps =
+        ShallowWideWorkflowRoot.Props(
+          renderFirstChild = true,
+          renderOtherChildren = true,
+          firstChildProps = 1,
+          otherChildrenProps = 1,
+        ),
+      expectedSetupRendering = 0,
+      expectedTestRendering = WideSiblingCount,
+    )
 
-  @Test fun wideSiblingKeys_rerenderSingleSiblingByPropsChange() = benchmarkPropsChange(
-    workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
-    setupProps = ShallowWideWorkflowRoot.Props(
-      renderFirstChild = true,
-      renderOtherChildren = true,
-      firstChildProps = 1,
-      otherChildrenProps = 1,
-    ),
-    testProps = ShallowWideWorkflowRoot.Props(
-      renderFirstChild = true,
-      renderOtherChildren = true,
-      firstChildProps = 2,
-      otherChildrenProps = 1,
-    ),
-    expectedSetupRendering = WideSiblingCount,
-    expectedTestRendering = WideSiblingCount + 1,
-  )
+  @Test
+  fun wideSiblingKeys_rerenderSingleSiblingByPropsChange() =
+    benchmarkPropsChange(
+      workflow = ShallowWideWorkflowRoot(childCount = WideSiblingCount),
+      setupProps =
+        ShallowWideWorkflowRoot.Props(
+          renderFirstChild = true,
+          renderOtherChildren = true,
+          firstChildProps = 1,
+          otherChildrenProps = 1,
+        ),
+      testProps =
+        ShallowWideWorkflowRoot.Props(
+          renderFirstChild = true,
+          renderOtherChildren = true,
+          firstChildProps = 2,
+          otherChildrenProps = 1,
+        ),
+      expectedSetupRendering = WideSiblingCount,
+      expectedTestRendering = WideSiblingCount + 1,
+    )
 
-  @Test fun rememberManyEntries_sameInputs() = benchmarkPropsChange(
-    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
-    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
-    testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 0),
-    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
-    expectedTestRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
-  )
+  @Test
+  fun rememberManyEntries_sameInputs() =
+    benchmarkPropsChange(
+      workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
+      setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+      testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 0),
+      expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+      expectedTestRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+    )
 
-  @Test fun rememberManyEntries_changingInputs() = benchmarkPropsChange(
-    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
-    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
-    testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 1),
-    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
-    expectedTestRendering = rememberedRendering(baseValue = 2, entryCount = RememberEntryCount),
-  )
+  @Test
+  fun rememberManyEntries_changingInputs() =
+    benchmarkPropsChange(
+      workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount),
+      setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+      testProps = RememberHeavyWorkflow.Props(baseValue = 2, inputToken = 1),
+      expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+      expectedTestRendering = rememberedRendering(baseValue = 2, entryCount = RememberEntryCount),
+    )
 
-  @Test fun rememberManyEntries_mixedInputTypes() = benchmarkPropsChange(
-    workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount, mixedInputTypes = true),
-    setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
-    testProps = RememberHeavyWorkflow.Props(baseValue = 3, inputToken = 1),
-    expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
-    expectedTestRendering = rememberedRendering(baseValue = 3, entryCount = RememberEntryCount),
-  )
+  @Test
+  fun rememberManyEntries_mixedInputTypes() =
+    benchmarkPropsChange(
+      workflow = RememberHeavyWorkflow(entryCount = RememberEntryCount, mixedInputTypes = true),
+      setupProps = RememberHeavyWorkflow.Props(baseValue = 1, inputToken = 0),
+      testProps = RememberHeavyWorkflow.Props(baseValue = 3, inputToken = 1),
+      expectedSetupRendering = rememberedRendering(baseValue = 1, entryCount = RememberEntryCount),
+      expectedTestRendering = rememberedRendering(baseValue = 3, entryCount = RememberEntryCount),
+    )
 
-  @Test fun stableHandlers_manyCallbacks_propChange() = benchmarkPropsChange(
-    workflow = StableHandlersWorkflow(handlerCount = StableHandlerCount),
-    setupProps = StableHandlersWorkflow.Props(salt = 0),
-    testProps = StableHandlersWorkflow.Props(salt = 1),
-    expectedSetupRendering = StableHandlerCount,
-    expectedTestRendering = StableHandlerCount + 1,
-  )
+  @Test
+  fun stableHandlers_manyCallbacks_propChange() =
+    benchmarkPropsChange(
+      workflow = StableHandlersWorkflow(handlerCount = StableHandlerCount),
+      setupProps = StableHandlersWorkflow.Props(salt = 0),
+      testProps = StableHandlersWorkflow.Props(salt = 1),
+      expectedSetupRendering = StableHandlerCount,
+      expectedTestRendering = StableHandlerCount + 1,
+    )
 
   private fun benchmarkWorkflowPropsChange(
     setupProps: BenchmarkWorkflowRoot.Props,
     testProps: BenchmarkWorkflowRoot.Props,
     expectedSetupRendering: Int,
     expectedTestRendering: Int,
-  ) = benchmarkPropsChange(
-    workflow = BenchmarkWorkflowRoot(treeShape = treeShape),
-    setupProps = setupProps,
-    testProps = testProps,
-    expectedSetupRendering = expectedSetupRendering,
-    expectedTestRendering = expectedTestRendering,
-  )
+  ) =
+    benchmarkPropsChange(
+      workflow = BenchmarkWorkflowRoot(treeShape = treeShape),
+      setupProps = setupProps,
+      testProps = testProps,
+      expectedSetupRendering = expectedSetupRendering,
+      expectedTestRendering = expectedTestRendering,
+    )
 
   private fun <PropsT> benchmarkPropsChange(
     workflow: Workflow<PropsT, Nothing, Int>,
@@ -254,14 +263,15 @@ class WorkflowRuntimeMicrobenchmark(
   ) = runTest {
     val props = MutableStateFlow(setupProps)
     val workflowJob = Job(parent = coroutineContext.job)
-    val renderings = renderWorkflowIn(
-      workflow = workflow,
-      props = props,
-      scope = this + workflowJob,
-      runtimeConfig = runtime.runtimeConfig,
-      workflowTracer = SystemTracer,
-      onOutput = {}
-    )
+    val renderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        props = props,
+        scope = this + workflowJob,
+        runtimeConfig = runtime.runtimeConfig,
+        workflowTracer = SystemTracer,
+        onOutput = {},
+      )
 
     benchmarkRule.measureRepeated {
       runWithMeasurementDisabled {
@@ -286,31 +296,25 @@ class WorkflowRuntimeMicrobenchmark(
     expectedTestRendering: Int,
   ) = runTest {
     val actionSinks = arrayOfNulls<Sink<WorkflowAction<*, Int, Nothing>>?>(treeShape.leafCount)
-    val workflow = BenchmarkWorkflowRoot(
-      treeShape = treeShape,
-      actionSinks = actionSinks,
-    )
+    val workflow = BenchmarkWorkflowRoot(treeShape = treeShape, actionSinks = actionSinks)
     val props = MutableStateFlow(BenchmarkWorkflowRoot.Props())
     val workflowJob = Job(parent = coroutineContext.job)
-    val renderings = renderWorkflowIn(
-      workflow = workflow,
-      props = props,
-      scope = this + workflowJob,
-      runtimeConfig = runtime.runtimeConfig,
-      workflowTracer = SystemTracer,
-      onOutput = {}
-    )
+    val renderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        props = props,
+        scope = this + workflowJob,
+        runtimeConfig = runtime.runtimeConfig,
+        workflowTracer = SystemTracer,
+        onOutput = {},
+      )
 
-    val resetStateAction = action<Any?, Int, Nothing>("resetState") {
-      this.state = 0
-    }
+    val resetStateAction = action<Any?, Int, Nothing>("resetState") { this.state = 0 }
 
     benchmarkRule.measureRepeated {
       runWithMeasurementDisabled {
         // Clear the workflow tree.
-        actionSinks.forEachIndexed { index, sink ->
-          sink!!.send(resetStateAction)
-        }
+        actionSinks.forEachIndexed { index, sink -> sink!!.send(resetStateAction) }
         testScheduler.advanceUntilIdle()
         assertEquals(0, renderings.value.rendering)
 
@@ -318,9 +322,7 @@ class WorkflowRuntimeMicrobenchmark(
         // won't actually happen until we advance the test scheduler below.
         testState { index, newState ->
           actionSinks[index]!!.send(
-            action<Any?, Int, Nothing>("setState") {
-              this.state = newState
-            }
+            action<Any?, Int, Nothing>("setState") { this.state = newState }
           )
         }
       }
@@ -336,6 +338,7 @@ class WorkflowRuntimeMicrobenchmark(
 
 private object SystemTracer : WorkflowTracer {
   override fun beginSection(label: String) = Trace.beginSection(label)
+
   override fun endSection() = Trace.endSection()
 }
 
@@ -353,20 +356,18 @@ private class BenchmarkWorkflowRoot(
   private val intermediateChild = IntermediateChild()
   private val leaf = Leaf()
 
-  override fun render(
-    renderProps: Props,
-    context: RenderContext<Props, Nothing>
-  ): Int {
+  override fun render(renderProps: Props, context: RenderContext<Props, Nothing>): Int {
     return context.renderChild(
       child = intermediateChild,
-      props = IntermediateProps(
-        firstLeafIndex = 0,
-        depth = 0,
-        renderFirstLeaf = renderProps.renderFirstLeaf,
-        renderOtherLeaves = renderProps.renderOtherLeaves,
-        firstLeafProps = renderProps.firstLeafProps,
-        otherLeafProps = renderProps.otherLeafProps,
-      )
+      props =
+        IntermediateProps(
+          firstLeafIndex = 0,
+          depth = 0,
+          renderFirstLeaf = renderProps.renderFirstLeaf,
+          renderOtherLeaves = renderProps.renderOtherLeaves,
+          firstLeafProps = renderProps.firstLeafProps,
+          otherLeafProps = renderProps.otherLeafProps,
+        ),
     )
   }
 
@@ -382,7 +383,7 @@ private class BenchmarkWorkflowRoot(
   private inner class IntermediateChild : StatelessWorkflow<IntermediateProps, Nothing, Int>() {
     override fun render(
       renderProps: IntermediateProps,
-      context: RenderContext<IntermediateProps, Nothing>
+      context: RenderContext<IntermediateProps, Nothing>,
     ): Int {
       val renderingLeaves = renderProps.depth == treeShape.depth - 1
       val subtreeDepth = treeShape.depth - renderProps.depth - 1
@@ -391,72 +392,64 @@ private class BenchmarkWorkflowRoot(
 
       // Do some extra work to more closely emulate real-world workflows. This helps the benchmarks
       // show the benefit of avoiding render passes more than just purely rendering children.
-      context.runningSideEffect("sideEffect") {
-        awaitCancellation()
-      }
+      context.runningSideEffect("sideEffect") { awaitCancellation() }
       context.remember("leafCount", subtreeLeafCount) { subtreeLeafCount }
       context.remember("firstLeaf", renderProps.firstLeafIndex) { renderProps.firstLeafIndex }
 
       repeat(treeShape.degree) { childIndex ->
         val firstLeafIndex = renderProps.firstLeafIndex + (childIndex * subtreeLeafCount)
-        rendering += if (renderingLeaves) {
-          if ((renderProps.renderFirstLeaf && firstLeafIndex == 0) ||
-            (renderProps.renderOtherLeaves && firstLeafIndex != 0)
-          ) {
-            val leafRendering = context.renderChild(
-              child = leaf,
-              key = childIndex.toString(),
-              props = LeafProps(
-                index = firstLeafIndex,
-                value =
-                if (firstLeafIndex == 0) {
-                  renderProps.firstLeafProps
-                } else {
-                  renderProps.otherLeafProps
-                }
-              )
-            )
-            leafRendering
+        rendering +=
+          if (renderingLeaves) {
+            if (
+              (renderProps.renderFirstLeaf && firstLeafIndex == 0) ||
+                (renderProps.renderOtherLeaves && firstLeafIndex != 0)
+            ) {
+              val leafRendering =
+                context.renderChild(
+                  child = leaf,
+                  key = childIndex.toString(),
+                  props =
+                    LeafProps(
+                      index = firstLeafIndex,
+                      value =
+                        if (firstLeafIndex == 0) {
+                          renderProps.firstLeafProps
+                        } else {
+                          renderProps.otherLeafProps
+                        },
+                    ),
+                )
+              leafRendering
+            } else {
+              0
+            }
           } else {
-            0
-          }
-        } else {
-          context.renderChild(
-            child = intermediateChild,
-            key = childIndex.toString(),
-            props = renderProps.copy(
-              firstLeafIndex = firstLeafIndex,
-              depth = renderProps.depth + 1,
+            context.renderChild(
+              child = intermediateChild,
+              key = childIndex.toString(),
+              props =
+                renderProps.copy(firstLeafIndex = firstLeafIndex, depth = renderProps.depth + 1),
             )
-          )
-        }
+          }
       }
 
       return rendering
     }
   }
 
-  private data class LeafProps(
-    val index: Int,
-    val value: Int,
-  )
+  private data class LeafProps(val index: Int, val value: Int)
 
   private inner class Leaf : StatefulWorkflow<LeafProps, Int, Nothing, Int>() {
-    override fun initialState(
-      props: LeafProps,
-      snapshot: Snapshot?
-    ): Int = 0
+    override fun initialState(props: LeafProps, snapshot: Snapshot?): Int = 0
 
     override fun render(
       renderProps: LeafProps,
       renderState: Int,
-      context: RenderContext<LeafProps, Int, Nothing>
+      context: RenderContext<LeafProps, Int, Nothing>,
     ): Int {
       // Do some extra work to more closely emulate real-world workflows. This helps the benchmarks
       // show the benefit of avoiding render passes more than just purely rendering children.
-      context.runningSideEffect("sideEffect") {
-        awaitCancellation()
-      }
+      context.runningSideEffect("sideEffect") { awaitCancellation() }
       context.remember("initialValue") { renderProps.value }
       context.remember("initialState") { renderState }
 
@@ -471,12 +464,10 @@ private class BenchmarkWorkflowRoot(
   }
 }
 
-private val BenchmarkTreeShape.leafCount: Int get() = leafCount(degree = degree, depth = depth)
+private val BenchmarkTreeShape.leafCount: Int
+  get() = leafCount(degree = degree, depth = depth)
 
-private fun leafCount(
-  degree: Int,
-  depth: Int
-): Int = degree.toFloat().pow(depth).toInt()
+private fun leafCount(degree: Int, depth: Int): Int = degree.toFloat().pow(depth).toInt()
 
 private class ShallowWideWorkflowRoot(
   private val childCount: Int,
@@ -491,44 +482,37 @@ private class ShallowWideWorkflowRoot(
 
   private val child = Child()
 
-  override fun render(
-    renderProps: Props,
-    context: RenderContext<Props, Nothing>
-  ): Int {
+  override fun render(renderProps: Props, context: RenderContext<Props, Nothing>): Int {
     var rendering = 0
     repeat(childCount) { childIndex ->
       if (childIndex == 0 && renderProps.renderFirstChild) {
-        rendering += context.renderChild(
-          child = child,
-          key = childIndex.toString(),
-          props = ChildProps(index = childIndex, propsValue = renderProps.firstChildProps)
-        )
+        rendering +=
+          context.renderChild(
+            child = child,
+            key = childIndex.toString(),
+            props = ChildProps(index = childIndex, propsValue = renderProps.firstChildProps),
+          )
       } else if (childIndex > 0 && renderProps.renderOtherChildren) {
-        rendering += context.renderChild(
-          child = child,
-          key = childIndex.toString(),
-          props = ChildProps(index = childIndex, propsValue = renderProps.otherChildrenProps)
-        )
+        rendering +=
+          context.renderChild(
+            child = child,
+            key = childIndex.toString(),
+            props = ChildProps(index = childIndex, propsValue = renderProps.otherChildrenProps),
+          )
       }
     }
     return rendering
   }
 
-  private data class ChildProps(
-    val index: Int,
-    val propsValue: Int,
-  )
+  private data class ChildProps(val index: Int, val propsValue: Int)
 
   private inner class Child : StatefulWorkflow<ChildProps, Int, Nothing, Int>() {
-    override fun initialState(
-      props: ChildProps,
-      snapshot: Snapshot?
-    ): Int = 0
+    override fun initialState(props: ChildProps, snapshot: Snapshot?): Int = 0
 
     override fun render(
       renderProps: ChildProps,
       renderState: Int,
-      context: RenderContext<ChildProps, Int, Nothing>
+      context: RenderContext<ChildProps, Int, Nothing>,
     ): Int {
       if (actionSinks != null) {
         @Suppress("UNCHECKED_CAST")
@@ -545,41 +529,28 @@ private class RememberHeavyWorkflow(
   private val entryCount: Int,
   private val mixedInputTypes: Boolean = false,
 ) : StatelessWorkflow<RememberHeavyWorkflow.Props, Nothing, Int>() {
-  data class Props(
-    val baseValue: Int,
-    val inputToken: Int,
-  )
+  data class Props(val baseValue: Int, val inputToken: Int)
 
-  override fun render(
-    renderProps: Props,
-    context: RenderContext<Props, Nothing>
-  ): Int {
+  override fun render(renderProps: Props, context: RenderContext<Props, Nothing>): Int {
     var rendering = 0
     repeat(entryCount) { index ->
-      val input = if (mixedInputTypes && index % 2 == 0) {
-        "token-${renderProps.inputToken}"
-      } else {
-        renderProps.inputToken
-      }
-      rendering += context.remember("remember-$index", input) {
-        renderProps.baseValue + index
-      }
+      val input =
+        if (mixedInputTypes && index % 2 == 0) {
+          "token-${renderProps.inputToken}"
+        } else {
+          renderProps.inputToken
+        }
+      rendering += context.remember("remember-$index", input) { renderProps.baseValue + index }
     }
     return rendering
   }
 }
 
-private class StableHandlersWorkflow(
-  private val handlerCount: Int,
-) : StatelessWorkflow<StableHandlersWorkflow.Props, Nothing, Int>() {
-  data class Props(
-    val salt: Int,
-  )
+private class StableHandlersWorkflow(private val handlerCount: Int) :
+  StatelessWorkflow<StableHandlersWorkflow.Props, Nothing, Int>() {
+  data class Props(val salt: Int)
 
-  override fun render(
-    renderProps: Props,
-    context: RenderContext<Props, Nothing>
-  ): Int {
+  override fun render(renderProps: Props, context: RenderContext<Props, Nothing>): Int {
     var rendering = renderProps.salt
     repeat(handlerCount) { index ->
       context.eventHandler<Int>(name = "handler-$index", remember = true) { _ -> }

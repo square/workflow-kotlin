@@ -22,19 +22,18 @@ public object RenderIdempotencyChecker : WorkflowInterceptor {
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): R {
     val recordingContext = RecordingContextInterceptor<P, S, O>()
     proceed(renderProps, renderState, recordingContext)
 
     // The second render pass should not actually invoke any real behavior.
     recordingContext.startReplaying()
-    return proceed(renderProps, renderState, recordingContext)
-      .also {
-        // After the verification render pass, any calls to the context _should_ be passed
-        // through, to allow the real context to run its usual post-render behavior.
-        recordingContext.stopReplaying()
-      }
+    return proceed(renderProps, renderState, recordingContext).also {
+      // After the verification render pass, any calls to the context _should_ be passed
+      // through, to allow the real context to run its usual post-render behavior.
+      recordingContext.stopReplaying()
+    }
   }
 }
 
@@ -59,7 +58,7 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
 
   override fun onActionSent(
     action: WorkflowAction<PropsT, StateT, OutputT>,
-    proceed: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit
+    proceed: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit,
   ) {
     if (!replaying) {
       proceed(action)
@@ -73,24 +72,25 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
     childProps: CP,
     key: String,
     handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>,
-    proceed: (
-      child: Workflow<CP, CO, CR>,
-      props: CP,
-      key: String,
-      handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>
-    ) -> CR
-  ): CR = if (!replaying) {
-    proceed(child, childProps, key, handler)
-      .also { captureStack.addFirst(it) }
-  } else {
-    @Suppress("UNCHECKED_CAST")
-    captureStack.removeLast() as CR
-  }
+    proceed:
+      (
+        child: Workflow<CP, CO, CR>,
+        props: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>,
+      ) -> CR,
+  ): CR =
+    if (!replaying) {
+      proceed(child, childProps, key, handler).also { captureStack.addFirst(it) }
+    } else {
+      @Suppress("UNCHECKED_CAST")
+      captureStack.removeLast() as CR
+    }
 
   override fun onRunningSideEffect(
     key: String,
     sideEffect: suspend () -> Unit,
-    proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+    proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit,
   ) {
     if (!replaying) {
       proceed(key, sideEffect)
@@ -103,16 +103,15 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
     resultType: KType,
     inputs: Array<out Any?>,
     calculation: () -> CResult,
-    proceed: (
-      key: String,
-      resultType: KType,
-      inputs: Array<out Any?>,
-      calculation: () -> CResult
-    ) -> CResult
-  ): CResult = if (!replaying) {
-    proceed(key, resultType, inputs, calculation).also { captureStack.addFirst(it) }
-  } else {
-    @Suppress("UNCHECKED_CAST")
-    captureStack.removeLast() as CResult
-  }
+    proceed:
+      (
+        key: String, resultType: KType, inputs: Array<out Any?>, calculation: () -> CResult,
+      ) -> CResult,
+  ): CResult =
+    if (!replaying) {
+      proceed(key, resultType, inputs, calculation).also { captureStack.addFirst(it) }
+    } else {
+      @Suppress("UNCHECKED_CAST")
+      captureStack.removeLast() as CResult
+    }
 }

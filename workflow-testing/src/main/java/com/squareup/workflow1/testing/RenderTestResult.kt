@@ -53,15 +53,15 @@ public interface RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
   public fun testNextRender(): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
-   * Starts a new [RenderTester] session using [newProps] props, and the state that is a result
-   * of the latest render pass (the same one you could run assertions on in [verifyActionResult]).
+   * Starts a new [RenderTester] session using [newProps] props, and the state that is a result of
+   * the latest render pass (the same one you could run assertions on in [verifyActionResult]).
    *
    * This method is useful for daisy-chaining of [RenderTester] sessions, when you want to assert
    * different state transitions without [WorkflowTestRuntime] overhead.
    *
    * Note that if you're overriding [StatefulWorkflow.onPropsChanged] method, it'll be ran before
-   * the next [RenderTester.render] pass, and [RenderTester] returned by this method will use
-   * the updated `state` value.
+   * the next [RenderTester.render] pass, and [RenderTester] returned by this method will use the
+   * updated `state` value.
    */
   public fun testNextRenderWithProps(
     newProps: PropsT

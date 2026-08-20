@@ -41,9 +41,7 @@ android {
     }
   }
 
-  testOptions {
-    targetSdk = libsCatalog.version("targetSdk").toInt()
-  }
+  testOptions { targetSdk = libsCatalog.version("targetSdk").toInt() }
 
   testBuildType = "release"
   buildTypes {
@@ -53,12 +51,10 @@ android {
       isMinifyEnabled = true
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
-        "benchmark-proguard-rules.pro"
+        "benchmark-proguard-rules.pro",
       )
     }
-    release {
-      isDefault = true
-    }
+    release { isDefault = true }
   }
 
   namespace = "com.squareup.benchmark.runtime.benchmark"

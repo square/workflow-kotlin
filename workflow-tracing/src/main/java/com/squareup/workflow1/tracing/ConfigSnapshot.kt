@@ -10,13 +10,11 @@ import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import kotlinx.coroutines.CoroutineDispatcher
 
-/**
- * Snapshot of the current [RuntimeConfig]
- */
+/** Snapshot of the current [RuntimeConfig] */
 @OptIn(WorkflowExperimentalRuntime::class)
 public class ConfigSnapshot(
   config: RuntimeConfig,
-  public val runtimeDispatch: CoroutineDispatcher? = null
+  public val runtimeDispatch: CoroutineDispatcher? = null,
 ) {
 
   public val configAsString: String = "$config, $runtimeDispatch"

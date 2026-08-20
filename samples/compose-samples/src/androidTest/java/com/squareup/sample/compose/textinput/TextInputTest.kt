@@ -25,10 +25,12 @@ class TextInputTest {
 
   private val composeRule = createAndroidComposeRule<TextInputActivity>()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
-    .around(composeRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
+      .around(IdlingDispatcherRule)
 
   @OptIn(ExperimentalTestApi::class)
   @Test
@@ -38,20 +40,16 @@ class TextInputTest {
       composeRule.onNode(hasSetTextAction()).assertTextEquals("he")
 
       // For some reason performTextInput("llo") is flaky when running all the tests in this module.
-      composeRule.onNode(hasSetTextAction())
-        .performTextReplacement("hello")
-      retry {
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
-      }
+      composeRule.onNode(hasSetTextAction()).performTextReplacement("hello")
+      retry { composeRule.onNode(hasSetTextAction()).assertTextEquals("hello") }
     }
   }
 
-  @Test fun swapsText() {
+  @Test
+  fun swapsText() {
     runBlocking {
       composeRule.onNode(hasSetTextAction()).performTextInput("hello")
-      retry {
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
-      }
+      retry { composeRule.onNode(hasSetTextAction()).assertTextEquals("hello") }
 
       // Swap to empty field.
       composeRule.onNodeWithText("Swap").performClick()
@@ -59,17 +57,17 @@ class TextInputTest {
 
       retry {
         // The EditableText is empty, but it's showing a hint of `Enter some text`.
-        // Even though the actual EditableText is blank/empty, if it's included, the assertion fails.
-        composeRule.onNode(hasSetTextAction())
+        // Even though the actual EditableText is blank/empty, if it's included, the assertion
+        // fails.
+        composeRule
+          .onNode(hasSetTextAction())
           .assertTextEquals("Enter some text", includeEditableText = false)
         composeRule.onNodeWithText("hello").assertDoesNotExist()
       }
 
       composeRule.onNode(hasSetTextAction()).performTextInput("world")
 
-      retry {
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("world")
-      }
+      retry { composeRule.onNode(hasSetTextAction()).assertTextEquals("world") }
 
       // Swap back to first field.
       composeRule.onNodeWithText("Swap").performClick()

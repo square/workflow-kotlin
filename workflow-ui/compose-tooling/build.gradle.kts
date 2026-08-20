@@ -9,18 +9,10 @@ plugins {
   alias(libs.plugins.compose.compiler)
 }
 
-android {
-  namespace = "com.squareup.workflow1.ui.compose.tooling"
-}
+android { namespace = "com.squareup.workflow1.ui.compose.tooling" }
 
 tasks.withType<KotlinCompile> {
-  compilerOptions.apply {
-    freeCompilerArgs.addAll(
-      listOf(
-        "-opt-in=kotlin.RequiresOptIn"
-      )
-    )
-  }
+  compilerOptions.apply { freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn")) }
 }
 
 dependencies {

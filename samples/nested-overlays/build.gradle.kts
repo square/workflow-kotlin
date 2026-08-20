@@ -6,9 +6,7 @@ plugins {
 }
 
 android {
-  defaultConfig {
-    applicationId = "com.squareup.sample.nestedoverlays"
-  }
+  defaultConfig { applicationId = "com.squareup.sample.nestedoverlays" }
   namespace = "com.squareup.sample.nestedoverlays"
 }
 

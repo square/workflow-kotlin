@@ -19,9 +19,7 @@ abstract class ArtifactsPlugin : Plugin<Project> {
 
     // prevent publishing without checking all artifacts first
     target.allprojects {
-      target.tasks.withType(AbstractPublishToMaven::class.java) {
-        it.dependsOn(artifactsCheck)
-      }
+      target.tasks.withType(AbstractPublishToMaven::class.java) { it.dependsOn(artifactsCheck) }
     }
   }
 }

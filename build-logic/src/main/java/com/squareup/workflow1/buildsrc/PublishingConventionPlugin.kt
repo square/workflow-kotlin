@@ -54,7 +54,7 @@ class PublishingConventionPlugin : Plugin<Project> {
     target.extensions.configure(MavenPublishBaseExtension::class.java) { basePluginExtension ->
       basePluginExtension.publishToMavenCentral(
         SonatypeHost.CENTRAL_PORTAL,
-        automaticRelease = true
+        automaticRelease = true,
       )
       // Will only apply to non snapshot builds.
       basePluginExtension.signAllPublications()
@@ -72,7 +72,7 @@ class PublishingConventionPlugin : Plugin<Project> {
         basePluginExtension.configure(
           GradlePlugin(
             javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"),
-            sourcesJar = true
+            sourcesJar = true,
           )
         )
         target.setPublicationProperties(pomDescription, artifactId)
@@ -82,7 +82,7 @@ class PublishingConventionPlugin : Plugin<Project> {
           basePluginExtension.configure(
             KotlinJvm(
               javadocJar = JavadocJar.Dokka(taskName = "dokkaGeneratePublicationHtml"),
-              sourcesJar = true
+              sourcesJar = true,
             )
           )
           target.setPublicationProperties(pomDescription, artifactId)
@@ -111,17 +111,13 @@ class PublishingConventionPlugin : Plugin<Project> {
 
         val moduleAgents = target.layout.projectDirectory.file("AGENTS.md").asFile
         if (moduleAgents.exists()) {
-          sync.from(moduleAgents) {
-            it.into("META-INF/com.squareup.workflow1")
-          }
+          sync.from(moduleAgents) { it.into("META-INF/com.squareup.workflow1") }
         }
 
         if (target.name == "workflow-core") {
           val rootAgents = target.rootProject.layout.projectDirectory.file("AGENTS.md").asFile
           if (rootAgents.exists()) {
-            sync.from(rootAgents) {
-              it.into("META-INF/com.squareup.workflow1")
-            }
+            sync.from(rootAgents) { it.into("META-INF/com.squareup.workflow1") }
           }
           // Also bundle root-level skills (e.g., extracting-ai-context)
           sync.from(target.rootProject.layout.projectDirectory.dir(".agents")) {
@@ -142,38 +138,34 @@ class PublishingConventionPlugin : Plugin<Project> {
     }
   }
 
-  private fun Project.setPublicationProperties(
-    pomDescription: String,
-    artifactIdOrNull: String?
-  ) {
+  private fun Project.setPublicationProperties(pomDescription: String, artifactIdOrNull: String?) {
     // This has to be inside an `afterEvaluate { }` because these publications are created lazily,
-    // using the project's `name`, which is just the directory name instead of the actual artifact id.
+    // using the project's `name`, which is just the directory name instead of the actual artifact
+    // id.
     // We can't set `name` because it's immutable, so we have to wait until the publication is
     // created, then overwrite the incorrect value.
     afterEvaluate {
-      extensions
-        .configure(PublishingExtension::class.java) { publishingExtension ->
-          publishingExtension.publications
-            .filterIsInstance<MavenPublication>()
-            // Skip Gradle plugin marker publications — their coordinates are
-            // managed by the java-gradle-plugin and must not be overridden.
-            .filterNot { it.name.endsWith("PluginMarkerMaven") }
-            .forEach { publication ->
-
-              if (artifactIdOrNull != null) {
-                publication.artifactId = artifactIdOrNull
-              }
-              publication.pom.description.set(pomDescription)
-
-              // Note that we're setting the `groupId` of this specific publication,
-              // and not `Project.group`.  By default, `Project.group` is a project's parent,
-              // so for example the group of `:workflow-ui:compose` is `workflow-ui`.  If we set every
-              // project's `group` to the group id, then we use the natural disambiguation of unique
-              // paths.  For instance, projects with paths of `:lib1:core` and `:lib2:core`
-              // and a group of `com.example` would both have the coordinates of `com.example:core`.
-              publication.groupId = project.property("GROUP") as String
+      extensions.configure(PublishingExtension::class.java) { publishingExtension ->
+        publishingExtension.publications
+          .filterIsInstance<MavenPublication>()
+          // Skip Gradle plugin marker publications — their coordinates are
+          // managed by the java-gradle-plugin and must not be overridden.
+          .filterNot { it.name.endsWith("PluginMarkerMaven") }
+          .forEach { publication ->
+            if (artifactIdOrNull != null) {
+              publication.artifactId = artifactIdOrNull
             }
-        }
+            publication.pom.description.set(pomDescription)
+
+            // Note that we're setting the `groupId` of this specific publication,
+            // and not `Project.group`.  By default, `Project.group` is a project's parent,
+            // so for example the group of `:workflow-ui:compose` is `workflow-ui`.  If we set every
+            // project's `group` to the group id, then we use the natural disambiguation of unique
+            // paths.  For instance, projects with paths of `:lib1:core` and `:lib2:core`
+            // and a group of `com.example` would both have the coordinates of `com.example:core`.
+            publication.groupId = project.property("GROUP") as String
+          }
+      }
     }
   }
 }

@@ -10,12 +10,10 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 
-/**
- * Workflow that represents the actual player of the game in the [GameWorkflow].
- */
+/** Workflow that represents the actual player of the game in the [GameWorkflow]. */
 class PlayerWorkflow(
   private val avatar: BoardCell = BoardCell("👩🏻‍🎤"),
-  private val cellsPerSecond: Float = 15f
+  private val cellsPerSecond: Float = 15f,
 ) : StatefulWorkflow<ActorProps, Movement, Nothing, Rendering>() {
 
   sealed class Action : WorkflowAction<ActorProps, Movement, Nothing>() {
@@ -36,23 +34,22 @@ class PlayerWorkflow(
   data class Rendering(
     val actorRendering: ActorRendering,
     val onStartMoving: (Direction) -> Unit,
-    val onStopMoving: (Direction) -> Unit
+    val onStopMoving: (Direction) -> Unit,
   )
 
-  override fun initialState(
-    props: ActorProps,
-    snapshot: Snapshot?
-  ): Movement = Movement(cellsPerSecond = cellsPerSecond)
+  override fun initialState(props: ActorProps, snapshot: Snapshot?): Movement =
+    Movement(cellsPerSecond = cellsPerSecond)
 
   override fun render(
     renderProps: ActorProps,
     renderState: Movement,
-    context: RenderContext<ActorProps, Movement, Nothing>
-  ): Rendering = Rendering(
-    actorRendering = ActorRendering(avatar = avatar, movement = renderState),
-    onStartMoving = { context.actionSink.send(StartMoving(it)) },
-    onStopMoving = { context.actionSink.send(StopMoving(it)) }
-  )
+    context: RenderContext<ActorProps, Movement, Nothing>,
+  ): Rendering =
+    Rendering(
+      actorRendering = ActorRendering(avatar = avatar, movement = renderState),
+      onStartMoving = { context.actionSink.send(StartMoving(it)) },
+      onStopMoving = { context.actionSink.send(StopMoving(it)) },
+    )
 
   override fun snapshotState(state: Movement): Snapshot? = null
 }

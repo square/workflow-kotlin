@@ -4,9 +4,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 
-/**
- * Configuration for the workflow-kotlin AI context extraction plugin.
- */
+/** Configuration for the workflow-kotlin AI context extraction plugin. */
 public abstract class AiContextExtension {
 
   /**

@@ -1,7 +1,7 @@
 package com.squareup.workflow1.buildsrc
 
+import com.ncorti.ktfmt.gradle.KtfmtExtension
 import com.rickbusarow.kgx.libsCatalog
-import com.rickbusarow.kgx.pluginId
 import com.rickbusarow.kgx.version
 import com.squareup.workflow1.buildsrc.internal.invoke
 import com.squareup.workflow1.buildsrc.internal.isRunningFromIde
@@ -16,20 +16,22 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun Project.kotlinCommonSettings(bomConfigurationName: String) {
-  pluginManager.apply(libsCatalog.pluginId("ktlint"))
+  pluginManager.apply("com.ncorti.ktfmt.gradle")
+  extensions.configure(KtfmtExtension::class.java) { ktfmt ->
+    // Match the style used by android-register and market.
+    ktfmt.googleStyle()
+  }
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
     add(
       bomConfigurationName,
-      platform(kotlin(module = "bom", version = libsCatalog.version("kotlin")))
+      platform(kotlin(module = "bom", version = libsCatalog.version("kotlin"))),
     )
   }
 
   extensions.configure(KotlinProjectExtension::class.java) { extension ->
-    extension.jvmToolchain { toolChain ->
-      toolChain.languageVersion.set(javaLanguageVersion)
-    }
+    extension.jvmToolchain { toolChain -> toolChain.languageVersion.set(javaLanguageVersion) }
   }
 
   // Gradle 9 defaults failOnNoDiscoveredTests to true, but some modules have test source
@@ -40,10 +42,10 @@ fun Project.kotlinCommonSettings(bomConfigurationName: String) {
 
   tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
     kotlinCompile.apply {
-      if (!(
-          path.startsWith(":samples") || path.startsWith(":benchmarks") ||
-            name.contains("test", ignoreCase = true)
-          )
+      if (
+        !(path.startsWith(":samples") ||
+          path.startsWith(":benchmarks") ||
+          name.contains("test", ignoreCase = true))
       ) {
         explicitApiMode.set(Strict)
       }

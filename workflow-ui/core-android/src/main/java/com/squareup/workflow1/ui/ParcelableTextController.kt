@@ -4,21 +4,16 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 
-/**
- * [Parcelable] implementation of [TextController].
- */
-public class ParcelableTextController private constructor(
-  controllerImplementation: TextController
-) : TextController by controllerImplementation, Parcelable {
+/** [Parcelable] implementation of [TextController]. */
+public class ParcelableTextController
+private constructor(controllerImplementation: TextController) :
+  TextController by controllerImplementation, Parcelable {
 
   public constructor(initialValue: String = "") : this(TextController(initialValue))
 
   private constructor(parcel: Parcel) : this(parcel.readString() ?: "")
 
-  override fun writeToParcel(
-    out: Parcel,
-    flags: Int
-  ) {
+  override fun writeToParcel(out: Parcel, flags: Int) {
     out.writeString(textValue)
   }
 

@@ -27,7 +27,7 @@ import com.squareup.workflow1.traceviewer.model.Node
 internal fun SearchBox(
   nodes: List<Node>,
   onSearch: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   var searchText by remember { mutableStateOf("") }
   var expanded by remember { mutableStateOf(false) }
@@ -38,30 +38,18 @@ internal fun SearchBox(
       SearchBarDefaults.InputField(
         query = searchText,
         onQueryChange = { searchText = it },
-        onSearch = {
-          expanded = false
-        },
+        onSearch = { expanded = false },
         expanded = expanded,
         onExpandedChange = { expanded = it },
         placeholder = { Text("search for a node...") },
         trailingIcon = {
-          IconButton(
-            onClick = {
-              expanded = false
-            }
-          ) {
-            Icon(
-              imageVector = Icons.Default.Close,
-              contentDescription = "Clear search"
-            )
+          IconButton(onClick = { expanded = false }) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "Clear search")
           }
-        }
+        },
       )
     },
-    colors = SearchBarDefaults.colors(
-      containerColor = Color.White,
-      dividerColor = Color.Black
-    ),
+    colors = SearchBarDefaults.colors(containerColor = Color.White, dividerColor = Color.Black),
     expanded = expanded,
     onExpandedChange = { expanded = it },
   ) {
@@ -71,15 +59,13 @@ internal fun SearchBox(
         key(node.id) {
           ListItem(
             headlineContent = { Text(node.name) },
-            modifier = Modifier
-              .clickable {
+            modifier =
+              Modifier.clickable {
                 onSearch(node.name)
                 expanded = false
               },
-            colors = ListItemDefaults.colors(
-              containerColor = Color.White,
-              headlineColor = Color.Black
-            )
+            colors =
+              ListItemDefaults.colors(containerColor = Color.White, headlineColor = Color.Black),
           )
         }
       }

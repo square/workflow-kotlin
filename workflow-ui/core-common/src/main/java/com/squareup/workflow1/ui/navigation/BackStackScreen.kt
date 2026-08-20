@@ -17,28 +17,20 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromListOr
  *
  * UI kits are expected to provide handling for this class by default.
  *
+ * @param name included in the [compatibilityKey] of this screen, for ease of composition -- in
+ *   classic Android views, view state persistence support requires peer BackStackScreens to have a
+ *   unique keys.
+ * @param frames the complete set of [StackedT] collected in this [BackStackScreen]:
+ *   [backStack] + [top]
  * @see fromList
  * @see fromListOrNull
- *
- * @param name included in the [compatibilityKey] of this screen, for ease
- * of composition -- in classic Android views, view state persistence support
- * requires peer BackStackScreens to have a unique keys.
- *
- * @param frames the complete set of [StackedT] collected in this [BackStackScreen]:
- * [backStack] + [top]
  */
-public class BackStackScreen<out StackedT : Screen> internal constructor(
-  public val frames: List<StackedT>,
-  public val name: String
-) : Screen, Container<Screen, StackedT>, Compatible {
+public class BackStackScreen<out StackedT : Screen>
+internal constructor(public val frames: List<StackedT>, public val name: String) :
+  Screen, Container<Screen, StackedT>, Compatible {
 
-  /**
-   * Creates a [BackStackScreen] with elements listed from the [bottom] to the top.
-   */
-  public constructor(
-    bottom: StackedT,
-    vararg rest: StackedT
-  ) : this(listOf(bottom) + rest, "")
+  /** Creates a [BackStackScreen] with elements listed from the [bottom] to the top. */
+  public constructor(bottom: StackedT, vararg rest: StackedT) : this(listOf(bottom) + rest, "")
 
   /**
    * Creates a [named][name] [BackStackScreen] with elements listed from the [bottom] to the top.
@@ -46,23 +38,20 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
   public constructor(
     name: String,
     bottom: StackedT,
-    vararg rest: StackedT
+    vararg rest: StackedT,
   ) : this(listOf(bottom) + rest, name)
 
   override val compatibilityKey: String = keyFor(this, name)
 
-  override val unwrapped: Any get() = top
+  override val unwrapped: Any
+    get() = top
 
   override fun asSequence(): Sequence<StackedT> = frames.asSequence()
 
-  /**
-   * The active screen.
-   */
+  /** The active screen. */
   public val top: StackedT = frames.last()
 
-  /**
-   * Screens to which we may return.
-   */
+  /** Screens to which we may return. */
   public val backStack: List<StackedT> = frames.subList(0, frames.size - 1)
 
   public operator fun get(index: Int): StackedT = frames[index]
@@ -74,8 +63,7 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
   }
 
   public fun <R : Screen> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
-    return frames.mapIndexed(transform)
-      .toBackStackScreen(name)
+    return frames.mapIndexed(transform).toBackStackScreen(name)
   }
 
   public fun withName(name: String): BackStackScreen<StackedT> = BackStackScreen(frames, name)
@@ -106,23 +94,17 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
      *
      * @throws IllegalArgumentException is [frames] is empty
      */
-    public fun <T : Screen> fromList(
-      frames: List<T>,
-      name: String = ""
-    ): BackStackScreen<T> {
-      require(frames.isNotEmpty()) {
-        "A BackStackScreen must have at least one frame."
-      }
+    public fun <T : Screen> fromList(frames: List<T>, name: String = ""): BackStackScreen<T> {
+      require(frames.isNotEmpty()) { "A BackStackScreen must have at least one frame." }
       return BackStackScreen(frames, name)
     }
 
     /**
-     * Builds a [BackStackScreen] from a list of [frames], or returns `null`
-     * if [frames] is empty.
+     * Builds a [BackStackScreen] from a list of [frames], or returns `null` if [frames] is empty.
      */
     public fun <T : Screen> fromListOrNull(
       frames: List<T>,
-      name: String = ""
+      name: String = "",
     ): BackStackScreen<T>? {
       return when {
         frames.isEmpty() -> null
@@ -133,9 +115,8 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
 }
 
 /**
- * Returns a new [BackStackScreen] with the [BackStackScreen.frames] of [other] added
- * to those of the receiver. [other] is nullable for convenience when using with
- * [toBackStackScreenOrNull].
+ * Returns a new [BackStackScreen] with the [BackStackScreen.frames] of [other] added to those of
+ * the receiver. [other] is nullable for convenience when using with [toBackStackScreenOrNull].
  */
 public operator fun <T : Screen> BackStackScreen<T>.plus(
   other: BackStackScreen<T>?

@@ -14,6 +14,13 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -24,19 +31,10 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 @Burst
-internal class WorkflowRunnerTest(
-  runtime: RuntimeOptions = NONE
-) {
+internal class WorkflowRunnerTest(runtime: RuntimeOptions = NONE) {
 
   private lateinit var scope: TestScope
   private val runtimeConfig = runtime.runtimeConfig
@@ -51,36 +49,27 @@ internal class WorkflowRunnerTest(
     scope.cancel()
   }
 
-  @Test fun initial_nextRendering_returns_initial_rendering() {
+  @Test
+  fun initial_nextRendering_returns_initial_rendering() {
     val workflow = Workflow.stateless<Unit, Nothing, String> { "foo" }
-    val runner = WorkflowRunner(
-      workflow,
-      MutableStateFlow(Unit),
-      runtimeConfig
-    )
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
     val rendering = runner.nextRendering().rendering
     assertEquals("foo", rendering)
   }
 
-  @Test fun initial_nextRendering_uses_initial_props() {
+  @Test
+  fun initial_nextRendering_uses_initial_props() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
-    val runner = WorkflowRunner(
-      workflow,
-      MutableStateFlow("foo"),
-      runtimeConfig
-    )
+    val runner = WorkflowRunner(workflow, MutableStateFlow("foo"), runtimeConfig)
     val rendering = runner.nextRendering().rendering
     assertEquals("foo", rendering)
   }
 
-  @Test fun initial_awaitAndApplyActions_does_not_handle_initial_props() {
+  @Test
+  fun initial_awaitAndApplyActions_does_not_handle_initial_props() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
     val props = MutableStateFlow("initial")
-    val runner = WorkflowRunner(
-      workflow,
-      props,
-      runtimeConfig
-    )
+    val runner = WorkflowRunner(workflow, props, runtimeConfig)
     runner.nextRendering()
 
     val outputDeferred = scope.async { runner.awaitAndApplyAction() }
@@ -89,15 +78,12 @@ internal class WorkflowRunnerTest(
     assertTrue(outputDeferred.isActive)
   }
 
-  @Test fun initial_awaitAndApplyActions_handles_props_changed_after_initialization() {
+  @Test
+  fun initial_awaitAndApplyActions_handles_props_changed_after_initialization() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
     val props = MutableStateFlow("initial")
     // The dispatcher is paused, so the produceIn coroutine won't start yet.
-    val runner = WorkflowRunner(
-      workflow,
-      props,
-      runtimeConfig
-    )
+    val runner = WorkflowRunner(workflow, props, runtimeConfig)
     // The initial value will be read during initialization, so we can change it any time after
     // that.
     props.value = "changed"
@@ -112,28 +98,28 @@ internal class WorkflowRunnerTest(
     scope.runCurrent()
 
     assertTrue(output.isCompleted)
-    @Suppress("UNCHECKED_CAST")
-    val outputValue = output.getCompleted() as? ActionApplied<String>?
+    @Suppress("UNCHECKED_CAST") val outputValue = output.getCompleted() as? ActionApplied<String>?
     assertNull(outputValue)
     val rendering = runner.nextRendering().rendering
     assertEquals("changed", rendering)
   }
 
-  @Test fun awaitAndApplyActions_handles_workflow_update() {
-    val workflow = Workflow.stateful<Unit, String, String, String>(
-      initialState = { "initial" },
-      render = { _, renderState ->
-        runningWorker(Worker.from { "work" }) {
-          action("") {
-            state = "state: $it"
-            setOutput("output: $it")
+  @Test
+  fun awaitAndApplyActions_handles_workflow_update() {
+    val workflow =
+      Workflow.stateful<Unit, String, String, String>(
+        initialState = { "initial" },
+        render = { _, renderState ->
+          runningWorker(Worker.from { "work" }) {
+            action("") {
+              state = "state: $it"
+              setOutput("output: $it")
+            }
           }
-        }
-        return@stateful renderState
-      }
-    )
-    val runner =
-      WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
+          return@stateful renderState
+        },
+      )
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
 
     val initialRendering = runner.nextRendering().rendering
     assertEquals("initial", initialRendering)
@@ -145,19 +131,21 @@ internal class WorkflowRunnerTest(
     assertEquals("state: work", updatedRendering)
   }
 
-  @Test fun awaitAndApplyActions_handles_concurrent_props_change_and_workflow_update() {
-    val workflow = Workflow.stateful<String, String, String, String>(
-      initialState = { "initial state($it)" },
-      render = { renderProps, renderState ->
-        runningWorker(Worker.from { "work" }) {
-          action("") {
-            state = "state: $it"
-            setOutput("output: $it")
+  @Test
+  fun awaitAndApplyActions_handles_concurrent_props_change_and_workflow_update() {
+    val workflow =
+      Workflow.stateful<String, String, String, String>(
+        initialState = { "initial state($it)" },
+        render = { renderProps, renderState ->
+          runningWorker(Worker.from { "work" }) {
+            action("") {
+              state = "state: $it"
+              setOutput("output: $it")
+            }
           }
-        }
-        return@stateful "$renderProps|$renderState"
-      }
-    )
+          return@stateful "$renderProps|$renderState"
+        },
+      )
     val props = MutableStateFlow("initial props")
     val runner = WorkflowRunner(workflow, props, runtimeConfig)
     props.value = "changed props"
@@ -178,10 +166,10 @@ internal class WorkflowRunnerTest(
     assertEquals("changed props|state: work", thirdRendering)
   }
 
-  @Test fun cancelRuntime_does_not_interrupt_awaitAndApplyActions() {
+  @Test
+  fun cancelRuntime_does_not_interrupt_awaitAndApplyActions() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val runner =
-      WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
     runner.nextRendering()
     val output = scope.async { runner.awaitAndApplyAction() }
     scope.runCurrent()
@@ -195,17 +183,18 @@ internal class WorkflowRunnerTest(
     assertTrue(output.isActive)
   }
 
-  @Test fun cancelRuntime_cancels_runtime() {
+  @Test
+  fun cancelRuntime_cancels_runtime() {
     var cancellationException: Throwable? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect(key = "test side effect") {
-        suspendCancellableCoroutine { continuation ->
-          continuation.invokeOnCancellation { cause -> cancellationException = cause }
+    val workflow =
+      Workflow.stateless<Unit, Nothing, Unit> {
+        runningSideEffect(key = "test side effect") {
+          suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation { cause -> cancellationException = cause }
+          }
         }
       }
-    }
-    val runner =
-      WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
     runner.nextRendering()
     scope.runCurrent()
     assertNull(cancellationException)
@@ -218,10 +207,10 @@ internal class WorkflowRunnerTest(
     assertTrue(causes.all { it is CancellationException })
   }
 
-  @Test fun cancelling_scope_interrupts_awaitAndApplyActions() {
+  @Test
+  fun cancelling_scope_interrupts_awaitAndApplyActions() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val runner =
-      WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
     runner.nextRendering()
     val actionResult = scope.async { runner.awaitAndApplyAction() }
     scope.runCurrent()
@@ -235,17 +224,18 @@ internal class WorkflowRunnerTest(
     assertEquals("foo", realCause?.message)
   }
 
-  @Test fun cancelling_scope_cancels_runtime() {
+  @Test
+  fun cancelling_scope_cancels_runtime() {
     var cancellationException: Throwable? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect(key = "test") {
-        suspendCancellableCoroutine { continuation ->
-          continuation.invokeOnCancellation { cause -> cancellationException = cause }
+    val workflow =
+      Workflow.stateless<Unit, Nothing, Unit> {
+        runningSideEffect(key = "test") {
+          suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation { cause -> cancellationException = cause }
+          }
         }
       }
-    }
-    val runner =
-      WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
+    val runner = WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
     runner.nextRendering()
     val actionResult = scope.async { runner.awaitAndApplyAction() }
     scope.runCurrent()
@@ -272,14 +262,15 @@ internal class WorkflowRunnerTest(
   private fun <P, O : Any, R> WorkflowRunner(
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>,
-    runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
-  ): WorkflowRunner<P, O, R> = WorkflowRunner(
-    scope,
-    workflow,
-    props,
-    snapshot = null,
-    interceptor = NoopWorkflowInterceptor,
-    runtimeConfig,
-    workflowTracer = null
-  )
+    runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  ): WorkflowRunner<P, O, R> =
+    WorkflowRunner(
+      scope,
+      workflow,
+      props,
+      snapshot = null,
+      interceptor = NoopWorkflowInterceptor,
+      runtimeConfig,
+      workflowTracer = null,
+    )
 }

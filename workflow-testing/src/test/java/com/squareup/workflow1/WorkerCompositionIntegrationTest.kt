@@ -5,10 +5,6 @@ package com.squareup.workflow1
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.testing.WorkerSink
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
@@ -18,17 +14,23 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 
 internal class WorkerCompositionIntegrationTest {
 
   private class ExpectedException : RuntimeException()
 
-  @Test fun `worker started`() {
+  @Test
+  fun `worker started`() {
     var started = false
     val worker = Worker.create<Unit> { started = true }
-    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      if (props) runningWorker(worker) { noAction() }
-    }
+    val workflow =
+      Workflow.stateless<Boolean, Nothing, Unit> { props ->
+        if (props) runningWorker(worker) { noAction() }
+      }
 
     workflow.launchForTestingFromStartWith(false) {
       assertFalse(started)
@@ -37,16 +39,17 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `worker cancelled when dropped`() {
+  @Test
+  fun `worker cancelled when dropped`() {
     var cancelled = false
-    val worker = object : LifecycleWorker() {
-      override fun onStopped() {
-        cancelled = true
+    val worker =
+      object : LifecycleWorker() {
+        override fun onStopped() {
+          cancelled = true
+        }
       }
-    }
-    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      if (props) runningWorker(worker)
-    }
+    val workflow =
+      Workflow.stateless<Boolean, Nothing, Unit> { props -> if (props) runningWorker(worker) }
 
     workflow.launchForTestingFromStartWith(true) {
       assertFalse(cancelled)
@@ -55,21 +58,21 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `worker only starts once over multiple renders`() {
+  @Test
+  fun `worker only starts once over multiple renders`() {
     var starts = 0
     var stops = 0
-    val worker = object : LifecycleWorker() {
-      override fun onStarted() {
-        starts++
-      }
+    val worker =
+      object : LifecycleWorker() {
+        override fun onStarted() {
+          starts++
+        }
 
-      override fun onStopped() {
-        stops++
+        override fun onStopped() {
+          stops++
+        }
       }
-    }
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(worker)
-    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> { runningWorker(worker) }
 
     workflow.launchForTestingFromStartWith {
       assertEquals(1, starts)
@@ -85,21 +88,22 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `worker restarts`() {
+  @Test
+  fun `worker restarts`() {
     var starts = 0
     var stops = 0
-    val worker = object : LifecycleWorker() {
-      override fun onStarted() {
-        starts++
-      }
+    val worker =
+      object : LifecycleWorker() {
+        override fun onStarted() {
+          starts++
+        }
 
-      override fun onStopped() {
-        stops++
+        override fun onStopped() {
+          stops++
+        }
       }
-    }
-    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      if (props) runningWorker(worker)
-    }
+    val workflow =
+      Workflow.stateless<Boolean, Nothing, Unit> { props -> if (props) runningWorker(worker) }
 
     workflow.launchForTestingFromStartWith(false) {
       assertEquals(0, starts)
@@ -119,11 +123,13 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `runningWorker gets output`() {
+  @Test
+  fun `runningWorker gets output`() {
     val worker = WorkerSink<String>("")
-    val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(worker) { action("") { setOutput(it) } }
-    }
+    val workflow =
+      Workflow.stateless<Unit, String, Unit> {
+        runningWorker(worker) { action("") { setOutput(it) } }
+      }
 
     workflow.launchForTestingFromStartWith {
       assertFalse(this.hasOutput)
@@ -134,12 +140,12 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `runningWorker gets error`() {
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(Worker.from<Unit> { throw ExpectedException() }) {
-        action("") { }
+  @Test
+  fun `runningWorker gets error`() {
+    val workflow =
+      Workflow.stateless<Unit, Unit, Unit> {
+        runningWorker(Worker.from<Unit> { throw ExpectedException() }) { action("") {} }
       }
-    }
 
     assertFailsWith<ExpectedException> {
       workflow.launchForTestingFromStartWith {
@@ -148,14 +154,15 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `runningWorker does nothing when worker finished`() {
+  @Test
+  fun `runningWorker does nothing when worker finished`() {
     val channel = Channel<Unit>()
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(
-        channel.consumeAsFlow()
-          .asWorker()
-      ) { fail("Expected handler to not be invoked.") }
-    }
+    val workflow =
+      Workflow.stateless<Unit, Unit, Unit> {
+        runningWorker(channel.consumeAsFlow().asWorker()) {
+          fail("Expected handler to not be invoked.")
+        }
+      }
 
     workflow.launchForTestingFromStartWith {
       channel.close()
@@ -168,64 +175,60 @@ internal class WorkerCompositionIntegrationTest {
   }
 
   // See https://github.com/square/workflow/issues/261.
-  @Test fun `runningWorker handler closes over latest state`() {
+  @Test
+  fun `runningWorker handler closes over latest state`() {
     val triggerOutput = WorkerSink<Unit>("")
 
-    val incrementState = action<Unit, Int, Int>("") {
-      state += 1
-    }
+    val incrementState = action<Unit, Int, Int>("") { state += 1 }
 
-    val workflow = Workflow.stateful(
-      initialState = 0,
-      render = { _ ->
-        runningWorker(triggerOutput) { action("") { setOutput(state) } }
+    val workflow =
+      Workflow.stateful(
+        initialState = 0,
+        render = { _ ->
+          runningWorker(triggerOutput) { action("") { setOutput(state) } }
 
-        return@stateful { actionSink.send(incrementState) }
-      }
-    )
+          return@stateful { actionSink.send(incrementState) }
+        },
+      )
 
     workflow.launchForTestingFromStartWith {
       triggerOutput.send(Unit)
       assertEquals(0, awaitNextOutput())
 
-      awaitNextRendering()
-        .invoke()
+      awaitNextRendering().invoke()
       triggerOutput.send(Unit)
 
       assertEquals(1, awaitNextOutput())
 
-      awaitNextRendering()
-        .invoke()
+      awaitNextRendering().invoke()
       triggerOutput.send(Unit)
 
       assertEquals(2, awaitNextOutput())
     }
   }
 
-  @Test fun `runningWorker doesn't throw when worker finishes`() {
+  @Test
+  fun `runningWorker doesn't throw when worker finishes`() {
     // No-op worker, completes immediately.
-    val worker = Worker.from { }
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(worker) {
-        action("") { }
-      }
-    }
+    val worker = Worker.from {}
+    val workflow = Workflow.stateless<Unit, Unit, Unit> { runningWorker(worker) { action("") {} } }
 
     workflow.launchForTestingFromStartWith {
-      assertFailsWith<TimeoutCancellationException> {
-        awaitNextOutput(timeoutMs = 100)
-      }
+      assertFailsWith<TimeoutCancellationException> { awaitNextOutput(timeoutMs = 100) }
     }
   }
 
-  @Test fun `worker context job is ignored`() {
+  @Test
+  fun `worker context job is ignored`() {
     val worker = Worker.from { coroutineContext }
-    val leafWorkflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      runningWorker(worker) { context -> action("") { setOutput(context) } }
-    }
-    val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      renderChild(leafWorkflow) { action("") { setOutput(it) } }
-    }
+    val leafWorkflow =
+      Workflow.stateless<Unit, CoroutineContext, Unit> {
+        runningWorker(worker) { context -> action("") { setOutput(context) } }
+      }
+    val workflow =
+      Workflow.stateless<Unit, CoroutineContext, Unit> {
+        renderChild(leafWorkflow) { action("") { setOutput(it) } }
+      }
     val job = Job()
 
     workflow.launchForTestingFromStartWith(context = job) {

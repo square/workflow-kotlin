@@ -1,8 +1,13 @@
 plugins {
   alias(libs.plugins.google.ksp)
   alias(libs.plugins.kotlin.jvm)
-  alias(libs.plugins.ktlint)
+  alias(libs.plugins.ktfmt)
   id("java-gradle-plugin")
+}
+
+ktfmt {
+  // Match the style used by android-register and market. Keep in sync with KotlinCommonSettings.
+  googleStyle()
 }
 
 repositories {
@@ -61,7 +66,6 @@ gradlePlugin {
 }
 
 dependencies {
-
   implementation(platform(libs.kotlin.bom))
 
   compileOnly(gradleApi())
@@ -72,6 +76,7 @@ dependencies {
   implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
+  implementation(libs.ktfmt.gradle.plugin)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.vanniktech.publish)

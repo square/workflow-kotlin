@@ -5,25 +5,25 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
 import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
-import okio.Buffer
-import okio.ByteString
-import okio.EOFException
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 import kotlin.concurrent.Volatile
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import okio.Buffer
+import okio.ByteString
+import okio.EOFException
 
 /**
  * Represents a [Workflow]'s "identity" and is used by the runtime to determine whether a workflow
- * is the same as one that was rendered in a previous render pass, in which case its state
- * should be re-used; or if it's a new workflow and needs to be started.
+ * is the same as one that was rendered in a previous render pass, in which case its state should be
+ * re-used; or if it's a new workflow and needs to be started.
  *
- * A workflow's identity consists primarily of its concrete type (i.e. the class that implements
- * the [Workflow] interface). Two workflows of the same concrete type are considered identical.
- * However, if a workflow class implements [ImpostorWorkflow], the identifier will also include
- * that workflow's [ImpostorWorkflow.realIdentifier].
+ * A workflow's identity consists primarily of its concrete type (i.e. the class that implements the
+ * [Workflow] interface). Two workflows of the same concrete type are considered identical. However,
+ * if a workflow class implements [ImpostorWorkflow], the identifier will also include that
+ * workflow's [ImpostorWorkflow.realIdentifier].
  *
  * Instances of this class are [equatable][equals] and [hashable][hashCode].
  *
@@ -38,17 +38,18 @@ import kotlin.reflect.KType
  * should not be used to wrap arbitrary workflows since those workflows may expect to be
  * snapshotted.
  *
- * @constructor
  * @param type Wrapper around the [KClass] of the [Workflow] this identifier identifies, or the
- * [KType] of an [unsnapshottableIdentifier].
+ *   [KType] of an [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
- * be used to further narrow the scope of this identifier.
+ *   be used to further narrow the scope of this identifier.
  * @param description Implementation of [ImpostorWorkflow.describeRealIdentifier].
+ * @constructor
  */
-public class WorkflowIdentifier internal constructor(
+public class WorkflowIdentifier
+internal constructor(
   private val type: WorkflowIdentifierType,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
-  private val description: (() -> String?)? = null
+  private val description: (() -> String?)? = null,
 ) {
 
   /**
@@ -59,20 +60,18 @@ public class WorkflowIdentifier internal constructor(
 
   private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
 
-  @Volatile
-  private var cachedToString: String? = null
+  @Volatile private var cachedToString: String? = null
 
   /**
-   * Either a [KClass] or [KType] representing the "real" type that this identifier
-   * identifies – i.e. which is not an [ImpostorWorkflow].
+   * Either a [KClass] or [KType] representing the "real" type that this identifier identifies –
+   * i.e. which is not an [ImpostorWorkflow].
    */
-  public val realType: WorkflowIdentifierType by lazy(PUBLICATION) {
-    proxiedIdentifiers.last().type
-  }
+  public val realType: WorkflowIdentifierType by
+    lazy(PUBLICATION) { proxiedIdentifiers.last().type }
 
   /**
-   * If this identifier is snapshottable, returns the serialized form of the identifier.
-   * If it is not snapshottable, returns null.
+   * If this identifier is snapshottable, returns the serialized form of the identifier. If it is
+   * not snapshottable, returns null.
    */
   public fun toByteStringOrNull(): ByteString? {
     if (type is Unsnapshottable) return null
@@ -102,25 +101,20 @@ public class WorkflowIdentifier internal constructor(
    * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
    * [ImpostorWorkflow.describeRealIdentifier] method, otherwise returns a description of this
    * identifier including the name of its workflow type and any [ImpostorWorkflow.realIdentifier]s.
-   *
    */
   override fun toString(): String {
-    return cachedToString ?: (
-      description?.invoke()
-        ?: proxiedIdentifiers
-          .joinToString { it.typeName }
-          .let { "WorkflowIdentifier($it)" }
-      )
-      .also {
-        cachedToString = it
-      }
+    return cachedToString
+      ?: (description?.invoke()
+          ?: proxiedIdentifiers.joinToString { it.typeName }.let { "WorkflowIdentifier($it)" })
+        .also { cachedToString = it }
   }
 
-  override fun equals(other: Any?): Boolean = when {
-    this === other -> true
-    other !is WorkflowIdentifier -> false
-    else -> type.typeName == other.type.typeName && proxiedIdentifier == other.proxiedIdentifier
-  }
+  override fun equals(other: Any?): Boolean =
+    when {
+      this === other -> true
+      other !is WorkflowIdentifier -> false
+      else -> type.typeName == other.type.typeName && proxiedIdentifier == other.proxiedIdentifier
+    }
 
   override fun hashCode(): Int {
     var result = type.typeName.hashCode()
@@ -130,8 +124,8 @@ public class WorkflowIdentifier internal constructor(
 
   /**
    * Used to detect when this [WorkflowIdentifier] is a deeply stubbed mock. Stubs are provided
-   * until a primitive, in this case the typeName. This lets us determine if we are a mock
-   * object, or a real one. Mea culpa.
+   * until a primitive, in this case the typeName. This lets us determine if we are a mock object,
+   * or a real one. Mea culpa.
    */
   internal val deepNameCheck = type.typeName
 
@@ -144,24 +138,26 @@ public class WorkflowIdentifier internal constructor(
      *
      * @throws IllegalArgumentException if the source does not contain a valid [WorkflowIdentifier]
      * @throws ClassNotFoundException if one of the workflow types can't be found in the class
-     * loader
+     *   loader
      */
-    public fun parse(bytes: ByteString): WorkflowIdentifier = Buffer().let { source ->
-      source.write(bytes)
+    public fun parse(bytes: ByteString): WorkflowIdentifier =
+      Buffer().let { source ->
+        source.write(bytes)
 
-      try {
-        val typeString = source.readUtf8WithLength()
-        val proxiedIdentifier = when (source.readByte()) {
-          NO_PROXY_IDENTIFIER_TAG -> null
-          PROXY_IDENTIFIER_TAG -> parse(source.readByteString())
-          else -> throw IllegalArgumentException("Invalid WorkflowIdentifier")
+        try {
+          val typeString = source.readUtf8WithLength()
+          val proxiedIdentifier =
+            when (source.readByte()) {
+              NO_PROXY_IDENTIFIER_TAG -> null
+              PROXY_IDENTIFIER_TAG -> parse(source.readByteString())
+              else -> throw IllegalArgumentException("Invalid WorkflowIdentifier")
+            }
+
+          return WorkflowIdentifier(Snapshottable(typeString), proxiedIdentifier)
+        } catch (e: EOFException) {
+          throw IllegalArgumentException("Invalid WorkflowIdentifier")
         }
-
-        return WorkflowIdentifier(Snapshottable(typeString), proxiedIdentifier)
-      } catch (e: EOFException) {
-        throw IllegalArgumentException("Invalid WorkflowIdentifier")
       }
-    }
   }
 }
 
@@ -185,9 +181,7 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
         // [IdCacheable] interface so that the [Workflow] interface itself remains unchanged.
         @Suppress("SENSELESS_COMPARISON")
         if (cachedIdentifier == null || cachedIdentifier!!.deepNameCheck == null) {
-          return computedIdentifier.also {
-            cachedIdentifier = it
-          }
+          return computedIdentifier.also { cachedIdentifier = it }
         }
         cachedIdentifier!!
       }
@@ -197,8 +191,8 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
 
 /**
  * The computed [WorkflowIdentifier] for this Workflow. Any [IdCacheable] Workflow should call this
- * and then store the value in the cachedIdentifier property so as to prevent
- * the extra work needed to create the [WorkflowIdentifier] and look up the class name each time.
+ * and then store the value in the cachedIdentifier property so as to prevent the extra work needed
+ * to create the [WorkflowIdentifier] and look up the class name each time.
  */
 public val Workflow<*, *, *>.computedIdentifier: WorkflowIdentifier
   get() {
@@ -206,7 +200,7 @@ public val Workflow<*, *, *>.computedIdentifier: WorkflowIdentifier
     return WorkflowIdentifier(
       type = Snapshottable(this::class),
       proxiedIdentifier = maybeImpostor?.realIdentifier,
-      description = maybeImpostor?.let { it::describeRealIdentifier }
+      description = maybeImpostor?.let { it::describeRealIdentifier },
     )
   }
 

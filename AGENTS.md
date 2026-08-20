@@ -147,7 +147,7 @@ val childRendering = context.renderChild(ChildWorkflow, props = childProps) { ch
 
 ## Code Style
 
-- **Formatting**: `ktlint`
+- **Formatting**: `ktfmt` (Google style)
 - **Documentation**: KDoc for all public APIs
 - **Event handlers**: Always use `eventHandler("descriptiveName")` — the name is required for
   Compose stability and debugging
@@ -305,7 +305,7 @@ MyWorkflow.renderForTest {
 ./gradlew :workflow-testing:test
 
 # Check formatting
-./gradlew ktlintCheck
+./gradlew ktfmtCheck
 ```
 
 ## Resources

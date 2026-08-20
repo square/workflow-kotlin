@@ -14,7 +14,6 @@ class AndroidUiTestsPlugin : Plugin<Project> {
     target.plugins.apply(AndroidDefaultsPlugin::class.java)
 
     target.extensions.configure(TestedExtension::class.java) { testedExtension ->
-
       testedExtension.defaultConfig { defaultConfig ->
         defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
       }

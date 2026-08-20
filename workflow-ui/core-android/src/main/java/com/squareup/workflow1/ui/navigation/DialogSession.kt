@@ -23,31 +23,33 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 
 /**
  * Used by [LayeredDialogSessions] to manage lifecycle and view persistence concerns for an
- * [OverlayDialogHolder], as well as enforcing modal behavior. See [LayeredDialogSessions]
- * for a general overview of the lifecycle of a managed [Dialog][android.app.Dialog].
+ * [OverlayDialogHolder], as well as enforcing modal behavior. See [LayeredDialogSessions] for a
+ * general overview of the lifecycle of a managed [Dialog][android.app.Dialog].
  */
 internal class DialogSession(
   private val stateRegistryAggregator: WorkflowSavedStateRegistryAggregator,
   initialOverlay: Overlay,
   holder: OverlayDialogHolder<Overlay>,
-  private val getParentLifecycleOwner: () -> LifecycleOwner
+  private val getParentLifecycleOwner: () -> LifecycleOwner,
 ) {
   // Note similar code in LayeredDialogSessions
   private var allowEvents = true
     set(value) {
       val was = field
       field = value
-      holder.dialog.window?.takeIf { value != was }?.let { window ->
-        window.peekDecorView()?.let { decorView ->
-          // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
-          // If any motion events were enqueued on the main thread, cancel them.
-          dispatchCancelEvent { window.superDispatchTouchEvent(it) }
-          // When we cancel, have to warn things like RecyclerView that handle streams
-          // of motion events and eventually dispatch input events (click, key pressed, etc.)
-          // based on them.
-          decorView.cancelPendingInputEvents()
+      holder.dialog.window
+        ?.takeIf { value != was }
+        ?.let { window ->
+          window.peekDecorView()?.let { decorView ->
+            // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
+            // If any motion events were enqueued on the main thread, cancel them.
+            dispatchCancelEvent { window.superDispatchTouchEvent(it) }
+            // When we cancel, have to warn things like RecyclerView that handle streams
+            // of motion events and eventually dispatch input events (click, key pressed, etc.)
+            // based on them.
+            decorView.cancelPendingInputEvents()
+          }
         }
-      }
     }
 
   /**
@@ -55,45 +57,39 @@ internal class DialogSession(
    * - [OverlayDialogHolder.canShow] relies on comparing the new [Overlay] to `Dialog.overlay`
    * - `Dialog.overlay` is written to the decor view
    * - That normally happens as a side effect of [OverlayDialogHolder.show]
-   * - We have to call [OverlayDialogHolder.show] before `Dialog.show`, so that the `Dialog`
-   *   is initialized before it is shown
+   * - We have to call [OverlayDialogHolder.show] before `Dialog.show`, so that the `Dialog` is
+   *   initialized before it is shown
    * - It is dangerous to call `decorView` before `Dialog.show`.
    *
-   * Fix is that [OverlayDialogHolder.canShow] does not read `Dialog.overlay` if
-   * peekDecorView is null. Which means we have to bootstrap it into place after
-   * we call `Dialog.show`.
+   * Fix is that [OverlayDialogHolder.canShow] does not read `Dialog.overlay` if peekDecorView is
+   * null. Which means we have to bootstrap it into place after we call `Dialog.show`.
    *
-   * We keep this nullable pointer to the very first [Overlay] so that we can put it
-   * in place, and then drop the reference and avoid leaking.
+   * We keep this nullable pointer to the very first [Overlay] so that we can put it in place, and
+   * then drop the reference and avoid leaking.
    */
   private var initialOverlay: Overlay? = initialOverlay
 
-  /**
-   * Used to ensure [destroyDialog] is idempotent, because `ComponentDialog.dismiss()` is not.
-   */
+  /** Used to ensure [destroyDialog] is idempotent, because `ComponentDialog.dismiss()` is not. */
   private var destroyed = false
 
-  /**
-   * Wrap the given dialog holder to maintain [allowEvents] on each update.
-   */
-  private val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
-    holder.environment,
-    holder.dialog,
-    holder.onUpdateBounds
-  ) { overlay, environment ->
-    allowEvents = !environment[CoveredByModal]
-    holder.show(overlay, environment)
-  }
+  /** Wrap the given dialog holder to maintain [allowEvents] on each update. */
+  private val holder: OverlayDialogHolder<Overlay> =
+    OverlayDialogHolder(holder.environment, holder.dialog, holder.onUpdateBounds) {
+      overlay,
+      environment ->
+      allowEvents = !environment[CoveredByModal]
+      holder.show(overlay, environment)
+    }
 
   /**
-   * Key used for view state persistence, both classic ([save]) and
-   * newfangled ([stateRegistryAggregator]).
+   * Key used for view state persistence, both classic ([save]) and newfangled
+   * ([stateRegistryAggregator]).
    */
   val savedStateKey = Compatible.keyFor(initialOverlay)
 
   /**
-   * One time call to set up our brand new [OverlayDialogHolder] instance.
-   * This will be followed by one time calls to [showNewDialog] and [destroyDialog].
+   * One time call to set up our brand new [OverlayDialogHolder] instance. This will be followed by
+   * one time calls to [showNewDialog] and [destroyDialog].
    */
   fun initNewDialog(initialEnvironment: ViewEnvironment) {
     // Prime the pump, make the first call to OverlayDialogHolder.show to update
@@ -107,19 +103,20 @@ internal class DialogSession(
 
     dialog.window?.let { window ->
       val realWindowCallback = window.callback
-      window.callback = object : Callback by realWindowCallback {
-        override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-          return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
-        }
+      window.callback =
+        object : Callback by realWindowCallback {
+          override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+            return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
+          }
 
-        override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-          // Consume all events if we've been told to do so.
-          if (!allowEvents) return true
+          override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+            // Consume all events if we've been told to do so.
+            if (!allowEvents) return true
 
-          // Allow the usual handling, including the usual call to Dialog.onBackPressed.
-          return realWindowCallback.dispatchKeyEvent(event)
+            // Allow the usual handling, including the usual call to Dialog.onBackPressed.
+            return realWindowCallback.dispatchKeyEvent(event)
+          }
         }
-      }
     }
   }
 
@@ -147,19 +144,21 @@ internal class DialogSession(
       // matters for ScreenOverlay, and that's enforced via ComponentDialog.setContent.
       // Note that onBackPressedDispatcherOwnerOrNull() searches through Context as well,
       // so 99% chance we'll hit the Activity before the stub.
-      val onBack = (dialog as? OnBackPressedDispatcherOwner)
-        ?: holder.environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
-        ?: decorView.onBackPressedDispatcherOwnerOrNull()
-        ?: run {
-          @Suppress("UNREACHABLE_CODE")
-          object : OnBackPressedDispatcherOwner {
-            override val lifecycle: Lifecycle
-              get() = error("To support back press handling extend ComponentDialog: $dialog")
+      val onBack =
+        (dialog as? OnBackPressedDispatcherOwner)
+          ?: holder.environment.map[OnBackPressedDispatcherOwnerKey]
+            as? OnBackPressedDispatcherOwner
+          ?: decorView.onBackPressedDispatcherOwnerOrNull()
+          ?: run {
+            @Suppress("UNREACHABLE_CODE")
+            object : OnBackPressedDispatcherOwner {
+              override val lifecycle: Lifecycle
+                get() = error("To support back press handling extend ComponentDialog: $dialog")
 
-            override val onBackPressedDispatcher: OnBackPressedDispatcher =
-              error("To support back press handling extend ComponentDialog: $dialog")
+              override val onBackPressedDispatcher: OnBackPressedDispatcher =
+                error("To support back press handling extend ComponentDialog: $dialog")
+            }
           }
-        }
 
       // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
       // content view, so to avoid interfering with them we also set it here. When the views
@@ -173,7 +172,7 @@ internal class DialogSession(
       WorkflowLifecycleOwner.installOn(
         decorView,
         onBack,
-        findParentLifecycle = { parentLifecycleOwner.lifecycle }
+        findParentLifecycle = { parentLifecycleOwner.lifecycle },
       )
       // Ensure that each dialog has its own SavedStateRegistryOwner,
       // so views in each dialog layer don't clash with other layers.
@@ -182,16 +181,17 @@ internal class DialogSession(
       stateRegistryAggregator.installChildRegistryOwnerOn(
         view = decorView,
         key = savedStateKey,
-        force = true
+        force = true,
       )
 
       decorView.doOnAttach {
         val lifecycle = parentLifecycleOwner.lifecycle
-        val onDestroy = object : DefaultLifecycleObserver {
-          override fun onDestroy(owner: LifecycleOwner) {
-            destroyDialog()
+        val onDestroy =
+          object : DefaultLifecycleObserver {
+            override fun onDestroy(owner: LifecycleOwner) {
+              destroyDialog()
+            }
           }
-        }
 
         // Android makes a lot of logcat noise if it has to close the window for us. :/
         // And no, we can't call ref.dismiss() directly from the doOnDetach lambda,
@@ -210,10 +210,7 @@ internal class DialogSession(
 
   fun canShow(overlay: Overlay): Boolean = holder.canShow(overlay)
 
-  fun show(
-    overlay: Overlay,
-    environment: ViewEnvironment
-  ) {
+  fun show(overlay: Overlay, environment: ViewEnvironment) {
     if (initialOverlay != null) {
       // Dialog hasn't been shown yet, keep the bootstrap hack fresh.
       initialOverlay = overlay
@@ -224,8 +221,8 @@ internal class DialogSession(
 
   /**
    * Used by [DialogCollator] to *temporarily* [dismiss][android.app.Dialog.dismiss] or
-   * [show][android.app.Dialog.show] an existing [DialogSession] without triggering the
-   * other side effects of [destroyDialog], as a tool to update its z-index.
+   * [show][android.app.Dialog.show] an existing [DialogSession] without triggering the other side
+   * effects of [destroyDialog], as a tool to update its z-index.
    */
   fun setVisible(visible: Boolean) {
     if (visible) {
@@ -236,8 +233,7 @@ internal class DialogSession(
   }
 
   /**
-   * We are never going to use this `Dialog` again. Tear down our lifecycle hooks
-   * and dismiss it.
+   * We are never going to use this `Dialog` again. Tear down our lifecycle hooks and dismiss it.
    */
   fun destroyDialog(saveViewState: Boolean = false) {
     if (!destroyed) {
@@ -268,14 +264,11 @@ internal class DialogSession(
 
   internal data class KeyAndBundle(
     internal val compatibilityKey: String,
-    internal val bundle: Bundle
+    internal val bundle: Bundle,
   ) : Parcelable {
     override fun describeContents(): Int = 0
 
-    override fun writeToParcel(
-      parcel: Parcel,
-      flags: Int
-    ) {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
       parcel.writeString(compatibilityKey)
       parcel.writeBundle(bundle)
     }

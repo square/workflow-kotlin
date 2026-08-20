@@ -9,39 +9,34 @@ import kotlin.time.ExperimentalTime
  * Timestamps are represented as [Duration]s, relative to some starting point (usually a
  * [TimeMark][kotlin.time.TimeMark], probably from [Clock.markNow][kotlin.time.TimeSource.markNow]).
  *
- * The timestamp of the last value is exposed as [duration].
- * To get the values without their timestamps, use the [values] sequence.
- * Values can be queried by timestamp using [findValueNearest].
+ * The timestamp of the last value is exposed as [duration]. To get the values without their
+ * timestamps, use the [values] sequence. Values can be queried by timestamp using
+ * [findValueNearest].
  *
  * @constructor Initializes a [TimeSeries] with a list of increasing value/timestamp pairs.
  */
 @ExperimentalTime
-internal class TimeSeries<T>(
-  private val data: List<Pair<T, Duration>> = emptyList()
-) {
+internal class TimeSeries<T>(private val data: List<Pair<T, Duration>> = emptyList()) {
 
   /**
    * The latest timestamp in the series.
    *
-   * This value is _not_ relative to the first value: if the series contains values at times
-   * `[1s, 3s]`, this property will return `3s`.
+   * This value is _not_ relative to the first value: if the series contains values at times `[1s,
+   * 3s]`, this property will return `3s`.
    */
-  val duration: Duration get() = data.lastOrNull()?.second ?: Duration.ZERO
+  val duration: Duration
+    get() = data.lastOrNull()?.second ?: Duration.ZERO
 
-  /**
-   * A lazy [Sequence] of all the values in the series, without their timestamps.
-   */
-  val values: Sequence<T> get() = data.asSequence().map { it.first }
+  /** A lazy [Sequence] of all the values in the series, without their timestamps. */
+  val values: Sequence<T>
+    get() = data.asSequence().map { it.first }
 
   /**
    * Returns a [TimeSeries] with a value appended.
    *
    * @param timestamp The timestamp of the value. Must be greater than or equal to [duration].
    */
-  fun append(
-    value: T,
-    timestamp: Duration
-  ): TimeSeries<T> {
+  fun append(value: T, timestamp: Duration): TimeSeries<T> {
     require(timestamp >= duration)
     return TimeSeries(data + (value to timestamp))
   }
@@ -50,8 +45,8 @@ internal class TimeSeries<T>(
    * If the series is not empty, returns the value whose timestamp is nearest [timestamp].
    *
    * @param timestamp The timestamp to look up. This does not need to exactly match any timestamp
-   * contained in the series. If the series has at least one element, this method will always
-   * return a value.
+   *   contained in the series. If the series has at least one element, this method will always
+   *   return a value.
    * @throws NoSuchElementException If the series is empty.
    */
   fun findValueNearest(timestamp: Duration): T {

@@ -9,20 +9,17 @@ import androidx.compose.ui.graphics.Color
  *
  * If it's the first node in the frame, [past] will be null and there is no difference to show.
  */
-internal data class NodeUpdate(
-  val current: Node,
-  val past: Node?,
-  val state: NodeState
-) {
+internal data class NodeUpdate(val current: Node, val past: Node?, val state: NodeState) {
   companion object {
     fun create(current: Node, past: Node?, isAffected: Boolean): NodeUpdate {
-      val state = when {
-        !isAffected -> NodeState.UNCHANGED
-        past == null -> NodeState.NEW
-        current.props != past.props -> NodeState.PROPS_CHANGED
-        current.state != past.state -> NodeState.STATE_CHANGED
-        else -> NodeState.RENDERED
-      }
+      val state =
+        when {
+          !isAffected -> NodeState.UNCHANGED
+          past == null -> NodeState.NEW
+          current.props != past.props -> NodeState.PROPS_CHANGED
+          current.state != past.state -> NodeState.STATE_CHANGED
+          else -> NodeState.RENDERED
+        }
 
       return NodeUpdate(current, past, state)
     }

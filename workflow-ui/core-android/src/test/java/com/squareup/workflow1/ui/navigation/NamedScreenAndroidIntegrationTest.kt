@@ -11,21 +11,21 @@ import org.junit.Test
 import org.mockito.kotlin.mock
 
 internal class NamedScreenAndroidIntegrationTest {
-  @Test fun buildsOkay() {
+  @Test
+  fun buildsOkay() {
     val wrappedScreen = WrappedScreen()
     val named = NamedScreen(wrappedScreen, "fred")
 
-    val holder = named.toViewFactory(EMPTY)
-      .startShowing(named, EMPTY, mock())
+    val holder = named.toViewFactory(EMPTY).startShowing(named, EMPTY, mock())
     assertThat(holder.view).isSameInstanceAs(wrappedScreen.viewFactory.lastView)
     assertThat(holder.showing).isSameInstanceAs(named)
   }
 
-  @Test fun updatesOkay() {
+  @Test
+  fun updatesOkay() {
     val wrappedScreen = WrappedScreen()
     val named = NamedScreen(wrappedScreen, "fred")
-    val holder = named.toViewFactory(EMPTY)
-      .startShowing(named, EMPTY, mock())
+    val holder = named.toViewFactory(EMPTY).startShowing(named, EMPTY, mock())
 
     holder.show(NamedScreen(wrappedScreen, "fred"), EMPTY)
     assertThat(holder).isSameInstanceAs(holder)

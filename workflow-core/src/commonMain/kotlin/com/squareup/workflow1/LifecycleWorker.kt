@@ -3,11 +3,11 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
 
 /**
  * [Worker] that performs some action when the worker is started and/or stopped.
@@ -16,21 +16,21 @@ import kotlin.jvm.JvmName
  * worker, or when the parent workflow is itself torn down.
  *
  * Note that there is currently an [issue](https://github.com/square/workflow-kotlin/issues/1093)
- * which can effect whether a [LifecycleWorker] is ever executed.
- * See more details at [BaseRenderContext.runningSideEffect].
+ * which can effect whether a [LifecycleWorker] is ever executed. See more details at
+ * [BaseRenderContext.runningSideEffect].
  *
  * Also note that [LifecycleWorker] is inherently racy with other Workers. There is no guarantee
  * this will run first or last compared to other workers and side effects. Ideally setup and
- * teardown is handled by each Worker or sideEffect itself. Consider using a try { } finally { }
- * or [Flow.onCompletion][kotlinx.coroutines.flow.onCompletion] to handle that.
+ * teardown is handled by each Worker or sideEffect itself. Consider using a try { } finally { } or
+ * [Flow.onCompletion][kotlinx.coroutines.flow.onCompletion] to handle that.
  */
 public abstract class LifecycleWorker : Worker<Nothing> {
 
   /**
-   * Called when this worker is started. It is executed concurrently with the parent workflow –
-   * the first render pass that starts this worker *will not* wait for this method to return, and
-   * one or more additional render passes may occur before this method is called.
-   * This behavior may change to be more strict in the future.
+   * Called when this worker is started. It is executed concurrently with the parent workflow – the
+   * first render pass that starts this worker *will not* wait for this method to return, and one or
+   * more additional render passes may occur before this method is called. This behavior may change
+   * to be more strict in the future.
    *
    * This method will be called exactly once for each matching call to [onStopped], and it will
    * always be called first.
@@ -42,8 +42,8 @@ public abstract class LifecycleWorker : Worker<Nothing> {
   /**
    * Called when this worker has been torn down. It is executed concurrently with the parent
    * workflow – the render pass that cancels (stops) this worker *will not* wait for this method to
-   * return, and one or more additional render passes may occur before this method is called.
-   * This behavior may change to be more strict in the future.
+   * return, and one or more additional render passes may occur before this method is called. This
+   * behavior may change to be more strict in the future.
    *
    * This method will be called exactly once for each matching call to [onStarted], and it will
    * always be called second.
@@ -60,15 +60,13 @@ public abstract class LifecycleWorker : Worker<Nothing> {
       // Don't use CancellableContinuation.invokeOnCancellation because it doesn't have any
       // guarantees about which thread it's run on. Using try/finally means the cancellation action
       // doesn't block the cancellation, but ensures it's run on the correct dispatcher.
-      suspendCancellableCoroutine<Nothing> { }
+      suspendCancellableCoroutine<Nothing> {}
     } finally {
       onStopped()
     }
   }
 
-  /**
-   * Equates [LifecycleWorker]s that have the same concrete class.
-   */
+  /** Equates [LifecycleWorker]s that have the same concrete class. */
   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean {
     return otherWorker::class == this::class
   }

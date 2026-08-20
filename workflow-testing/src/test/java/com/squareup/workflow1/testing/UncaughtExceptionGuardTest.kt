@@ -1,49 +1,51 @@
 package com.squareup.workflow1.testing
 
 import com.google.common.truth.Truth.assertThat
-import junit.framework.TestCase
-import org.junit.Test
 import java.util.concurrent.CountDownLatch
+import junit.framework.TestCase
 import kotlin.test.assertFailsWith
+import org.junit.Test
 
 class UncaughtExceptionGuardTest {
 
   private val guard = UncaughtExceptionGuard()
 
-  @Test fun `UncaughtExceptionGuard rethrows Exception from block`() {
-    val error = assertFailsWith<ExpectedException> {
-      guard.runRethrowingUncaught {
-        throw ExpectedException("fail")
+  @Test
+  fun `UncaughtExceptionGuard rethrows Exception from block`() {
+    val error =
+      assertFailsWith<ExpectedException> {
+        guard.runRethrowingUncaught { throw ExpectedException("fail") }
       }
-    }
     assertThat(error.message).isEqualTo("fail")
   }
 
-  @Test fun `UncaughtExceptionGuard suppresses Uncaught when block throws`() {
+  @Test
+  fun `UncaughtExceptionGuard suppresses Uncaught when block throws`() {
     guard.reportUncaught(ExpectedException("fail2"))
-    val error = assertFailsWith<ExpectedException> {
-      guard.runRethrowingUncaught {
-        // Immediately-thrown exception is always given priority.
-        throw ExpectedException("fail1")
+    val error =
+      assertFailsWith<ExpectedException> {
+        guard.runRethrowingUncaught {
+          // Immediately-thrown exception is always given priority.
+          throw ExpectedException("fail1")
+        }
       }
-    }
     assertThat(error.message).isEqualTo("fail1")
     assertThat(error.suppressed.single().message).isEqualTo("fail2")
   }
 
-  @Test fun `UncaughtExceptionGuard suppresses Uncaught when multiple Uncaught`() {
+  @Test
+  fun `UncaughtExceptionGuard suppresses Uncaught when multiple Uncaught`() {
     guard.reportUncaught(ExpectedException("fail1"))
     guard.reportUncaught(ExpectedException("fail2"))
     guard.reportUncaught(ExpectedException("fail3"))
-    val error = assertFailsWith<ExpectedException> {
-      guard.runRethrowingUncaught { }
-    }
+    val error = assertFailsWith<ExpectedException> { guard.runRethrowingUncaught {} }
     assertThat(error.message).isEqualTo("fail1")
     assertThat(error.suppressed!![0].message).isEqualTo("fail2")
     assertThat(error.suppressed!![1].message).isEqualTo("fail3")
   }
 
-  @Test fun `rethrowingUncaughtExceptions rethrows Uncaught from same thread`() {
+  @Test
+  fun `rethrowingUncaughtExceptions rethrows Uncaught from same thread`() {
     try {
       rethrowingUncaughtExceptions {
         Thread.getDefaultUncaughtExceptionHandler()
@@ -55,7 +57,8 @@ class UncaughtExceptionGuardTest {
     }
   }
 
-  @Test fun `rethrowingUncaughtException suppresses Uncaught when multiple threads`() {
+  @Test
+  fun `rethrowingUncaughtException suppresses Uncaught when multiple threads`() {
     // This number should be high enough to give some contention.
     val threadCount = 50
     val readyToStartLatch = CountDownLatch(threadCount)
@@ -63,13 +66,14 @@ class UncaughtExceptionGuardTest {
     val finishedLatch = CountDownLatch(threadCount)
     repeat(threadCount) { i ->
       Thread {
-        readyToStartLatch.countDown()
-        // Wait for all the other threads are also ready…
-        startLatch.await()
-        Thread.getDefaultUncaughtExceptionHandler()
-          .uncaughtException(Thread.currentThread(), RuntimeException("fail $i"))
-        finishedLatch.countDown()
-      }.start()
+          readyToStartLatch.countDown()
+          // Wait for all the other threads are also ready…
+          startLatch.await()
+          Thread.getDefaultUncaughtExceptionHandler()
+            .uncaughtException(Thread.currentThread(), RuntimeException("fail $i"))
+          finishedLatch.countDown()
+        }
+        .start()
     }
     readyToStartLatch.await()
 

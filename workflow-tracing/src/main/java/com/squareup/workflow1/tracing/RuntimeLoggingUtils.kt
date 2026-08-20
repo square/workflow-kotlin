@@ -9,10 +9,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-/**
- * Short name that can be used for logs that has the [identifier] logged as well
- * as the key.
- */
+/** Short name that can be used for logs that has the [identifier] logged as well as the key. */
 public fun WorkflowSession.toWfLoggingName(): String {
   val renderKey = renderKey
   return if (renderKey.isEmpty()) {
@@ -23,25 +20,19 @@ public fun WorkflowSession.toWfLoggingName(): String {
 }
 
 /**
- * Short name that for the identifier that can be used for logs. This reports
- * the 'log name' of the class.
+ * Short name that for the identifier that can be used for logs. This reports the 'log name' of the
+ * class.
  */
 public fun WorkflowIdentifier.toWfLoggingName(): String {
   return when (val type = realType) {
     is Snapshottable -> type.kClass?.toWfLoggingName() ?: type.typeName
     is Unsnapshottable -> type.kType.toWfLoggingName()
-  }.run {
-    wfRemoveReflectionNotAvailable()
-  }
+  }.run { wfRemoveReflectionNotAvailable() }
 }
 
-/**
- * Useful Action Logging with our utilities to remove extra strings as needed.
- */
+/** Useful Action Logging with our utilities to remove extra strings as needed. */
 public fun <P, S, O> WorkflowAction<P, S, O>.toLoggingShortName(): String {
-  return debuggingName
-    .wfRemoveReflectionNotAvailable()
-    .wfStripSquarePackage()
+  return debuggingName.wfRemoveReflectionNotAvailable().wfStripSquarePackage()
 }
 
 /**
@@ -52,9 +43,7 @@ public fun <P, S, O> WorkflowAction<P, S, O>.toWfLoggingName(): String {
   return "Action(${toLoggingShortName()})"
 }
 
-/**
- * Extract key for worker action names using knowledge of implementation details.
- */
+/** Extract key for worker action names using knowledge of implementation details. */
 public fun String.workerKey(): String {
   return if (contains(Worker.WORKER_OUTPUT_ACTION_NAME)) {
     substringAfter("key=").substringBefore(')')
@@ -63,16 +52,15 @@ public fun String.workerKey(): String {
   }
 }
 
-/**
- * Reasonable log name based on type.
- */
+/** Reasonable log name based on type. */
 public fun KType.toWfLoggingName(): String {
   if (classifier == null) return toString().wfStripSquarePackage()
 
-  val classifierName = when (val c = classifier) {
-    is KClass<*> -> c.toWfLoggingName()
-    else -> toString().wfStripSquarePackage()
-  }
+  val classifierName =
+    when (val c = classifier) {
+      is KClass<*> -> c.toWfLoggingName()
+      else -> toString().wfStripSquarePackage()
+    }
 
   val params = arguments.map { projection ->
     when (val type = projection.type) {
@@ -91,34 +79,29 @@ public fun KType.toWfLoggingName(): String {
  * For example, `java.util.Map` would be `Map`, and `java.util.Map.Entry` would be `Map.Entry`.
  */
 public fun getWfHumanClassName(obj: Any): String {
-  val objClass: Class<*> = when (obj) {
-    is KClass<*> -> obj.java
-    is Class<*> -> obj
-    else -> obj.javaClass
-  }
-  var humanName = objClass.simpleName.takeIf { it.isNotBlank() }
-    ?: objClass.name.substringAfterLast(".")
+  val objClass: Class<*> =
+    when (obj) {
+      is KClass<*> -> obj.java
+      is Class<*> -> obj
+      else -> obj.javaClass
+    }
+  var humanName =
+    objClass.simpleName.takeIf { it.isNotBlank() } ?: objClass.name.substringAfterLast(".")
 
   var memberClass: Class<*>? = objClass
   while (memberClass?.isMemberClass == true) {
-    val tempMemberClass: Class<*>? = memberClass.declaringClass?.also {
-      memberClass = it
-    }
+    val tempMemberClass: Class<*>? = memberClass.declaringClass?.also { memberClass = it }
     humanName = tempMemberClass?.simpleName + "." + humanName
   }
   return humanName
 }
 
-/**
- * Reasonable class name based on type.
- */
+/** Reasonable class name based on type. */
 public fun KClass<*>.toWfLoggingName(): String {
   return getWfHumanClassName(this)
 }
 
-/**
- * Alternative to [toString] used by Workflow logging.
- */
+/** Alternative to [toString] used by Workflow logging. */
 public fun getWfLogString(log: Any?): String {
   return when (log) {
     null,
@@ -146,7 +129,7 @@ public fun getWfLogString(log: Any?): String {
  * Returns an ellipsized string if this string is longer than [maxLength].
  *
  * @param maxLength The maximum length the string can be before ellipsizing will occur. This must be
- * a positive number.
+ *   a positive number.
  */
 public fun String.wfEllipsizeEnd(maxLength: Int): String {
   require(maxLength > 0)
@@ -158,18 +141,12 @@ public fun String.wfEllipsizeEnd(maxLength: Int): String {
   }
 }
 
-internal fun StringBuilder.appendWfLogString(
-  log: Any?,
-  maxLength: Int,
-) {
+internal fun StringBuilder.appendWfLogString(log: Any?, maxLength: Int) {
   require(maxLength > 0)
   append(getWfLogString(log).wfEllipsizeEnd(maxLength))
 }
 
-internal fun StringBuilder.wfEllipsizeEndInPlace(
-  startIndex: Int,
-  maxLength: Int,
-) {
+internal fun StringBuilder.wfEllipsizeEndInPlace(startIndex: Int, maxLength: Int) {
   require(maxLength > 0)
   require(startIndex >= 0 && startIndex <= length)
 
@@ -194,32 +171,22 @@ internal fun StringBuilder.wfEllipsizeEndInPlacePreservingFinalNewline(
 
   val preserveFinalNewline = length > startIndex && this[length - 1] == '\n' && maxLength > 1
   if (!preserveFinalNewline) {
-    wfEllipsizeEndInPlace(
-      startIndex = startIndex,
-      maxLength = maxLength
-    )
+    wfEllipsizeEndInPlace(startIndex = startIndex, maxLength = maxLength)
     return
   }
 
   setLength(length - 1)
-  wfEllipsizeEndInPlace(
-    startIndex = startIndex,
-    maxLength = maxLength - 1
-  )
+  wfEllipsizeEndInPlace(startIndex = startIndex, maxLength = maxLength - 1)
   append('\n')
 }
 
-/**
- * Removes the string from kotlin.jvm.internal.Reflection#REFLECTION_NOT_AVAILABLE
- */
-public fun String.wfRemoveReflectionNotAvailable() = replace(
-  " (Kotlin reflection is not available)",
-  ""
-)
+/** Removes the string from kotlin.jvm.internal.Reflection#REFLECTION_NOT_AVAILABLE */
+public fun String.wfRemoveReflectionNotAvailable() =
+  replace(" (Kotlin reflection is not available)", "")
 
 /**
- * Returns the contents of the receiving string with all "com.squareup.*" packages
- * stripped out of it.
+ * Returns the contents of the receiving string with all "com.squareup.*" packages stripped out of
+ * it.
  *
  * This will help make things more readable for classes within this library.
  */

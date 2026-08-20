@@ -21,24 +21,22 @@ internal class StubVisibilityAppTest {
 
   private val scenarioRule = ActivityScenarioRule(StubVisibilityActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun togglesFooter() {
-    onView(withId(R.id.should_be_wrapped))
-      .check(matches(not(isDisplayed())))
+  @Test
+  fun togglesFooter() {
+    onView(withId(R.id.should_be_wrapped)).check(matches(not(isDisplayed())))
 
-    onView(withText("Click to show footer"))
-      .perform(click())
+    onView(withText("Click to show footer")).perform(click())
 
-    onView(withId(R.id.should_be_wrapped))
-      .check(matches(isDisplayed()))
+    onView(withId(R.id.should_be_wrapped)).check(matches(isDisplayed()))
 
-    onView(withText("Click to hide footer"))
-      .perform(click())
+    onView(withText("Click to hide footer")).perform(click())
 
-    onView(withId(R.id.should_be_wrapped))
-      .check(matches(not(isDisplayed())))
+    onView(withId(R.id.should_be_wrapped)).check(matches(not(isDisplayed())))
   }
 }

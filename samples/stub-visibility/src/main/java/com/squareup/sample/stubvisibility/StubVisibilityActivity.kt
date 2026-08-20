@@ -30,7 +30,7 @@ class StubVisibilityModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = StubVisibilityWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
     )
   }
 }

@@ -45,11 +45,13 @@ internal class ViewLaunchWhenAttachedTest {
     Dispatchers.setMain(StandardTestDispatcher())
   }
 
-  @After fun tearDown() {
+  @After
+  fun tearDown() {
     Dispatchers.resetMain()
   }
 
-  @Test fun `launchWhenAttached launches synchronously when already attached`() = runTest {
+  @Test
+  fun `launchWhenAttached launches synchronously when already attached`() = runTest {
     var innerJob: Job? = null
     var started = false
     mockAttachedToWindow(view, true)
@@ -57,9 +59,7 @@ internal class ViewLaunchWhenAttachedTest {
     // Action: launch a coroutine!
     view.launchWhenAttached {
       started = true
-      suspendCancellableCoroutine { continuation ->
-        innerJob = continuation.context.job
-      }
+      suspendCancellableCoroutine { continuation -> innerJob = continuation.context.job }
     }
 
     assertThat(started).isTrue()
@@ -73,7 +73,8 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached cancels when detached while launching`() = runTest {
+  @Test
+  fun `launchWhenAttached cancels when detached while launching`() = runTest {
     mockAttachedToWindow(view, true)
 
     // Action: launch a coroutine!
@@ -86,15 +87,14 @@ internal class ViewLaunchWhenAttachedTest {
     }
   }
 
-  @Test fun `launchWhenAttached launches when attached later`() = runTest {
+  @Test
+  fun `launchWhenAttached launches when attached later`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, false)
 
     // Action: launch coroutine!
     view.launchWhenAttached {
-      suspendCancellableCoroutine { continuation ->
-        innerJob = continuation.context.job
-      }
+      suspendCancellableCoroutine { continuation -> innerJob = continuation.context.job }
     }
 
     testScheduler.advanceUntilIdle()
@@ -113,7 +113,8 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached launches when reattached`() = runTest {
+  @Test
+  fun `launchWhenAttached launches when reattached`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, true)
 
@@ -123,9 +124,7 @@ internal class ViewLaunchWhenAttachedTest {
 
     // Action: launch second coroutine!
     view.launchWhenAttached {
-      suspendCancellableCoroutine { continuation ->
-        innerJob = continuation.context.job
-      }
+      suspendCancellableCoroutine { continuation -> innerJob = continuation.context.job }
     }
 
     // The coroutine shouldn't have started since the view is detached.
@@ -142,63 +141,58 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isActive).isTrue()
   }
 
-  @Test fun `launchWhenAttached coroutine is child of ViewTreeLifecycleOwner`() = runTest {
+  @Test
+  fun `launchWhenAttached coroutine is child of ViewTreeLifecycleOwner`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, true)
 
     // Action: launch coroutine!
     view.launchWhenAttached {
-      suspendCancellableCoroutine { continuation ->
-        innerJob = continuation.context.job
-      }
+      suspendCancellableCoroutine { continuation -> innerJob = continuation.context.job }
     }
     testScheduler.advanceUntilIdle()
 
     assertThat(innerJob!!.isActive).isTrue()
 
     // Action: cancel parent scope!
-    (view.findViewTreeLifecycleOwner() as TestLifecycleOwner)
-      .handleLifecycleEvent(ON_DESTROY)
+    (view.findViewTreeLifecycleOwner() as TestLifecycleOwner).handleLifecycleEvent(ON_DESTROY)
 
     assertThat(innerJob.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached includes view classname in coroutine name`() = runTest {
+  @Test
+  fun `launchWhenAttached includes view classname in coroutine name`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
 
     // Action: launch coroutine!
-    view.launchWhenAttached {
-      coroutineName = coroutineContext[CoroutineName]?.name
-    }
+    view.launchWhenAttached { coroutineName = coroutineContext[CoroutineName]?.name }
 
     assertThat(coroutineName).isNotNull()
     assertThat(coroutineName).contains("android.view.View")
     assertThat(coroutineName).contains("${view.hashCode()}")
   }
 
-  @Test fun `launchWhenAttached includes view id name in coroutine name`() = runTest {
+  @Test
+  fun `launchWhenAttached includes view id name in coroutine name`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
     whenever(view.resources.getResourceEntryName(anyInt())).thenReturn("fnord")
 
     // Action: launch coroutine!
-    view.launchWhenAttached {
-      coroutineName = coroutineContext[CoroutineName]?.name
-    }
+    view.launchWhenAttached { coroutineName = coroutineContext[CoroutineName]?.name }
 
     assertThat(coroutineName).contains("fnord")
   }
 
-  @Test fun `launchWhenAttached tolerates garbage ids`() = runTest {
+  @Test
+  fun `launchWhenAttached tolerates garbage ids`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
     whenever(view.resources.getResourceEntryName(anyInt())).thenThrow(NotFoundException())
 
     // Action: launch coroutine!
-    view.launchWhenAttached {
-      coroutineName = coroutineContext[CoroutineName]?.name
-    }
+    view.launchWhenAttached { coroutineName = coroutineContext[CoroutineName]?.name }
 
     assertThat(coroutineName).isNotNull()
     assertThat(coroutineName).contains("android.view.View")
@@ -229,10 +223,7 @@ internal class ViewLaunchWhenAttachedTest {
     }
   }
 
-  private fun mockAttachedToWindow(
-    mockView: View,
-    attached: Boolean
-  ) {
+  private fun mockAttachedToWindow(mockView: View, attached: Boolean) {
     whenever(mockView.isAttachedToWindow).thenReturn(attached)
   }
 
@@ -240,17 +231,18 @@ internal class ViewLaunchWhenAttachedTest {
     // Implement "tags" on the mocked view, backed by an actual map.
     val tags: MutableMap<Int, Any> = LinkedHashMap()
 
-    whenever(mockView.getTag(anyInt()))
-      .thenAnswer { invocation: InvocationOnMock ->
-        val key = invocation.arguments[0] as Int
-        tags[key]
-      }
+    whenever(mockView.getTag(anyInt())).thenAnswer { invocation: InvocationOnMock ->
+      val key = invocation.arguments[0] as Int
+      tags[key]
+    }
 
     doAnswer { invocation: InvocationOnMock ->
-      val key = invocation.arguments[0] as Int
-      tags[key] = invocation.arguments[1]
-      null
-    }.whenever(mockView).setTag(anyInt(), any())
+        val key = invocation.arguments[0] as Int
+        tags[key] = invocation.arguments[1]
+        null
+      }
+      .whenever(mockView)
+      .setTag(anyInt(), any())
   }
 
   private fun mockAttachedToWindow(mockView: View) {

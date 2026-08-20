@@ -74,10 +74,10 @@ com.google.protobuf:protobuf-java-util:3.25.5
 com.google.protobuf:protobuf-java:3.25.5
 com.google.testing.platform:core-proto:0.0.9-alpha03
 com.googlecode.juniversalchardet:juniversalchardet:1.0.3
+com.ncorti.ktfmt.gradle:com.ncorti.ktfmt.gradle.gradle.plugin:0.26.0
+com.ncorti.ktfmt.gradle:plugin:0.26.0
 com.rickbusarow.kgx:kotlin-gradle-extensions:0.1.12
 com.rickbusarow.kgx:names:0.1.12
-com.rickbusarow.ktlint:com.rickbusarow.ktlint.gradle.plugin:0.2.2
-com.rickbusarow.ktlint:ktlint-gradle-plugin:0.2.2
 com.squareup.moshi:moshi-adapters:1.15.2
 com.squareup.moshi:moshi:1.15.2
 com.squareup.okhttp3:okhttp:4.12.0
@@ -97,7 +97,7 @@ com.vanniktech:nexus:0.32.0
 commons-codec:commons-codec:1.11
 commons-io:commons-io:2.16.1
 commons-logging:commons-logging:1.2
-io.github.java-diff-utils:java-diff-utils:4.12
+io.github.java-diff-utils:java-diff-utils:4.16
 io.grpc:grpc-api:1.69.1
 io.grpc:grpc-context:1.69.1
 io.grpc:grpc-core:1.69.1

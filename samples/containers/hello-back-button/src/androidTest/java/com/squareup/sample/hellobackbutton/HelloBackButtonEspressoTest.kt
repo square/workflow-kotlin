@@ -22,11 +22,14 @@ class HelloBackButtonEspressoTest {
 
   private val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun wrappedTakesPrecedence() {
+  @Test
+  fun wrappedTakesPrecedence() {
     // The root workflow (AreYouSureWorkflow) wraps its child renderings
     // (instances of HelloBackButtonScreen) in its own BackButtonScreen,
     // which shows the "Are you sure" dialog.
@@ -48,7 +51,8 @@ class HelloBackButtonEspressoTest {
     }
   }
 
-  @Test fun outerHandlerAppliesIfWrappedHandlerIsNull() {
+  @Test
+  fun outerHandlerAppliesIfWrappedHandlerIsNull() {
     onView(withId(R.id.hello_message)).apply {
       check(matches(isDisplayed()))
       perform(pressBack())

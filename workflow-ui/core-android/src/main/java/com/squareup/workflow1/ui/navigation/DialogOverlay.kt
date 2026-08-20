@@ -5,22 +5,22 @@ import android.view.View
 import com.squareup.workflow1.ui.R
 
 /**
- * Returns the most recent [Overlay] rendering [shown][OverlayDialogHolder.show]
- * in this [Dialog]. Throws a [NullPointerException] if the receiver was not created via
+ * Returns the most recent [Overlay] rendering [shown][OverlayDialogHolder.show] in this [Dialog].
+ * Throws a [NullPointerException] if the receiver was not created via
  * [OverlayDialogFactory.buildDialog].
  *
  * Note that it is not safe to call this until after the [Dialog] has been shown.
  */
 internal var Dialog.overlay: Overlay
-  get() = checkNotNull(overlayOrNull) {
-    "Expected to find an Overlay in tag R.id.workflow_overlay on the decor view of $this"
-  }
+  get() =
+    checkNotNull(overlayOrNull) {
+      "Expected to find an Overlay in tag R.id.workflow_overlay on the decor view of $this"
+    }
   internal set(value) = decorView.setTag(R.id.workflow_overlay, value)
 
 /**
- * Returns the most recent [Overlay] rendering [shown][OverlayDialogHolder.show]
- * in this [Dialog], or `null` if the receiver was not created via
- * [OverlayDialogFactory.buildDialog].
+ * Returns the most recent [Overlay] rendering [shown][OverlayDialogHolder.show] in this [Dialog],
+ * or `null` if the receiver was not created via [OverlayDialogFactory.buildDialog].
  *
  * Note that this will return `null` before the [Dialog] is shown.
  */

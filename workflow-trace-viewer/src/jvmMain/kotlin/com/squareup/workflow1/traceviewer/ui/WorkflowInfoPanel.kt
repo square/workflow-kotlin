@@ -40,65 +40,47 @@ import com.squareup.workflow1.traceviewer.model.getNodeData
 import com.squareup.workflow1.traceviewer.util.parser.computeAnnotatedDiff
 
 /**
- * A panel that displays information about the selected workflow node.
- * It can be toggled open or closed, and resets when the user selects a new file
+ * A panel that displays information about the selected workflow node. It can be toggled open or
+ * closed, and resets when the user selects a new file
  *
  * @param selectedNode The currently selected workflow node, or null if no node is selected.
  */
 @Composable
-internal fun RightInfoPanel(
-  selectedNode: NodeUpdate?,
-  modifier: Modifier = Modifier
-) {
-  Row(
-    modifier = modifier
-  ) {
+internal fun RightInfoPanel(selectedNode: NodeUpdate?, modifier: Modifier = Modifier) {
+  Row(modifier = modifier) {
     var panelOpen by remember { mutableStateOf(selectedNode != null) }
 
     IconButton(
       onClick = { panelOpen = !panelOpen },
-      modifier = Modifier
-        .size(40.dp)
-        .clip(CircleShape)
-        .background(Color.White)
-        .padding(8.dp)
-        .align(Alignment.Top)
+      modifier =
+        Modifier.size(40.dp)
+          .clip(CircleShape)
+          .background(Color.White)
+          .padding(8.dp)
+          .align(Alignment.Top),
     ) {
       Icon(
         imageVector = if (panelOpen) Filled.KeyboardArrowRight else Filled.KeyboardArrowLeft,
         contentDescription = if (panelOpen) "Close Panel" else "Open Panel",
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
     if (panelOpen) {
-      NodePanelDetails(
-        selectedNode,
-        Modifier.fillMaxWidth(.30f)
-      )
+      NodePanelDetails(selectedNode, Modifier.fillMaxWidth(.30f))
     }
   }
 }
 
-/**
- * Displays specific details about the opened workflow node.
- */
+/** Displays specific details about the opened workflow node. */
 @Composable
-private fun NodePanelDetails(
-  node: NodeUpdate?,
-  modifier: Modifier = Modifier
-) {
+private fun NodePanelDetails(node: NodeUpdate?, modifier: Modifier = Modifier) {
   LazyColumn(
-    modifier = modifier
-      .fillMaxHeight()
-      .background(Color.White)
-      .padding(8.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp)
+    modifier = modifier.fillMaxHeight().background(Color.White).padding(8.dp),
+    verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     if (node == null) {
-      item {
-        Text("Select a node to view details")
-      }
+      item { Text("Select a node to view details") }
       return@LazyColumn
     }
     item {
@@ -106,20 +88,20 @@ private fun NodePanelDetails(
         text = "${node.current.parent} (ID: ${node.current.parentId})",
         style = MaterialTheme.typography.subtitle2,
         color = Color.Gray,
-        modifier = Modifier.padding(top = 8.dp)
+        modifier = Modifier.padding(top = 8.dp),
       )
       Text(
         text = "↳",
         style = MaterialTheme.typography.subtitle1,
         color = Color.Gray,
-        modifier = Modifier.padding(start = 8.dp)
+        modifier = Modifier.padding(start = 8.dp),
       )
       Text(
         text = "${node.current.name} (ID: ${node.current.id})",
         style = MaterialTheme.typography.h5,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier.padding(8.dp),
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
       )
     }
 
@@ -127,13 +109,7 @@ private fun NodePanelDetails(
     for (field in fields) {
       val currVal = node.current.getNodeData(field)
       val pastVal = if (node.past != null) node.past.getNodeData(field) else null
-      item {
-        DetailCard(
-          label = field,
-          currValue = currVal,
-          pastValue = pastVal
-        )
-      }
+      item { DetailCard(label = field, currValue = currVal, pastValue = pastVal) }
     }
   }
 }
@@ -144,26 +120,13 @@ private fun NodePanelDetails(
  * Can be open/closed to show/hide details.
  */
 @Composable
-private fun DetailCard(
-  label: String,
-  currValue: String,
-  pastValue: String?
-) {
+private fun DetailCard(label: String, currValue: String, pastValue: String?) {
   var open by remember { mutableStateOf(true) }
   Card(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(8.dp)
-      .clickable {
-        open = !open
-      },
+    modifier = Modifier.fillMaxWidth().padding(8.dp).clickable { open = !open },
     elevation = 3.dp,
   ) {
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
       Text(
         text = label,
         style = MaterialTheme.typography.h6,
@@ -180,34 +143,24 @@ private fun DetailCard(
             text = "Changes",
             style = MaterialTheme.typography.subtitle1,
             color = Color.Gray,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
           )
           Text(
             text = computeAnnotatedDiff(pastValue, currValue),
             style = MaterialTheme.typography.body2,
-            modifier = Modifier
-              .padding(top = 8.dp)
-              .align(Alignment.CenterHorizontally)
+            modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
           )
 
           Spacer(modifier = Modifier.height(16.dp))
-          Text(
-            text = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            maxLines = 1,
-            overflow = TextOverflow.Clip
-          )
+          Text(text = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━", maxLines = 1, overflow = TextOverflow.Clip)
 
           Text(
             text = "Before",
             style = MaterialTheme.typography.subtitle1,
             color = Color.Gray,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
           )
-          Text(
-            text = pastValue,
-            style = MaterialTheme.typography.body2,
-            color = Color.Black
-          )
+          Text(text = pastValue, style = MaterialTheme.typography.body2, color = Color.Black)
 
           Spacer(modifier = Modifier.height(16.dp))
 
@@ -215,20 +168,12 @@ private fun DetailCard(
             text = "After",
             style = MaterialTheme.typography.subtitle1,
             color = Color.Gray,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
           )
-          Text(
-            text = currValue,
-            style = MaterialTheme.typography.body2,
-            color = Color.Black
-          )
+          Text(text = currValue, style = MaterialTheme.typography.body2, color = Color.Black)
         }
       } else {
-        Text(
-          text = currValue,
-          style = MaterialTheme.typography.body1,
-          color = Color.Black
-        )
+        Text(text = currValue, style = MaterialTheme.typography.body1, color = Color.Black)
       }
     }
   }

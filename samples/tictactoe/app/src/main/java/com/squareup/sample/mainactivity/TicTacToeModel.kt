@@ -23,13 +23,12 @@ class TicTacToeModel(
   private val running = Job()
 
   val renderings: StateFlow<Screen> by lazy {
-
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = emptyList(),
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
     ) {
       running.complete()
     }
@@ -37,13 +36,8 @@ class TicTacToeModel(
 
   suspend fun waitForExit() = running.join()
 
-  class Factory(
-    private val workflow: TicTacToeWorkflow,
-  ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(
-      modelClass: Class<T>,
-      extras: CreationExtras
-    ): T {
+  class Factory(private val workflow: TicTacToeWorkflow) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
       if (modelClass == TicTacToeModel::class.java) {
         @Suppress("UNCHECKED_CAST")
         return TicTacToeModel(extras.createSavedStateHandle(), workflow) as T

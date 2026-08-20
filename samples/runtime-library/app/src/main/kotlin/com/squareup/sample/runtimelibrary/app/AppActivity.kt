@@ -41,8 +41,7 @@ class AppActivity : AppCompatActivity() {
     val model: AppViewModel by viewModels()
     workflowContentView.take(
       lifecycle = lifecycle,
-      renderings = model.renderings
-        .map { it.withEnvironment(viewEnvironment) }
+      renderings = model.renderings.map { it.withEnvironment(viewEnvironment) },
     )
   }
 
@@ -63,8 +62,5 @@ fun <O, R> renderWorkflowInWrapper(
   workflow: Workflow<Unit, O, R>,
   scope: CoroutineScope,
   runtimeConfig: RuntimeConfig,
-): StateFlow<R> = renderWorkflowIn(
-  workflow = workflow,
-  scope = scope,
-  runtimeConfig = runtimeConfig,
-)
+): StateFlow<R> =
+  renderWorkflowIn(workflow = workflow, scope = scope, runtimeConfig = runtimeConfig)

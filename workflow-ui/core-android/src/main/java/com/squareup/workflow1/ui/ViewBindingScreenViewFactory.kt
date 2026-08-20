@@ -9,16 +9,15 @@ import kotlin.reflect.KClass
 internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT : Screen>(
   override val type: KClass<RenderingT>,
   private val bindingInflater: ViewBindingInflater<BindingT>,
-  private val runnerConstructor: (BindingT) -> ScreenViewRunner<RenderingT>
+  private val runnerConstructor: (BindingT) -> ScreenViewRunner<RenderingT>,
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
     initialRendering: RenderingT,
     initialEnvironment: ViewEnvironment,
     context: Context,
-    container: ViewGroup?
+    container: ViewGroup?,
   ): ScreenViewHolder<RenderingT> =
-    bindingInflater(context.viewBindingLayoutInflater(container), container, false)
-      .let { binding ->
-        ScreenViewHolder(initialEnvironment, binding.root, runnerConstructor(binding))
-      }
+    bindingInflater(context.viewBindingLayoutInflater(container), container, false).let { binding ->
+      ScreenViewHolder(initialEnvironment, binding.root, runnerConstructor(binding))
+    }
 }

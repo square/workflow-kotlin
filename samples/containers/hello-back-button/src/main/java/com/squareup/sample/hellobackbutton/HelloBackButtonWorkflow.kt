@@ -17,39 +17,41 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBac
   enum class State : Parcelable {
     Able,
     Baker,
-    Charlie
+    Charlie,
   }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.toParcelable() ?: Able
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.toParcelable() ?: Able
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
+    context: RenderContext<Unit, State, Nothing>,
   ): HelloBackButtonScreen {
     return HelloBackButtonScreen(
       message = "$renderState",
-      onClick = context.eventHandler("onClick") {
-        state = when (state) {
-          Able -> Baker
-          Baker -> Charlie
-          Charlie -> Able
-        }
-      },
-      onBackPressed = if (renderState == Able) {
-        null
-      } else {
-        context.eventHandler("onBackPressed") {
-          state = when (state) {
-            Able -> throw IllegalStateException()
-            Baker -> Able
-            Charlie -> Baker
+      onClick =
+        context.eventHandler("onClick") {
+          state =
+            when (state) {
+              Able -> Baker
+              Baker -> Charlie
+              Charlie -> Able
+            }
+        },
+      onBackPressed =
+        if (renderState == Able) {
+          null
+        } else {
+          context.eventHandler("onBackPressed") {
+            state =
+              when (state) {
+                Able -> throw IllegalStateException()
+                Baker -> Able
+                Charlie -> Baker
+              }
           }
-        }
-      }
+        },
     )
   }
 

@@ -14,37 +14,29 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen
 typealias SelectedPoem = Int
 
 /**
- * Default implementation of [PoemsBrowserWorkflow]. Note the use of
- * a child [PoemWorkflow] to render the selected [Poem], and in particular
- * how the child's overview pane (the list of stanzas) is combined with
- * the list of poems, giving us back stack navigation on both sides of
- * the splitter.
+ * Default implementation of [PoemsBrowserWorkflow]. Note the use of a child [PoemWorkflow] to
+ * render the selected [Poem], and in particular how the child's overview pane (the list of stanzas)
+ * is combined with the list of poems, giving us back stack navigation on both sides of the
+ * splitter.
  */
-class RealPoemsBrowserWorkflow(
-  private val poemWorkflow: PoemWorkflow
-) : PoemsBrowserWorkflow,
+class RealPoemsBrowserWorkflow(private val poemWorkflow: PoemWorkflow) :
+  PoemsBrowserWorkflow,
   StatefulWorkflow<ConfigAndPoems, SelectedPoem, Unit, OverviewDetailScreen<*>>() {
 
-  override fun initialState(
-    props: ConfigAndPoems,
-    snapshot: Snapshot?
-  ): SelectedPoem {
-    return snapshot?.bytes?.parse { source ->
-      source.readInt()
-    } ?: NO_POEM_SELECTED
+  override fun initialState(props: ConfigAndPoems, snapshot: Snapshot?): SelectedPoem {
+    return snapshot?.bytes?.parse { source -> source.readInt() } ?: NO_POEM_SELECTED
   }
 
   override fun render(
     renderProps: ConfigAndPoems,
     renderState: SelectedPoem,
-    context: RenderContext<ConfigAndPoems, SelectedPoem, Unit>
+    context: RenderContext<ConfigAndPoems, SelectedPoem, Unit>,
   ): OverviewDetailScreen<*> {
     val poems =
-      context.renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->
-        choosePoem(
-          selected
-        )
-      }
+      context
+        .renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->
+          choosePoem(selected)
+        }
         .copy(selection = renderState)
         .let { OverviewDetailScreen(BackStackScreen(it)) }
 
@@ -57,14 +49,11 @@ class RealPoemsBrowserWorkflow(
     }
   }
 
-  override fun snapshotState(state: SelectedPoem): Snapshot =
-    Snapshot.write { sink -> sink.writeInt(state) }
-
-  private fun choosePoem(
-    index: Int
-  ) = action("goToPoem") {
-    state = index
+  override fun snapshotState(state: SelectedPoem): Snapshot = Snapshot.write { sink ->
+    sink.writeInt(state)
   }
+
+  private fun choosePoem(index: Int) = action("goToPoem") { state = index }
 
   private val clearSelection = choosePoem(NO_POEM_SELECTED)
 }

@@ -36,12 +36,9 @@ abstract class ComposeWorkflow<PropsT, OutputT : Any> :
    *
    * @param props The data to render.
    * @param outputSink A [Sink] that can be used from UI event handlers to send outputs to this
-   * workflow's parent.
+   *   workflow's parent.
    */
-  @Composable abstract fun RenderingContent(
-    props: PropsT,
-    outputSink: Sink<OutputT>,
-  )
+  @Composable abstract fun RenderingContent(props: PropsT, outputSink: Sink<OutputT>)
 
   override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeScreen> =
     ComposeWorkflowImpl(this)
@@ -49,19 +46,13 @@ abstract class ComposeWorkflow<PropsT, OutputT : Any> :
   override var cachedIdentifier: WorkflowIdentifier? = null
 }
 
-/**
- * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
- */
+/** Returns a [ComposeWorkflow] that renders itself using the given [render] function. */
 inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
-  crossinline render: @Composable (
-    props: PropsT,
-    outputSink: Sink<OutputT>,
-  ) -> Unit
-): ComposeWorkflow<PropsT, OutputT> = object : ComposeWorkflow<PropsT, OutputT>() {
-  @Composable override fun RenderingContent(
-    props: PropsT,
-    outputSink: Sink<OutputT>,
-  ) {
-    render(props, outputSink)
+  crossinline render: @Composable (props: PropsT, outputSink: Sink<OutputT>) -> Unit
+): ComposeWorkflow<PropsT, OutputT> =
+  object : ComposeWorkflow<PropsT, OutputT>() {
+    @Composable
+    override fun RenderingContent(props: PropsT, outputSink: Sink<OutputT>) {
+      render(props, outputSink)
+    }
   }
-}

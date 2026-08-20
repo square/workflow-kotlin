@@ -29,9 +29,7 @@ class TicTacToeActivity : AppCompatActivity() {
 
     workflowContentView.take(lifecycle, model.renderings.map { it.withRegistry(viewRegistry) })
 
-    lifecycleScope.launch {
-      model.renderings.collect { Timber.d("rendering: %s", it) }
-    }
+    lifecycleScope.launch { model.renderings.collect { Timber.d("rendering: %s", it) } }
     lifecycleScope.launch {
       model.waitForExit()
       finish()
@@ -39,8 +37,6 @@ class TicTacToeActivity : AppCompatActivity() {
   }
 
   private companion object {
-    val viewRegistry = SampleContainers +
-      AuthViewFactories +
-      TicTacToeViewFactories
+    val viewRegistry = SampleContainers + AuthViewFactories + TicTacToeViewFactories
   }
 }

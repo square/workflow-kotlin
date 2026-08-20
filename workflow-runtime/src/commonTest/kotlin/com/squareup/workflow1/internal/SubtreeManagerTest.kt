@@ -17,17 +17,17 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.SubtreeManagerTest.TestWorkflow.Rendering
-import kotlinx.coroutines.Dispatchers.Unconfined
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.test.runTest
 
 private typealias StringHandler = (String) -> WorkflowAction<String, String, String>
 
@@ -38,16 +38,9 @@ internal class SubtreeManagerTest {
 
     var started = 0
 
-    data class Rendering(
-      val props: String,
-      val state: String,
-      val eventHandler: (String) -> Unit
-    )
+    data class Rendering(val props: String, val state: String, val eventHandler: (String) -> Unit)
 
-    override fun initialState(
-      props: String,
-      snapshot: Snapshot?
-    ): String {
+    override fun initialState(props: String, snapshot: Snapshot?): String {
       started++
       return "initialState:$props"
     }
@@ -55,14 +48,12 @@ internal class SubtreeManagerTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: StatefulWorkflow.RenderContext<String, String, String>
+      context: StatefulWorkflow.RenderContext<String, String, String>,
     ): Rendering {
       return Rendering(
         renderProps,
         renderState,
-        eventHandler = context.eventHandler("") { out ->
-          setOutput("workflow output:$out")
-        }
+        eventHandler = context.eventHandler("") { out -> setOutput("workflow output:$out") },
       )
     }
 
@@ -75,19 +66,15 @@ internal class SubtreeManagerTest {
     var serializes = 0
     var restores = 0
 
-    override fun initialState(
-      props: Unit,
-      snapshot: Snapshot?
-    ) {
+    override fun initialState(props: Unit, snapshot: Snapshot?) {
       if (snapshot != null) restores++
     }
 
     override fun render(
       renderProps: Unit,
       renderState: Unit,
-      context: RenderContext<Unit, Unit, Nothing>
-    ) {
-    }
+      context: RenderContext<Unit, Unit, Nothing>,
+    ) {}
 
     override fun snapshotState(state: Unit): Snapshot {
       snapshots++
@@ -100,7 +87,8 @@ internal class SubtreeManagerTest {
 
   private val context = Unconfined
 
-  @Test fun render_starts_new_child() {
+  @Test
+  fun render_starts_new_child() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
 
@@ -108,11 +96,14 @@ internal class SubtreeManagerTest {
     assertEquals(1, workflow.started)
   }
 
-  @Test fun render_does_not_start_existing_child() {
+  @Test
+  fun render_does_not_start_existing_child() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
-    fun render() = manager.render(workflow, "props", key = "", handler = { fail() })
-      .also { manager.commitRenderedChildren() }
+    fun render() =
+      manager.render(workflow, "props", key = "", handler = { fail() }).also {
+        manager.commitRenderedChildren()
+      }
 
     render()
     render()
@@ -120,11 +111,14 @@ internal class SubtreeManagerTest {
     assertEquals(1, workflow.started)
   }
 
-  @Test fun render_restarts_child_after_tearing_down() {
+  @Test
+  fun render_restarts_child_after_tearing_down() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
-    fun render() = manager.render(workflow, "props", key = "", handler = { fail() })
-      .also { manager.commitRenderedChildren() }
+    fun render() =
+      manager.render(workflow, "props", key = "", handler = { fail() }).also {
+        manager.commitRenderedChildren()
+      }
     render()
     assertEquals(1, workflow.started)
 
@@ -136,26 +130,30 @@ internal class SubtreeManagerTest {
     assertEquals(2, workflow.started)
   }
 
-  @Test fun render_throws_on_duplicate_key() {
+  @Test
+  fun render_throws_on_duplicate_key() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     manager.render(workflow, "props", "foo", handler = { fail() })
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      manager.render(workflow, "props", "foo", handler = { fail() })
-    }
+    val error =
+      assertFailsWith<IllegalArgumentException> {
+        manager.render(workflow, "props", "foo", handler = { fail() })
+      }
     assertEquals(
       "Expected keys to be unique for ${workflow.identifier}: key=\"foo\"",
-      error.message
+      error.message,
     )
   }
 
-  @Test fun render_unique_children_does_not_trace_matches_when_identity_indexed() {
+  @Test
+  fun render_unique_children_does_not_trace_matches_when_identity_indexed() {
     val tracer = RecordingWorkflowTracer()
-    val manager = subtreeManagerForTest<String, String, String>(
-      workflowTracer = tracer,
-      runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS)
-    )
+    val manager =
+      subtreeManagerForTest<String, String, String>(
+        workflowTracer = tracer,
+        runtimeConfig = setOf(RuntimeConfigOptions.INDEXED_ACTIVE_STAGING_LISTS),
+      )
     val workflow = TestWorkflow()
 
     repeat(10) { index ->
@@ -165,26 +163,22 @@ internal class SubtreeManagerTest {
     assertEquals(0, tracer.beginSections.count { it == "matches" })
   }
 
-  @Test fun render_returns_child_rendering() {
+  @Test
+  fun render_returns_child_rendering() {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
 
-    val (composeProps, composeState) = manager.render(
-      workflow,
-      "props",
-      key = "",
-      handler = { fail() }
-    )
+    val (composeProps, composeState) =
+      manager.render(workflow, "props", key = "", handler = { fail() })
     assertEquals("props", composeProps)
     assertEquals("initialState:props", composeState)
   }
 
-  @Test fun onNextAction_for_children_handles_child_output() = runTest {
+  @Test
+  fun onNextAction_for_children_handles_child_output() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
-    val handler: StringHandler = { output ->
-      action("") { setOutput("case output:$output") }
-    }
+    val handler: StringHandler = { output -> action("") { setOutput("case output:$output") } }
 
     // Initialize the child so applyNextAction has something to work with, and so that we can send
     // an event to trigger an output.
@@ -202,12 +196,11 @@ internal class SubtreeManagerTest {
     assertFalse(result.stateChanged)
   }
 
-  @Test fun onNextAction_for_children_handles_no_child_output() = runTest {
+  @Test
+  fun onNextAction_for_children_handles_no_child_output() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
-    val handler: StringHandler = { _ ->
-      WorkflowAction.noAction()
-    }
+    val handler: StringHandler = { _ -> WorkflowAction.noAction() }
 
     // Initialize the child so applyNextAction has something to work with, and so that we can send
     // an event to trigger an output.
@@ -225,12 +218,14 @@ internal class SubtreeManagerTest {
     assertFalse(result.stateChanged)
   }
 
-  @Test fun render_updates_childs_output_handler() = runTest {
+  @Test
+  fun render_updates_childs_output_handler() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     fun render(handler: StringHandler) =
-      manager.render(workflow, "props", key = "", handler = handler)
-        .also { manager.commitRenderedChildren() }
+      manager.render(workflow, "props", key = "", handler = handler).also {
+        manager.commitRenderedChildren()
+      }
 
     // First render + apply action pass – uninteresting.
     render { action("") { setOutput("initial handler: $it") } }
@@ -240,25 +235,25 @@ internal class SubtreeManagerTest {
         val (_, initialResult) = initialAction!!.applyTo("", "")
         assertEquals(
           expected = "initial handler: workflow output:initial output",
-          actual = initialResult.output!!.value
+          actual = initialResult.output!!.value,
         )
         assertFalse(initialResult.stateChanged)
       }
 
     // Do a second render + apply action, but with a different handler function.
     render {
-      action("") {
-        state = "New State"
-        setOutput("second handler: $it")
+        action("") {
+          state = "New State"
+          setOutput("second handler: $it")
+        }
       }
-    }
       .let { rendering ->
         rendering.eventHandler("second output")
         val secondAction = manager.applyNextAction().output!!.value
         val (secondState, secondResult) = secondAction!!.applyTo("", "")
         assertEquals(
           expected = "second handler: workflow output:second output",
-          actual = secondResult.output!!.value
+          actual = secondResult.output!!.value,
         )
         assertTrue(secondResult.stateChanged)
         assertEquals("New State", secondState)
@@ -266,7 +261,8 @@ internal class SubtreeManagerTest {
   }
 
   // See https://github.com/square/workflow/issues/404
-  @Test fun createChildSnapshot_snapshots_eagerly() {
+  @Test
+  fun createChildSnapshot_snapshots_eagerly() {
     val manager = subtreeManagerForTest<Unit, Unit, Nothing>()
     val workflow = SnapshotTestWorkflow()
     assertEquals(0, workflow.snapshots)
@@ -279,7 +275,8 @@ internal class SubtreeManagerTest {
   }
 
   // See https://github.com/square/workflow/issues/404
-  @Test fun createChildSnapshot_serializes_lazily() {
+  @Test
+  fun createChildSnapshot_serializes_lazily() {
     val manager = subtreeManagerForTest<Unit, Unit, Nothing>()
     val workflow = SnapshotTestWorkflow()
     assertEquals(0, workflow.serializes)
@@ -295,7 +292,8 @@ internal class SubtreeManagerTest {
     assertEquals(1, workflow.serializes)
   }
 
-  @Test fun snapshots_applied_on_first_render_only() {
+  @Test
+  fun snapshots_applied_on_first_render_only() {
     val manager1 = subtreeManagerForTest<Unit, Unit, Nothing>()
     val workflowAble = SnapshotTestWorkflow()
     val workflowBaker = SnapshotTestWorkflow()
@@ -322,23 +320,23 @@ internal class SubtreeManagerTest {
 
   @Suppress("UNCHECKED_CAST")
   private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.applyNextAction() =
-    select<ActionProcessingResult?> {
-      registerChildActionSelectors(this)
-    } as ActionApplied<WorkflowAction<P, S, O>?>
+    select<ActionProcessingResult?> { registerChildActionSelectors(this) }
+      as ActionApplied<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(
     snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null,
     workflowTracer: WorkflowTracer? = null,
     runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  ) = SubtreeManager<P, S, O>(
-    snapshotCache = snapshotCache,
-    contextForChildren = context,
-    runtimeConfig = runtimeConfig,
-    emitActionToParent = { action, childResult ->
-      ActionApplied(WorkflowOutput(action), childResult.stateChanged)
-    },
-    workflowTracer = workflowTracer
-  )
+  ) =
+    SubtreeManager<P, S, O>(
+      snapshotCache = snapshotCache,
+      contextForChildren = context,
+      runtimeConfig = runtimeConfig,
+      emitActionToParent = { action, childResult ->
+        ActionApplied(WorkflowOutput(action), childResult.stateChanged)
+      },
+      workflowTracer = workflowTracer,
+    )
 
   private class RecordingWorkflowTracer : WorkflowTracer {
     val beginSections = mutableListOf<String>()

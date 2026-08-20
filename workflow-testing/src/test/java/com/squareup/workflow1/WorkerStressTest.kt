@@ -1,5 +1,8 @@
 package com.squareup.workflow1
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancelChildren
@@ -11,9 +14,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.fail
 
 private const val WORKER_COUNT = 500
 
@@ -23,33 +23,28 @@ internal class WorkerStressTest {
   @Test
   fun `multiple subscriptions to single channel when closed`() {
     val channel = Channel<Unit>()
-    val workers = List(WORKER_COUNT / 2) {
-      channel.consumeAsFlow()
-        .asWorker()
-    }
-    val finishedWorkers = List(WORKER_COUNT / 2) {
-      channel.consumeAsFlow()
-        .asWorker()
-        .transform { it.onCompletion { emit(Unit) } }
-    }
+    val workers = List(WORKER_COUNT / 2) { channel.consumeAsFlow().asWorker() }
+    val finishedWorkers =
+      List(WORKER_COUNT / 2) {
+        channel.consumeAsFlow().asWorker().transform { it.onCompletion { emit(Unit) } }
+      }
     val action = action<Unit, Nothing, Unit>("") { setOutput(Unit) }
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      // Run lots of workers that will all see the same close event.
-      workers.forEachIndexed { i, worker ->
-        runningWorker(worker, key = i.toString()) {
-          fail("Expected non-finishing worker $i not to emit.")
+    val workflow =
+      Workflow.stateless<Unit, Unit, Unit> {
+        // Run lots of workers that will all see the same close event.
+        workers.forEachIndexed { i, worker ->
+          runningWorker(worker, key = i.toString()) {
+            fail("Expected non-finishing worker $i not to emit.")
+          }
+        }
+        finishedWorkers.forEachIndexed { i, worker ->
+          runningWorker(worker, key = "finished $i") { action }
         }
       }
-      finishedWorkers.forEachIndexed { i, worker ->
-        runningWorker(worker, key = "finished $i") { action }
-      }
-    }
 
     runBlocking {
       val outputs = Channel<Unit>()
-      renderWorkflowIn(workflow, this, MutableStateFlow(Unit)) {
-        outputs.send(it)
-      }
+      renderWorkflowIn(workflow, this, MutableStateFlow(Unit)) { outputs.send(it) }
 
       // This should just work, and the test will finish, but this is broken by
       // https://github.com/Kotlin/kotlinx.coroutines/issues/1584 and will crash instead if
@@ -57,9 +52,7 @@ internal class WorkerStressTest {
       channel.close()
 
       // Collect from all emitted workers to ensure they all reported their values.
-      outputs.consumeAsFlow()
-        .take(finishedWorkers.size)
-        .collect()
+      outputs.consumeAsFlow().take(finishedWorkers.size).collect()
 
       // Cancel the runtime so the test can finish.
       coroutineContext.cancelChildren()
@@ -73,21 +66,16 @@ internal class WorkerStressTest {
 
     val workers = List(WORKER_COUNT) { flow.asWorker() }
     val action = action<Unit, Nothing, Int>("") { setOutput(1) }
-    val workflow = Workflow.stateless<Unit, Int, Unit> {
-      // Run lots of workers that will all see the same conflated channel value.
-      workers.forEachIndexed { i, worker ->
-        runningWorker(worker, key = i.toString()) { action }
+    val workflow =
+      Workflow.stateless<Unit, Int, Unit> {
+        // Run lots of workers that will all see the same conflated channel value.
+        workers.forEachIndexed { i, worker -> runningWorker(worker, key = i.toString()) { action } }
       }
-    }
 
     runBlocking {
       val outputs = Channel<Int>()
-      renderWorkflowIn(workflow, this, MutableStateFlow(Unit)) {
-        outputs.send(it)
-      }
-      val sum = outputs.consumeAsFlow()
-        .take(workers.size)
-        .reduce { sum, value -> sum + value }
+      renderWorkflowIn(workflow, this, MutableStateFlow(Unit)) { outputs.send(it) }
+      val sum = outputs.consumeAsFlow().take(workers.size).reduce { sum, value -> sum + value }
       assertEquals(WORKER_COUNT, sum)
 
       // Cancel the runtime so the test can finish.

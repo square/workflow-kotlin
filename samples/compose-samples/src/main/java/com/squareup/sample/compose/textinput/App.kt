@@ -16,13 +16,15 @@ import com.squareup.workflow1.ui.plus
 
 private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TextInputComposableFactory)
 
-@Composable fun TextInputApp() {
+@Composable
+fun TextInputApp() {
   MaterialTheme {
-    val rendering by TextInputWorkflow.renderAsState(
-      props = Unit,
-      onOutput = {},
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-    )
+    val rendering by
+      TextInputWorkflow.renderAsState(
+        props = Unit,
+        onOutput = {},
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      )
     viewEnvironment.RootScreen(rendering)
   }
 }

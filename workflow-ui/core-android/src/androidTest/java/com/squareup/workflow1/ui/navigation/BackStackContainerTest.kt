@@ -25,7 +25,8 @@ import org.junit.Test
 
 internal class BackStackContainerTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private val scenario
+    get() = scenarioRule.scenario
 
   private data class Rendering(val name: String) : Compatible, AndroidScreen<Rendering> {
     override val compatibilityKey = name
@@ -36,20 +37,24 @@ internal class BackStackContainerTest {
           EditText(context).apply {
             // Must have an id to participate in view persistence.
             id = 65
-          }
-        ) { _, _ -> }
+          },
+        ) { _, _ ->
+        }
       }
   }
 
-  @Test fun savedStateParcelingWorks() {
+  @Test
+  fun savedStateParcelingWorks() {
     scenario.onActivity { activity ->
-      val originalView = VisibleBackStackContainer(activity).apply {
-        // Must have an id to participate in view persistence.
-        id = 42
-      }
-      val holder1 = ScreenViewHolder<BackStackScreen<*>>(EMPTY, originalView) { r, e ->
-        originalView.update(r, e)
-      }
+      val originalView =
+        VisibleBackStackContainer(activity).apply {
+          // Must have an id to participate in view persistence.
+          id = 42
+        }
+      val holder1 =
+        ScreenViewHolder<BackStackScreen<*>>(EMPTY, originalView) { r, e ->
+          originalView.update(r, e)
+        }
 
       // Show "able".
       holder1.show(BackStackScreen(Rendering("able")), EMPTY)
@@ -64,28 +69,33 @@ internal class BackStackContainerTest {
       // the Parcel machinery.
       val savedArray = SparseArray<Parcelable>()
       originalView.saveHierarchyState(savedArray)
-      val bytes = Parcel.obtain().let { parcel ->
-        parcel.writeSparseArray(savedArray)
-        parcel.marshall().also { parcel.recycle() }
-      }
-      val restoredArray = Parcel.obtain().let { parcel ->
-        parcel.unmarshall(bytes, 0, bytes.size)
-        parcel.setDataPosition(0)
-        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-          parcel.readSparseArray(this::class.java.classLoader, Parcelable::class.java)!!
-            .also { parcel.recycle() }
-        } else {
-          @Suppress("DEPRECATION")
-          parcel.readSparseArray<Parcelable>(this::class.java.classLoader)!!
-            .also { parcel.recycle() }
+      val bytes =
+        Parcel.obtain().let { parcel ->
+          parcel.writeSparseArray(savedArray)
+          parcel.marshall().also { parcel.recycle() }
         }
-      }
+      val restoredArray =
+        Parcel.obtain().let { parcel ->
+          parcel.unmarshall(bytes, 0, bytes.size)
+          parcel.setDataPosition(0)
+          if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            parcel.readSparseArray(this::class.java.classLoader, Parcelable::class.java)!!.also {
+              parcel.recycle()
+            }
+          } else {
+            @Suppress("DEPRECATION")
+            parcel.readSparseArray<Parcelable>(this::class.java.classLoader)!!.also {
+              parcel.recycle()
+            }
+          }
+        }
 
       // Create a new BackStackContainer with the same id as the original
       val restoredView = VisibleBackStackContainer(activity).apply { id = 42 }
-      val restoredHolder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, restoredView) { r, e ->
-        restoredView.update(r, e)
-      }
+      val restoredHolder =
+        ScreenViewHolder<BackStackScreen<*>>(EMPTY, restoredView) { r, e ->
+          restoredView.update(r, e)
+        }
       // Have it render the same able > baker back stack that we last showed in the original.
       restoredHolder.show(BackStackScreen(Rendering("able"), Rendering("baker")), EMPTY)
       // Restore the view hierarchy.
@@ -99,12 +109,11 @@ internal class BackStackContainerTest {
     }
   }
 
-  @Test fun firstScreenIsRendered() {
+  @Test
+  fun firstScreenIsRendered() {
     scenario.onActivity { activity ->
       val view = VisibleBackStackContainer(activity)
-      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
-        view.update(r, e)
-      }
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e -> view.update(r, e) }
 
       holder.show(BackStackScreen(Rendering("able")), EMPTY)
       val showing = view.visibleRendering as Rendering
@@ -112,12 +121,11 @@ internal class BackStackContainerTest {
     }
   }
 
-  @Test fun secondScreenIsRendered() {
+  @Test
+  fun secondScreenIsRendered() {
     scenario.onActivity { activity ->
       val view = VisibleBackStackContainer(activity)
-      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
-        view.update(r, e)
-      }
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e -> view.update(r, e) }
 
       holder.show(BackStackScreen(Rendering("able")), EMPTY)
       holder.show(BackStackScreen(Rendering("baker")), EMPTY)
@@ -126,12 +134,11 @@ internal class BackStackContainerTest {
     }
   }
 
-  @Test fun thirdScreenIsRendered() {
+  @Test
+  fun thirdScreenIsRendered() {
     scenario.onActivity { activity ->
       val view = VisibleBackStackContainer(activity)
-      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
-        view.update(r, e)
-      }
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e -> view.update(r, e) }
 
       holder.show(BackStackScreen(Rendering("able")), EMPTY)
       holder.show(BackStackScreen(Rendering("baker")), EMPTY)
@@ -145,12 +152,11 @@ internal class BackStackContainerTest {
     }
   }
 
-  @Test fun isDebounced() {
+  @Test
+  fun isDebounced() {
     scenario.onActivity { activity ->
       val view = VisibleBackStackContainer(activity)
-      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
-        view.update(r, e)
-      }
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e -> view.update(r, e) }
 
       holder.show(BackStackScreen(Rendering("able")), EMPTY)
       holder.show(BackStackScreen(Rendering("able")), EMPTY)
@@ -170,7 +176,7 @@ internal class BackStackContainerTest {
     override fun performTransition(
       oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
       newHolder: ScreenViewHolder<NamedScreen<*>>,
-      popped: Boolean
+      popped: Boolean,
     ) {
       transitionCount++
       assertThat(newHolder.view.tag).isNull()

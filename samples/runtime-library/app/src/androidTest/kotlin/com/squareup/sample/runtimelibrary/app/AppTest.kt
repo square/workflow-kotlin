@@ -10,7 +10,8 @@ class AppTest {
 
   @get:Rule val rule = createAndroidComposeRule<AppActivity>()
 
-  @Test fun appStarts() {
+  @Test
+  fun appStarts() {
     rule.onNodeWithText("Hello").assertIsDisplayed()
   }
 }

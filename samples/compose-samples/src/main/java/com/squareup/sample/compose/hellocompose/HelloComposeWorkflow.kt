@@ -13,30 +13,27 @@ object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloCompos
     Hello,
     Goodbye;
 
-    fun theOtherState(): State = when (this) {
-      Hello -> Goodbye
-      Goodbye -> Hello
-    }
+    fun theOtherState(): State =
+      when (this) {
+        Hello -> Goodbye
+        Goodbye -> Hello
+      }
   }
 
-  private val helloAction = action("hello") {
-    state = state.theOtherState()
-  }
+  private val helloAction = action("hello") { state = state.theOtherState() }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-    ?: Hello
+  override fun initialState(props: Unit, snapshot: Snapshot?): State =
+    snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye } ?: Hello
 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext<Unit, State, Nothing>
-  ): HelloComposeScreen = HelloComposeScreen(
-    message = renderState.name,
-    onClick = { context.actionSink.send(helloAction) }
-  )
+    context: RenderContext<Unit, State, Nothing>,
+  ): HelloComposeScreen =
+    HelloComposeScreen(
+      message = renderState.name,
+      onClick = { context.actionSink.send(helloAction) },
+    )
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 }

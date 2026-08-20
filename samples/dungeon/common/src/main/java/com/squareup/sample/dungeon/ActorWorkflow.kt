@@ -13,14 +13,7 @@ import com.squareup.workflow1.Workflow
  */
 interface ActorWorkflow : Workflow<ActorProps, Nothing, ActorRendering> {
 
-  data class ActorProps(
-    val board: Board,
-    val myLocation: Location,
-    val ticks: Worker<Long>
-  )
+  data class ActorProps(val board: Board, val myLocation: Location, val ticks: Worker<Long>)
 
-  data class ActorRendering(
-    val avatar: BoardCell,
-    val movement: Movement
-  )
+  data class ActorRendering(val avatar: BoardCell, val movement: Movement)
 }

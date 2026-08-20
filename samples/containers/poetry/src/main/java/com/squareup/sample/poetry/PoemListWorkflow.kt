@@ -9,20 +9,16 @@ import com.squareup.workflow1.StatelessWorkflow
  */
 object PoemListWorkflow : StatelessWorkflow<Props, Int, PoemListScreen>() {
 
-  data class Props(
-    val poems: List<Poem>,
-    val eventHandlerTag: (String) -> String = { "" }
-  )
+  data class Props(val poems: List<Poem>, val eventHandlerTag: (String) -> String = { "" })
 
-  override fun render(
-    renderProps: Props,
-    context: RenderContext<Props, Int>
-  ): PoemListScreen {
+  override fun render(renderProps: Props, context: RenderContext<Props, Int>): PoemListScreen {
     return PoemListScreen(
       poems = renderProps.poems,
-      onPoemSelected = context.eventHandler(
-        name = renderProps.eventHandlerTag("E-PoemList-PoemSelected")
-      ) { index -> setOutput(index) }
+      onPoemSelected =
+        context.eventHandler(name = renderProps.eventHandlerTag("E-PoemList-PoemSelected")) { index
+          ->
+          setOutput(index)
+        },
     )
   }
 }

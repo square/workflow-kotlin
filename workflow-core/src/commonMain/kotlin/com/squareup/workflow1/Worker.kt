@@ -6,16 +6,16 @@ package com.squareup.workflow1
 import com.squareup.workflow1.Worker.Companion.create
 import com.squareup.workflow1.Worker.Companion.from
 import com.squareup.workflow1.Worker.Companion.fromNullable
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.reflect.KType
-import kotlin.reflect.typeOf
 
 /**
  * Represents a unit of asynchronous work that can have zero, one, or multiple outputs.
@@ -26,16 +26,16 @@ import kotlin.reflect.typeOf
  * Workers to perform asynchronous work during the render pass by calling
  * [BaseRenderContext.runningWorker].
  *
- * See the documentation on [run] for more information on the returned [Flow] is consumed and how
- * to implement asynchronous work.
+ * See the documentation on [run] for more information on the returned [Flow] is consumed and how to
+ * implement asynchronous work.
  *
  * See the documentation on [doesSameWorkAs] for more details on how and when workers are compared
  * and the worker lifecycle.
  *
  * ## Example: Network request
  *
- * Let's say you have a network service with an API that returns a number, and you want to
- * call that service from a [Workflow].
+ * Let's say you have a network service with an API that returns a number, and you want to call that
+ * service from a [Workflow].
  *
  * ```
  * interface TimeService {
@@ -43,8 +43,8 @@ import kotlin.reflect.typeOf
  * }
  * ```
  *
- * The first step is to define a Worker that can call this service, and maybe an extension
- * function on your service class:
+ * The first step is to define a Worker that can call this service, and maybe an extension function
+ * on your service class:
  * ```
  * fun TimeService.getTimeWorker(timezone: String): Worker<Long> = TimeWorker(timezone, this)
  *
@@ -63,6 +63,7 @@ import kotlin.reflect.typeOf
  * You also need to define how to determine if a previous Worker is already doing the same work.
  * This will ensure that if the same request is made by the same [Workflow] in adjacent render
  * passes, we'll keep the request alive from the first pass.
+ *
  * ```
  *   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
  *     otherWorker is TimeWorker &&
@@ -77,9 +78,9 @@ import kotlin.reflect.typeOf
  *   }
  * ```
  *
- * Alternatively, if the response is a unique type, unlikely to be shared by any other workers,
- * you don't even need to create your own Worker class, you can use a builder, and the worker
- * will automatically be distinguished by that response type:
+ * Alternatively, if the response is a unique type, unlikely to be shared by any other workers, you
+ * don't even need to create your own Worker class, you can use a builder, and the worker will
+ * automatically be distinguished by that response type:
  * ```
  * interface TimeService {
  *   fun getTime(timezone: String): Deferred<TimeResponse>
@@ -105,17 +106,17 @@ public interface Worker<out OutputT> {
    *
    * ## Coroutine Context
    *
-   * When a worker is started, a coroutine is launched to [collect][Flow.collect] the flow.
-   * When the worker is torn down, the coroutine is cancelled.
-   * This coroutine is launched in the same scope as the workflow runtime, with a few changes:
+   * When a worker is started, a coroutine is launched to [collect][Flow.collect] the flow. When the
+   * worker is torn down, the coroutine is cancelled. This coroutine is launched in the same scope
+   * as the workflow runtime, with a few changes:
    *
    * - The dispatcher is always set to [Unconfined][kotlinx.coroutines.Dispatchers.Unconfined] to
    *   minimize overhead for workers that don't care which thread they're executed on (e.g. logging
    *   side effects, workers that wrap third-party reactive libraries, etc.). If your work cares
    *   which thread it runs on, use [withContext][kotlinx.coroutines.withContext] or
    *   [flowOn][kotlinx.coroutines.flow.flowOn] to specify a dispatcher.
-   * - A [CoroutineName][kotlinx.coroutines.CoroutineName] that describes the `Worker` instance
-   *   (via `toString`) and the key specified by the workflow running the worker.
+   * - A [CoroutineName][kotlinx.coroutines.CoroutineName] that describes the `Worker` instance (via
+   *   `toString`) and the key specified by the workflow running the worker.
    *
    * ## Exceptions
    *
@@ -137,21 +138,20 @@ public interface Worker<out OutputT> {
    *
    * At the end of every render pass, the set of [Worker]s that were requested by the workflow are
    * compared to the set from the last render pass using this method. Workers are compared by their
-   * _declared_ [KType] - including generics. Equivalent workers are allowed to keep running.
-   * New workers are started ([run] is called and the returned [Flow] is collected). Old workers are
+   * _declared_ [KType] - including generics. Equivalent workers are allowed to keep running. New
+   * workers are started ([run] is called and the returned [Flow] is collected). Old workers are
    * cancelled by cancelling their collecting coroutines. Workers for which [doesSameWorkAs] returns
    * false will also be restarted.
    *
    * Implementations of this method should not be based on object identity. Nor do they need to be
    * based on anything including in the [KType] - such as generics - as those will already be
-   * compared by the Workflow Runtime, see [WorkerWorkflow].
-   * For example, a [Worker] that performs a network request might check that two workers are
-   * requests to the same endpoint and have the same request data.
+   * compared by the Workflow Runtime, see [WorkerWorkflow]. For example, a [Worker] that performs a
+   * network request might check that two workers are requests to the same endpoint and have the
+   * same request data.
    *
    * Most implementations of this method should compare constructor parameters.
    *
    * E.g:
-   *
    * ```
    * class SearchWorker(private val query: String): Worker<SearchResult> {
    *   // run omitted for example.
@@ -170,16 +170,14 @@ public interface Worker<out OutputT> {
     /**
      * Shorthand for `flow { block() }.asWorker()`.
      *
-     * Note: If your worker just needs to perform side effects and doesn't need to emit anything,
-     * do not use a [Worker] but instead call [BaseRenderContext::runningSideEffect]
+     * Note: If your worker just needs to perform side effects and doesn't need to emit anything, do
+     * not use a [Worker] but instead call [BaseRenderContext::runningSideEffect]
      */
     public inline fun <reified OutputT> create(
       noinline block: suspend FlowCollector<OutputT>.() -> Unit
     ): Worker<OutputT> = flow(block).asWorker()
 
-    /**
-     * Returns a [Worker] that finishes immediately without emitting anything.
-     */
+    /** Returns a [Worker] that finishes immediately without emitting anything. */
     public fun <T> finished(): Worker<T> = FinishedWorker
 
     /**
@@ -195,17 +193,15 @@ public interface Worker<out OutputT> {
     ): Worker<OutputT> = block.asFlow().asWorker()
 
     /**
-     * Creates a [Worker] from a function that returns a single value.
-     * The worker will emit the value **if and only if the value is not null**, then finish.
+     * Creates a [Worker] from a function that returns a single value. The worker will emit the
+     * value **if and only if the value is not null**, then finish.
      *
      * The returned [Worker] will equate to any other workers created with any of the [Worker]
      * builder functions that have the same output type.
      */
     public inline fun <reified OutputT> fromNullable(
       crossinline block: suspend () -> OutputT?
-    ): Worker<OutputT> = create {
-      block()?.let { emit(it) }
-    }
+    ): Worker<OutputT> = create { block()?.let { emit(it) } }
 
     /**
      * Creates a [Worker] that will emit [Unit] and then finish after [delayMs] milliseconds.
@@ -213,24 +209,19 @@ public interface Worker<out OutputT> {
      *
      * Workers returned by this function will be compared by [key].
      */
-    public fun timer(
-      delayMs: Long,
-      key: String = ""
-    ): Worker<Unit> = TimerWorker(delayMs, key)
+    public fun timer(delayMs: Long, key: String = ""): Worker<Unit> = TimerWorker(delayMs, key)
   }
 }
 
-/**
- * Returns a [Worker] that will, when performed, emit whatever this [Flow] receives.
- */
+/** Returns a [Worker] that will, when performed, emit whatever this [Flow] receives. */
 public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
   TypedWorker(typeOf<OutputT>(), this)
 
 /**
  * Returns a [Worker] that transforms this [Worker]'s [Flow] by calling [transform].
  *
- * The returned worker is considered equivalent with any other worker returned by this function
- * with the same receiver.
+ * The returned worker is considered equivalent with any other worker returned by this function with
+ * the same receiver.
  *
  * ## Examples
  *
@@ -260,33 +251,27 @@ public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
  * assert(!secondsWorker.doesSameWorkAs(otherSecondsWorker))
  * ```
  */
-public fun <T, R> Worker<T>.transform(
-  transform: (Flow<T>) -> Flow<R>
-): Worker<R> = WorkerWrapper(
-  wrapped = this,
-  flow = transform(run())
-)
+public fun <T, R> Worker<T>.transform(transform: (Flow<T>) -> Flow<R>): Worker<R> =
+  WorkerWrapper(wrapped = this, flow = transform(run()))
 
 /**
  * A generic [Worker] implementation that defines equivalent workers as those having equivalent
  * [outputType]s. This is used by all the [Worker] builder functions.
  *
- * Note: We do not override the [doesSameWorkAs] definition here because the [outputType] [KType]
- * is already compared as part of the [KType] of the class itself in the Workflow runtime.
+ * Note: We do not override the [doesSameWorkAs] definition here because the [outputType] [KType] is
+ * already compared as part of the [KType] of the class itself in the Workflow runtime.
  */
 @PublishedApi
 internal class TypedWorker<OutputT>(
   private val outputType: KType,
-  private val work: Flow<OutputT>
+  private val work: Flow<OutputT>,
 ) : Worker<OutputT> {
   override fun run(): Flow<OutputT> = work
+
   override fun toString(): String = "TypedWorker($outputType)"
 }
 
-private data class TimerWorker(
-  private val delayMs: Long,
-  private val key: String
-) : Worker<Unit> {
+private data class TimerWorker(private val delayMs: Long, private val key: String) : Worker<Unit> {
 
   override fun run() = flow {
     delay(delayMs)
@@ -299,17 +284,16 @@ private data class TimerWorker(
 
 private object FinishedWorker : Worker<Nothing> {
   override fun run(): Flow<Nothing> = emptyFlow()
+
   override fun toString(): String = "FinishedWorker"
 }
 
-private data class WorkerWrapper<T, R>(
-  private val wrapped: Worker<T>,
-  private val flow: Flow<R>
-) : Worker<R> {
+private data class WorkerWrapper<T, R>(private val wrapped: Worker<T>, private val flow: Flow<R>) :
+  Worker<R> {
   override fun run(): Flow<R> = flow
+
   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
-    otherWorker is WorkerWrapper<*, *> &&
-      wrapped.doesSameWorkAs(otherWorker.wrapped)
+    otherWorker is WorkerWrapper<*, *> && wrapped.doesSameWorkAs(otherWorker.wrapped)
 
   override fun toString(): String = "WorkerWrapper($wrapped)"
 }

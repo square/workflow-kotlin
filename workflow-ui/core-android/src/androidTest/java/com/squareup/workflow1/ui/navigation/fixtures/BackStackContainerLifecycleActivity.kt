@@ -27,23 +27,23 @@ import org.hamcrest.Matchers.equalTo
 
 internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivity() {
 
-  /**
-   * Default rendering always shown in the backstack to simplify test configuration.
-   */
+  /** Default rendering always shown in the backstack to simplify test configuration. */
   object BaseRendering : Screen, ScreenViewFactory<BaseRendering> {
     override val type = BaseRendering::class
+
     override fun buildView(
       initialRendering: BaseRendering,
       initialEnvironment: ViewEnvironment,
       context: Context,
-      container: ViewGroup?
+      container: ViewGroup?,
     ): ScreenViewHolder<BaseRendering> =
       ScreenViewHolder(initialEnvironment, View(context)) { _, _ -> }
   }
 
   sealed class TestRendering : Screen {
     data class LeafRendering(val name: String) : TestRendering(), Compatible {
-      override val compatibilityKey: String get() = name
+      override val compatibilityKey: String
+        get() = name
     }
 
     data class RecurseRendering(val wrappedBackstack: List<TestRendering>) : TestRendering()
@@ -55,10 +55,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
 
   private val viewObserver =
     object : ViewObserver<LeafRendering> by lifecycleLoggingViewObserver({ it.name }) {
-      override fun onViewCreated(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onViewCreated(view: View, rendering: LeafRendering) {
         view.tag = rendering.name
 
         // Need to set the view to enable view persistence.
@@ -67,68 +64,51 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
         logEvent("${rendering.name} onViewCreated viewState=${view.viewState}")
       }
 
-      override fun onShowRendering(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onShowRendering(view: View, rendering: LeafRendering) {
         check(view.tag == rendering.name)
         logEvent("${rendering.name} onShowRendering viewState=${view.viewState}")
       }
 
-      override fun onAttachedToWindow(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onAttachedToWindow(view: View, rendering: LeafRendering) {
         logEvent("${rendering.name} onAttach viewState=${view.viewState}")
       }
 
-      override fun onDetachedFromWindow(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onDetachedFromWindow(view: View, rendering: LeafRendering) {
         logEvent("${rendering.name} onDetach viewState=${view.viewState}")
       }
 
-      override fun onSaveInstanceState(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onSaveInstanceState(view: View, rendering: LeafRendering) {
         logEvent("${rendering.name} onSave viewState=${view.viewState}")
       }
 
-      override fun onRestoreInstanceState(
-        view: View,
-        rendering: LeafRendering
-      ) {
+      override fun onRestoreInstanceState(view: View, rendering: LeafRendering) {
         logEvent("${rendering.name} onRestore viewState=${view.viewState}")
       }
 
-      private val View.viewState get() = (this as ViewStateTestView).viewState
+      private val View.viewState
+        get() = (this as ViewStateTestView).viewState
     }
 
-  override val viewRegistry: ViewRegistry = ViewRegistry(
-    NoTransitionBackStackContainer,
-    BaseRendering,
-    leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    fromCode<RecurseRendering> { _, initialEnvironment, context, _ ->
-      val stub = WorkflowViewStub(context)
-      val frame = FrameLayout(context).also { container ->
-        container.addView(stub)
-      }
-      ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
-        stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
-      }
-    },
-    fromCode<OuterRendering> { _, initialEnvironment, context, _ ->
-      val stub = WorkflowViewStub(context)
-      val frame = FrameLayout(context).also { container ->
-        container.addView(stub)
-      }
-      ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
-        stub.show(rendering.backStack, env)
-      }
-    }
-  )
+  override val viewRegistry: ViewRegistry =
+    ViewRegistry(
+      NoTransitionBackStackContainer,
+      BaseRendering,
+      leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
+      fromCode<RecurseRendering> { _, initialEnvironment, context, _ ->
+        val stub = WorkflowViewStub(context)
+        val frame = FrameLayout(context).also { container -> container.addView(stub) }
+        ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
+          stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
+        }
+      },
+      fromCode<OuterRendering> { _, initialEnvironment, context, _ ->
+        val stub = WorkflowViewStub(context)
+        val frame = FrameLayout(context).also { container -> container.addView(stub) }
+        ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
+          stub.show(rendering.backStack, env)
+        }
+      },
+    )
 
   /** Returns the view that is the current screen. */
   val currentTestView: ViewStateTestView
@@ -150,13 +130,10 @@ internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen
 ): ViewStateTestView {
   waitForScreen(name)
   lateinit var view: ViewStateTestView
-  onActivity {
-    view = it.currentTestView
-  }
+  onActivity { view = it.currentTestView }
   return view
 }
 
 internal fun waitForScreen(name: String) {
-  onView(withTagValue(equalTo(name)) as Matcher<View>)
-    .check(matches(isCompletelyDisplayed()))
+  onView(withTagValue(equalTo(name)) as Matcher<View>).check(matches(isCompletelyDisplayed()))
 }

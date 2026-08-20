@@ -9,15 +9,15 @@ import kotlin.jvm.JvmName
 /**
  * A composable, optionally-stateful object that can [handle events][BaseRenderContext.actionSink],
  * [delegate to children][BaseRenderContext.renderChild],
- * [subscribe][BaseRenderContext.runningWorker] to arbitrary asynchronous events from the
- * outside world.
+ * [subscribe][BaseRenderContext.runningWorker] to arbitrary asynchronous events from the outside
+ * world.
  *
- * The basic purpose of a `Workflow` is to take some input (in the form of [PropsT]) and
- * return a [rendering][RenderingT]. To that end, a workflow may keep track of internal
+ * The basic purpose of a `Workflow` is to take some input (in the form of [PropsT]) and return a
+ * [rendering][RenderingT]. To that end, a workflow may keep track of internal
  * [state][StatefulWorkflow], recursively ask other workflows to render themselves, subscribe to
  * data streams from the outside world, and handle events both from its
- * [renderings][BaseRenderContext.actionSink] and from workflows it's delegated to
- * (its "children"). A `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
+ * [renderings][BaseRenderContext.actionSink] and from workflows it's delegated to (its "children").
+ * A `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
  *
  * Workflows form a tree, where each workflow can have zero or more child workflows. Child workflows
  * are started as necessary whenever another workflow asks for them, and are cleaned up
@@ -27,8 +27,8 @@ import kotlin.jvm.JvmName
  * ## Implementing `Workflow`
  *
  * The [Workflow] interface is useful as a facade for your API. You can publish an interface that
- * extends `Workflow`, and keep the implementation (e.g. is your workflow state*ful* or
- * state*less* a private implementation detail.
+ * extends `Workflow`, and keep the implementation (e.g. is your workflow state*ful* or state*less*
+ * a private implementation detail.
  *
  * You should almost never implement [Workflow] directly, however. There are two abstract classes
  * that you should subclass instead: [StatefulWorkflow] and [StatelessWorkflow]. The differences
@@ -53,11 +53,11 @@ import kotlin.jvm.JvmName
  *
  * ## Interacting with events and other workflows
  *
- * All workflows are passed a [RenderContext][BaseRenderContext] in their render methods.
- * This context allows the workflow to interact with the outside world by doing things like
- * listening for events, subscribing to streams of data, rendering child workflows, and performing
- * cleanup when the workflow is about to be torn down by its parent. See the documentation on
- * [BaseRenderContext] for more information about what it can do.
+ * All workflows are passed a [RenderContext][BaseRenderContext] in their render methods. This
+ * context allows the workflow to interact with the outside world by doing things like listening for
+ * events, subscribing to streams of data, rendering child workflows, and performing cleanup when
+ * the workflow is about to be torn down by its parent. See the documentation on [BaseRenderContext]
+ * for more information about what it can do.
  *
  * ## Things to avoid
  *
@@ -82,17 +82,14 @@ import kotlin.jvm.JvmName
  * be considered declarative-style programming.
  *
  * @param PropsT Typically a data class that is used to pass configuration information or bits of
- * state that the workflow can always get from its parent and needn't duplicate in its own state.
- * May be [Unit] if the workflow does not need any props data.
- *
- * @param OutputT Typically a sealed class that represents "events" that this workflow can send
- * to its parent.
- * May be [Nothing] if the workflow doesn't need to emit anything.
- *
+ *   state that the workflow can always get from its parent and needn't duplicate in its own state.
+ *   May be [Unit] if the workflow does not need any props data.
+ * @param OutputT Typically a sealed class that represents "events" that this workflow can send to
+ *   its parent. May be [Nothing] if the workflow doesn't need to emit anything.
  * @param RenderingT The value returned to this workflow's parent during [composition][renderChild].
- * Typically represents a "view" of this workflow's props, current state, and children's renderings.
- * A workflow that represents a UI component may use a view model as its rendering type.
- *
+ *   Typically represents a "view" of this workflow's props, current state, and children's
+ *   renderings. A workflow that represents a UI component may use a view model as its rendering
+ *   type.
  * @see StatefulWorkflow
  * @see StatelessWorkflow
  */
@@ -105,30 +102,32 @@ public interface Workflow<PropsT, OutputT, out RenderingT> {
   public fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT>
 
   /**
-   * Empty companion serves as a hook point to allow us to create `Workflow.foo`
-   * extension methods elsewhere.
+   * Empty companion serves as a hook point to allow us to create `Workflow.foo` extension methods
+   * elsewhere.
    */
   public companion object
 }
 
 /**
- * Uses the given [function][transform] to transform a [Workflow] that
- * renders [FromRenderingT] to one renders [ToRenderingT],
+ * Uses the given [function][transform] to transform a [Workflow] that renders [FromRenderingT] to
+ * one renders [ToRenderingT],
  */
-public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
-  Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
-    transform: (FromRenderingT) -> ToRenderingT
-  ): Workflow<PropsT, OutputT, ToRenderingT> =
+public fun <PropsT, OutputT, FromRenderingT, ToRenderingT> Workflow<PropsT, OutputT, FromRenderingT>
+  .mapRendering(
+  transform: (FromRenderingT) -> ToRenderingT
+): Workflow<PropsT, OutputT, ToRenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
-    override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
+    override val realIdentifier: WorkflowIdentifier
+      get() = this@mapRendering.identifier
 
     override fun render(
       renderProps: PropsT,
-      context: RenderContext<PropsT, OutputT>
+      context: RenderContext<PropsT, OutputT>,
     ): ToRenderingT {
-      val rendering = context.renderChild(this@mapRendering, renderProps) { output ->
-        action({ "mapRendering" }) { setOutput(output) }
-      }
+      val rendering =
+        context.renderChild(this@mapRendering, renderProps) { output ->
+          action({ "mapRendering" }) { setOutput(output) }
+        }
       return transform(rendering)
     }
 

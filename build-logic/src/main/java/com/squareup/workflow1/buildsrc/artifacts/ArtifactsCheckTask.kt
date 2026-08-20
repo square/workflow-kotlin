@@ -3,6 +3,8 @@ package com.squareup.workflow1.buildsrc.artifacts
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RED
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RESET
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.YELLOW
+import java.util.Locale
+import javax.inject.Inject
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.GradleException
 import org.gradle.api.file.ProjectLayout
@@ -11,35 +13,33 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import java.util.Locale
-import javax.inject.Inject
 
 /**
  * Evaluates all published artifacts in the project and compares the results to `/artifacts.json`.
  *
  * If there are any differences, the task will fail with a descriptive message.
  */
-open class ArtifactsCheckTask @Inject constructor(
-  objectFactory: ObjectFactory,
-  projectLayout: ProjectLayout
-) : ArtifactsTask(projectLayout) {
+open class ArtifactsCheckTask
+@Inject
+constructor(objectFactory: ObjectFactory, projectLayout: ProjectLayout) :
+  ArtifactsTask(projectLayout) {
 
   init {
-    description = "Parses the Maven artifact parameters for all modules " +
-      "and compares them to those recorded in artifacts.json"
+    description =
+      "Parses the Maven artifact parameters for all modules " +
+        "and compares them to those recorded in artifacts.json"
     group = "verification"
   }
 
-  private val lenientOsProp: Property<Boolean> = objectFactory.property(Boolean::class.java)
-    .convention(false)
+  private val lenientOsProp: Property<Boolean> =
+    objectFactory.property(Boolean::class.java).convention(false)
 
   @set:Option(
     option = "lenient-os",
-    description = "Do not fail the check if there are macOS-only artifacts which can't be checked."
+    description = "Do not fail the check if there are macOS-only artifacts which can't be checked.",
   )
   var lenientOs: Boolean
-    @Input
-    get() = lenientOsProp.getOrElse(false)
+    @Input get() = lenientOsProp.getOrElse(false)
     set(value) = lenientOsProp.set(value)
 
   @TaskAction
@@ -52,9 +52,8 @@ open class ArtifactsCheckTask @Inject constructor(
     val extraFromJson = expected.values.filterNot { it.key in currentPaths }
     val extraFromCurrent = currentList.filterNot { it.key in expected.keys }
 
-    val changed = currentList.minus(expected.values.toSet())
-      .minus(extraFromCurrent.toSet())
-      .map { artifact ->
+    val changed =
+      currentList.minus(expected.values.toSet()).minus(extraFromCurrent.toSet()).map { artifact ->
         expected.getValue(artifact.key) to artifact
       }
 
@@ -66,13 +65,15 @@ open class ArtifactsCheckTask @Inject constructor(
     // original's pom description.
     val duplicateDescriptions = currentList.findDuplicates { description }
 
-    val foundSomething = sequenceOf(
-      duplicateArtifactIds.keys,
-      duplicateDescriptions.keys,
-      extraFromJson,
-      extraFromCurrent,
-      changed
-    ).any { it.isNotEmpty() }
+    val foundSomething =
+      sequenceOf(
+          duplicateArtifactIds.keys,
+          duplicateDescriptions.keys,
+          extraFromJson,
+          extraFromCurrent,
+          changed,
+        )
+        .any { it.isNotEmpty() }
 
     if (foundSomething) {
       reportChanges(
@@ -80,7 +81,7 @@ open class ArtifactsCheckTask @Inject constructor(
         duplicatePomDescriptions = duplicateDescriptions,
         missing = extraFromJson,
         extraFromCurrent = extraFromCurrent,
-        changed = changed
+        changed = changed,
       )
     }
   }
@@ -88,18 +89,19 @@ open class ArtifactsCheckTask @Inject constructor(
   private fun getExpectedArtifacts(): Map<String, ArtifactConfig> {
 
     val inMacOS = Os.isFamily(Os.FAMILY_MAC)
-    // The macOS artifacts all have publication names like 'iosX64', 'watchosX86', 'iosSimulatorArm64', etc.
+    // The macOS artifacts all have publication names like 'iosX64', 'watchosX86',
+    // 'iosSimulatorArm64', etc.
     val macOnly = """^(?:ios|tvos|watchos|macos).*""".toRegex()
 
     // If this task isn't running on macOS, ignore the macOS-only artifacts.
-    val (testableArtifacts, ignoredArtifacts) = moshiAdapter.fromJson(reportFile.asFile.readText())
-      .orEmpty()
-      .partition { inMacOS || !it.publicationName.matches(macOnly) }
+    val (testableArtifacts, ignoredArtifacts) =
+      moshiAdapter.fromJson(reportFile.asFile.readText()).orEmpty().partition {
+        inMacOS || !it.publicationName.matches(macOnly)
+      }
 
     if (ignoredArtifacts.isNotEmpty()) {
 
       val message = buildString {
-
         append("The existing artifacts file references artifacts which can only be created ")
         append("from a computer running macOS, so they cannot be validated now ")
         appendLine("(running ${System.getProperty("os.name")}).")
@@ -146,11 +148,10 @@ open class ArtifactsCheckTask @Inject constructor(
     duplicatePomDescriptions: Map<String, List<ArtifactConfig>>,
     missing: List<ArtifactConfig>,
     extraFromCurrent: List<ArtifactConfig>,
-    changed: List<Pair<ArtifactConfig, ArtifactConfig>>
+    changed: List<Pair<ArtifactConfig, ArtifactConfig>>,
   ) {
 
     val message = buildString {
-
       appendLine(
         "\tArtifact definitions don't match.  If this is intended, " +
           "run `./gradlew artifactsDump` and commit changes."
@@ -174,9 +175,8 @@ open class ArtifactsCheckTask @Inject constructor(
 
   private fun StringBuilder.maybeAddDuplicateValueMessages(
     duplicates: Map<String, List<ArtifactConfig>>,
-    propertyName: String
+    propertyName: String,
   ) = apply {
-
     if (duplicates.isNotEmpty()) {
       appendLine("\tDuplicate properties were found where they should be unique:")
       appendLine()
@@ -191,10 +191,7 @@ open class ArtifactsCheckTask @Inject constructor(
     }
   }
 
-  private fun StringBuilder.maybeAddMissingArtifactMessages(
-    missing: List<ArtifactConfig>
-  ) = apply {
-
+  private fun StringBuilder.maybeAddMissingArtifactMessages(missing: List<ArtifactConfig>) = apply {
     if (missing.isNotEmpty()) {
       val isAre = if (missing.size == 1) "is" else "are"
       appendLine(
@@ -209,28 +206,21 @@ open class ArtifactsCheckTask @Inject constructor(
     }
   }
 
-  private fun StringBuilder.maybeAddExtraArtifactMessages(
-    extraFromCurrent: List<ArtifactConfig>
-  ) = apply {
-
-    if (extraFromCurrent.isNotEmpty()) {
-      appendLine("\t${pluralsString(extraFromCurrent.size)} new:\n")
-      extraFromCurrent.forEach {
-        appendLine(it.message())
-        appendLine()
+  private fun StringBuilder.maybeAddExtraArtifactMessages(extraFromCurrent: List<ArtifactConfig>) =
+    apply {
+      if (extraFromCurrent.isNotEmpty()) {
+        appendLine("\t${pluralsString(extraFromCurrent.size)} new:\n")
+        extraFromCurrent.forEach {
+          appendLine(it.message())
+          appendLine()
+        }
       }
     }
-  }
 
   private fun StringBuilder.maybeAddChangedValueMessages(
     changed: List<Pair<ArtifactConfig, ArtifactConfig>>
   ): StringBuilder = apply {
-
-    fun appendDiff(
-      propertyName: String,
-      old: String,
-      new: String
-    ) {
+    fun appendDiff(propertyName: String, old: String, new: String) {
       appendLine("\t\t\told $propertyName - $old")
       appendLine("\t\t\tnew $propertyName - $new")
     }
@@ -238,7 +228,6 @@ open class ArtifactsCheckTask @Inject constructor(
     if (changed.isNotEmpty()) {
       appendLine("\t${pluralsString(changed.size)} changed:")
       changed.forEach { (old, new) ->
-
         appendLine()
         appendLine("\t    ${old.gradlePath} (${old.publicationName}) -")
 
@@ -278,19 +267,22 @@ open class ArtifactsCheckTask @Inject constructor(
             |                pom description  - $description
             |                      packaging  - $packaging
             |                publicationName  - $publicationName
-    """.trimMargin()
+    """
+      .trimMargin()
   }
 
   enum class Color(val escape: String) {
     RED("\u001B[31m"),
     RESET("\u001B[0m"),
-    YELLOW("\u001B[33m")
+    YELLOW("\u001B[33m"),
   }
 
   private val supported = "win" !in System.getProperty("os.name").lowercase(Locale.ROOT)
-  private fun String.colorized(color: Color) = if (supported) {
-    "${color.escape}$this${RESET.escape}"
-  } else {
-    this
-  }
+
+  private fun String.colorized(color: Color) =
+    if (supported) {
+      "${color.escape}$this${RESET.escape}"
+    } else {
+      this
+    }
 }

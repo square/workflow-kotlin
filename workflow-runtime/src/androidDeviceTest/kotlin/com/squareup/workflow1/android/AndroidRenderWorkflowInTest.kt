@@ -25,23 +25,28 @@ import org.junit.rules.RuleChain
 
 internal class AndroidRenderWorkflowInTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private val scenario
+    get() = scenarioRule.scenario
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
-  @Test fun removeWorkflowStateDoesWhatItSaysOnTheTin() {
+  @Test
+  fun removeWorkflowStateDoesWhatItSaysOnTheTin() {
     var job: Job? = null
 
     // Activity.onCreate(), the take() call won't start pulling yet.
     scenario.onActivity { activity ->
       val model: SomeViewModel by activity.viewModels()
-      val renderings: StateFlow<Screen> = renderWorkflowIn(
-        workflow = SomeWorkflow,
-        scope = model.viewModelScope,
-        savedStateHandle = model.savedStateHandle
-      )
+      val renderings: StateFlow<Screen> =
+        renderWorkflowIn(
+          workflow = SomeWorkflow,
+          scope = model.viewModelScope,
+          savedStateHandle = model.savedStateHandle,
+        )
 
       val layout = activity.workflowContentView
       assertThat(model.savedStateHandle.contains(KEY)).isFalse()
@@ -72,18 +77,12 @@ internal class AndroidRenderWorkflowInTest {
   object SomeScreen : AndroidScreen<SomeScreen> {
     override val viewFactory: ScreenViewFactory<SomeScreen> =
       ScreenViewFactory.fromCode { _, initialEnvironment, context, _ ->
-        ScreenViewHolder(
-          initialEnvironment,
-          FrameLayout(context)
-        ) { _, _ -> }
+        ScreenViewHolder(initialEnvironment, FrameLayout(context)) { _, _ -> }
       }
   }
 
   object SomeWorkflow : StatelessWorkflow<Unit, Nothing, Screen>() {
-    override fun render(
-      renderProps: Unit,
-      context: RenderContext<Unit, Nothing>
-    ): Screen {
+    override fun render(renderProps: Unit, context: RenderContext<Unit, Nothing>): Screen {
       return SomeScreen
     }
   }

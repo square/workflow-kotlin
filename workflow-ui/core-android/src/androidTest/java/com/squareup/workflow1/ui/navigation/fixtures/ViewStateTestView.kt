@@ -11,10 +11,8 @@ import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycle
  * Simple view that has a string [viewState] property that will be saved and restored by the
  * [onSaveInstanceState] and [onRestoreInstanceState] methods.
  */
-internal class ViewStateTestView(
-  context: Context,
-  private val crashOnRestore: Boolean = false
-) : LeafView<LeafRendering>(context) {
+internal class ViewStateTestView(context: Context, private val crashOnRestore: Boolean = false) :
+  LeafView<LeafRendering>(context) {
 
   var viewState: String = ""
 
@@ -34,10 +32,7 @@ internal class ViewStateTestView(
   private class SavedState : BaseSavedState {
     val viewState: String
 
-    constructor(
-      superState: Parcelable?,
-      viewState: String
-    ) : super(superState) {
+    constructor(superState: Parcelable?, viewState: String) : super(superState) {
       this.viewState = viewState
     }
 
@@ -45,16 +40,14 @@ internal class ViewStateTestView(
       viewState = source.readString()!!
     }
 
-    override fun writeToParcel(
-      out: Parcel,
-      flags: Int
-    ) {
+    override fun writeToParcel(out: Parcel, flags: Int) {
       super.writeToParcel(out, flags)
       out.writeString(viewState)
     }
 
     companion object CREATOR : Creator<SavedState> {
       override fun createFromParcel(source: Parcel): SavedState = SavedState(source)
+
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }
   }

@@ -28,27 +28,19 @@ import kotlinx.coroutines.selects.selectUnbiased
 
 /**
  * Hosts [Workflow]s that:
- *  - gets information about the terminal configuration as input
- *  - renders the text to display on the terminal
- *  - finishes by emitting an exit code that should be passed to [kotlin.system.exitProcess].
+ * - gets information about the terminal configuration as input
+ * - renders the text to display on the terminal
+ * - finishes by emitting an exit code that should be passed to [kotlin.system.exitProcess].
  *
  * @param ioDispatcher Defaults to [Dispatchers.IO] and is used to listen for key events using
- * blocking APIs.
+ *   blocking APIs.
  */
-class TerminalWorkflowRunner(
-  private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) {
+class TerminalWorkflowRunner(private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO) {
 
   private val screen = DefaultTerminalFactory().createScreen()
 
-  /**
-   * Runs [workflow] until it emits an [ExitCode] and then returns it.
-   */
-  @OptIn(
-    FlowPreview::class,
-    ExperimentalCoroutinesApi::class,
-    ObsoleteCoroutinesApi::class
-  )
+  /** Runs [workflow] until it emits an [ExitCode] and then returns it. */
+  @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
   // Some methods on screen are synchronized, which Kotlin detects as blocking and warns us about
   // when invoking from coroutines. This entire function is blocking however, so we don't care.
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -82,7 +74,7 @@ private suspend fun runTerminalWorkflow(
   workflow: TerminalWorkflow,
   screen: TerminalScreen,
   keyStrokes: Worker<KeyStroke>,
-  resizes: ReceiveChannel<TerminalSize>
+  resizes: ReceiveChannel<TerminalSize>,
 ): ExitCode = coroutineScope {
   val scope = this
   var input = TerminalProps(screen.terminalSize.toSize(), keyStrokes)
@@ -90,7 +82,8 @@ private suspend fun runTerminalWorkflow(
   val exitCode = CompletableDeferred<ExitCode>()
 
   fun exit(code: ExitCode) {
-    // If we don't cancel the workflow runtime explicitly, coroutineScope will hang waiting for it to
+    // If we don't cancel the workflow runtime explicitly, coroutineScope will hang waiting for it
+    // to
     // finish.
     scope.coroutineContext.cancelChildren(
       CancellationException("TerminalWorkflowRunner completed with exit code $exitCode")
@@ -100,48 +93,42 @@ private suspend fun runTerminalWorkflow(
 
   // Use the result as the parent Job of the runtime coroutine so it gets cancelled automatically
   // if there's an error.
-  val renderings = renderWorkflowIn(
-    workflow,
-    scope,
-    props,
-    onOutput = { exit(it) }
-  )
-    .map { it.rendering }
-    .produceIn(scope)
+  val renderings =
+    renderWorkflowIn(workflow, scope, props, onOutput = { exit(it) })
+      .map { it.rendering }
+      .produceIn(scope)
 
   launch {
     while (true) {
-      val rendering = selectUnbiased<TerminalRendering> {
-        resizes.onReceive {
-          screen.doResizeIfNecessary()
-            ?.let {
+      val rendering =
+        selectUnbiased<TerminalRendering> {
+          resizes.onReceive {
+            screen.doResizeIfNecessary()?.let {
               // If the terminal was resized since the last iteration, we need to notify the
               // workflow.
               input = input.copy(size = it.toSize())
             }
 
-          // Publish config changes to the workflow.
-          props.value = input
+            // Publish config changes to the workflow.
+            props.value = input
 
-          // Sending that new input invalidated the lastRendering, so we don't want to
-          // re-iterate until we have a new rendering with a fresh event handler. It also
-          // triggered a render pass, so we can just retrieve that immediately.
-          return@onReceive renderings.receive()
+            // Sending that new input invalidated the lastRendering, so we don't want to
+            // re-iterate until we have a new rendering with a fresh event handler. It also
+            // triggered a render pass, so we can just retrieve that immediately.
+            return@onReceive renderings.receive()
+          }
+
+          renderings.onReceive { it }
         }
-
-        renderings.onReceive { it }
-      }
 
       screen.clear()
-      screen.newTextGraphics()
-        .apply {
-          foregroundColor = rendering.textColor.toTextColor()
-          backgroundColor = rendering.backgroundColor.toTextColor()
-          rendering.text.lineSequence()
-            .forEachIndexed { index, line ->
-              putString(TOP_LEFT_CORNER.withRelativeRow(index), line)
-            }
+      screen.newTextGraphics().apply {
+        foregroundColor = rendering.textColor.toTextColor()
+        backgroundColor = rendering.backgroundColor.toTextColor()
+        rendering.text.lineSequence().forEachIndexed { index, line ->
+          putString(TOP_LEFT_CORNER.withRelativeRow(index), line)
         }
+      }
 
       screen.refresh(COMPLETE)
     }

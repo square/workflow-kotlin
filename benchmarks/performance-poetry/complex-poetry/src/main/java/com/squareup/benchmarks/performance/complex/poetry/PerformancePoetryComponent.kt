@@ -9,38 +9,28 @@ import com.squareup.workflow1.WorkflowInterceptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 
-/**
- * Pretend generated CI code from pretend DI framework.
- */
+/** Pretend generated CI code from pretend DI framework. */
 class PerformancePoetryComponent(
   private val workflowInterceptor: WorkflowInterceptor? = null,
   simulatedPerfConfig: SimulatedPerfConfig,
-  private val runtimeConfig: RuntimeConfig
+  private val runtimeConfig: RuntimeConfig,
 ) {
   private val poemIsLoading = MutableStateFlow(false)
   private val browserIsLoading = MutableStateFlow(false)
 
-  private val poemWorkflow: PoemWorkflow = PerformancePoemWorkflow(
-    simulatedPerfConfig,
-    poemIsLoading,
-  )
+  private val poemWorkflow: PoemWorkflow =
+    PerformancePoemWorkflow(simulatedPerfConfig, poemIsLoading)
 
-  private val poemsBrowserWorkflow: PoemsBrowserWorkflow = PerformancePoemsBrowserWorkflow(
-    simulatedPerfConfig,
-    poemWorkflow,
-    browserIsLoading,
-  )
+  private val poemsBrowserWorkflow: PoemsBrowserWorkflow =
+    PerformancePoemsBrowserWorkflow(simulatedPerfConfig, poemWorkflow, browserIsLoading)
 
-  private val loadingGatekeeperForPoems = MaybeLoadingGatekeeperWorkflow(
-    childWithLoading = poemsBrowserWorkflow,
-    childProps = Pair(simulatedPerfConfig.recursionGraph, Poem.allPoems),
-    browserIsLoading.combine(poemIsLoading) { one, two -> one || two }
-  )
+  private val loadingGatekeeperForPoems =
+    MaybeLoadingGatekeeperWorkflow(
+      childWithLoading = poemsBrowserWorkflow,
+      childProps = Pair(simulatedPerfConfig.recursionGraph, Poem.allPoems),
+      browserIsLoading.combine(poemIsLoading) { one, two -> one || two },
+    )
 
   fun poetryModelFactory(): PoetryModel.Factory =
-    PoetryModel.Factory(
-      loadingGatekeeperForPoems,
-      workflowInterceptor,
-      runtimeConfig
-    )
+    PoetryModel.Factory(loadingGatekeeperForPoems, workflowInterceptor, runtimeConfig)
 }

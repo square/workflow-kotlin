@@ -46,33 +46,23 @@ compose {
   desktop {
     application {
       mainClass = "com.squareup.workflow1.traceviewer.MainKt"
-      jvmArgs(
-        "-Dapple.awt.application.appearance=system",
-      )
+      jvmArgs("-Dapple.awt.application.appearance=system")
 
       nativeDistributions {
         includeAllModules = true
         targetFormats(TargetFormat.Dmg)
         packageName = "Workflow Trace Viewer"
         packageVersion = (property("VERSION_NAME") as String).substringBefore("-SNAPSHOT")
-        macOS {
-          bundleID = "com.squareup.workflow1.traceviewer"
-        }
+        macOS { bundleID = "com.squareup.workflow1.traceviewer" }
       }
 
-      buildTypes.release.proguard {
-        isEnabled.set(false)
-      }
+      buildTypes.release.proguard { isEnabled.set(false) }
     }
   }
 }
 
-tasks.named<Test>("jvmTest") {
-  useJUnitPlatform()
-}
+tasks.named<Test>("jvmTest") { useJUnitPlatform() }
 
 tasks.withType<KotlinCompile>().configureEach {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_11)
-  }
+  compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
 }

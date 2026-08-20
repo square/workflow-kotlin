@@ -20,28 +20,29 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
 
-/**
- * Pretend generated code of a pretend DI framework.
- */
+/** Pretend generated code of a pretend DI framework. */
 class TicTacToeComponent : ViewModel() {
   private val countingIdlingResource = CountingIdlingResource("AuthServiceIdling")
   val idlingResource: IdlingResource = countingIdlingResource
 
   private val realAuthService = RealAuthService()
 
-  private val authService = object : AuthService {
-    override fun login(request: AuthRequest): Single<AuthResponse> {
-      return realAuthService.login(request)
-        .doOnSubscribe { countingIdlingResource.increment() }
-        .doAfterTerminate { countingIdlingResource.decrement() }
-    }
+  private val authService =
+    object : AuthService {
+      override fun login(request: AuthRequest): Single<AuthResponse> {
+        return realAuthService
+          .login(request)
+          .doOnSubscribe { countingIdlingResource.increment() }
+          .doAfterTerminate { countingIdlingResource.decrement() }
+      }
 
-    override fun secondFactor(request: SecondFactorRequest): Single<AuthResponse> {
-      return realAuthService.secondFactor(request)
-        .doOnSubscribe { countingIdlingResource.increment() }
-        .doAfterTerminate { countingIdlingResource.decrement() }
+      override fun secondFactor(request: SecondFactorRequest): Single<AuthResponse> {
+        return realAuthService
+          .secondFactor(request)
+          .doOnSubscribe { countingIdlingResource.increment() }
+          .doAfterTerminate { countingIdlingResource.decrement() }
+      }
     }
-  }
 
   private fun authWorkflow(): AuthWorkflow = RealAuthWorkflow(authService)
 
@@ -53,8 +54,7 @@ class TicTacToeComponent : ViewModel() {
 
   private val ticTacToeWorkflow = TicTacToeWorkflow(authWorkflow(), gameWorkflow())
 
-  fun ticTacToeModelFactory(): TicTacToeModel.Factory =
-    TicTacToeModel.Factory(ticTacToeWorkflow)
+  fun ticTacToeModelFactory(): TicTacToeModel.Factory = TicTacToeModel.Factory(ticTacToeWorkflow)
 
   companion object {
     init {

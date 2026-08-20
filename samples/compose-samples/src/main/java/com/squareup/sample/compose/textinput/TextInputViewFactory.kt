@@ -22,37 +22,30 @@ import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.asMutableTextFieldValueState
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-val TextInputComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .wrapContentSize()
-      .animateContentSize(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    var textFieldValue by rendering.textController.asMutableTextFieldValueState()
+val TextInputComposableFactory =
+  ScreenComposableFactory<Rendering> { rendering ->
+    Column(
+      modifier = Modifier.fillMaxSize().wrapContentSize().animateContentSize(),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      var textFieldValue by rendering.textController.asMutableTextFieldValueState()
 
-    Text(text = textFieldValue.text)
-    OutlinedTextField(
-      label = {},
-      placeholder = { Text("Enter some text") },
-      value = textFieldValue,
-      onValueChange = { textFieldValue = it }
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Button(onClick = rendering.onSwapText) {
-      Text("Swap")
+      Text(text = textFieldValue.text)
+      OutlinedTextField(
+        label = {},
+        placeholder = { Text("Enter some text") },
+        value = textFieldValue,
+        onValueChange = { textFieldValue = it },
+      )
+      Spacer(modifier = Modifier.height(8.dp))
+      Button(onClick = rendering.onSwapText) { Text("Swap") }
     }
   }
-}
 
 @Preview(showBackground = true)
 @Composable
 private fun TextInputViewFactoryPreview() {
   TextInputComposableFactory.Preview(
-    Rendering(
-      textController = TextController("Hello world"),
-      onSwapText = {}
-    )
+    Rendering(textController = TextController("Hello world"), onSwapText = {})
   )
 }

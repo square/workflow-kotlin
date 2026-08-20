@@ -6,5 +6,5 @@ data class NewGameScreen(
   val defaultNameX: String,
   val defaultNameO: String,
   val onCancel: () -> Unit,
-  val onStartGame: (x: String, o: String) -> Unit
+  val onStartGame: (x: String, o: String) -> Unit,
 ) : Screen

@@ -27,47 +27,39 @@ import com.squareup.workflow1.ui.compose.renderAsState
 
 object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() {
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): Int = snapshot?.bytes?.parse { it.readInt() } ?: 0
+  override fun initialState(props: Unit, snapshot: Snapshot?): Int =
+    snapshot?.bytes?.parse { it.readInt() } ?: 0
 
   override fun render(
     renderProps: Unit,
     renderState: Int,
-    context: RenderContext<Unit, Int, Nothing>
+    context: RenderContext<Unit, Int, Nothing>,
   ): ComposeScreen {
     val onClick = context.eventHandler("increment") { state += 1 }
-    return ComposeScreen {
-      Content(renderState, onClick)
-    }
+    return ComposeScreen { Content(renderState, onClick) }
   }
 
   override fun snapshotState(state: Int): Snapshot = Snapshot.of(state)
 }
 
 @Composable
-private fun Content(
-  count: Int,
-  onClick: () -> Unit
-) {
+private fun Content(count: Int, onClick: () -> Unit) {
   Box {
     Button(onClick = onClick) {
       Text("Counter: ")
-      AnimatedCounter(count) { counterValue ->
-        Text(counterValue.toString())
-      }
+      AnimatedCounter(count) { counterValue -> Text(counterValue.toString()) }
     }
   }
 }
 
 @Composable
 fun InlineRenderingWorkflowRendering() {
-  val rendering by InlineRenderingWorkflow.renderAsState(
-    props = Unit,
-    onOutput = {},
-    runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-  )
+  val rendering by
+    InlineRenderingWorkflow.renderAsState(
+      props = Unit,
+      onOutput = {},
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+    )
   WorkflowRendering(rendering)
 }
 
@@ -78,16 +70,16 @@ internal fun InlineRenderingWorkflowPreview() {
 }
 
 @Composable
-private fun AnimatedCounter(
-  counterValue: Int,
-  content: @Composable (Int) -> Unit
-) {
+private fun AnimatedCounter(counterValue: Int, content: @Composable (Int) -> Unit) {
   AnimatedContent(
     targetState = counterValue,
     transitionSpec = {
-      ((slideInVertically() + fadeIn()).togetherWith(slideOutVertically() + fadeOut()))
-        .using(SizeTransform(clip = false))
+      ((slideInVertically() + fadeIn()).togetherWith(slideOutVertically() + fadeOut())).using(
+        SizeTransform(clip = false)
+      )
     },
-    label = ""
-  ) { content(it) }
+    label = "",
+  ) {
+    content(it)
+  }
 }

@@ -8,6 +8,7 @@ plugins {
   id("kotlin-android")
   id("kotlin-parcelize")
 }
+
 android {
   compileSdk = libsCatalog.version("compileSdk").toInt()
 
@@ -47,11 +48,7 @@ android {
   namespace = "com.squareup.benchmarks.performance.complex.poetry"
 }
 
-kotlin {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_11)
-  }
-}
+kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_11) } }
 
 dependencies {
   androidTestImplementation(libs.androidx.test.espresso.core)

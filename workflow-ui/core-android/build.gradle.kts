@@ -6,9 +6,7 @@ plugins {
   id("published")
 }
 
-android {
-  namespace = "com.squareup.workflow1.ui"
-}
+android { namespace = "com.squareup.workflow1.ui" }
 
 dependencies {
   androidTestImplementation(libs.androidx.activity.ktx)

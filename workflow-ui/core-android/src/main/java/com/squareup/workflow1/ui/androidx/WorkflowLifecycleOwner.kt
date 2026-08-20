@@ -23,19 +23,19 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.insta
 
 /**
  * An extension of [LifecycleOwner] that is always owned by a [View], is logically a child lifecycle
- * of the next-nearest [LifecycleOwner] above it (it mirrors its parent's lifecycle until
- * it's destroyed), and can be [asked to destroy][destroyOnDetach] itself early.
+ * of the next-nearest [LifecycleOwner] above it (it mirrors its parent's lifecycle until it's
+ * destroyed), and can be [asked to destroy][destroyOnDetach] itself early.
  *
- * This type is meant to help integrate with [LifecycleOwner] by allowing the creation of a
- * tree of [LifecycleOwner]s that mirrors the view tree.
+ * This type is meant to help integrate with [LifecycleOwner] by allowing the creation of a tree of
+ * [LifecycleOwner]s that mirrors the view tree.
  *
  * Custom container views that use
  * [ScreenViewFactory.startShowing][com.squareup.workflow1.ui.startShowing] to create their children
- * _must_ ensure they call [destroyOnDetach] on the outgoing view before they replace children
- * with new views. If this is not done, then certain processes that are started by that view's
- * subtree may continue to run long after the view has been detached, and memory and other
- * resources may be leaked. Note that [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub]
- * takes care of this chore itself.
+ * _must_ ensure they call [destroyOnDetach] on the outgoing view before they replace children with
+ * new views. If this is not done, then certain processes that are started by that view's subtree
+ * may continue to run long after the view has been detached, and memory and other resources may be
+ * leaked. Note that [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] takes care of
+ * this chore itself.
  *
  * Set a [WorkflowLifecycleOwner] on a view by calling [installOn], and read it back using [get].
  */
@@ -64,25 +64,23 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      * If this is not done, any observers registered with the [Lifecycle] may be leaked as they will
      * never see the destroy event.
      *
-     * @param onBackPressedDispatcherOwner A [OnBackPressedDispatcherOwner] to be installed
-     * in parallel with the [WorkflowLifecycleOwner], required to ensure that
-     * [View.findViewTreeOnBackPressedDispatcherOwner][androidx.activity.findViewTreeOnBackPressedDispatcherOwner]
-     * always works.
-     * Typical use is to find one via `ViewEnvironment.onBackPressedDispatcherOwner`
-     *
+     * @param onBackPressedDispatcherOwner A [OnBackPressedDispatcherOwner] to be installed in
+     *   parallel with the [WorkflowLifecycleOwner], required to ensure that
+     *   [View.findViewTreeOnBackPressedDispatcherOwner][androidx.activity.findViewTreeOnBackPressedDispatcherOwner]
+     *   always works. Typical use is to find one via `ViewEnvironment.onBackPressedDispatcherOwner`
      * @param findParentLifecycle A function that is called whenever [view] is attached, and should
-     * return the [Lifecycle] to use as the parent lifecycle. If not specified, defaults to looking
-     * up the view tree by calling [findViewTreeLifecycleOwner] on [view]'s parent, and if none is
-     * found, then looking up [view]'s context wrapper chain for something that implements
-     * [LifecycleOwner]. This only needs to be passed if [view] will be used as the root of a new
-     * view hierarchy, e.g. for a new dialog. If no parent lifecycle is found, then the lifecycle
-     * will become [RESUMED] when it's attached for the first time, and stay in that state until
-     * it is re-attached with a non-null parent or [destroyOnDetach] is called.
+     *   return the [Lifecycle] to use as the parent lifecycle. If not specified, defaults to
+     *   looking up the view tree by calling [findViewTreeLifecycleOwner] on [view]'s parent, and if
+     *   none is found, then looking up [view]'s context wrapper chain for something that implements
+     *   [LifecycleOwner]. This only needs to be passed if [view] will be used as the root of a new
+     *   view hierarchy, e.g. for a new dialog. If no parent lifecycle is found, then the lifecycle
+     *   will become [RESUMED] when it's attached for the first time, and stay in that state until
+     *   it is re-attached with a non-null parent or [destroyOnDetach] is called.
      */
     public fun installOn(
       view: View,
       onBackPressedDispatcherOwner: OnBackPressedDispatcherOwner,
-      findParentLifecycle: (View) -> Lifecycle = this::findParentViewTreeLifecycle
+      findParentLifecycle: (View) -> Lifecycle = this::findParentViewTreeLifecycle,
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         view.setViewTreeOnBackPressedDispatcherOwner(onBackPressedDispatcherOwner)
@@ -92,9 +90,8 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
     }
 
     /**
-     * Looks for the nearest [LifecycleOwner] on [view] and returns it if it's an instance
-     * of [WorkflowLifecycleOwner]. Convenience function for retrieving the owner set by
-     * [installOn].
+     * Looks for the nearest [LifecycleOwner] on [view] and returns it if it's an instance of
+     * [WorkflowLifecycleOwner]. Convenience function for retrieving the owner set by [installOn].
      */
     public fun get(view: View): WorkflowLifecycleOwner? =
       view.findViewTreeLifecycleOwner() as? WorkflowLifecycleOwner
@@ -110,16 +107,13 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 /**
  * @param enforceMainThread Allows disabling the main thread check for testing.
  * @property findParentLifecycle Will be set to a no-op function when we are destroyed to avoid
- * leaking view instances.
+ *   leaking view instances.
  */
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
   private val findParentLifecycle: (View) -> Lifecycle,
   enforceMainThread: Boolean = true,
-) : WorkflowLifecycleOwner,
-  LifecycleOwner,
-  OnAttachStateChangeListener,
-  LifecycleEventObserver {
+) : WorkflowLifecycleOwner, LifecycleOwner, OnAttachStateChangeListener, LifecycleEventObserver {
 
   private var view: View? = null
     set(value) {
@@ -129,12 +123,11 @@ internal class RealWorkflowLifecycleOwner(
     }
 
   /**
-   * We track this state ourselves rather than relying on view.isAttachedToWindow
-   * because that call returns true until after all onDetachedFromWindow calls
-   * are made.
+   * We track this state ourselves rather than relying on view.isAttachedToWindow because that call
+   * returns true until after all onDetachedFromWindow calls are made.
    *
-   * Mainly set as a side effect of setting [view], except that we set it to false
-   * eagerly from [onViewDetachedFromWindow].
+   * Mainly set as a side effect of setting [view], except that we set it to false eagerly from
+   * [onViewDetachedFromWindow].
    */
   private var viewIsAttachedToWindow: Boolean = false
 
@@ -160,10 +153,10 @@ internal class RealWorkflowLifecycleOwner(
    * (once it's attached), or if no [LifecycleOwner] is set, then by trying to find a
    * [LifecycleOwner] on the view's context.
    *
-   * When the view is detached, we keep the reference to the previous parent
-   * lifecycle, and keep observing it, to ensure we get destroyed correctly if the parent is
-   * destroyed while we're detached. The next time we're attached, we search for a parent again, in
-   * case we're attached in a different subtree that has a different parent.
+   * When the view is detached, we keep the reference to the previous parent lifecycle, and keep
+   * observing it, to ensure we get destroyed correctly if the parent is destroyed while we're
+   * detached. The next time we're attached, we search for a parent again, in case we're attached in
+   * a different subtree that has a different parent.
    *
    * This is only null in two cases:
    * 1. The view hasn't been attached yet, ever.
@@ -196,10 +189,7 @@ internal class RealWorkflowLifecycleOwner(
   }
 
   /** Called when the [parentLifecycle] changes state. */
-  override fun onStateChanged(
-    source: LifecycleOwner,
-    event: Event
-  ) {
+  override fun onStateChanged(source: LifecycleOwner, event: Event) {
     updateLifecycle()
   }
 
@@ -221,63 +211,68 @@ internal class RealWorkflowLifecycleOwner(
       return
     }
 
-    localLifecycle.currentState = when {
-      destroyOnDetach && !viewIsAttachedToWindow -> {
-        // We've been enqueued for destruction.
-        // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
-        // destroyed while we're detached.
-        DESTROYED
-      }
-      parentState != null -> {
-        // We may or may not be attached, but we have a parent lifecycle so we just blindly follow
-        // it.
-        parentState
-      }
-      localState == INITIALIZED -> {
-        // We have no parent and we're not destroyed, which means we have never been attached, so
-        // the only valid state we can be in is INITIALIZED.
-        INITIALIZED
-      }
-      else -> {
-        // We don't have a parent and we're neither in DESTROYED or INITIALIZED: this is an invalid
-        // state. Throw an AssertionError instead of IllegalStateException because there's no API to
-        // get into this state, so this means the library has a bug.
-        throw AssertionError(
-          "Must have a parent lifecycle after attaching and until being destroyed."
-        )
-      }
-    }.let { newState ->
-      if (newState == DESTROYED) {
-        hasBeenDestroyed = true
-
-        // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
-        // detach from our parent.
-        //
-        // Note that if localState is INITIALIZED, this is not a valid transition and
-        // LifecycleRegistry will throw when we try setting currentState. This is not a situation
-        // that it should be possible to get in unless there's a bug in this library, which is why
-        // we don't explicitly check for it.
-        parentLifecycle?.removeObserver(this)
-        parentLifecycle = null
-
-        // We can't change state anymore, so we don't care about watching for new parents.
-        view?.let {
-          view = null
-          it.removeOnAttachStateChangeListener(this)
-        }
-
-        // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
-        // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
-        // will throw if we do that. That exception can mask actual test failures, so to avoid that
-        // here we just stay in the initialized state forever.
-        if (localState == INITIALIZED) {
-          INITIALIZED
-        } else {
+    localLifecycle.currentState =
+      when {
+        destroyOnDetach && !viewIsAttachedToWindow -> {
+          // We've been enqueued for destruction.
+          // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
+          // destroyed while we're detached.
           DESTROYED
         }
-      } else {
-        newState
+        parentState != null -> {
+          // We may or may not be attached, but we have a parent lifecycle so we just blindly follow
+          // it.
+          parentState
+        }
+        localState == INITIALIZED -> {
+          // We have no parent and we're not destroyed, which means we have never been attached, so
+          // the only valid state we can be in is INITIALIZED.
+          INITIALIZED
+        }
+        else -> {
+          // We don't have a parent and we're neither in DESTROYED or INITIALIZED: this is an
+          // invalid
+          // state. Throw an AssertionError instead of IllegalStateException because there's no API
+          // to
+          // get into this state, so this means the library has a bug.
+          throw AssertionError(
+            "Must have a parent lifecycle after attaching and until being destroyed."
+          )
+        }
+      }.let { newState ->
+        if (newState == DESTROYED) {
+          hasBeenDestroyed = true
+
+          // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
+          // detach from our parent.
+          //
+          // Note that if localState is INITIALIZED, this is not a valid transition and
+          // LifecycleRegistry will throw when we try setting currentState. This is not a situation
+          // that it should be possible to get in unless there's a bug in this library, which is why
+          // we don't explicitly check for it.
+          parentLifecycle?.removeObserver(this)
+          parentLifecycle = null
+
+          // We can't change state anymore, so we don't care about watching for new parents.
+          view?.let {
+            view = null
+            it.removeOnAttachStateChangeListener(this)
+          }
+
+          // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
+          // out of the INITIALIZED state. That's an invalid state transition, and so
+          // setCurrentState
+          // will throw if we do that. That exception can mask actual test failures, so to avoid
+          // that
+          // here we just stay in the initialized state forever.
+          if (localState == INITIALIZED) {
+            INITIALIZED
+          } else {
+            DESTROYED
+          }
+        } else {
+          newState
+        }
       }
-    }
   }
 }

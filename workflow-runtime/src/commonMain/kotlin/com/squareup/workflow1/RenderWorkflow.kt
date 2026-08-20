@@ -47,9 +47,9 @@ import kotlinx.coroutines.plus
  * 1. `suspend` awaiting the application of an action.
  * 1. If [DRAIN_EXCLUSIVE_ACTIONS] is enabled, process any other exclusive actions synchronously.
  * 1. Render Pass: call recurse the tree to call `render()`. (If [PARTIAL_TREE_RENDERING] is enabled
- * then only call this for dirty subtrees.)
+ *    then only call this for dirty subtrees.)
  * 1. If [CONFLATE_STALE_RENDERINGS] is enabled, then continue to *synchronously* process any
- * available actions and do another render pass.
+ *    available actions and do another render pass.
  * 1. Pass the updated rendering into the [StateFlow] returned from this method.
  *
  * When there is UI involved, we recommend using a `CoroutineDispatcher` in [scope]'s
@@ -59,11 +59,10 @@ import kotlinx.coroutines.plus
  *
  * One way to achieve that guarantee is with an "immediate" dispatcher on the main thread - like,
  * `Dispatchers.Main.immediate` - since it will continue to run until the runtime is stable before
- * it lets any frame get updated by the main thread.
- * However, if an "immediate" dispatcher is used, then only 1 action will ever be available
- * since as soon as it is available it will resume (step #1 above) and start processing the rest of
- * the loop immediately.
- * This means that [DRAIN_EXCLUSIVE_ACTIONS] and [CONFLATE_STALE_RENDERINGS] will have no effect.
+ * it lets any frame get updated by the main thread. However, if an "immediate" dispatcher is used,
+ * then only 1 action will ever be available since as soon as it is available it will resume
+ * (step #1 above) and start processing the rest of the loop immediately. This means that
+ * [DRAIN_EXCLUSIVE_ACTIONS] and [CONFLATE_STALE_RENDERINGS] will have no effect.
  *
  * A preferred way to achieve that is to have your dispatcher drain coroutines for each frame
  * explicitly. On Android, for example, that can be done with Compose UI's
@@ -75,13 +74,12 @@ import kotlinx.coroutines.plus
  * [structured concurrency](https://medium.com/@elizarov/structured-concurrency-722d765aa952).
  *
  * The runtime is started in [scope], which defines the context for the entire workflow tree – most
- * importantly, the [Job] that governs the runtime's lifetime and exception
- * reporting path, and the [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher] that
- * decides on what thread(s) to run workflow code. Note that if the scope's dispatcher executes
- * on threads different than the caller, then the initial render pass will occur on the current
- * thread but all subsequent render passes, and actions, will be executed on that dispatcher. This
- * shouldn't affect well-written workflows, since the render method should not perform side effects
- * anyway.
+ * importantly, the [Job] that governs the runtime's lifetime and exception reporting path, and the
+ * [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher] that decides on what thread(s) to
+ * run workflow code. Note that if the scope's dispatcher executes on threads different than the
+ * caller, then the initial render pass will occur on the current thread but all subsequent render
+ * passes, and actions, will be executed on that dispatcher. This shouldn't affect well-written
+ * workflows, since the render method should not perform side effects anyway.
  *
  * All workers that are run by this runtime will be collected in coroutines that are children of
  * [scope]. When the root workflow emits an output, [onOutput] will be invoked in a child of
@@ -100,43 +98,28 @@ import kotlinx.coroutines.plus
  * up to [scope]. Any exceptions thrown by subscribers of the returned [StateFlow] will _not_ cancel
  * [scope] or cancel the runtime, but will be handled in the [CoroutineScope] of the subscriber.
  *
- * @param workflow
- * The root workflow to render.
- *
- * @param scope
- * The [CoroutineScope] in which to launch the workflow runtime. Any exceptions thrown
- * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
- * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
- * in this scope will _not_ be used to execute the very first render pass.
- *
- * @param props
- * Specifies the initial [PropsT] to use to render the root workflow, and will cause a re-render
- * when new props are emitted. If this flow completes _after_ emitting at least one value, the
- * runtime will _not_ fail or stop, it will continue running with the last-emitted input.
- * To only pass a single props value, simply create a [MutableStateFlow] with the value.
- *
- * @param initialSnapshot
- * If not null or empty, used to restore the workflow. Should be obtained from a previous runtime's
- * [RenderingAndSnapshot].
- *
- * @param interceptors
- * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
- * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
- * workflow first, then the interceptor at index 1, etc.
- *
- * @param onOutput
- * A function that will be called whenever the root workflow emits an [OutputT]. This is a suspend
- * function, and is invoked synchronously within the runtime: if it suspends, the workflow runtime
- * will effectively be paused until it returns. This means that it will propagate backpressure if
- * used to forward outputs to a [Flow] or [Channel][kotlinx.coroutines.channels.Channel], for
- * example.
- *
- * @param runtimeConfig
- * Configuration parameters for the Workflow Runtime.
- *
- * @return
- * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
- * rendering.
+ * @param workflow The root workflow to render.
+ * @param scope The [CoroutineScope] in which to launch the workflow runtime. Any exceptions thrown
+ *   in any workflows, after the initial render pass, will be handled by this scope, and cancelling
+ *   this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
+ *   in this scope will _not_ be used to execute the very first render pass.
+ * @param props Specifies the initial [PropsT] to use to render the root workflow, and will cause a
+ *   re-render when new props are emitted. If this flow completes _after_ emitting at least one
+ *   value, the runtime will _not_ fail or stop, it will continue running with the last-emitted
+ *   input. To only pass a single props value, simply create a [MutableStateFlow] with the value.
+ * @param initialSnapshot If not null or empty, used to restore the workflow. Should be obtained
+ *   from a previous runtime's [RenderingAndSnapshot].
+ * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
+ *   rendered by the runtime. Interceptors will be invoked in 0-to-`length` order: the interceptor
+ *   at index 0 will process the workflow first, then the interceptor at index 1, etc.
+ * @param onOutput A function that will be called whenever the root workflow emits an [OutputT].
+ *   This is a suspend function, and is invoked synchronously within the runtime: if it suspends,
+ *   the workflow runtime will effectively be paused until it returns. This means that it will
+ *   propagate backpressure if used to forward outputs to a [Flow] or
+ *   [Channel][kotlinx.coroutines.channels.Channel], for example.
+ * @param runtimeConfig Configuration parameters for the Workflow Runtime.
+ * @return A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow
+ *   creates a new rendering.
  */
 @OptIn(WorkflowExperimentalRuntime::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
@@ -147,60 +130,60 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   workflowTracer: WorkflowTracer? = null,
-  onOutput: suspend (OutputT) -> Unit
+  onOutput: suspend (OutputT) -> Unit,
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  val dispatcher = if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
-    WorkStealingDispatcher.wrapDispatcherFrom(scope.coroutineContext)
-  } else {
-    null
-  }
+  val dispatcher =
+    if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
+      WorkStealingDispatcher.wrapDispatcherFrom(scope.coroutineContext)
+    } else {
+      null
+    }
 
-  @Suppress("NAME_SHADOWING")
-  val scope = dispatcher?.let { scope + dispatcher } ?: scope
+  @Suppress("NAME_SHADOWING") val scope = dispatcher?.let { scope + dispatcher } ?: scope
 
-  val runner = WorkflowRunner(
-    scope,
-    workflow,
-    props,
-    initialSnapshot,
-    chainedInterceptor,
-    runtimeConfig,
-    workflowTracer
-  )
+  val runner =
+    WorkflowRunner(
+      scope,
+      workflow,
+      props,
+      initialSnapshot,
+      chainedInterceptor,
+      runtimeConfig,
+      workflowTracer,
+    )
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
-  val renderingsAndSnapshots = MutableStateFlow(
-    try {
-      runner.nextRendering().also {
-        chainedInterceptor.onRuntimeUpdate(RenderingProduced)
-        chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
+  val renderingsAndSnapshots =
+    MutableStateFlow(
+      try {
+        runner.nextRendering().also {
+          chainedInterceptor.onRuntimeUpdate(RenderingProduced)
+          chainedInterceptor.onRuntimeUpdate(RuntimeSettled)
+        }
+      } catch (e: Throwable) {
+        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+        // but this is an implementation detail so we must cancel the scope manually to keep the
+        // contract.
+        val cancellation =
+          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+        runner.cancelRuntime(cancellation)
+        throw e
       }
-    } catch (e: Throwable) {
-      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-      // but this is an implementation detail so we must cancel the scope manually to keep the
-      // contract.
-      val cancellation =
-        (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
-      runner.cancelRuntime(cancellation)
-      throw e
-    }
-  )
+    )
 
   suspend fun <OutputT> sendOutput(
     actionResult: ActionProcessingResult,
-    onOutput: suspend (OutputT) -> Unit
+    onOutput: suspend (OutputT) -> Unit,
   ) {
     when (actionResult) {
       is ActionApplied<*> -> {
         @Suppress("UNCHECKED_CAST")
         (actionResult as? ActionApplied<OutputT>)?.let {
-          it.output?.let { actualOutput ->
-            onOutput(actualOutput.value)
-          }
+          it.output?.let { actualOutput -> onOutput(actualOutput.value) }
         }
       }
 
@@ -209,25 +192,21 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   }
 
   /**
-   * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] and
-   * we have not changed state, then return true to short circuit the render loop.
+   * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] and we have
+   * not changed state, then return true to short circuit the render loop.
    */
-  fun shouldShortCircuitForUnchangedState(
-    actionResult: ActionProcessingResult,
-  ): Boolean {
+  fun shouldShortCircuitForUnchangedState(actionResult: ActionProcessingResult): Boolean {
     return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
       actionResult is ActionApplied<*> &&
       !actionResult.stateChanged
   }
 
   /**
-   * We advance the dispatcher first to allow any coroutines that were launched by the last
-   * render pass to start up and potentially enqueue actions.
+   * We advance the dispatcher first to allow any coroutines that were launched by the last render
+   * pass to start up and potentially enqueue actions.
    */
   fun WorkStealingDispatcher.drainTasksIfPossible() {
-    workflowTracer.trace("AdvancingWorkflowDispatcher") {
-      advanceUntilIdle()
-    }
+    workflowTracer.trace("AdvancingWorkflowDispatcher") { advanceUntilIdle() }
   }
 
   scope.launch {
@@ -251,8 +230,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var drainingActionResult = actionResult
       var actionDrainingHasChangedState = false
       if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
-        drain@ while (isActive && drainingActionResult is ActionApplied<*> &&
-          drainingActionResult.output == null
+        drain@ while (
+          isActive &&
+            drainingActionResult is ActionApplied<*> &&
+            drainingActionResult.output == null
         ) {
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || drainingActionResult.stateChanged
@@ -273,11 +254,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        conflate@ while (isActive && actionResult is ActionApplied<*> &&
-          actionResult.output == null
+        conflate@ while (
+          isActive && actionResult is ActionApplied<*> && actionResult.output == null
         ) {
-          actionDrainingHasChangedState =
-            actionDrainingHasChangedState || actionResult.stateChanged
+          actionDrainingHasChangedState = actionDrainingHasChangedState || actionResult.stateChanged
           // We may have more actions we can process, this rendering could be stale.
           // This will check for any actions that are immediately available and apply them.
 

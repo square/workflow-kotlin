@@ -33,7 +33,7 @@ class NestedOverlaysViewModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = NestedOverlaysWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
     )
   }
 }

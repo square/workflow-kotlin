@@ -7,10 +7,10 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
 import com.squareup.workflow1.ui.ViewRegistry
-import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource.Monotonic
+import kotlinx.coroutines.Dispatchers
 
 private const val AI_COUNT = 4
 
@@ -19,28 +19,29 @@ private const val AI_COUNT = 4
 @Suppress("MemberVisibilityCanBePrivate")
 class Component(context: AppCompatActivity) {
 
-  val viewRegistry = ViewRegistry(
-    ShakeableTimeMachineLayoutRunner,
-    LoadingScreenViewFactory<LoadingBoardList>(R.string.loading_boards_list),
-    BoardsListLayoutRunner,
-    LoadingScreenViewFactory<Loading>(R.string.loading_board),
-    GameLayoutRunner,
-    BoardView,
-  )
+  val viewRegistry =
+    ViewRegistry(
+      ShakeableTimeMachineLayoutRunner,
+      LoadingScreenViewFactory<LoadingBoardList>(R.string.loading_boards_list),
+      BoardsListLayoutRunner,
+      LoadingScreenViewFactory<Loading>(R.string.loading_board),
+      GameLayoutRunner,
+      BoardView,
+    )
 
   val random = Random(System.currentTimeMillis())
 
   val clock = Monotonic
 
-  @Suppress("DEPRECATION")
-  val vibrator = context.getSystemService(VIBRATOR_SERVICE) as Vibrator
+  @Suppress("DEPRECATION") val vibrator = context.getSystemService(VIBRATOR_SERVICE) as Vibrator
 
-  val boardLoader = BoardLoader(
-    ioDispatcher = Dispatchers.IO,
-    assets = context.assets,
-    boardsAssetPath = "boards",
-    delayForFakeLoad = context::delayForFakeLoad
-  )
+  val boardLoader =
+    BoardLoader(
+      ioDispatcher = Dispatchers.IO,
+      assets = context.assets,
+      boardsAssetPath = "boards",
+      delayForFakeLoad = context::delayForFakeLoad,
+    )
 
   val playerWorkflow = PlayerWorkflow()
 
@@ -54,7 +55,5 @@ class Component(context: AppCompatActivity) {
 
   val timeMachineWorkflow = TimeMachineAppWorkflow(appWorkflow, clock, context)
 
-  val timeMachineModelFactory = TimeMachineModel.Factory(
-    timeMachineWorkflow
-  )
+  val timeMachineModelFactory = TimeMachineModel.Factory(timeMachineWorkflow)
 }

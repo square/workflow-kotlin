@@ -6,9 +6,9 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 
 /**
- * Used to count the number of render passes for a Workflow tree as well as each time that a node
- * is rendered 'fresh' (= state is different than the cached version) or 'stale' (= state is the
- * same as the cached version).
+ * Used to count the number of render passes for a Workflow tree as well as each time that a node is
+ * rendered 'fresh' (= state is different than the cached version) or 'stale' (= state is the same
+ * as the cached version).
  *
  * This is convenient to use in integration tests that verify that the # of render passes and the
  * ratio of 'fresh' to 'stale' renderings for a scenario are constant.
@@ -23,7 +23,7 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
-    session: WorkflowSession
+    session: WorkflowSession,
   ): R {
     val isRoot = session.parent == null
 
@@ -55,9 +55,7 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     }
   }
 
-  /**
-   * Reset all the counters.
-   */
+  /** Reset all the counters. */
   override fun reset() {
     renderEfficiencyTracking.reset()
     nodeStates.clear()

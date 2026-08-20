@@ -27,35 +27,25 @@ class PreviewActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent {
-      PreviewApp()
-    }
+    setContent { PreviewApp() }
   }
 }
 
-val previewContactScreen = ContactScreen(
-  name = "Dim Tonnelly",
-  details = ContactDetailsScreen(
-    phoneNumber = "555-555-5555",
-    address = "1234 Apgar Lane"
+val previewContactScreen =
+  ContactScreen(
+    name = "Dim Tonnelly",
+    details = ContactDetailsScreen(phoneNumber = "555-555-5555", address = "1234 Apgar Lane"),
   )
-)
 
 @Preview
 @Composable
 fun PreviewApp() {
-  MaterialTheme {
-    Surface {
-      previewContactScreen.Preview()
-    }
-  }
+  MaterialTheme { Surface { previewContactScreen.Preview() } }
 }
 
-data class ContactScreen(
-  val name: String,
-  val details: ContactDetailsScreen
-) : ComposeScreen {
-  @Composable override fun Content() {
+data class ContactScreen(val name: String, val details: ContactDetailsScreen) : ComposeScreen {
+  @Composable
+  override fun Content() {
     Contact(this)
   }
 }
@@ -63,29 +53,16 @@ data class ContactScreen(
 // Note, not a ComposeScreen and has no view binding of any kind,
 // which would normally be a runtime error. We're demonstrating that
 // the preview is able to stub out the WorkflowRendering call below.
-data class ContactDetailsScreen(
-  val phoneNumber: String,
-  val address: String
-) : Screen
+data class ContactDetailsScreen(val phoneNumber: String, val address: String) : Screen
 
 @Composable
 private fun Contact(screen: ContactScreen) {
-  Card(
-    modifier = Modifier
-      .padding(8.dp)
-      .clickable { /* handle click */ }
-  ) {
-    Column(
-      modifier = Modifier.padding(16.dp),
-      verticalArrangement = spacedBy(8.dp),
-    ) {
+  Card(modifier = Modifier.padding(8.dp).clickable { /* handle click */ }) {
+    Column(modifier = Modifier.padding(16.dp), verticalArrangement = spacedBy(8.dp)) {
       Text(screen.name, style = MaterialTheme.typography.body1)
       WorkflowRendering(
         rendering = screen.details,
-        modifier = Modifier
-          .aspectRatio(1f)
-          .border(0.dp, Color.LightGray)
-          .padding(8.dp)
+        modifier = Modifier.aspectRatio(1f).border(0.dp, Color.LightGray).padding(8.dp),
       )
     }
   }

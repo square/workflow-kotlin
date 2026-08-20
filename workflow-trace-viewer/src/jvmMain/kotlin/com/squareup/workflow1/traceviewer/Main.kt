@@ -13,9 +13,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import kotlin.system.exitProcess
 
-/**
- * Main entry point for the desktop application, see [README.md] for more details.
- */
+/** Main entry point for the desktop application, see [README.md] for more details. */
 fun main() {
   application {
     var openWindows by remember { mutableStateOf(setOf<TraceWindow>()) }
@@ -31,20 +29,18 @@ fun main() {
           isLandingWindowOpen = false
         },
         title = "Workflow Trace Viewer",
-        state = rememberWindowState()
+        state = rememberWindowState(),
       ) {
         LandingWindow(
           modifier = Modifier.fillMaxSize(),
-          onFileSelected = { file ->
-            openWindows = openWindows + TraceWindow.FileWindow(file)
-          },
+          onFileSelected = { file -> openWindows = openWindows + TraceWindow.FileWindow(file) },
           onDeviceSelected = { device ->
             openWindows = openWindows + TraceWindow.DeviceWindow(device)
-          }
+          },
         )
       }
     }
-    
+
     // Additional windows for each opened trace
     for (window in openWindows) {
       Window(
@@ -54,11 +50,12 @@ fun main() {
             exitProcess(0)
           }
         },
-        title = when (window) {
-          is TraceWindow.FileWindow -> window.file.name
-          is TraceWindow.DeviceWindow -> "Live: ${window.device}"
-        },
-        state = rememberWindowState()
+        title =
+          when (window) {
+            is TraceWindow.FileWindow -> window.file.name
+            is TraceWindow.DeviceWindow -> "Live: ${window.device}"
+          },
+        state = rememberWindowState(),
       ) {
         when (window) {
           is TraceWindow.FileWindow -> {
@@ -81,5 +78,6 @@ fun main() {
 
 sealed interface TraceWindow {
   data class FileWindow(val file: PlatformFile) : TraceWindow
+
   data class DeviceWindow(val device: String) : TraceWindow
 }

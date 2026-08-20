@@ -4,6 +4,7 @@ import android.content.res.AssetManager
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.sample.dungeon.board.parseBoard
 import com.squareup.workflow1.Worker
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -13,26 +14,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okio.buffer
 import okio.source
-import kotlin.time.ExperimentalTime
 
-/**
- * Service class that creates [Worker]s to [load][loadBoard] [Board]s.
- */
+/** Service class that creates [Worker]s to [load][loadBoard] [Board]s. */
 @OptIn(ExperimentalTime::class)
 class BoardLoader(
   private val ioDispatcher: CoroutineDispatcher,
   private val assets: AssetManager,
   private val boardsAssetPath: String,
-  private val delayForFakeLoad: suspend () -> Unit
+  private val delayForFakeLoad: suspend () -> Unit,
 ) {
 
   private inner class BoardListLoaderWorker : Worker<Map<String, Board>> {
     override fun run(): Flow<Map<String, Board>> = flow {
-      val boards = withMinimumDelay {
-        withContext(ioDispatcher) {
-          loadBoardsBlocking()
-        }
-      }
+      val boards = withMinimumDelay { withContext(ioDispatcher) { loadBoardsBlocking() } }
       emit(boards)
     }
   }
@@ -42,11 +36,7 @@ class BoardLoader(
       otherWorker is BoardLoaderWorker && filename == otherWorker.filename
 
     override fun run(): Flow<Board> = flow {
-      val board = withMinimumDelay {
-        withContext(ioDispatcher) {
-          loadBoardBlocking(filename)
-        }
-      }
+      val board = withMinimumDelay { withContext(ioDispatcher) { loadBoardBlocking(filename) } }
       emit(board)
     }
   }
@@ -70,16 +60,15 @@ class BoardLoader(
    * Runs [block] and returns the value it returned, but will not return (by suspending) for at
    * least [delay] period of time. Used to add fake delays to demonstrate loading states.
    */
-  private suspend inline fun <T> withMinimumDelay(
-    crossinline block: suspend () -> T
-  ): T = coroutineScope {
-    // Wait at least a second before emitting to make it look like we're doing real work.
-    // Structured concurrency means this coroutineScope block won't return until this delay
-    // finishes.
-    launch { delayForFakeLoad() }
+  private suspend inline fun <T> withMinimumDelay(crossinline block: suspend () -> T): T =
+    coroutineScope {
+      // Wait at least a second before emitting to make it look like we're doing real work.
+      // Structured concurrency means this coroutineScope block won't return until this delay
+      // finishes.
+      launch { delayForFakeLoad() }
 
-    block()
-  }
+      block()
+    }
 
   @Suppress("UNCHECKED_CAST")
   private fun loadBoardsBlocking(): Map<String, Board> {
@@ -88,12 +77,7 @@ class BoardLoader(
   }
 
   private fun loadBoardBlocking(filename: String): Board =
-    assets.open(absoluteBoardPath(filename))
-      .use {
-        it.source()
-          .buffer()
-          .parseBoard()
-      }
+    assets.open(absoluteBoardPath(filename)).use { it.source().buffer().parseBoard() }
 
   private fun absoluteBoardPath(filename: String) = "$boardsAssetPath/$filename"
 }

@@ -41,58 +41,55 @@ import kotlin.time.DurationUnit.MILLISECONDS
  */
 val LocalBackgroundColor = compositionLocalOf<Color> { error("No background color specified") }
 
-/**
- * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
- */
-val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
-  // Every child should be drawn with a slightly-darker background color.
-  val color = LocalBackgroundColor.current
-  val childColor = remember(color) {
-    color.copy(alpha = .9f)
-      .compositeOver(Color.Black)
-  }
+/** A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s. */
+val RecursiveComposableFactory =
+  ScreenComposableFactory<Rendering> { rendering ->
+    // Every child should be drawn with a slightly-darker background color.
+    val color = LocalBackgroundColor.current
+    val childColor = remember(color) { color.copy(alpha = .9f).compositeOver(Color.Black) }
 
-  val flashAlpha = remember { Animatable(Color(0x00FFFFFF)) }
+    val flashAlpha = remember { Animatable(Color(0x00FFFFFF)) }
 
-  // Flash the card white when asked.
-  LaunchedEffect(rendering.flashTrigger) {
-    if (rendering.flashTrigger != 0) {
-      flashAlpha.animateTo(
-        Color(0x00FFFFFF),
-        animationSpec = keyframes {
-          Color.White at (rendering.flashTime / 7).toInt(MILLISECONDS) using FastOutLinearInEasing
-          Color(0x00FFFFFF) at rendering.flashTime.toInt(MILLISECONDS) using LinearOutSlowInEasing
-        }
-      )
-    }
-  }
-
-  Card(
-    backgroundColor = flashAlpha.value.compositeOver(color),
-    modifier = Modifier.pointerInput(rendering) {
-      detectTapGestures(onPress = { rendering.onSelfClicked() })
-    }
-  ) {
-    Column(
-      Modifier
-        .padding(dimensionResource(R.dimen.recursive_padding))
-        .fillMaxSize(),
-      horizontalAlignment = CenterHorizontally
-    ) {
-      CompositionLocalProvider(LocalBackgroundColor provides childColor) {
-        Children(
-          rendering.children,
-          // Pass a weight so that the column fills all the space not occupied by the buttons.
-          modifier = Modifier.weight(1f, fill = true)
+    // Flash the card white when asked.
+    LaunchedEffect(rendering.flashTrigger) {
+      if (rendering.flashTrigger != 0) {
+        flashAlpha.animateTo(
+          Color(0x00FFFFFF),
+          animationSpec =
+            keyframes {
+              Color.White at
+                (rendering.flashTime / 7).toInt(MILLISECONDS) using
+                FastOutLinearInEasing
+              Color(0x00FFFFFF) at
+                rendering.flashTime.toInt(MILLISECONDS) using
+                LinearOutSlowInEasing
+            },
         )
       }
-      Buttons(
-        onAdd = rendering.onAddChildClicked,
-        onReset = rendering.onResetClicked
-      )
+    }
+
+    Card(
+      backgroundColor = flashAlpha.value.compositeOver(color),
+      modifier =
+        Modifier.pointerInput(rendering) {
+          detectTapGestures(onPress = { rendering.onSelfClicked() })
+        },
+    ) {
+      Column(
+        Modifier.padding(dimensionResource(R.dimen.recursive_padding)).fillMaxSize(),
+        horizontalAlignment = CenterHorizontally,
+      ) {
+        CompositionLocalProvider(LocalBackgroundColor provides childColor) {
+          Children(
+            rendering.children,
+            // Pass a weight so that the column fills all the space not occupied by the buttons.
+            modifier = Modifier.weight(1f, fill = true),
+          )
+        }
+        Buttons(onAdd = rendering.onAddChildClicked, onReset = rendering.onResetClicked)
+      }
     }
   }
-}
 
 @Preview
 @Composable
@@ -100,60 +97,52 @@ fun RecursiveViewFactoryPreview() {
   CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
     RecursiveComposableFactory.Preview(
       Rendering(
-        children = listOf(
-          StringRendering("foo"),
-          Rendering(
-            children = listOf(StringRendering("bar")),
-            flashTrigger = 0,
-            onSelfClicked = {},
-            onAddChildClicked = {},
-            onResetClicked = {}
-          )
-        ),
+        children =
+          listOf(
+            StringRendering("foo"),
+            Rendering(
+              children = listOf(StringRendering("bar")),
+              flashTrigger = 0,
+              onSelfClicked = {},
+              onAddChildClicked = {},
+              onResetClicked = {},
+            ),
+          ),
         flashTrigger = 0,
         onSelfClicked = {},
         onAddChildClicked = {},
-        onResetClicked = {}
+        onResetClicked = {},
       ),
-      placeholderModifier = Modifier.fillMaxSize()
+      placeholderModifier = Modifier.fillMaxSize(),
     )
   }
 }
 
 @Composable
-private fun Children(
-  children: List<Screen>,
-  modifier: Modifier
-) {
+private fun Children(children: List<Screen>, modifier: Modifier) {
   Column(
     modifier = modifier,
     verticalArrangement = SpaceEvenly,
-    horizontalAlignment = CenterHorizontally
+    horizontalAlignment = CenterHorizontally,
   ) {
     children.forEach { childRendering ->
       WorkflowRendering(
         childRendering,
         // Pass a weight so all children are partitioned evenly within the total column space.
         // Without the weight, each child is the full size of the parent.
-        modifier = Modifier
-          .weight(1f, fill = true)
-          .fillMaxWidth()
-          .padding(dimensionResource(R.dimen.recursive_padding))
+        modifier =
+          Modifier.weight(1f, fill = true)
+            .fillMaxWidth()
+            .padding(dimensionResource(R.dimen.recursive_padding)),
       )
     }
   }
 }
 
-@Composable private fun Buttons(
-  onAdd: () -> Unit,
-  onReset: () -> Unit
-) {
+@Composable
+private fun Buttons(onAdd: () -> Unit, onReset: () -> Unit) {
   Row {
-    Button(onClick = onAdd) {
-      Text("Add Child")
-    }
-    Button(onClick = onReset) {
-      Text("Reset")
-    }
+    Button(onClick = onAdd) { Text("Add Child") }
+    Button(onClick = onReset) { Text("Reset") }
   }
 }

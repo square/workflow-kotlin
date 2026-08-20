@@ -1,16 +1,16 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.internal.WorkStealingDispatcher.Companion.wrapDispatcherFrom
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.Runnable
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Runnable
 
 /**
  * A [CoroutineDispatcher] that delegates to another dispatcher but allows stealing any work
@@ -19,6 +19,7 @@ import kotlin.coroutines.resume
  * The easiest way to create one is by calling [wrapDispatcherFrom].
  *
  * E.g.
+ *
  * ```
  * val dispatcher = WorkStealingDispatcher.wrapDispatcherFrom(scope.coroutineContext)
  * scope.launch(dispatcher) {
@@ -34,23 +35,22 @@ import kotlin.coroutines.resume
  * ```
  *
  * @param delegateInterceptor The [CoroutineDispatcher] or other [ContinuationInterceptor] to
- * delegate scheduling behavior to. This can either be a confined or unconfined dispatcher, and its
- * behavior will be preserved transparently.
+ *   delegate scheduling behavior to. This can either be a confined or unconfined dispatcher, and
+ *   its behavior will be preserved transparently.
  */
-internal open class WorkStealingDispatcher protected constructor(
+internal open class WorkStealingDispatcher
+protected constructor(
   private val delegateInterceptor: ContinuationInterceptor,
   lock: Lock?,
-  queue: LinkedHashSet<DelegateDispatchedContinuation>?
+  queue: LinkedHashSet<DelegateDispatchedContinuation>?,
 ) : CoroutineDispatcher() {
   companion object {
-    /**
-     * Creates a [WorkStealingDispatcher] that supports [Delay] if [delegateInterceptor] does.
-     */
+    /** Creates a [WorkStealingDispatcher] that supports [Delay] if [delegateInterceptor] does. */
     operator fun invoke(delegateInterceptor: ContinuationInterceptor): WorkStealingDispatcher =
       createMatchingDelayability(
         delegateInterceptor = delegateInterceptor,
         lock = null,
-        queue = null
+        queue = null,
       )
 
     /**
@@ -65,27 +65,27 @@ internal open class WorkStealingDispatcher protected constructor(
     }
 
     /**
-     * Returns a [WorkStealingDispatcher] that either does or doesn't implement [Delay] depending
-     * on whether [delegateInterceptor] implements it, by delegating to its implementation.
+     * Returns a [WorkStealingDispatcher] that either does or doesn't implement [Delay] depending on
+     * whether [delegateInterceptor] implements it, by delegating to its implementation.
      */
     @OptIn(InternalCoroutinesApi::class)
     private fun createMatchingDelayability(
       delegateInterceptor: ContinuationInterceptor,
       lock: Lock?,
-      queue: LinkedHashSet<DelegateDispatchedContinuation>?
+      queue: LinkedHashSet<DelegateDispatchedContinuation>?,
     ): WorkStealingDispatcher {
       return if (delegateInterceptor is Delay) {
         DelayableWorkStealingDispatcher(
           delegate = delegateInterceptor,
           delay = delegateInterceptor,
           lock = lock,
-          queue = queue
+          queue = queue,
         )
       } else {
         WorkStealingDispatcher(
           delegateInterceptor = delegateInterceptor,
           lock = lock,
-          queue = queue
+          queue = queue,
         )
       }
     }
@@ -96,6 +96,7 @@ internal open class WorkStealingDispatcher protected constructor(
 
   // region Access to these properties must always be synchronized with lock.
   private val queue = queue ?: LinkedHashSet()
+
   // endregion
 
   /**
@@ -103,14 +104,9 @@ internal open class WorkStealingDispatcher protected constructor(
    */
   final override fun isDispatchNeeded(context: CoroutineContext): Boolean = true
 
-  final override fun dispatch(
-    context: CoroutineContext,
-    block: Runnable
-  ) {
+  final override fun dispatch(context: CoroutineContext, block: Runnable) {
     val continuation = DelegateDispatchedContinuation(context, block)
-    lock.withLock {
-      queue += continuation
-    }
+    lock.withLock { queue += continuation }
 
     // Trampoline the dispatch outside the critical section to avoid deadlocks.
     // This will either synchronously run block or dispatch it, depending on what resuming a
@@ -119,8 +115,8 @@ internal open class WorkStealingDispatcher protected constructor(
   }
 
   /**
-   * Calls [limitedParallelism] on [delegateInterceptor] and wraps the returned dispatcher with
-   * a [WorkStealingDispatcher] that this instance will steal from.
+   * Calls [limitedParallelism] on [delegateInterceptor] and wraps the returned dispatcher with a
+   * [WorkStealingDispatcher] that this instance will steal from.
    *
    * This satisfies the limited parallelism requirements because [advanceUntilIdle] always runs
    * tasks with a parallelism of 1 (i.e. serially).
@@ -137,7 +133,7 @@ internal open class WorkStealingDispatcher protected constructor(
     return createMatchingDelayability(
       delegateInterceptor = limitedDelegate,
       lock = lock,
-      queue = queue
+      queue = queue,
     )
   }
 
@@ -162,9 +158,7 @@ internal open class WorkStealingDispatcher protected constructor(
     } while (task != null)
   }
 
-  /**
-   * Removes and returns the next task to run from the queue.
-   */
+  /** Removes and returns the next task to run from the queue. */
   private fun nextTask(): DelegateDispatchedContinuation? {
     lock.withLock {
       val iterator = queue.iterator()
@@ -180,7 +174,7 @@ internal open class WorkStealingDispatcher protected constructor(
 
   protected inner class DelegateDispatchedContinuation(
     override val context: CoroutineContext,
-    private val runnable: Runnable
+    private val runnable: Runnable,
   ) : Continuation<Unit> {
 
     /**
@@ -191,8 +185,7 @@ internal open class WorkStealingDispatcher protected constructor(
      * Access to this property does not need to be synchronized with [lock] or by any other method,
      * since it's just a write-once hint.
      */
-    @Volatile
-    private var consumed = false
+    @Volatile private var consumed = false
 
     /**
      * Cache for intercepted coroutine so we can release it from [resumeWith].
@@ -212,9 +205,8 @@ internal open class WorkStealingDispatcher protected constructor(
      * to have the dispatcher intercept a continuation and resume the intercepted continuation.
      */
     fun resumeOnDelegateDispatcher() {
-      val intercepted = delegateInterceptor.interceptContinuation(this).also {
-        this.intercepted = it
-      }
+      val intercepted =
+        delegateInterceptor.interceptContinuation(this).also { this.intercepted = it }
 
       // If delegate is a CoroutineDispatcher, intercepted will be a special Continuation that will
       // check the delegate's isDispatchNeeded to decide whether to call dispatch() or to enqueue it
@@ -222,9 +214,7 @@ internal open class WorkStealingDispatcher protected constructor(
       intercepted.resume(Unit)
     }
 
-    /**
-     * DO NOT CALL DIRECTLY! Call [resumeOnDelegateDispatcher] instead.
-     */
+    /** DO NOT CALL DIRECTLY! Call [resumeOnDelegateDispatcher] instead. */
     override fun resumeWith(result: Result<Unit>) {
       // Fastest path: If this continuation has already been ran by advancing, don't even bother
       // locking and checking the queue. Note that even if consumed is false, the task may have been
@@ -233,9 +223,7 @@ internal open class WorkStealingDispatcher protected constructor(
 
       // Fast path: If we're racing with another thread and consumed hasn't been set yet, then check
       // the queue under lock. The queue is the real source of truth.
-      val unconsumedForSure = lock.withLock {
-        queue.remove(this)
-      }
+      val unconsumedForSure = lock.withLock { queue.remove(this) }
       if (unconsumedForSure) {
         releaseAndRun()
       }
@@ -267,5 +255,5 @@ private class DelayableWorkStealingDispatcher(
   delegate: ContinuationInterceptor,
   delay: Delay,
   lock: Lock?,
-  queue: LinkedHashSet<DelegateDispatchedContinuation>?
+  queue: LinkedHashSet<DelegateDispatchedContinuation>?,
 ) : WorkStealingDispatcher(delegate, lock, queue), Delay by delay

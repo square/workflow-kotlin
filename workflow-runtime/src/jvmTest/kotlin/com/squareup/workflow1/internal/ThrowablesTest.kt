@@ -5,7 +5,8 @@ import kotlin.test.assertEquals
 
 class ThrowablesTest {
 
-  @Test fun `requireWithKey throws IllegalArgumentException`() {
+  @Test
+  fun `requireWithKey throws IllegalArgumentException`() {
     try {
       requireWithKey(false, "requiredKey") { "message" }
     } catch (e: IllegalArgumentException) {
@@ -15,7 +16,8 @@ class ThrowablesTest {
     }
   }
 
-  @Test fun `checkWithKey throws IllegalStateException`() {
+  @Test
+  fun `checkWithKey throws IllegalStateException`() {
     try {
       checkWithKey(false, "checkedKey") { "message" }
     } catch (e: IllegalStateException) {
@@ -25,7 +27,8 @@ class ThrowablesTest {
     }
   }
 
-  @Test fun `Throwable withKey adds frame based on key`() {
+  @Test
+  fun `Throwable withKey adds frame based on key`() {
     RuntimeException("cause").withKey("key").assertIsKeyedException("key")
   }
 

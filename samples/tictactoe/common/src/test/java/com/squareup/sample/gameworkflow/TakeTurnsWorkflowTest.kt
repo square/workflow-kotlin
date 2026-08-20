@@ -13,7 +13,8 @@ import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
 
 class TakeTurnsWorkflowTest {
-  @Test fun readWriteCompletedGame() {
+  @Test
+  fun readWriteCompletedGame() {
     val turn = Turn()
     val before = CompletedGame(Quitted, turn)
     val out = before.toSnapshot()
@@ -21,20 +22,20 @@ class TakeTurnsWorkflowTest {
     assertThat(after).isEqualTo(before)
   }
 
-  @Test fun startsGameWithGivenNames() {
+  @Test
+  fun startsGameWithGivenNames() {
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
       TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
       val (x, o) = awaitNextRendering().playerInfo
 
-      assertThat(x)
-        .isEqualTo("higgledy")
-      assertThat(o)
-        .isEqualTo("piggledy")
+      assertThat(x).isEqualTo("higgledy")
+      assertThat(o).isEqualTo("piggledy")
     }
   }
 
-  @Test fun xWins() {
+  @Test
+  fun xWins() {
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
       TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
@@ -44,20 +45,16 @@ class TakeTurnsWorkflowTest {
       takeSquare(1, 1)
       takeSquare(0, 2)
 
-      val expectedLastTurn = Turn(
-        board = listOf(
-          listOf(X, X, X),
-          listOf(O, O, null),
-          listOf(null, null, null)
-        )
-      )
+      val expectedLastTurn =
+        Turn(board = listOf(listOf(X, X, X), listOf(O, O, null), listOf(null, null, null)))
 
       val result = awaitNextOutput()
       assertThat(result).isEqualTo(CompletedGame(Victory, expectedLastTurn))
     }
   }
 
-  @Test fun draw() {
+  @Test
+  fun draw() {
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
       TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
@@ -73,20 +70,15 @@ class TakeTurnsWorkflowTest {
       takeSquare(2, 0) // O - X
       takeSquare(2, 1) // O X X
 
-      val expectedLastTurn = Turn(
-        board = listOf(
-          listOf(X, O, X),
-          listOf(X, O, O),
-          listOf(O, X, X)
-        )
-      )
+      val expectedLastTurn = Turn(board = listOf(listOf(X, O, X), listOf(X, O, O), listOf(O, X, X)))
 
       val result = awaitNextOutput()
       assertThat(result).isEqualTo(CompletedGame(Draw, expectedLastTurn))
     }
   }
 
-  @Test fun quiteAndResume() {
+  @Test
+  fun quiteAndResume() {
     var output: CompletedGame? = null
 
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
@@ -99,10 +91,7 @@ class TakeTurnsWorkflowTest {
     assertThat(output!!.ending).isSameInstanceAs(Quitted)
 
     RealTakeTurnsWorkflow().launchForTestingFromStartWith(
-      TakeTurnsProps.resumeGame(
-        PlayerInfo("higgledy", "piggledy"),
-        output.lastTurn
-      )
+      TakeTurnsProps.resumeGame(PlayerInfo("higgledy", "piggledy"), output.lastTurn)
     ) {
       assertThat(awaitNextRendering().gameState).isEqualTo(output.lastTurn)
     }

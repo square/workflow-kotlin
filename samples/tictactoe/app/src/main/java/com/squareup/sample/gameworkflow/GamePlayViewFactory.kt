@@ -19,7 +19,7 @@ internal val GamePlayViewFactory: ScreenViewFactory<GamePlayScreen> =
 private fun setCellClickListeners(
   viewGroup: ViewGroup,
   turn: Turn,
-  takeSquareHandler: (row: Int, col: Int) -> Unit
+  takeSquareHandler: (row: Int, col: Int) -> Unit,
 ) {
   for (i in 0..8) {
     val cell = viewGroup.getChildAt(i)
@@ -39,16 +39,13 @@ private fun setCellClickListeners(
   }
 }
 
-private fun GamePlayLayoutBinding.renderBanner(
-  turn: Turn,
-  playerInfo: PlayerInfo
-) {
+private fun GamePlayLayoutBinding.renderBanner(turn: Turn, playerInfo: PlayerInfo) {
   val mark = turn.playing.symbol
-  val playerName = turn.playing.name(playerInfo)
-    .trim()
+  val playerName = turn.playing.name(playerInfo).trim()
 
-  gamePlayToolbar.title = when {
-    playerName.isEmpty() -> "Place your $mark"
-    else -> "$playerName, place your $mark"
-  }
+  gamePlayToolbar.title =
+    when {
+      playerName.isEmpty() -> "Place your $mark"
+      else -> "$playerName, place your $mark"
+    }
 }

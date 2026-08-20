@@ -3,15 +3,15 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.testing.test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class FlowWorkersTest {
 
@@ -22,7 +22,8 @@ class FlowWorkersTest {
 
   private val worker by lazy { source.asWorker() }
 
-  @Test fun `flow emits`() {
+  @Test
+  fun `flow emits`() {
     worker.test {
       subject.send("foo")
       assertEquals("foo", nextOutput())
@@ -32,14 +33,16 @@ class FlowWorkersTest {
     }
   }
 
-  @Test fun `flow finishes`() {
+  @Test
+  fun `flow finishes`() {
     worker.test {
       subject.close()
       assertFinished()
     }
   }
 
-  @Test fun `flow finishes after emitting interleaved`() {
+  @Test
+  fun `flow finishes after emitting interleaved`() {
     worker.test {
       subject.send("foo")
       assertEquals("foo", nextOutput())
@@ -49,7 +52,8 @@ class FlowWorkersTest {
     }
   }
 
-  @Test fun `flow finishes after emitting grouped`() {
+  @Test
+  fun `flow finishes after emitting grouped`() {
     worker.test {
       subject.send("foo")
       subject.close()
@@ -59,25 +63,26 @@ class FlowWorkersTest {
     }
   }
 
-  @Test fun `flow throws`() {
+  @Test
+  fun `flow throws`() {
     worker.test {
       subject.close(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
   }
 
-  @Test fun `flow is collected lazily`() {
+  @Test
+  fun `flow is collected lazily`() {
     var collections = 0
     source = source.onCollect { collections++ }
 
     assertEquals(0, collections)
 
-    worker.test {
-      assertEquals(1, collections)
-    }
+    worker.test { assertEquals(1, collections) }
   }
 
-  @Test fun `flow is cancelled when worker cancelled`() {
+  @Test
+  fun `flow is cancelled when worker cancelled`() {
     var cancellations = 0
     source = source.onCancel { cancellations++ }
 

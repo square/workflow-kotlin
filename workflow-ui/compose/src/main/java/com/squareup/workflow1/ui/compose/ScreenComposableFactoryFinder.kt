@@ -16,7 +16,7 @@ import com.squareup.workflow1.ui.getFactoryFor
 public interface ScreenComposableFactoryFinder {
   public fun <ScreenT : Screen> getComposableFactoryForRendering(
     environment: ViewEnvironment,
-    rendering: ScreenT
+    rendering: ScreenT,
   ): ScreenComposableFactory<ScreenT>? {
     val factoryOrNull: ScreenComposableFactory<ScreenT>? =
       environment[ViewRegistry].getFactoryFor(rendering)
@@ -24,9 +24,8 @@ public interface ScreenComposableFactoryFinder {
     @Suppress("UNCHECKED_CAST")
     return factoryOrNull
       ?: (rendering as? ComposeScreen)?.let {
-        ScreenComposableFactory<ComposeScreen> { rendering ->
-          rendering.Content()
-        } as ScreenComposableFactory<ScreenT>
+        ScreenComposableFactory<ComposeScreen> { rendering -> rendering.Content() }
+          as ScreenComposableFactory<ScreenT>
       }
 
       // Support for Compose BackStackScreen, BodyAndOverlaysScreen treatments would go here,
@@ -34,25 +33,24 @@ public interface ScreenComposableFactoryFinder {
 
       ?: (rendering as? NamedScreen<*>)?.let {
         ScreenComposableFactory<NamedScreen<*>> { rendering ->
-          val innerFactory = rendering.content
-            .toComposableFactory(LocalWorkflowEnvironment.current)
+          val innerFactory = rendering.content.toComposableFactory(LocalWorkflowEnvironment.current)
           innerFactory.Content(rendering.content)
-        } as ScreenComposableFactory<ScreenT>
+        }
+          as ScreenComposableFactory<ScreenT>
       }
       ?: (rendering as? EnvironmentScreen<*>)?.let {
         ScreenComposableFactory<EnvironmentScreen<*>> { rendering ->
           val currentEnv = LocalWorkflowEnvironment.current
-          val innerFactory = rendering.content.toComposableFactory(
-            currentEnv + rendering.environment
-          )
+          val innerFactory =
+            rendering.content.toComposableFactory(currentEnv + rendering.environment)
 
-          val comboEnv = remember(currentEnv, rendering.environment) {
-            currentEnv + rendering.environment
-          }
+          val comboEnv =
+            remember(currentEnv, rendering.environment) { currentEnv + rendering.environment }
           CompositionLocalProvider(LocalWorkflowEnvironment provides comboEnv) {
             innerFactory.Content(rendering.content)
           }
-        } as ScreenComposableFactory<ScreenT>
+        }
+          as ScreenComposableFactory<ScreenT>
       }
   }
 
@@ -64,15 +62,16 @@ public interface ScreenComposableFactoryFinder {
 
 public fun <ScreenT : Screen> ScreenComposableFactoryFinder.requireComposableFactoryForRendering(
   environment: ViewEnvironment,
-  rendering: ScreenT
+  rendering: ScreenT,
 ): ScreenComposableFactory<ScreenT> {
   return getComposableFactoryForRendering(environment, rendering)
     ?: throw IllegalArgumentException(
-      "A ScreenComposableFactory should have been registered to display $rendering, " +
-        "or that class should implement ComposeScreen. Instead found " +
-        "${
+        "A ScreenComposableFactory should have been registered to display $rendering, " +
+          "or that class should implement ComposeScreen. Instead found " +
+          "${
           environment[ViewRegistry]
             .getEntryFor(Key(rendering::class, ScreenComposableFactory::class))
         }."
-    ).withKey(keyFor(rendering))
+      )
+      .withKey(keyFor(rendering))
 }

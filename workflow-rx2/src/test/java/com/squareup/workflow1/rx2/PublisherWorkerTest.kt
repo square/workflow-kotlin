@@ -10,24 +10,25 @@ import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import io.reactivex.BackpressureStrategy.BUFFER
 import io.reactivex.subjects.PublishSubject
-import org.reactivestreams.Publisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import org.reactivestreams.Publisher
 
 internal class PublisherWorkerTest {
 
-  @Test fun works() {
+  @Test
+  fun works() {
     val subject = PublishSubject.create<String>()
-    val worker = object : PublisherWorker<String>() {
-      override fun runPublisher(): Publisher<out String> = subject.toFlowable(BUFFER)
-      override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = otherWorker === this
-    }
+    val worker =
+      object : PublisherWorker<String>() {
+        override fun runPublisher(): Publisher<out String> = subject.toFlowable(BUFFER)
+
+        override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = otherWorker === this
+      }
 
     fun action(value: String) = action<Unit, Nothing, String>("") { setOutput(value) }
-    val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(worker) { action(it) }
-    }
+    val workflow = Workflow.stateless<Unit, String, Unit> { runningWorker(worker) { action(it) } }
 
     workflow.launchForTestingFromStartWith {
       assertFalse(hasOutput)

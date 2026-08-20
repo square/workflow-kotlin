@@ -7,7 +7,7 @@ internal class RememberedNode<ResultT>(
   val key: String,
   val resultType: KType,
   val inputs: Array<out Any?>,
-  val lastCalculated: ResultT
+  val lastCalculated: ResultT,
 ) : InlineListNode<RememberedNode<*>> {
 
   override var nextListNode: RememberedNode<*>? = null

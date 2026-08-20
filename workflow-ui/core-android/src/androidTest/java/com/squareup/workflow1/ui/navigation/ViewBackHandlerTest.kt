@@ -13,18 +13,23 @@ import org.junit.rules.RuleChain
 
 internal class ViewBackHandlerTest {
   private val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private val scenario
+    get() = scenarioRule.scenario
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
-    .around(IdlingDispatcherRule)
+  @get:Rule
+  val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(scenarioRule)
+      .around(IdlingDispatcherRule)
 
   private var viewHandlerCount = 0
+
   private fun viewBackHandler() {
     viewHandlerCount++
   }
 
-  @Test fun itWorksWhenHandlerIsAddedBeforeAttach() {
+  @Test
+  fun itWorksWhenHandlerIsAddedBeforeAttach() {
     scenario.onActivity { activity ->
       val view = View(activity)
       WorkflowLifecycleOwner.installOn(view, activity)
@@ -38,7 +43,8 @@ internal class ViewBackHandlerTest {
     }
   }
 
-  @Test fun itWorksWhenHandlerIsAddedAfterAttach() {
+  @Test
+  fun itWorksWhenHandlerIsAddedAfterAttach() {
     scenario.onActivity { activity ->
       val view = View(activity)
       activity.setContentView(view)

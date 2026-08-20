@@ -11,15 +11,13 @@ import com.squareup.sample.compose.hellocomposebinding.HelloWorkflow.Rendering
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-val HelloBinding = ScreenComposableFactory<Rendering> { rendering ->
-  Text(
-    rendering.message,
-    modifier = Modifier
-      .fillMaxSize()
-      .clickable(onClick = rendering.onClick)
-      .wrapContentSize()
-  )
-}
+val HelloBinding =
+  ScreenComposableFactory<Rendering> { rendering ->
+    Text(
+      rendering.message,
+      modifier = Modifier.fillMaxSize().clickable(onClick = rendering.onClick).wrapContentSize(),
+    )
+  }
 
 @Preview(heightDp = 150, showBackground = true)
 @Composable

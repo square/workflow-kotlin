@@ -74,8 +74,10 @@ kotlinx-coroutines = "1.10.2"
 kotlinx-serialization-json = "1.8.1"
 kotlinx-atomicfu = "0.22.0"
 
-ktlint = "0.49.1"
-ktlint-gradle = "0.2.2"
+# The ktfmt engine version, pinned explicitly rather than using whatever the Gradle plugin
+# bundles. Keep in sync with android-register's `square.ktfmtVersion`.
+ktfmt = "0.62"
+ktfmt-gradle = "0.26.0"
 material = "1.14.0"
 
 mockito-core = "3.12.4"
@@ -121,7 +123,7 @@ dropbox-dependencyGuard = { id = "com.dropbox.dependency-guard", version.ref = "
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
 
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ktlint = { id = "com.rickbusarow.ktlint", version.ref = "ktlint-gradle" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt-gradle" }
 kotlinx-apiBinaryCompatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinx-binary-compatibility" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
@@ -248,8 +250,8 @@ kotlinx-coroutines-test-common = { module = "org.jetbrains.kotlinx:kotlinx-corou
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
 
-ktlint-core = { module = "com.pinterest.ktlint:ktlint-core", version.ref = "ktlint" }
-ktlint-gradle = { module = "com.rickbusarow.ktlint:ktlint-gradle-plugin", version.ref = "ktlint-gradle" }
+ktfmt = { module = "com.facebook:ktfmt", version.ref = "ktfmt" }
+ktfmt-gradle-plugin = { module = "com.ncorti.ktfmt.gradle:plugin", version.ref = "ktfmt-gradle" }
 
 lanterna = "com.googlecode.lanterna:lanterna:3.1.5"
 

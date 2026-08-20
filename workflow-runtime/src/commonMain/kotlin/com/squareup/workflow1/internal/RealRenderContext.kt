@@ -7,11 +7,11 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
+import kotlin.reflect.KType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlin.reflect.KType
 
 internal class RealRenderContext<PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
@@ -19,7 +19,7 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
   private val rememberStore: RememberStore,
   private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>,
   override val workflowTracer: WorkflowTracer?,
-  override val runtimeConfig: RuntimeConfig
+  override val runtimeConfig: RuntimeConfig,
 ) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   interface Renderer<PropsT, StateT, OutputT> {
@@ -27,15 +27,12 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
     ): ChildRenderingT
   }
 
   interface SideEffectRunner {
-    fun runningSideEffect(
-      key: String,
-      sideEffect: suspend CoroutineScope.() -> Unit
-    )
+    fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit)
   }
 
   interface RememberStore {
@@ -43,7 +40,7 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
       key: String,
       resultType: KType,
       vararg inputs: Any?,
-      calculation: () -> ResultT
+      calculation: () -> ResultT,
     ): ResultT
   }
 
@@ -51,9 +48,9 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    * False except while this [WorkflowNode] is running the workflow's `render` method.
    *
    * Used to:
-   *  - Prevent modifications to this object after [freeze] is called (e.g. [renderChild] calls).
-   *    Only allowed when this flag is true.
-   *  - Prevent sending to sinks before render returns. Only allowed when this flag is false.
+   * - Prevent modifications to this object after [freeze] is called (e.g. [renderChild] calls).
+   *   Only allowed when this flag is true.
+   * - Prevent sending to sinks before render returns. Only allowed when this flag is false.
    *
    * This is a [ThreadLocal] since we only care about preventing calls during rendering from the
    * thread that is actually doing the rendering. If a background thread happens to send something
@@ -61,7 +58,8 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    */
   private var performingRender by threadLocalOf { false }
 
-  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
+  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
+    get() = this
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override fun toString(): String =
@@ -84,18 +82,13 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
   ): ChildRenderingT {
-    checkPerformingRender(child.identifier) {
-      "renderChild(${child.identifier})"
-    }
+    checkPerformingRender(child.identifier) { "renderChild(${child.identifier})" }
     return renderer.render(child, props, key, handler)
   }
 
-  override fun runningSideEffect(
-    key: String,
-    sideEffect: suspend CoroutineScope.() -> Unit
-  ) {
+  override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
     checkPerformingRender(key) { "runningSideEffect($key)" }
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
@@ -104,36 +97,29 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     key: String,
     resultType: KType,
     vararg inputs: Any?,
-    calculation: () -> ResultT
+    calculation: () -> ResultT,
   ): ResultT {
     checkPerformingRender(key) { "remember($key)" }
     return rememberStore.remember(key, resultType, inputs = inputs, calculation)
   }
 
-  /**
-   * Freezes this context so that any further calls to this context will throw.
-   */
+  /** Freezes this context so that any further calls to this context will throw. */
   fun freeze() {
     performingRender = false
   }
 
-  /**
-   * Unfreezes when the node is about to render() again.
-   */
+  /** Unfreezes when the node is about to render() again. */
   fun unfreeze() {
     performingRender = true
   }
 
   /**
-   * @param stackTraceKey ensures unique crash reporter error groups.
-   * It is important that keys are stable across processes, avoid system hashes.
-   *
+   * @param stackTraceKey ensures unique crash reporter error groups. It is important that keys are
+   *   stable across processes, avoid system hashes.
    * @see checkWithKey
    */
-  private inline fun checkPerformingRender(
-    stackTraceKey: Any,
-    lazyMessage: () -> Any
-  ) = checkWithKey(performingRender, stackTraceKey) {
-    "RenderContext cannot be used after render method returns: ${lazyMessage()}"
-  }
+  private inline fun checkPerformingRender(stackTraceKey: Any, lazyMessage: () -> Any) =
+    checkWithKey(performingRender, stackTraceKey) {
+      "RenderContext cannot be used after render method returns: ${lazyMessage()}"
+    }
 }

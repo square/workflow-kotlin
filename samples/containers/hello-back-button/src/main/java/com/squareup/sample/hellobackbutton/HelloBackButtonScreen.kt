@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:filename")
-
 package com.squareup.sample.hellobackbutton
 
 import com.squareup.sample.hellobackbutton.databinding.HelloBackButtonLayoutBinding
@@ -10,7 +8,7 @@ import com.squareup.workflow1.ui.navigation.setBackHandler
 data class HelloBackButtonScreen(
   val message: String,
   val onClick: () -> Unit,
-  val onBackPressed: (() -> Unit)?
+  val onBackPressed: (() -> Unit)?,
 ) : AndroidScreen<HelloBackButtonScreen> {
   override val viewFactory: ScreenViewFactory<HelloBackButtonScreen> =
     ScreenViewFactory.fromViewBinding(HelloBackButtonLayoutBinding::inflate) { rendering, _ ->
