@@ -103,6 +103,8 @@ internal class WorkflowSnapshotState(props: Any?, onOutput: ((Any?) -> Unit)?, s
    * output handler if necessary.
    */
   inline fun applyAction(action: WorkflowAction<Any?, Any?, Any?>, onNewState: () -> Unit) {
+    // TODO should this be done in a snapshot to ensure all the updates get to the workflow runtime
+    //  at the same time?
     var oldState: Any? = null
     var lastProps: Any? = null
     var onOutput: ((Any?) -> Unit)? = null

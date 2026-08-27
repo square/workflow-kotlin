@@ -11,7 +11,6 @@ import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
-import com.squareup.workflow1.internal.compose.renderWorkflowWithComposeRuntimeIn
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -136,18 +135,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  if (COMPOSE_RUNTIME in runtimeConfig) {
-    return renderWorkflowWithComposeRuntimeIn(
-      workflow = workflow,
-      scope = scope,
-      props = props,
-      initialSnapshot = initialSnapshot,
-      interceptor = chainedInterceptor,
-      workflowTracer = workflowTracer,
-      onOutput = onOutput,
-      runtimeConfig = runtimeConfig,
-    )
-  }
+  val workflow =
+    if (COMPOSE_RUNTIME in runtimeConfig) {
+      ComposeRuntimeSwizzlerWorkflow(workflow)
+    } else {
+      workflow
+    }
 
   val dispatcher =
     if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
@@ -187,7 +180,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
         runner.cancelRuntime(cancellation)
         throw e
-      }
+      },
     )
 
   suspend fun <OutputT> sendOutput(
@@ -247,8 +240,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
         drain@ while (
           isActive &&
-            drainingActionResult is ActionApplied<*> &&
-            drainingActionResult.output == null
+          drainingActionResult is ActionApplied<*> &&
+          drainingActionResult.output == null
         ) {
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || drainingActionResult.stateChanged

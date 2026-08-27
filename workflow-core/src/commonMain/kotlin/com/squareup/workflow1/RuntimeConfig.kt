@@ -100,7 +100,9 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime INDEXED_ACTIVE_STAGING_LISTS,
 
-  /** Replaces the traditional Workflow runtime with the Compose runtime. */
+  /** Replaces the traditional Workflow runtime with the Compose runtime at the root of the workflow
+   * tree. To only use the runtime for a subtree, use `ComposeRuntimeSwizzlerWorkflow` from the
+   * `workflow-runtime` library. */
   @WorkflowExperimentalRuntime COMPOSE_RUNTIME,
   @WorkflowExperimentalRuntime COMPOSE_RUNTIME_SKIPPING;
 

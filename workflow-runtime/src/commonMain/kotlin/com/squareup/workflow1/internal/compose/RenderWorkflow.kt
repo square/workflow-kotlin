@@ -2,11 +2,13 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.squareup.workflow1.ComposeRuntimeSwizzlerWorkflow
 import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
@@ -37,6 +39,8 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
  * @param renderKey The key passed to the [com.squareup.workflow1.BaseRenderContext.renderChild]
  *   function by the parent workflow. This is only used to construct the child's [WorkflowSession],
  *   and is not used for actual keying. [ComposeRenderContext] does the actual keying.
+ * @param onSessionAvailable Invoked once (per callback instance) with the [WorkflowSession] of this
+ * workflow once it's been created.
  */
 @Suppress("UNCHECKED_CAST")
 @OptIn(WorkflowExperimentalRuntime::class)
@@ -49,7 +53,22 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   parentSession: WorkflowSession?,
   renderKey: String,
   recomposeScope: RecomposeScope = currentRecomposeScope,
+  onSessionAvailable: ((WorkflowSession) -> Unit)? = null,
 ): RenderingT {
+  if (workflow is ComposeRuntimeSwizzlerWorkflow<PropsT, OutputT, RenderingT>) {
+    // This workflow is just a wrapper telling us to switch to the compose runtime. Since we're
+    // already in that runtime, just render its child directly.
+    return renderWorkflow(
+      workflow = workflow.child,
+      props = props,
+      onOutput = onOutput,
+      config = config,
+      parentSession = parentSession,
+      renderKey = renderKey,
+      onSessionAvailable = onSessionAvailable,
+    )
+  }
+
   // The lifetime of the workflow session is tied to the workflow.identifier, but we don't key on it
   // here since it's already keyed from ComposeRenderContext.
   val renderContext =
@@ -61,6 +80,13 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       renderKey = renderKey,
       callerRecomposeScope = recomposeScope,
     )
+
+  if (onSessionAvailable != null) {
+    DisposableEffect(onSessionAvailable, renderContext) {
+      onSessionAvailable(renderContext)
+      onDispose {}
+    }
+  }
 
   // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh

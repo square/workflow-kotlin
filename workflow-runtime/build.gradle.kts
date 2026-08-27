@@ -72,6 +72,7 @@ kotlin {
         // These are aliases to the androidx runtime libraries for android source sets.
         implementation(libs.jetbrains.compose.runtime)
         implementation(libs.jetbrains.compose.runtime.saveable)
+        implementation(libs.molecule)
       }
     }
 
