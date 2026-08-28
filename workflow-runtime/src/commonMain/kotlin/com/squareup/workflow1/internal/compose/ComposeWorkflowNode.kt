@@ -7,6 +7,7 @@ import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import app.cash.molecule.RecompositionMode
+import app.cash.molecule.SnapshotNotifier
 import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
@@ -31,6 +32,7 @@ import com.squareup.workflow1.internal.threadLocalOf
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 
@@ -78,6 +80,7 @@ internal class ComposeWorkflowNode<P, O, R>(
     scope.launchMolecule(
       mode = RecompositionMode.ContextClock,
       context = clock + dispatcher,
+      snapshotNotifier = SnapshotNotifier.WhileActive,
       emitter = { rendering = it },
     ) {
       withCompositionLocals(LocalSaveableStateRegistry provides saveableStateRegistry) {
@@ -141,10 +144,17 @@ internal class ComposeWorkflowNode<P, O, R>(
     }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult {
-    // TODO
-    println("OMG TODO implement applyNextAvailableTreeAction")
-    return ActionsExhausted
+    val stateChanged = !recomposeRequests.isEmpty
+    if (skipDirtyNodes && stateChanged) return ActionsExhausted
+
+    val nextOutput = outputs.tryReceive().getOrNull() ?: return ActionsExhausted
+    val actionApplied = ActionApplied<O>(
+      output = WorkflowOutput(nextOutput),
+      stateChanged = stateChanged,
+    )
+    return emitAppliedActionToParent(actionApplied)
   }
 
   private fun onRecompositionRequested() {

@@ -1,10 +1,18 @@
 package com.squareup.workflow1.internal.compose
 
+import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.Composable
-import com.squareup.workflow1.internal.compose.runtime.SynchronizedMolecule
-import com.squareup.workflow1.internal.compose.runtime.launchSynchronizedMolecule
-import com.squareup.workflow1.internal.compose.runtime.setGlobalSnapshotManagerSendApplyImmediately
+import androidx.compose.runtime.snapshots.Snapshot
+import app.cash.molecule.RecompositionMode
+import app.cash.molecule.SnapshotNotifier
+import app.cash.molecule.launchMolecule
+import com.squareup.workflow1.internal.WorkStealingDispatcher
+import kotlin.coroutines.ContinuationInterceptor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.plus
 
 /**
  * Test harness that hosts a [SynchronizedMolecule] and applies snapshot writes immediately so tests
@@ -20,37 +28,38 @@ import kotlinx.coroutines.CoroutineScope
  * recomposer.
  */
 internal class TestComposition<R>(scope: CoroutineScope, content: @Composable () -> R) {
-  private var recomposeRequests: Int = 0
-  private val molecule = run {
-    enableImmediateApplyForTests()
-    scope.launchSynchronizedMolecule(
-      onNeedsRecomposition = { recomposeRequests++ },
-      content = content,
-    )
-  }
+  private val clock = BroadcastFrameClock(
+    onNewAwaiters = {
+      needsRecomposition = true
+      recomposeRequestCount++
+    },
+  )
+  private val dispatcher = WorkStealingDispatcher(
+    scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined,
+  )
+  private val scope = scope + Job(parent = scope.coroutineContext[Job]) + dispatcher + clock
+  private val renderings = this.scope.launchMolecule(
+    mode = RecompositionMode.ContextClock,
+    snapshotNotifier = SnapshotNotifier.WhileActive,
+    body = content,
+  )
 
   /** Number of times the molecule has signaled that recomposition is needed. */
-  val recomposeRequestCount: Int
-    get() = recomposeRequests
+  var recomposeRequestCount: Int = 0
+    private set
 
-  /** Mirrors [SynchronizedMolecule.needsRecomposition]. */
-  val needsRecomposition: Boolean
-    get() = molecule.needsRecomposition
+  var needsRecomposition: Boolean = false
+    private set
 
-  fun recompose(): R = molecule.recompose()
+  fun recompose(): R {
+    Snapshot.sendApplyNotifications()
+    dispatcher.advanceUntilIdle()
+    clock.sendFrame(0L)
+    needsRecomposition = false
+    return renderings.value
+  }
 
   fun close() {
-    molecule.close()
+    scope.cancel()
   }
-}
-
-/**
- * Ensures [GlobalSnapshotManager]'s global write observer dispatches its
- * `Snapshot.sendApplyNotifications()` call synchronously instead of trying to use
- * `Dispatchers.Main`. Once enabled, it stays enabled for the rest of the test JVM.
- *
- * Idempotent — safe to call from any test, including ones that don't use [TestComposition].
- */
-internal fun enableImmediateApplyForTests() {
-  setGlobalSnapshotManagerSendApplyImmediately(true)
 }

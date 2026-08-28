@@ -3,7 +3,6 @@ package com.squareup.workflow1.internal.compose
 import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
@@ -13,14 +12,6 @@ import kotlin.test.fail
 
 internal class WorkflowSnapshotStateTest {
 
-  @BeforeTest
-  fun setUp() {
-    // WorkflowSnapshotState is a snapshot StateObject; writes go through the global write
-    // observer registered by GlobalSnapshotManager. Without this flag, the observer tries to
-    // launch on Dispatchers.Main, which isn't installed in plain JVM tests.
-    enableImmediateApplyForTests()
-  }
-
   /**
    * Runs [block] inside a mutable snapshot and reports whether any write was observed against
    * [target]. The snapshot is applied at the end so its effects become visible outside.
@@ -29,7 +20,7 @@ internal class WorkflowSnapshotStateTest {
     var observed = false
     val snapshot =
       Snapshot.takeMutableSnapshot(
-        writeObserver = { written -> if (written === target) observed = true }
+        writeObserver = { written -> if (written === target) observed = true },
       )
     try {
       snapshot.enter(block)

@@ -228,10 +228,10 @@ private fun renderWorkflowRestartableImpl(
     }
   // endregion
 
-  // TODO This lambda allocation happens every time this workflow is re-rendered. I suspect this is
-  //  part of the reason why rerendering large swaths of the tree is inefficient, including first
-  //  render. But it's required for restartability. We could try making it a no-op everywhere except
-  //  the root node, since we're already invalidating all the way up the tree every time anyway.
+  // This lambda allocation happens every time this workflow is re-rendered. I suspect this is
+  // part of the reason why rerendering large swaths of the tree is inefficient, including first
+  // render. But it's required for restartability. We could try making it a no-op everywhere except
+  // the root node, since we're already invalidating all the way up the tree every time anyway.
   composer.endRestartGroup()?.updateScope { composer, changed ->
     // This lambda is called when producer is invalidated. The lambda must create a restartable
     // group with the same key to preserve positional identity.

@@ -19,7 +19,6 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -33,11 +32,6 @@ enum class TestConfig(val runtimeOptions: RuntimeOptions) {
 @Burst
 @OptIn(WorkflowExperimentalRuntime::class)
 internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SKIPPING) {
-
-  @BeforeTest
-  fun setUp() {
-    enableImmediateApplyForTests()
-  }
 
   private val skippingConfig =
     WorkflowComposableRuntimeConfig(
@@ -263,13 +257,13 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
           println("OMG test: recomposing root (recomposeScope=$currentRecomposeScope)")
           renderWorkflow(
-              workflow = parentWorkflow,
-              props = 5,
-              onOutput = onOutput,
-              config = skippingConfig,
-              parentSession = null,
-              renderKey = "",
-            )
+            workflow = parentWorkflow,
+            props = 5,
+            onOutput = onOutput,
+            config = skippingConfig,
+            parentSession = null,
+            renderKey = "",
+          )
             .also { println("OMG test: new root rendering: $it") }
         }
       }
@@ -371,13 +365,13 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
           println("OMG test: recomposing root (recomposeScope=$currentRecomposeScope)")
           renderWorkflow(
-              workflow = parentWorkflow,
-              props = 5,
-              onOutput = onOutput,
-              config = skippingConfig,
-              parentSession = null,
-              renderKey = "",
-            )
+            workflow = parentWorkflow,
+            props = 5,
+            onOutput = onOutput,
+            config = skippingConfig,
+            parentSession = null,
+            renderKey = "",
+          )
             .also { println("OMG test: new root rendering: $it") }
         }
       }
