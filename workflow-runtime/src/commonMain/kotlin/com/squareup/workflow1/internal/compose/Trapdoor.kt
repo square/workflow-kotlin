@@ -106,27 +106,5 @@ internal value class Trapdoor(private val composer: Composer) {
     @ExplicitGroupsComposable
     @Composable
     inline fun <R> open(block: (Trapdoor) -> R): R = block(Trapdoor(currentComposer))
-
-    @Composable fun open(): Trapdoor = Trapdoor(currentComposer)
-
-    /**
-     * Uses Compose's slot table to detect changes to [value] between recompositions and calls
-     * [ifChanged] when a change is detected.
-     */
-    @Composable
-    inline fun <T> runIfValueChanged(value: T, ifChanged: (oldValue: T) -> Unit) {
-      val composer = currentComposer
-      val oldValue = composer.rememberedValue()
-      val wasEmpty = oldValue === Composer.Empty
-      val didChange = oldValue != value
-
-      if (wasEmpty || didChange) {
-        composer.updateRememberedValue(value)
-      }
-
-      if (!wasEmpty && didChange) {
-        ifChanged(oldValue as T)
-      }
-    }
   }
 }
