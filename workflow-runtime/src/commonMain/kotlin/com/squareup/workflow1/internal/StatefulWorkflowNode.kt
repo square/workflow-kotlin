@@ -76,8 +76,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   WorkflowSession {
 
   internal val coroutineContextForTest: CoroutineContext
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    get() = scope.coroutineContext
+    @RestrictTo(RestrictTo.Scope.TESTS) get() = scope.coroutineContext
 
   override val runtimeContext: CoroutineContext
     get() = scope.coroutineContext
@@ -115,7 +114,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
           { it.key }
         } else {
           null
-        },
+        }
     )
   private val remembered =
     ActiveStagingList<RememberedNode<*>>(
@@ -124,7 +123,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
           { RememberIdentity(it.key, it.resultType, it.inputs) }
         } else {
           null
-        },
+        }
     )
   private var lastProps: PropsT = initialProps
   private var lastRendering: NullableInitBox<RenderingT> = NullableInitBox()
@@ -351,8 +350,8 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
     if (
       !runtimeConfig.contains(PARTIAL_TREE_RENDERING) ||
-      !lastRendering.isInitialized ||
-      subtreeStateDirty
+        !lastRendering.isInitialized ||
+        subtreeStateDirty
     ) {
       // If we haven't already updated the cached instance, better do it now!
       maybeUpdateCachedWorkflowInstance(workflow)
@@ -415,7 +414,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     val aggregateActionApplied =
       actionApplied.copy(
         // Changing state is sticky, we pass it up if it ever changed.
-        stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false),
+        stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
       )
     // Our state changed.
     selfStateDirty = selfStateDirty || actionApplied.stateChanged

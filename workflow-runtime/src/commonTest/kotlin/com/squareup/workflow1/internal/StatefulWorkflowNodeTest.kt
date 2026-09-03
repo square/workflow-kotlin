@@ -506,10 +506,10 @@ internal class StatefulWorkflowNodeTest {
 
     val workflow =
       Workflow.stateless<Int, Nothing, Unit> { props ->
-        if (props in 0..2) runningSideEffect("one", recordingSideEffect(events1))
-        if (props == 1) runningSideEffect("two", recordingSideEffect(events2))
-        if (props == 2) runningSideEffect("three", recordingSideEffect(events3))
-      }
+          if (props in 0..2) runningSideEffect("one", recordingSideEffect(events1))
+          if (props == 1) runningSideEffect("two", recordingSideEffect(events2))
+          if (props == 2) runningSideEffect("three", recordingSideEffect(events3))
+        }
         .asStatefulWorkflow()
     val node =
       StatefulWorkflowNode(
