@@ -30,7 +30,7 @@ public class ComposeRuntimeSwizzlerWorkflow<P, O, R>(public val child: Workflow<
   Workflow<P, O, R> {
   override fun asStatefulWorkflow(): StatefulWorkflow<P, *, O, R> {
     throw UnsupportedOperationException(
-      "This workflow is handled directly by the workflow runtime.",
+      "This workflow is handled directly by the workflow runtime."
     )
   }
 }
@@ -50,7 +50,7 @@ private class State<P, O, R>(
 ) {
   private val dispatcher =
     WorkStealingDispatcher(
-      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined,
+      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
     )
   private var rendering: R? = null
   private val recomposeRequests = Channel<Unit>(capacity = 1)
@@ -92,7 +92,7 @@ private class State<P, O, R>(
                 // Set the state to a new holder that will return false from equals so the workflow
                 // runtime invalidates this node.
                 this.state = StateHolder(this@State)
-              },
+              }
             )
           }
         }
