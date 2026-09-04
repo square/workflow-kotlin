@@ -8,7 +8,10 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
+import org.jetbrains.kotlin.gradle.targets.js.testing.karma.KotlinKarma
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 class KotlinMultiPlatformConventionPlugin : Plugin<Project> {
@@ -36,6 +39,25 @@ class KotlinMultiPlatformConventionPlugin : Plugin<Project> {
     // task instead lets the report and any partial results be uploaded.
     target.tasks.withType(KotlinNativeTest::class.java).configureEach { test ->
       test.timeout.set(Duration.ofMinutes(15))
+    }
+
+    // Append the scripts in build-logic/karma.config.d to every generated karma.conf.js. See the
+    // comments in those scripts for what they fix.
+    target.extensions.configure(KotlinMultiplatformExtension::class.java) { kotlin ->
+      kotlin.targets.withType(KotlinJsIrTarget::class.java).configureEach { jsTarget ->
+        jsTarget.whenBrowserConfigured {
+          testTask { test ->
+            // KGP installs its default Karma framework after the project is evaluated, so hook the
+            // framework being set instead of calling useKarma, which would replace that default
+            // (and its browser configuration) with an empty one.
+            test.onTestFrameworkSet { framework ->
+              if (framework is KotlinKarma) {
+                framework.useConfigDirectory(target.rootDir.resolve("build-logic/karma.config.d"))
+              }
+            }
+          }
+        }
+      }
     }
 
     // Sets the JDK target for published artifacts.
