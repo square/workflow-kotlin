@@ -15,9 +15,19 @@ import kotlinx.coroutines.test.runTest
 
 /**
  * This only contains the single test ([saves_to_and_restores_from_snapshot]) from
- * [RenderWorkflowInTest] that uses [runtime2], since in Kotlin 2.3.10 passing [runtime2] as a test
- * method parameter causes a compiler crash. It should be possible to merge this test back into the
- * main suite once that bug is fixed.
+ * [RenderWorkflowInTest] that needs a second runtime config parameter (`runtime2`). It was split
+ * out because Kotlin 2.3.10 crashed when `runtime2` was a test method parameter. Kotlin 2.4.0 still
+ * crashes for some shapes of test body (see [saveAndRestoreSnapshot]), so the body is kept in a
+ * helper function. With that workaround it may be possible to merge this test back into the main
+ * suite.
+ *
+ * `runtime2` MUST stay a test method parameter rather than a class parameter. Burst generates a
+ * class per combination of class parameters, and Kotlin/Native's generated test registration code
+ * for a file reserves stack space for every test class in that file (about 32 bytes per class). As
+ * a class parameter this file expands to 2 × 2 × N² classes, where N is the number of
+ * [RuntimeOptions] entries, which overflows the 512KB stack of the worker threads that
+ * Kotlin/Native runs module initializers on once N passes ~64, crashing the whole test binary with
+ * SIGBUS.
  */
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 @Burst
@@ -25,7 +35,6 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
   useTracer: Boolean = false,
   private val useUnconfined: Boolean = true,
   private val runtime: RuntimeOptions = NONE,
-  private val runtime2: RuntimeOptions = NONE,
 ) {
 
   private val runtimeConfig = runtime.runtimeConfig
@@ -66,7 +75,16 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
   }
 
   @Test
-  fun saves_to_and_restores_from_snapshot() =
+  fun saves_to_and_restores_from_snapshot(runtime2: RuntimeOptions = NONE) =
+    saveAndRestoreSnapshot(runtime2)
+
+  /**
+   * The body of [saves_to_and_restores_from_snapshot] lives here instead of in the test function
+   * because the Burst-generated zero-arg specialization of a test function whose body evaluates
+   * `this` in an argument expression (e.g. `runTest(dispatcherUsed) { … }`) crashes the
+   * Kotlin/Native compiler with a `NativeCodeGeneratorException` (Kotlin 2.4.0, Burst 2.13.0).
+   */
+  private fun saveAndRestoreSnapshot(runtime2: RuntimeOptions) =
     runTest(dispatcherUsed) {
       val workflow =
         Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
