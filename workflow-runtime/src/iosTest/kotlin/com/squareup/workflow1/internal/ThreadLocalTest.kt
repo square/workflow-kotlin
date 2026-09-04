@@ -1,41 +1,42 @@
 package com.squareup.workflow1.internal
 
-import platform.Foundation.NSCondition
-import platform.Foundation.NSThread
 import kotlin.concurrent.Volatile
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import platform.Foundation.NSCondition
+import platform.Foundation.NSThread
 
 class ThreadLocalTest {
 
-  @Volatile
-  private var valueFromThread: Int = -1
+  @Volatile private var valueFromThread: Int = -1
 
-  @Test fun initialValue() {
+  @Test
+  fun initialValue() {
     val threadLocal = ThreadLocal(initialValue = { 42 })
     assertEquals(42, threadLocal.get())
   }
 
-  @Test fun settingValue() {
+  @Test
+  fun settingValue() {
     val threadLocal = ThreadLocal(initialValue = { 42 })
     threadLocal.set(0)
     assertEquals(0, threadLocal.get())
   }
 
-  @Test fun initialValue_inSeparateThread_afterChanging() {
+  @Test
+  fun initialValue_inSeparateThread_afterChanging() {
     val threadLocal = ThreadLocal(initialValue = { 42 })
     threadLocal.set(0)
 
-    val thread = NSThread {
-      valueFromThread = threadLocal.get()
-    }
+    val thread = NSThread { valueFromThread = threadLocal.get() }
     thread.start()
     thread.join()
 
     assertEquals(42, valueFromThread)
   }
 
-  @Test fun set_fromDifferentThreads_doNotConflict() {
+  @Test
+  fun set_fromDifferentThreads_doNotConflict() {
     val threadLocal = ThreadLocal(initialValue = { 0 })
     // threadStartedLatch and firstReadLatch together form a barrier: the allow the background
     // to start up and get to the same point as the test thread, just before writing to the
