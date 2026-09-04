@@ -1,3 +1,10 @@
+public final class com/squareup/workflow1/ComposeRuntimeSwizzlerWorkflow : com/squareup/workflow1/Workflow {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/Workflow;)V
+	public fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+	public final fun getChild ()Lcom/squareup/workflow1/Workflow;
+}
+
 public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
 	public static final field $stable I
 	public static final field INSTANCE Lcom/squareup/workflow1/NoopWorkflowInterceptor;
@@ -153,9 +160,5 @@ public final class com/squareup/workflow1/internal/ThrowablesKt {
 
 public final class com/squareup/workflow1/internal/Throwables_jvmKt {
 	public static final fun withKey (Ljava/lang/Throwable;Ljava/lang/Object;)Ljava/lang/Throwable;
-}
-
-public final class com/squareup/workflow1/internal/compose/runtime/GlobalSnapshotManagerKt {
-	public static final fun setGlobalSnapshotManagerSendApplyImmediately (Z)V
 }
 
