@@ -3,6 +3,7 @@ plugins {
   id("kotlin-android")
   id("android-sample-app")
   id("android-ui-tests")
+  alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -43,12 +44,15 @@ dependencies {
   implementation(libs.rxjava2.rxandroid)
   implementation(libs.squareup.cycler)
   implementation(libs.squareup.okio)
+  implementation(platform(libs.androidx.compose.bom))
+  implementation(libs.androidx.compose.foundation)
 
   implementation(project(":samples:dungeon:common"))
   implementation(project(":samples:dungeon:timemachine"))
   implementation(project(":samples:dungeon:timemachine-shakeable"))
   implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:compose"))
 
   testImplementation(libs.junit)
   testImplementation(libs.truth)

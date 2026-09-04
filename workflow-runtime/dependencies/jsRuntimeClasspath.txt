@@ -18,6 +18,8 @@ androidx.savedstate:savedstate-compose-js:1.3.3
 androidx.savedstate:savedstate-compose:1.3.3
 androidx.savedstate:savedstate-js:1.3.3
 androidx.savedstate:savedstate:1.3.3
+app.cash.molecule:molecule-runtime-js:2.2.0
+app.cash.molecule:molecule-runtime:2.2.0
 com.squareup.okio:okio-js:3.17.0
 com.squareup.okio:okio:3.17.0
 org.jetbrains.androidx.lifecycle:lifecycle-common-js:2.9.6

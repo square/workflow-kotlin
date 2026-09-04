@@ -53,7 +53,13 @@ class Component(context: AppCompatActivity) {
 
   val appWorkflow = DungeonAppWorkflow(gameSessionWorkflow, boardLoader)
 
-  val timeMachineWorkflow = TimeMachineAppWorkflow(appWorkflow, clock, context)
+  val timeMachineWorkflow =
+    TimeMachineAppWorkflow(
+      appWorkflow,
+      // SimpleWorkflow(),
+      clock,
+      context,
+    )
 
   val timeMachineModelFactory = TimeMachineModel.Factory(timeMachineWorkflow)
 }

@@ -1,25 +1,31 @@
 package com.squareup.workflow1
 
 import app.cash.burst.Burst
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 /**
  * This only contains the single test ([saves_to_and_restores_from_snapshot]) from
  * [RenderWorkflowInTest] that needs a second runtime config parameter (`runtime2`). It was split
  * out because Kotlin 2.3.10 crashed when `runtime2` was a test method parameter. Kotlin 2.4.0 still
- * crashes for some shapes of test body (see [saveAndRestoreSnapshot]), so the body is kept in a
- * helper function. With that workaround it may be possible to merge this test back into the main
- * suite.
+ * crashes with a `NativeCodeGeneratorException` if the Burst-generated zero-arg specialization has
+ * to evaluate `this` in an argument expression (e.g. `runTest(dispatcherUsed) { … }`), so the test
+ * body must be reached through a plain call on `this` like [runTestIfConfigValid]. With that
+ * workaround it may be possible to merge this test back into the main suite.
  *
  * `runtime2` MUST stay a test method parameter rather than a class parameter. Burst generates a
  * class per combination of class parameters, and Kotlin/Native's generated test registration code
@@ -72,20 +78,17 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
   @BeforeTest
   public fun setup() {
     traces.clear()
+    Dispatchers.setMain(dispatcherUsed)
+  }
+
+  @AfterTest
+  public fun tearDown() {
+    Dispatchers.resetMain()
   }
 
   @Test
   fun saves_to_and_restores_from_snapshot(runtime2: RuntimeOptions = NONE) =
-    saveAndRestoreSnapshot(runtime2)
-
-  /**
-   * The body of [saves_to_and_restores_from_snapshot] lives here instead of in the test function
-   * because the Burst-generated zero-arg specialization of a test function whose body evaluates
-   * `this` in an argument expression (e.g. `runTest(dispatcherUsed) { … }`) crashes the
-   * Kotlin/Native compiler with a `NativeCodeGeneratorException` (Kotlin 2.4.0, Burst 2.13.0).
-   */
-  private fun saveAndRestoreSnapshot(runtime2: RuntimeOptions) =
-    runTest(dispatcherUsed) {
+    runTestIfConfigValid(runtime2) {
       val workflow =
         Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
           initialState = { _, snapshot ->
@@ -137,4 +140,15 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
       advanceIfStandard()
       assertEquals("updated state", restoredRenderings.value.rendering.first)
     }
+
+  private fun runTestIfConfigValid(
+    runtime2: RuntimeOptions,
+    testBody: suspend TestScope.() -> Unit,
+  ) {
+    if ((COMPOSE_RUNTIME in runtimeConfig) != (COMPOSE_RUNTIME in runtime2.runtimeConfig)) {
+      // Snapshots created by the traditional runtime and the compose runtime are not compatible.
+      return
+    }
+    runTest(dispatcherUsed, testBody = testBody)
+  }
 }

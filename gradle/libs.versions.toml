@@ -266,6 +266,8 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
+molecule = { module = "app.cash.molecule:molecule-runtime", version = "2.2.0" }
+
 reactivestreams = "org.reactivestreams:reactive-streams:1.0.4"
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }

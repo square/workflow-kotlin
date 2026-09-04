@@ -16,8 +16,12 @@ import kotlin.time.TimeSource
  * travel debugging.
  */
 @OptIn(ExperimentalTime::class)
-class TimeMachineAppWorkflow(appWorkflow: DungeonAppWorkflow, clock: TimeSource, context: Context) :
-  StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
+class TimeMachineAppWorkflow(
+  appWorkflow: DungeonAppWorkflow,
+  // appWorkflow: SimpleWorkflow,
+  clock: TimeSource,
+  context: Context,
+) : StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
 
   private val timeMachineWorkflow =
     ShakeableTimeMachineWorkflow(TimeMachineWorkflow(appWorkflow, clock), context)
