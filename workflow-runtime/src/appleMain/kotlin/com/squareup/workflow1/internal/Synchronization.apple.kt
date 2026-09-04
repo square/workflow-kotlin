@@ -4,6 +4,7 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSCopyingProtocol
 import platform.Foundation.NSLock
+import platform.Foundation.NSNull
 import platform.Foundation.NSThread
 import platform.Foundation.NSZone
 import platform.darwin.NSObject
@@ -27,6 +28,9 @@ internal actual inline fun <R> Lock.withLock(block: () -> R): R {
 /**
  * Implementation of [ThreadLocal] that works in a similar way to Java's, based on a thread-specific
  * map/dictionary.
+ *
+ * [NSMutableDictionary][platform.Foundation.NSMutableDictionary] can't store `nil`, so `null`
+ * values are stored as [NSNull] and converted back on read.
  */
 internal actual class ThreadLocal<T>(private val initialValue: () -> T) :
   NSObject(), NSCopyingProtocol {
@@ -36,11 +40,16 @@ internal actual class ThreadLocal<T>(private val initialValue: () -> T) :
 
   actual fun get(): T {
     @Suppress("UNCHECKED_CAST")
-    return (threadDictionary.objectForKey(aKey = this) as T?) ?: initialValue().also(::set)
+    return when (val stored = threadDictionary.objectForKey(aKey = this)) {
+      null -> initialValue().also(::set)
+      is NSNull -> null as T
+      else -> stored as T
+    }
   }
 
   actual fun set(value: T) {
-    threadDictionary.setObject(value, forKey = this)
+    // setObject:forKey: throws NSInvalidArgumentException when passed nil.
+    threadDictionary.setObject(value ?: NSNull(), forKey = this)
   }
 
   /**
