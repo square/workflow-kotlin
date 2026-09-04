@@ -111,6 +111,15 @@ kotlin {
     maybeCreate("iosX64Main").apply { dependsOn(iosMain) }
     maybeCreate("iosSimulatorArm64Main").apply { dependsOn(iosMain) }
 
+    // Test source sets mirror the main hierarchy. Without this, intermediate test source sets like
+    // iosTest are not compiled by any target and their tests silently never run.
+    val nativeTest = maybeCreate("nativeTest").apply { dependsOn(commonTest.get()) }
+    val appleTest = maybeCreate("appleTest").apply { dependsOn(nativeTest) }
+    val iosTest = maybeCreate("iosTest").apply { dependsOn(appleTest) }
+    maybeCreate("iosArm64Test").apply { dependsOn(iosTest) }
+    maybeCreate("iosX64Test").apply { dependsOn(iosTest) }
+    maybeCreate("iosSimulatorArm64Test").apply { dependsOn(iosTest) }
+
     // JS source set depends on commonMain
     maybeCreate("jsMain").apply { dependsOn(commonMain.get()) }
 
