@@ -12,9 +12,9 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.RealPoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
-import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.reportNavigation
 import com.squareup.workflow1.ui.withRegistry
@@ -47,7 +47,7 @@ class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
         scope = viewModelScope,
         prop = 0 to 0 to Poem.allPoems,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+        runtimeConfig = setOf(COMPOSE_RUNTIME),
       )
       .reportNavigation { Timber.i("Navigated to %s", it) }
   }
