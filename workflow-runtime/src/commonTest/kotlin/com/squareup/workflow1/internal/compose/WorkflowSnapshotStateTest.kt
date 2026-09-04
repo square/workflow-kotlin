@@ -20,7 +20,7 @@ internal class WorkflowSnapshotStateTest {
     var observed = false
     val snapshot =
       Snapshot.takeMutableSnapshot(
-        writeObserver = { written -> if (written === target) observed = true },
+        writeObserver = { written -> if (written === target) observed = true }
       )
     try {
       snapshot.enter(block)

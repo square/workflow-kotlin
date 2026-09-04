@@ -40,7 +40,7 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
  *   function by the parent workflow. This is only used to construct the child's [WorkflowSession],
  *   and is not used for actual keying. [ComposeRenderContext] does the actual keying.
  * @param onSessionAvailable Invoked once (per callback instance) with the [WorkflowSession] of this
- * workflow once it's been created.
+ *   workflow once it's been created.
  */
 @Suppress("UNCHECKED_CAST")
 @OptIn(WorkflowExperimentalRuntime::class)

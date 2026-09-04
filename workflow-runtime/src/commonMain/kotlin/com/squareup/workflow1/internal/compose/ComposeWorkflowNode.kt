@@ -49,15 +49,17 @@ internal class ComposeWorkflowNode<P, O, R>(
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
-) : WorkflowNode<P, O, R>(
-  id = id,
-  baseContext = baseContext,
-  interceptor = interceptor,
-  emitAppliedActionToParent = emitAppliedActionToParent,
-) {
-  private val dispatcher = WorkStealingDispatcher(
-    scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined,
-  )
+) :
+  WorkflowNode<P, O, R>(
+    id = id,
+    baseContext = baseContext,
+    interceptor = interceptor,
+    emitAppliedActionToParent = emitAppliedActionToParent,
+  ) {
+  private val dispatcher =
+    WorkStealingDispatcher(
+      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
+    )
   private var workflow: Workflow<P, O, R> by mutableStateOf(workflow)
   private var rendering: R? = null
   private val recomposeRequests = Channel<Unit>(capacity = 1)
@@ -70,12 +72,13 @@ internal class ComposeWorkflowNode<P, O, R>(
   override lateinit var session: WorkflowSession
 
   init {
-    val composableRuntimeConfig = WorkflowComposableRuntimeConfig(
-      runtimeConfig = runtimeConfig,
-      workflowTracer = workflowTracer,
-      workflowInterceptor = interceptor,
-      idCounter = idCounter,
-    )
+    val composableRuntimeConfig =
+      WorkflowComposableRuntimeConfig(
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
+        workflowInterceptor = interceptor,
+        idCounter = idCounter,
+      )
 
     scope.launchMolecule(
       mode = RecompositionMode.ContextClock,
@@ -150,10 +153,8 @@ internal class ComposeWorkflowNode<P, O, R>(
     if (skipDirtyNodes && stateChanged) return ActionsExhausted
 
     val nextOutput = outputs.tryReceive().getOrNull() ?: return ActionsExhausted
-    val actionApplied = ActionApplied<O>(
-      output = WorkflowOutput(nextOutput),
-      stateChanged = stateChanged,
-    )
+    val actionApplied =
+      ActionApplied<O>(output = WorkflowOutput(nextOutput), stateChanged = stateChanged)
     return emitAppliedActionToParent(actionApplied)
   }
 

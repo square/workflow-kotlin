@@ -28,21 +28,24 @@ import kotlinx.coroutines.plus
  * recomposer.
  */
 internal class TestComposition<R>(scope: CoroutineScope, content: @Composable () -> R) {
-  private val clock = BroadcastFrameClock(
-    onNewAwaiters = {
-      needsRecomposition = true
-      recomposeRequestCount++
-    },
-  )
-  private val dispatcher = WorkStealingDispatcher(
-    scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined,
-  )
+  private val clock =
+    BroadcastFrameClock(
+      onNewAwaiters = {
+        needsRecomposition = true
+        recomposeRequestCount++
+      }
+    )
+  private val dispatcher =
+    WorkStealingDispatcher(
+      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
+    )
   private val scope = scope + Job(parent = scope.coroutineContext[Job]) + dispatcher + clock
-  private val renderings = this.scope.launchMolecule(
-    mode = RecompositionMode.ContextClock,
-    snapshotNotifier = SnapshotNotifier.WhileActive,
-    body = content,
-  )
+  private val renderings =
+    this.scope.launchMolecule(
+      mode = RecompositionMode.ContextClock,
+      snapshotNotifier = SnapshotNotifier.WhileActive,
+      body = content,
+    )
 
   /** Number of times the molecule has signaled that recomposition is needed. */
   var recomposeRequestCount: Int = 0

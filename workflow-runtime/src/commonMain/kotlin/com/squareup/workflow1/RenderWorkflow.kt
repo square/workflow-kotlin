@@ -180,7 +180,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
         runner.cancelRuntime(cancellation)
         throw e
-      },
+      }
     )
 
   suspend fun <OutputT> sendOutput(
@@ -240,8 +240,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
         drain@ while (
           isActive &&
-          drainingActionResult is ActionApplied<*> &&
-          drainingActionResult.output == null
+            drainingActionResult is ActionApplied<*> &&
+            drainingActionResult.output == null
         ) {
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || drainingActionResult.stateChanged

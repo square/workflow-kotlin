@@ -257,13 +257,13 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
           println("OMG test: recomposing root (recomposeScope=$currentRecomposeScope)")
           renderWorkflow(
-            workflow = parentWorkflow,
-            props = 5,
-            onOutput = onOutput,
-            config = skippingConfig,
-            parentSession = null,
-            renderKey = "",
-          )
+              workflow = parentWorkflow,
+              props = 5,
+              onOutput = onOutput,
+              config = skippingConfig,
+              parentSession = null,
+              renderKey = "",
+            )
             .also { println("OMG test: new root rendering: $it") }
         }
       }
@@ -365,13 +365,13 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
           println("OMG test: recomposing root (recomposeScope=$currentRecomposeScope)")
           renderWorkflow(
-            workflow = parentWorkflow,
-            props = 5,
-            onOutput = onOutput,
-            config = skippingConfig,
-            parentSession = null,
-            renderKey = "",
-          )
+              workflow = parentWorkflow,
+              props = 5,
+              onOutput = onOutput,
+              config = skippingConfig,
+              parentSession = null,
+              renderKey = "",
+            )
             .also { println("OMG test: new root rendering: $it") }
         }
       }

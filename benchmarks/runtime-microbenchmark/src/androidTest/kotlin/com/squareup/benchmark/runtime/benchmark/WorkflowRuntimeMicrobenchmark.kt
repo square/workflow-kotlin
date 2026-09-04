@@ -62,8 +62,7 @@ class WorkflowRuntimeMicrobenchmark(
     val BenchmarkRunTestTimeout = 10.minutes
   }
 
-  @get:Rule
-  val benchmarkRule = BenchmarkRule()
+  @get:Rule val benchmarkRule = BenchmarkRule()
 
   @Test
   fun initialRenderAllChildren() =
@@ -331,7 +330,7 @@ class WorkflowRuntimeMicrobenchmark(
           // won't actually happen until we advance the test scheduler below.
           testState { index, newState ->
             actionSinks[index]!!.send(
-                    action<Any?, Int, Nothing>("setState") { this.state = newState },
+              action<Any?, Int, Nothing>("setState") { this.state = newState }
             )
           }
         }
@@ -411,7 +410,7 @@ private class BenchmarkWorkflowRoot(
           if (renderingLeaves) {
             if (
               (renderProps.renderFirstLeaf && firstLeafIndex == 0) ||
-              (renderProps.renderOtherLeaves && firstLeafIndex != 0)
+                (renderProps.renderOtherLeaves && firstLeafIndex != 0)
             ) {
               val leafRendering =
                 context.renderChild(
