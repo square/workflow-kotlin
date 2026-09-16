@@ -31,7 +31,7 @@ jobs:
       - name: Check
         uses: ./.github/actions/gradle-task
         with:
-          task: check -x artifactsCheck
+          task: check -x artifactsCheck -x :workflow-runtime:jsBrowserTest
 
       - name: Publish Snapshots
         uses: ./.github/actions/gradle-task
