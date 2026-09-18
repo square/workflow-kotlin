@@ -3,6 +3,7 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
+import com.squareup.workflow1.ComposeRuntimeSwizzlerWorkflow
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -11,6 +12,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
+import com.squareup.workflow1.internal.compose.ComposeWorkflowNode
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -33,19 +35,31 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
 ): WorkflowNode<PropsT, OutputT, RenderingT> =
-  StatefulWorkflowNode(
-    id = id,
-    workflow = workflow.asStatefulWorkflow(),
-    initialProps = initialProps,
-    snapshot = snapshot,
-    baseContext = baseContext,
-    runtimeConfig = runtimeConfig,
-    workflowTracer = workflowTracer,
-    emitAppliedActionToParent = emitAppliedActionToParent,
-    parent = parent,
-    interceptor = interceptor,
-    idCounter = idCounter,
-  )
+  if (workflow is ComposeRuntimeSwizzlerWorkflow) {
+    ComposeWorkflowNode(
+      id = id,
+      workflow = workflow,
+      initialProps = initialProps,
+      snapshot = snapshot,
+      baseContext = baseContext,
+      emitAppliedActionToParent = emitAppliedActionToParent,
+      interceptor = interceptor,
+    )
+  } else {
+    StatefulWorkflowNode(
+      id = id,
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = initialProps,
+      snapshot = snapshot,
+      baseContext = baseContext,
+      runtimeConfig = runtimeConfig,
+      workflowTracer = workflowTracer,
+      emitAppliedActionToParent = emitAppliedActionToParent,
+      parent = parent,
+      interceptor = interceptor,
+      idCounter = idCounter,
+    )
+  }
 
 internal abstract class WorkflowNode<PropsT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
