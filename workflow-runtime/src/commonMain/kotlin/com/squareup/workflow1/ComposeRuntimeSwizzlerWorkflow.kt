@@ -8,7 +8,7 @@ public class ComposeRuntimeSwizzlerWorkflow<P, O, R>(public val child: Workflow<
   Workflow<P, O, R> {
   override fun asStatefulWorkflow(): StatefulWorkflow<P, *, O, R> {
     throw UnsupportedOperationException(
-      "This workflow is handled directly by the workflow runtime.",
+      "This workflow is handled directly by the workflow runtime."
     )
   }
 }

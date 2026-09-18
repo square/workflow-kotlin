@@ -11,9 +11,9 @@ import com.squareup.workflow1.internal.IdCounter
  * Defines configuration used by [renderWorkflow] when rendering workflows.
  *
  * This class just groups a bunch of parameters together that have the following properties:
- *  - They are needed by every workflow "node".
- *  - They are the same throughout the entire workflow runtime tree.
- *  - They never change over the course of the workflow runtime.
+ * - They are needed by every workflow "node".
+ * - They are the same throughout the entire workflow runtime tree.
+ * - They never change over the course of the workflow runtime.
  *
  * It's just a convenience class.
  */
