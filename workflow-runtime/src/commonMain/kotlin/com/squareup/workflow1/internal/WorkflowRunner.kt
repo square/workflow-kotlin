@@ -112,7 +112,9 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     if (!propsChannel.isClosedForReceive) {
       propsChannel.onReceiveCatching { channelResult ->
         channelResult.exceptionOrNull()?.let { throw it }
-        channelResult.getOrNull()?.let { newProps ->
+        // Check isSuccess instead of using getOrNull(), since null is a valid value for PropsT.
+        if (channelResult.isSuccess) {
+          val newProps = channelResult.getOrThrow()
           if (currentProps != newProps) {
             currentProps = newProps
           }
