@@ -161,4 +161,66 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
     renderScope.cancel()
     restoreScope.cancel()
   }
+
+  /**
+   * A saved [TreeSnapshot] can outlive a change to the runtime flag, e.g. across an app update or
+   * process death. The runtimes' snapshot formats aren't compatible, so restoring with the other
+   * runtime must fail cleanly: start from initial state as if there were no snapshot, without
+   * crashing or handing the workflow bytes that it didn't write.
+   */
+  @Test
+  fun does_not_restore_snapshot_saved_by_other_runtime(runtime2: RuntimeOptions = NONE) = runTest {
+    if ((COMPOSE_RUNTIME in runtimeConfig) == (COMPOSE_RUNTIME in runtime2.runtimeConfig)) {
+      // Covered by saves_to_and_restores_from_snapshot.
+      return@runTest
+    }
+
+    val initialStateSnapshots = mutableListOf<Snapshot?>()
+    val workflow =
+      Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
+        initialState = { _, snapshot ->
+          initialStateSnapshots += snapshot
+          snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
+        },
+        snapshot = { state -> Snapshot.write { it.writeUtf8WithLength(state) } },
+        render = { _, renderState ->
+          Pair(renderState, { newState -> actionSink.send(action("") { state = newState }) })
+        },
+      )
+    val props = MutableStateFlow(Unit)
+    // See the class KDoc for why this doesn't just use this test's own scope.
+    val renderScope = TestScope(dispatcherUsed)
+    val renderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = renderScope,
+        props = props,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
+      ) {}
+    advanceIfStandard()
+    renderings.value.rendering.second("updated state")
+    advanceIfStandard()
+    assertEquals("updated state", renderings.value.rendering.first)
+    // Round-trip through bytes like a real app persisting the snapshot would.
+    val savedBytes = renderings.value.snapshot.toByteString()
+    renderScope.cancel()
+
+    initialStateSnapshots.clear()
+    val restoreScope = TestScope(dispatcherUsed)
+    val restoredRenderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = restoreScope,
+        props = props,
+        initialSnapshot = TreeSnapshot.parse(savedBytes),
+        workflowTracer = null,
+        runtimeConfig = runtime2.runtimeConfig,
+      ) {}
+    advanceIfStandard()
+    assertEquals(listOf<Snapshot?>(null), initialStateSnapshots)
+    assertEquals("initial state", restoredRenderings.value.rendering.first)
+
+    restoreScope.cancel()
+  }
 }
