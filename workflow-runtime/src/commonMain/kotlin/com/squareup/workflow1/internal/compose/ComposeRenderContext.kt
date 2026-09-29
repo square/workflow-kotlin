@@ -4,18 +4,20 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeRuntimeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.RecomposeScope
+import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.toString
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
@@ -65,10 +67,41 @@ private constructor(
   private val config: WorkflowComposableRuntimeConfig,
   override val parent: WorkflowSession?,
   override val renderKey: String,
+  private val saveableStateRegistry: SaveableStateRegistry?,
+  private val saveableStateKey: String,
 ) :
-  BaseRenderContext<P, Any?, O>, Sink<WorkflowAction<P, Any?, O>>, WorkflowSession, RecomposeScope {
+  BaseRenderContext<P, Any?, O>,
+  Sink<WorkflowAction<P, Any?, O>>,
+  WorkflowSession,
+  RecomposeScope,
+  RememberObserver {
+
+  constructor(
+    saveableStateRegistry: SaveableStateRegistry?,
+    saveableStateKey: String,
+    workflow: Workflow<P, O, R>,
+    initialProps: P,
+    workflowScope: CoroutineScope,
+    parentRecomposeScope: RecomposeScope,
+    config: WorkflowComposableRuntimeConfig,
+    parent: WorkflowSession?,
+    renderKey: String,
+  ) : this(
+    snapshot =
+      saveableStateRegistry?.let { restoreFromRegistry(saveableStateRegistry, saveableStateKey) },
+    saveableStateRegistry = saveableStateRegistry,
+    saveableStateKey = saveableStateKey,
+    workflow = workflow,
+    initialProps = initialProps,
+    workflowScope = workflowScope,
+    parentRecomposeScope = parentRecomposeScope,
+    config = config,
+    parent = parent,
+    renderKey = renderKey,
+  )
 
   private var recomposeScope: RecomposeScope? = null
+  private var stateRegistryEntry: SaveableStateRegistry.Entry? = null
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
   private val applyActionLock = Lock()
@@ -124,6 +157,32 @@ private constructor(
         )
       }
     state = WorkflowSnapshotState(props = initialProps, onOutput = null, state = initialState)
+  }
+
+  override fun onRemembered() {
+    if (saveableStateRegistry != null) {
+      // Saving and restoring from the registry manually, instead of using rememberSaveable, saves
+      // a lot on allocations and is faster too (see
+      // https://github.com/square/workflow-kotlin/pull/1572).
+      check(stateRegistryEntry == null)
+      stateRegistryEntry =
+        saveableStateRegistry.registerProvider(saveableStateKey) {
+          interceptedWorkflow.snapshotState(state.peekState())
+        }
+    }
+  }
+
+  override fun onForgotten() {
+    if (saveableStateRegistry != null) {
+      stateRegistryEntry?.unregister()
+      stateRegistryEntry = null
+    }
+
+    onDisposed()
+  }
+
+  override fun onAbandoned() {
+    onDisposed()
   }
 
   @Suppress("UNCHECKED_CAST")
@@ -257,8 +316,6 @@ private constructor(
     }
   }
 
-  private fun snapshot(): Snapshot? = interceptedWorkflow.snapshotState(state.peekState())
-
   companion object {
     /**
      * Hard-coded group key used for all groups that are created by [ComposeRenderContext]s. All
@@ -280,60 +337,31 @@ private constructor(
       callerRecomposeScope: RecomposeScope,
     ): ComposeRenderContext<P, O, R> {
       val workflowScope = rememberCoroutineScope()
-      val renderContext: ComposeRenderContext<P, O, R> =
-        rememberSaveable(
-          saver =
-            Saver(
-              initialProps = initialProps,
-              workflow = workflow,
-              workflowScope = workflowScope,
-              parentRecomposeScope = callerRecomposeScope,
-              config = config,
-              parentSession = parentSession,
-              renderKey = renderKey,
-            )
-        ) {
-          ComposeRenderContext(
-            initialProps = initialProps,
-            workflow = workflow,
-            parentRecomposeScope = callerRecomposeScope,
-            workflowScope = workflowScope,
-            config = config,
-            parent = parentSession,
-            renderKey = renderKey,
-            snapshot = null,
-          )
-        }
-
-      // Values remembered by rememberSaveable don't get RememberObserver callbacks so we need to
-      // use an effect for it.
-      DisposableEffect(Unit) { onDispose { renderContext.onDisposed() } }
-
-      return renderContext
+      val saveableStateRegistry = LocalSaveableStateRegistry.current
+      val saveableStateKey = currentCompositeKeyHashCode
+      return remember(saveableStateRegistry) {
+        // 36 taken from compose sources.
+        val stringKey = saveableStateKey.toString(radix = 36)
+        ComposeRenderContext(
+          initialProps = initialProps,
+          workflow = workflow,
+          parentRecomposeScope = callerRecomposeScope,
+          workflowScope = workflowScope,
+          config = config,
+          parent = parentSession,
+          renderKey = renderKey,
+          saveableStateRegistry = saveableStateRegistry,
+          saveableStateKey = stringKey,
+        )
+      }
     }
   }
+}
 
-  private class Saver<P, O, R>(
-    private val initialProps: P,
-    private val workflow: Workflow<P, O, R>,
-    private val workflowScope: CoroutineScope,
-    private val parentRecomposeScope: RecomposeScope,
-    private val config: WorkflowComposableRuntimeConfig,
-    private val parentSession: WorkflowSession?,
-    private val renderKey: String,
-  ) : androidx.compose.runtime.saveable.Saver<ComposeRenderContext<P, O, R>, Snapshot> {
-    override fun restore(value: Snapshot): ComposeRenderContext<P, O, R> =
-      ComposeRenderContext(
-        workflow = workflow,
-        initialProps = initialProps,
-        workflowScope = workflowScope,
-        snapshot = value,
-        parentRecomposeScope = parentRecomposeScope,
-        config = config,
-        parent = parentSession,
-        renderKey = renderKey,
-      )
-
-    override fun SaverScope.save(value: ComposeRenderContext<P, O, R>): Snapshot? = value.snapshot()
-  }
+private fun restoreFromRegistry(
+  saveableStateRegistry: SaveableStateRegistry,
+  key: String,
+): Snapshot? {
+  val restored = saveableStateRegistry.consumeRestored(key) as Snapshot?
+  return restored
 }
