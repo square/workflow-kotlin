@@ -228,6 +228,34 @@ class RenderWorkflowInTest(
     }
 
   @Test
+  fun new_renderings_are_emitted_on_update_to_null_props() =
+    runTest(dispatcherUsed) {
+      val props = MutableStateFlow<String?>(null)
+      val workflow = Workflow.stateless<String?, Nothing, String?> { it }
+      val renderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+
+      assertEquals(null, renderings.value.rendering)
+
+      props.value = "foo"
+      advanceIfStandard()
+
+      assertEquals("foo", renderings.value.rendering)
+
+      props.value = null
+      advanceIfStandard()
+
+      assertEquals(null, renderings.value.rendering)
+    }
+
+  @Test
   fun new_renderings_are_emitted_to_interceptor() =
     runTest(dispatcherUsed) {
       val props = MutableStateFlow("foo")
