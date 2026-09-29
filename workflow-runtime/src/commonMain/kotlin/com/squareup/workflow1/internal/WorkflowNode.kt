@@ -44,6 +44,10 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
       baseContext = baseContext,
       emitAppliedActionToParent = emitAppliedActionToParent,
       interceptor = interceptor,
+      workflowTracer = workflowTracer,
+      parent = parent,
+      idCounter = idCounter,
+      runtimeConfig = runtimeConfig,
     )
   } else {
     StatefulWorkflowNode(

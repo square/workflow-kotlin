@@ -2,6 +2,7 @@ package com.squareup.workflow1
 
 import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
@@ -12,6 +13,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
+import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -22,10 +24,12 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
@@ -2097,6 +2101,325 @@ class RenderWorkflowInTest(
     }
   }
 
+  @Test
+  fun null_is_a_valid_initial_rendering_and_can_be_transitioned_to() = runTestIfConfigValid {
+    // Props are non-null since null props are a separate concern from null renderings.
+    val props = MutableStateFlow("")
+    val workflow = Workflow.stateless<String, Nothing, String?> { it.ifEmpty { null } }
+    val renderings =
+      renderWorkflowIn(
+        workflow,
+        backgroundScope,
+        props,
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) {}
+    assertNull(renderings.value.rendering)
+
+    props.value = "foo"
+    advanceIfStandard()
+    assertEquals("foo", renderings.value.rendering)
+
+    props.value = ""
+    advanceIfStandard()
+    assertNull(renderings.value.rendering)
+  }
+
+  @Test
+  fun explicit_null_output_from_root_is_emitted() = runTestIfConfigValid {
+    val workflow =
+      Workflow.stateful<Unit, String?, () -> Unit>(
+        initialState = Unit,
+        render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+      )
+    val outputs = mutableListOf<String?>()
+    val renderings =
+      renderWorkflowIn(
+        workflow,
+        backgroundScope,
+        MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) {
+        outputs += it
+      }
+    advanceIfStandard()
+
+    renderings.value.rendering()
+    advanceIfStandard()
+
+    assertEquals(listOf<String?>(null), outputs)
+  }
+
+  @Test
+  fun explicit_null_output_from_child_is_passed_to_parent_handler() = runTestIfConfigValid {
+    val child =
+      Workflow.stateful<Unit, String?, () -> Unit>(
+        initialState = Unit,
+        render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+      )
+    val parent =
+      Workflow.stateful<List<String?>, Nothing, Pair<List<String?>, () -> Unit>>(
+        initialState = emptyList(),
+        render = { receivedOutputs ->
+          val emitFromChild =
+            renderChild(child) { output -> action("onChildOutput") { state += output } }
+          Pair(receivedOutputs, emitFromChild)
+        },
+      )
+    val renderings =
+      renderWorkflowIn(
+        parent,
+        backgroundScope,
+        MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) {}
+    advanceIfStandard()
+
+    renderings.value.rendering.second()
+    advanceIfStandard()
+
+    assertEquals(listOf<String?>(null), renderings.value.rendering.first)
+  }
+
+  @Test
+  fun callbacks_from_removed_child_do_not_reach_former_parent() = runTestIfConfigValid {
+    val child =
+      Workflow.stateful<Unit, String, () -> Unit>(
+        initialState = Unit,
+        render = { { actionSink.send(action("childEmit") { setOutput("child output") }) } },
+      )
+    val parent =
+      Workflow.stateful<ParentState, String, ParentRendering>(
+        initialState = ParentState(showChild = true, childOutputCount = 0),
+        render = { state ->
+          ParentRendering(
+            childOutputCount = state.childOutputCount,
+            emitFromChild =
+              if (state.showChild) {
+                renderChild(child) { output ->
+                  action("onChildOutput") {
+                    this.state = this.state.copy(childOutputCount = this.state.childOutputCount + 1)
+                    setOutput(output)
+                  }
+                }
+              } else {
+                null
+              },
+            hideChild = {
+              actionSink.send(
+                action("hideChild") { this.state = this.state.copy(showChild = false) }
+              )
+            },
+          )
+        },
+      )
+    val outputs = mutableListOf<String>()
+    val renderings =
+      renderWorkflowIn(
+        parent,
+        backgroundScope,
+        MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) {
+        outputs += it
+      }
+    advanceIfStandard()
+
+    // Sanity check that the child's callback is wired up while the child is alive.
+    val retainedChildCallback = assertNotNull(renderings.value.rendering.emitFromChild)
+    retainedChildCallback()
+    advanceIfStandard()
+    assertEquals(1, renderings.value.rendering.childOutputCount)
+    assertEquals(listOf("child output"), outputs)
+
+    renderings.value.rendering.hideChild()
+    advanceIfStandard()
+    assertNull(renderings.value.rendering.emitFromChild)
+
+    // The child session is gone, so its old callback must not affect the parent anymore.
+    retainedChildCallback()
+    advanceIfStandard()
+    assertEquals(1, renderings.value.rendering.childOutputCount)
+    assertEquals(listOf("child output"), outputs)
+  }
+
+  @Test
+  fun new_child_workflow_instance_is_used_to_render_without_resetting_state() =
+    runTestIfConfigValid {
+      val parent =
+        Workflow.stateful<Int, Nothing, Pair<LabeledChild.Rendering, () -> Unit>>(
+          initialState = 0,
+          render = { state ->
+            // A new instance of the same workflow type on every render pass. The child's props also
+            // change so that runtimes that skip rendering children with unchanged props still have
+            // to render it.
+            val childRendering = renderChild(LabeledChild("v$state"), props = state)
+            Pair(childRendering, { actionSink.send(action("bump") { this.state += 1 }) })
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+      assertEquals("v0 props=0 state=0", renderings.value.rendering.first.text)
+
+      renderings.value.rendering.first.increment()
+      advanceIfStandard()
+      assertEquals("v0 props=0 state=1", renderings.value.rendering.first.text)
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+      assertEquals("v1 props=1 state=1", renderings.value.rendering.first.text)
+    }
+
+  @Test
+  fun child_session_gets_parent_session_config_tracer_and_unique_id() = runTestIfConfigValid {
+    // A compose subtree only gets a parent session from outside the compose runtime when it's
+    // rendered under a traditional root, so compose configs render the child that way.
+    val composeChild = COMPOSE_RUNTIME in runtimeConfig
+    val rootConfig = if (composeChild) runtimeConfig - COMPOSE_RUNTIME else runtimeConfig
+    val sessions = mutableListOf<WorkflowSession>()
+    val interceptor =
+      object : WorkflowInterceptor {
+        override fun onSessionStarted(workflowScope: CoroutineScope, session: WorkflowSession) {
+          sessions += session
+        }
+      }
+    val tracer =
+      object : WorkflowTracer {
+        override fun beginSection(label: String) = Unit
+
+        override fun endSection() = Unit
+      }
+    val child = Workflow.stateless<Unit, Nothing, String> { "child" }
+    val renderedChild = if (composeChild) ComposeRuntimeSwizzlerWorkflow(child) else child
+    val parent = Workflow.stateless<Unit, Nothing, String> { renderChild(renderedChild) }
+
+    renderWorkflowIn(
+      workflow = parent,
+      scope = backgroundScope,
+      props = MutableStateFlow(Unit),
+      interceptors = listOf(interceptor),
+      runtimeConfig = rootConfig,
+      workflowTracer = tracer,
+    ) {}
+    advanceIfStandard()
+
+    val parentSession = sessions.single { it.identifier == parent.identifier }
+    val childSession = sessions.single { it.identifier == child.identifier }
+    assertSame(parentSession, childSession.parent)
+    assertEquals(rootConfig, childSession.runtimeConfig)
+    assertSame(tracer, childSession.workflowTracer)
+    assertEquals(
+      sessions.size,
+      sessions.map { it.sessionId }.toSet().size,
+      "Session IDs: $sessions",
+    )
+  }
+
+  @Test
+  fun unchanged_child_is_skipped_when_expected_by_runtime_config() = runTestIfConfigValid {
+    var childRenderCount = 0
+    val child = Workflow.stateless<Unit, Nothing, Unit> { childRenderCount++ }
+    val parent =
+      Workflow.stateful<Int, Nothing, () -> Unit>(
+        initialState = 0,
+        render = {
+          renderChild(child)
+          return@stateful { actionSink.send(action("bump") { state += 1 }) }
+        },
+      )
+    val renderings =
+      renderWorkflowIn(
+        parent,
+        backgroundScope,
+        MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = testTracer,
+      ) {}
+    advanceIfStandard()
+
+    renderings.value.rendering()
+    advanceIfStandard()
+    renderings.value.rendering()
+    advanceIfStandard()
+
+    val expectSkipping =
+      if (COMPOSE_RUNTIME in runtimeConfig) {
+        COMPOSE_RUNTIME_SKIPPING in runtimeConfig
+      } else {
+        PARTIAL_TREE_RENDERING in runtimeConfig
+      }
+    assertEquals(if (expectSkipping) 1 else 3, childRenderCount)
+  }
+
+  /**
+   * Under [DRAIN_EXCLUSIVE_ACTIONS] and [CONFLATE_STALE_RENDERINGS], the runtime loop synchronously
+   * looks for more queued actions after the first one, and must deliver an explicit null output
+   * that it finds that way.
+   *
+   * With the traditional runtime, this checks the traditional behavior. The compose runtime only
+   * reaches this code path when a compose subtree is rendered under a traditional root with those
+   * options enabled, so compose configs render the child that way.
+   */
+  @Test
+  fun queued_null_output_is_delivered_when_draining_or_conflating_actions() = runTestIfConfigValid {
+    val composeChild = COMPOSE_RUNTIME in runtimeConfig
+    val rootConfig =
+      if (composeChild) {
+        runtimeConfig - COMPOSE_RUNTIME + DRAIN_EXCLUSIVE_ACTIONS + CONFLATE_STALE_RENDERINGS
+      } else {
+        runtimeConfig
+      }
+    val sibling =
+      Workflow.stateful<Int, Nothing, () -> Unit>(
+        initialState = 0,
+        render = { { actionSink.send(action("incrementSibling") { state += 1 }) } },
+      )
+    val child =
+      Workflow.stateful<Unit, String?, () -> Unit>(
+        initialState = Unit,
+        render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+      )
+    val renderedChild = if (composeChild) ComposeRuntimeSwizzlerWorkflow(child) else child
+    val parent =
+      Workflow.stateful<List<String?>, Nothing, Triple<List<String?>, () -> Unit, () -> Unit>>(
+        initialState = emptyList(),
+        render = { receivedOutputs ->
+          // Rendered first so the runtime loop picks its action before the child's output, and
+          // only finds the child's output by looking for more queued actions.
+          val incrementSibling = renderChild(sibling)
+          val emitFromChild =
+            renderChild(renderedChild) { output -> action("onChildOutput") { state += output } }
+          Triple(receivedOutputs, incrementSibling, emitFromChild)
+        },
+      )
+    val renderings =
+      renderWorkflowIn(
+        workflow = parent,
+        scope = backgroundScope,
+        props = MutableStateFlow(Unit),
+        runtimeConfig = rootConfig,
+        workflowTracer = testTracer,
+      ) {}
+    advanceIfStandard()
+
+    // Queue both before the runtime loop gets a chance to process either one.
+    renderings.value.rendering.second()
+    renderings.value.rendering.third()
+    advanceIfStandard()
+
+    assertEquals(listOf<String?>(null), renderings.value.rendering.first)
+  }
+
   private fun runTestIfConfigValid(testBody: suspend TestScope.() -> Unit) {
     if (COMPOSE_RUNTIME in runtimeConfig && useUnconfined) {
       // Compose runtime does not support unconfined dispatcher.
@@ -2106,6 +2429,37 @@ class RenderWorkflowInTest(
   }
 
   private class ExpectedException : RuntimeException()
+
+  private data class ParentState(val showChild: Boolean, val childOutputCount: Int)
+
+  private class ParentRendering(
+    val childOutputCount: Int,
+    val emitFromChild: (() -> Unit)?,
+    val hideChild: () -> Unit,
+  )
+
+  /**
+   * Renders [label] and its current props and state, so tests can tell which instance rendered and
+   * whether its state survived.
+   */
+  private class LabeledChild(private val label: String) :
+    StatefulWorkflow<Int, Int, Nothing, LabeledChild.Rendering>() {
+    class Rendering(val text: String, val increment: () -> Unit)
+
+    override fun initialState(props: Int, snapshot: Snapshot?): Int = 0
+
+    override fun render(
+      renderProps: Int,
+      renderState: Int,
+      context: RenderContext<Int, Int, Nothing>,
+    ): Rendering =
+      Rendering(
+        text = "$label props=$renderProps state=$renderState",
+        increment = { context.actionSink.send(action("increment") { state += 1 }) },
+      )
+
+    override fun snapshotState(state: Int): Snapshot? = null
+  }
 
   companion object {
     internal val EXPECTED_TRACE: String =
