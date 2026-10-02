@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -234,7 +235,30 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
           @Suppress("UNCHECKED_CAST")
           val viewHolder =
             view.getTag(R.id.workflow_screen_view_holder) as ScreenViewHolder<ScreenT>
-          viewHolder.show(rendering, envWithOnBack)
+
+          // Compose runs this block inside SnapshotStateObserver.observeReads, so every snapshot
+          // state read that happens while we update the view is recorded against the window hosting
+          // this composition -- including reads made by code that show() calls synchronously.
+          //
+          // That is a leak when showing a rendering tears a window down. Dropping an Overlay from a
+          // BodyAndOverlaysScreen dismisses its Dialog from right here, and if that Dialog was
+          // showing a composition, its AndroidComposeView reads its own viewTreeOwners while
+          // detaching. viewTreeOwners is a derivedStateOf, and a recorded derived state read is
+          // released only once this view stops reading it -- either on a later update of this
+          // block, or when the view is detached. So the dismissed view, and through it the whole
+          // Dialog window, can remain reachable from the process-wide snapshot observer list for
+          // as long as we stay attached and this block does not run again.
+          //
+          // Nothing is lost by not observing: these views are updated by the workflow runtime
+          // calling show(), not by snapshot state changing.
+          //
+          // That last part is a constraint on what may be read in here, so keep it in mind when
+          // changing this block. Anything read inside withoutReadObservation is invisible to
+          // Compose, so it will not re-run this block when it changes. rendering and envWithOnBack
+          // are plain values, read before we get here. If either ever becomes snapshot state -- a
+          // rememberUpdatedState, a MutableState, a derivedStateOf -- read it outside this lambda
+          // into a local and pass the local in, or the view will silently stop being updated.
+          Snapshot.withoutReadObservation { viewHolder.show(rendering, envWithOnBack) }
         },
       )
     }
