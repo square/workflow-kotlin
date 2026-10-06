@@ -28,6 +28,13 @@ configurations.configureEach {
   }
 }
 
+// Compose Multiplatform registers this task for the KMP Android device test component but, on AGP
+// 9.1, never sets its output directory, so it fails validation. This module has no Compose
+// resources to copy.
+tasks
+  .named { it == "copyAndroidDeviceTestComposeResourcesToAndroidAssets" }
+  .configureEach { enabled = false }
+
 kotlin {
   // Needed for expect class Lock, which is not public API, so this doesn't add any binary compat
   // risk.
