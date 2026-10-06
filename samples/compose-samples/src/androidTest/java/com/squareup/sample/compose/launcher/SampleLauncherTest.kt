@@ -21,6 +21,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SampleLauncherTest {
 
+  // TODO Migrate to the androidx.compose.ui.test.junit4.v2 rules, which use StandardTestDispatcher.
+  @Suppress("DEPRECATION")
   private val composeRule = createAndroidComposeRule<SampleLauncherActivity>()
 
   @get:Rule

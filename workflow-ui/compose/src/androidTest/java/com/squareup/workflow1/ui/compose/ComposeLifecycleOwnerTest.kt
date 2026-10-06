@@ -20,7 +20,8 @@ import org.junit.Test
 
 class ComposeLifecycleOwnerTest {
 
-  @get:Rule val composeTestRule = createComposeRule()
+  // TODO Migrate to the androidx.compose.ui.test.junit4.v2 rules, which use StandardTestDispatcher.
+  @Suppress("DEPRECATION") @get:Rule val composeTestRule = createComposeRule()
 
   private var mParentLifecycle: LifecycleRegistry? = null
 

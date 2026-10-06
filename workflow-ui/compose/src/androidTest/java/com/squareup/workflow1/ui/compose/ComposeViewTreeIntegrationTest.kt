@@ -61,6 +61,8 @@ import org.junit.rules.RuleChain
 
 internal class ComposeViewTreeIntegrationTest {
 
+  // TODO Migrate to the androidx.compose.ui.test.junit4.v2 rules, which use StandardTestDispatcher.
+  @Suppress("DEPRECATION")
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
 
   @get:Rule

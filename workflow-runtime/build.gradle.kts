@@ -1,4 +1,3 @@
-import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
@@ -36,7 +35,9 @@ kotlin {
 
   val targets = project.findProperty("workflow.targets") ?: "kmp"
   if (targets == "kmp" || targets == "ios") {
-    iosWithSimulatorArm64()
+    // No iosX64: Compose Multiplatform 1.12 dropped x64 Apple targets.
+    iosArm64()
+    iosSimulatorArm64()
   }
   if (targets == "kmp" || targets == "jvm") {
     jvm {}
@@ -107,7 +108,6 @@ kotlin {
 
     // Individual iOS target source sets depend on iosMain
     maybeCreate("iosArm64Main").apply { dependsOn(iosMain) }
-    maybeCreate("iosX64Main").apply { dependsOn(iosMain) }
     maybeCreate("iosSimulatorArm64Main").apply { dependsOn(iosMain) }
 
     // Test source sets mirror the main hierarchy. Without this, intermediate test source sets like
@@ -116,7 +116,6 @@ kotlin {
     val appleTest = maybeCreate("appleTest").apply { dependsOn(nativeTest) }
     val iosTest = maybeCreate("iosTest").apply { dependsOn(appleTest) }
     maybeCreate("iosArm64Test").apply { dependsOn(iosTest) }
-    maybeCreate("iosX64Test").apply { dependsOn(iosTest) }
     maybeCreate("iosSimulatorArm64Test").apply { dependsOn(iosTest) }
 
     // JS source set depends on commonMain
