@@ -35,7 +35,6 @@ kotlin {
 
   val targets = project.findProperty("workflow.targets") ?: "kmp"
   if (targets == "kmp" || targets == "ios") {
-    // No iosX64: Compose Multiplatform 1.12 dropped x64 Apple targets.
     iosArm64()
     iosSimulatorArm64()
   }
