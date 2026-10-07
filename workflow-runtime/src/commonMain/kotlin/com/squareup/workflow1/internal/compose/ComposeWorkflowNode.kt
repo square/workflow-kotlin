@@ -61,7 +61,8 @@ internal class ComposeWorkflowNode<P, O, R>(
       scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
     )
   private var workflow: Workflow<P, O, R> by mutableStateOf(workflow)
-  private var rendering: R? = null
+  // Can't use null as the "no rendering yet" sentinel since null is a valid value for R.
+  private var rendering: Any? = NoRendering
   private val recomposeRequests = Channel<Unit>(capacity = 1)
   private val outputs = Channel<O>(capacity = 1000)
   private val clock = BroadcastFrameClock(onNewAwaiters = ::onRecompositionRequested)
@@ -121,7 +122,9 @@ internal class ComposeWorkflowNode<P, O, R>(
       // Hard-code unchanging frame time since there's no actual frame time code shouldn't rely on
       // this value.
       clock.sendFrame(0L)
-      return rendering!!
+      check(rendering !== NoRendering) { "Expected a rendering after recomposing." }
+      @Suppress("UNCHECKED_CAST")
+      return rendering as R
     } finally {
       inRenderPass = false
     }
@@ -167,3 +170,5 @@ internal class ComposeWorkflowNode<P, O, R>(
     }
   }
 }
+
+private object NoRendering
