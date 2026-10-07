@@ -30,9 +30,9 @@ androidx.compose.ui:ui-util-android:1.12.1
 androidx.compose.ui:ui-util:1.12.1
 androidx.compose.ui:ui:1.12.1
 androidx.concurrent:concurrent-futures:1.1.0
-androidx.core:core-ktx:1.16.0
+androidx.core:core-ktx:1.17.0
 androidx.core:core-viewtree:1.0.0
-androidx.core:core:1.16.0
+androidx.core:core:1.17.0
 androidx.customview:customview-poolingcontainer:1.0.0
 androidx.emoji2:emoji2:1.4.0
 androidx.graphics:graphics-path:1.0.1
@@ -64,6 +64,8 @@ androidx.versionedparcelable:versionedparcelable:1.1.1
 androidx.window:window-core-android:1.5.0
 androidx.window:window-core:1.5.0
 androidx.window:window:1.5.0
+app.cash.molecule:molecule-runtime-android:2.2.0
+app.cash.molecule:molecule-runtime:2.2.0
 com.google.guava:listenablefuture:1.0
 com.squareup.okio:okio-jvm:3.17.0
 com.squareup.okio:okio:3.17.0
