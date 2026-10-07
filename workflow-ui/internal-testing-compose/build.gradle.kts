@@ -9,6 +9,7 @@ plugins {
 android { namespace = "com.squareup.workflow1.ui.internal.test.compose" }
 
 dependencies {
+  api(platform(libs.androidx.compose.bom))
   api(libs.androidx.compose.ui.test.junit4)
 
   api(project(":workflow-ui:compose"))

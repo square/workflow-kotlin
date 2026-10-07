@@ -8,7 +8,8 @@ import org.junit.Test
 
 class AppTest {
 
-  @get:Rule val rule = createAndroidComposeRule<AppActivity>()
+  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
+  @Suppress("DEPRECATION") @get:Rule val rule = createAndroidComposeRule<AppActivity>()
 
   @Test
   fun appStarts() {

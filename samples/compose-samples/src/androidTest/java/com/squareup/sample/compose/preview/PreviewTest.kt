@@ -16,7 +16,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PreviewTest {
 
-  private val composeRule = createAndroidComposeRule<PreviewActivity>()
+  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
+  @Suppress("DEPRECATION") private val composeRule = createAndroidComposeRule<PreviewActivity>()
 
   @get:Rule
   val rules: RuleChain =
