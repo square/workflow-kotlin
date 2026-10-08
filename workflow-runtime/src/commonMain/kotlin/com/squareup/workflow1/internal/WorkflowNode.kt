@@ -4,9 +4,7 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.ComposeRuntimeSwizzlerWorkflow
-import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
@@ -44,6 +42,10 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
       baseContext = baseContext,
       emitAppliedActionToParent = emitAppliedActionToParent,
       interceptor = interceptor,
+      workflowTracer = workflowTracer,
+      parent = parent,
+      runtimeConfig = runtimeConfig,
+      idCounter = idCounter,
     )
   } else {
     StatefulWorkflowNode(
