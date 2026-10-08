@@ -56,7 +56,7 @@ internal class ComposeWorkflowNode<P, O, R>(
   ) {
   private val dispatcher =
     WorkStealingDispatcher(
-      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined,
+      scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
     )
   private var workflow: Workflow<P, O, R> by mutableStateOf(workflow)
 
