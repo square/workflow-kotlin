@@ -12,9 +12,7 @@ import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
-import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
@@ -43,12 +41,12 @@ internal class ComposeWorkflowNode<P, O, R>(
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
-  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  workflowTracer: WorkflowTracer? = null,
+  runtimeConfig: RuntimeConfig,
+  workflowTracer: WorkflowTracer?,
   emitAppliedActionToParent: (ActionApplied<O>) -> ActionProcessingResult = { it },
-  parent: WorkflowSession? = null,
-  interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  idCounter: IdCounter? = null,
+  parent: WorkflowSession?,
+  interceptor: WorkflowInterceptor,
+  idCounter: IdCounter?,
 ) :
   WorkflowNode<P, O, R>(
     id = id,
@@ -61,6 +59,7 @@ internal class ComposeWorkflowNode<P, O, R>(
       scope.coroutineContext[ContinuationInterceptor] ?: Dispatchers.Unconfined
     )
   private var workflow: Workflow<P, O, R> by mutableStateOf(workflow)
+
   // Can't use null as the "no rendering yet" sentinel since null is a valid value for R.
   private var rendering: Any? = NoRendering
   private val recomposeRequests = Channel<Unit>(capacity = 1)
