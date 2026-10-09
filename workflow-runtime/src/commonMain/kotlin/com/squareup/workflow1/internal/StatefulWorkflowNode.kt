@@ -22,6 +22,7 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.applyTo
+import com.squareup.workflow1.hookChildOutputAction
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
@@ -408,7 +409,18 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     action: WorkflowAction<PropsT, StateT, OutputT>,
     childResult: ActionApplied<*>? = null,
   ): ActionProcessingResult {
-    val (newState: StateT, actionApplied: ActionApplied<OutputT>) = action.applyTo(lastProps, state)
+    // Sink actions already went through onActionSent. Child-output actions (worker handlers
+    // included) are built here and would otherwise skip the interceptor.
+    val actionToApply =
+      if (childResult?.output != null) {
+        @Suppress("UNCHECKED_CAST")
+        hookChildOutputAction(interceptedWorkflowInstance, action)
+          as WorkflowAction<PropsT, StateT, OutputT>
+      } else {
+        action
+      }
+    val (newState: StateT, actionApplied: ActionApplied<OutputT>) =
+      actionToApply.applyTo(lastProps, state)
     state = newState
     // Aggregate the action with the child result, if any.
     val aggregateActionApplied =

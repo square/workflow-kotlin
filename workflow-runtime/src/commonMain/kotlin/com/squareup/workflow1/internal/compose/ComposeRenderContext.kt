@@ -28,6 +28,7 @@ import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
+import com.squareup.workflow1.hookChildOutputAction
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.Lock
@@ -204,7 +205,11 @@ private constructor(
         val childOnOutput: (ChildOutputT) -> Unit = remember {
           { output ->
             val action = updatedHandler(output)
-            applyAction(action)
+            @Suppress("UNCHECKED_CAST")
+            val hooked =
+              hookChildOutputAction(interceptedWorkflow, action)
+                as WorkflowAction<P, Any?, O>
+            applyAction(hooked)
           }
         }
 
