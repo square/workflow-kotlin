@@ -34,8 +34,8 @@ org.jetbrains.compose.runtime:runtime-desktop:1.12.1
 org.jetbrains.compose.runtime:runtime-saveable-desktop:1.12.1
 org.jetbrains.compose.runtime:runtime-saveable:1.12.1
 org.jetbrains.compose.runtime:runtime:1.12.1
-org.jetbrains.kotlin:kotlin-bom:2.4.0
-org.jetbrains.kotlin:kotlin-stdlib:2.4.0
+org.jetbrains.kotlin:kotlin-bom:2.4.10
+org.jetbrains.kotlin:kotlin-stdlib:2.4.10
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2
