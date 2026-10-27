@@ -2,7 +2,7 @@ package com.squareup.sample.compose.preview
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -16,8 +16,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PreviewTest {
 
-  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
-  @Suppress("DEPRECATION") private val composeRule = createAndroidComposeRule<PreviewActivity>()
+  private val composeRule = createAndroidComposeRule<PreviewActivity>()
 
   @get:Rule
   val rules: RuleChain =

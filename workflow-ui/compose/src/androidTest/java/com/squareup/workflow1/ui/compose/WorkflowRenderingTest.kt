@@ -28,7 +28,7 @@ import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertWidthIsEqualTo
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -87,8 +87,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 internal class WorkflowRenderingTest {
 
-  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
-  @Suppress("DEPRECATION") private val composeRule = createComposeRule()
+  private val composeRule = createComposeRule()
 
   @get:Rule
   val rules: RuleChain =

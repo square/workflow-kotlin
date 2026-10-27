@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -22,8 +22,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 internal class TextControllerAsMutableStateTest {
 
-  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
-  @Suppress("DEPRECATION") private val composeRule = createComposeRule()
+  private val composeRule = createComposeRule()
 
   @get:Rule
   val rules: RuleChain =

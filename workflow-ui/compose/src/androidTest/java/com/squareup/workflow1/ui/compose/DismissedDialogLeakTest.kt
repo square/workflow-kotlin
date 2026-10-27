@@ -6,7 +6,7 @@ import androidx.activity.ComponentDialog
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import com.google.common.truth.Truth.assertWithMessage
 import com.squareup.workflow1.ui.AndroidScreen
@@ -57,8 +57,6 @@ import org.junit.rules.RuleChain
  */
 internal class DismissedDialogLeakTest {
 
-  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
-  @Suppress("DEPRECATION")
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
 
   @get:Rule

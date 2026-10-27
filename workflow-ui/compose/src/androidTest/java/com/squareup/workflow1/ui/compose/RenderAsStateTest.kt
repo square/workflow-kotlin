@@ -11,7 +11,7 @@ import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.Snapshot
@@ -47,8 +47,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 internal class RenderAsStateTest {
 
-  // TODO(CLF-521): Migrate to the androidx.compose.ui.test.junit4.v2 rules.
-  @Suppress("DEPRECATION") private val composeRule = createComposeRule()
+  private val composeRule = createComposeRule()
 
   @get:Rule
   val rules: RuleChain =
