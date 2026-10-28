@@ -127,7 +127,6 @@ mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-
 
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-plugin" }
 android-library = { id = "com.android.library", version.ref = "agpVersion" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 [libraries]
 
