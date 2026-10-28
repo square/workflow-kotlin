@@ -104,6 +104,7 @@ private constructor(
   private var stateRegistryEntry: SaveableStateRegistry.Entry? = null
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
+  private val renderContext: StatefulWorkflow.RenderContext<P, Any?, O>
   private val applyActionLock = Lock()
 
   /** Helper for calling into Compose code from non-compose code. */
@@ -147,6 +148,7 @@ private constructor(
     interceptedWorkflow =
       interceptor?.intercept(workflow = statefulWorkflow, workflowSession = this)
         ?: statefulWorkflow
+    renderContext = RenderContext(this, interceptedWorkflow)
 
     val initialState =
       config.workflowTracer.trace(InitialState) {
@@ -210,11 +212,7 @@ private constructor(
         }
       }
     return interceptedWorkflow
-      .render(
-        renderProps = props as P,
-        renderState = currentState,
-        context = RenderContext(this, interceptedWorkflow),
-      )
+      .render(renderProps = props as P, renderState = currentState, context = renderContext)
       .also { trapdoor = null }
   }
 
