@@ -110,7 +110,7 @@ private constructor(
   private var workflow: Workflow<P, O, R> = workflow
   private var interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
 
-  /** Only wraps this object, so [updateWorkflow] doesn't need to recreate it. */
+  /** Caches the public `RenderContext` that wraps this `BaseRenderContext`. */
   private val renderContext: StatefulWorkflow.RenderContext<P, Any?, O>
   private val applyActionLock = Lock()
 
@@ -148,6 +148,9 @@ private constructor(
   init {
     config.workflowInterceptor?.onSessionStarted(workflowScope = workflowScope, session = this)
     interceptedWorkflow = interceptWorkflow(workflow)
+    // interceptedWorkflow is only passed for type inference, the context does not actually use or
+    // retain the instance for anything, so this wrapper does not need to be recreated by
+    // updateWorkflow().
     renderContext = RenderContext(this, interceptedWorkflow)
 
     val initialState =
