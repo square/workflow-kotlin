@@ -33,6 +33,7 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.Lock
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_CONTEXT_CHILD_GROUP
 import com.squareup.workflow1.internal.compose.TraceLabels.InitialState
 import com.squareup.workflow1.internal.compose.TraceLabels.OnPropsChanged
 import com.squareup.workflow1.internal.compose.TraceLabels.SendAction
@@ -225,10 +226,7 @@ private constructor(
   override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
     // We pass the key as the movable data key instead of just passing it to LaunchedEffect since
     // we want this group to be movable, not just restartable.
-    requireTrapdoor("runningSideEffect").inMovableGroup(
-      ComposeGroupKeys.RENDER_CONTEXT_CHILD_GROUP,
-      key,
-    ) {
+    requireTrapdoor("runningSideEffect").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // Can't use sideEffect as key since it is allocated anew every render pass, so it will always
       // be different.
       LaunchedEffect(Unit, block = sideEffect)
@@ -241,7 +239,7 @@ private constructor(
     vararg inputs: Any?,
     calculation: () -> ResultT,
   ): ResultT =
-    requireTrapdoor("remember").inMovableGroup(ComposeGroupKeys.RENDER_CONTEXT_CHILD_GROUP, key) {
+    requireTrapdoor("remember").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // RememberStore (the traditional runtime's implementation of this call) keys the lifetime of
       // the memoization off the result type and inputs in addition to the explicit key. The data
       // key is only used to keep the memoized state consistent as the order and number of calls to
@@ -266,7 +264,7 @@ private constructor(
   ): ChildRenderingT =
     requireTrapdoor("renderChild")
       // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
-      .inMovableGroup(ComposeGroupKeys.RENDER_CONTEXT_CHILD_GROUP, child.identifier, key) {
+      .inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, child.identifier, key) {
         // Memoize the onOutput function so that renderChild can skip whenever possible.
         val updatedHandler by rememberUpdatedState(handler)
         val childOnOutput: (ChildOutputT) -> Unit = remember {
