@@ -246,6 +246,12 @@ private constructor(
       // particular remember call, so they don't need to be part of the data key. We use a separate
       // key call since it's simpler than correctly folding multiple objects into a single data key
       // (which requires calling Composer.joinKey).
+      //
+      // Don't collapse this into a single `remember(resultType, *inputs)`: mixing a regular
+      // argument with a spread compiles to a SpreadBuilder, which allocates 4 objects per call.
+      // This form allocates only 1 (the copy for `*inputs`), since the Compose compiler lowers key
+      // calls without allocating. Benchmarks confirmed this form is faster and allocates less:
+      // https://github.com/square/workflow-kotlin/pull/1585
       key(resultType, *inputs) { remember(*inputs, calculation = calculation) }
     }
 
