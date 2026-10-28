@@ -11,7 +11,6 @@ import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -246,7 +245,7 @@ private constructor(
       // particular remember call, so they don't need to be part of the data key. We use a separate
       // key call since it's simpler than correctly folding multiple objects into a single data key
       // (which requires calling Composer.joinKey).
-      key(resultType, *inputs) { remember(*inputs, calculation = calculation) }
+      remember(resultType, *inputs, calculation = calculation)
     }
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
