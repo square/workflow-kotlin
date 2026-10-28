@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("com.android.library")
-  id("kotlin-android")
+  id("kotlin-android-conventions")
   id("android-defaults")
   id("android-ui-tests")
   id("published")
