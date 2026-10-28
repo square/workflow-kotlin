@@ -16,7 +16,7 @@ buildscript {
 
     deps = [
         activityktx: 'androidx.activity:activity-ktx:1.13.0',
-        agp: "com.android.tools.build:gradle:8.13.2",
+        agp: "com.android.tools.build:gradle:9.1.1",
         appcompat: 'androidx.appcompat:appcompat:1.7.1',
         constraintlayout: 'androidx.constraintlayout:constraintlayout:2.2.1',
         kotlin: [
@@ -61,16 +61,15 @@ subprojects {
   }
 
   tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions {
-      freeCompilerArgs += '-opt-in=kotlin.RequiresOptIn'
+    compilerOptions {
+      freeCompilerArgs.add('-opt-in=kotlin.RequiresOptIn')
     }
   }
 
-  plugins.withId("org.jetbrains.kotlin.android")  {
-    java {
-      toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-      }
+  // AGP 9 compiles Kotlin with its built-in Kotlin support, so there's no kotlin-android plugin.
+  plugins.withId("com.android.base") {
+    kotlin {
+      jvmToolchain(21)
     }
   }
 }
