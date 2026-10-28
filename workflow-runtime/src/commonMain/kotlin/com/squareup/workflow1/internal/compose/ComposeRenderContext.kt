@@ -59,7 +59,7 @@ import kotlinx.coroutines.CoroutineScope
 @Stable
 internal class ComposeRenderContext<P, O, R>
 private constructor(
-  private val workflow: Workflow<P, O, R>,
+  workflow: Workflow<P, O, R>,
   snapshot: Snapshot?,
   initialProps: P,
   private val workflowScope: CoroutineScope,
@@ -103,7 +103,14 @@ private constructor(
   private var recomposeScope: RecomposeScope? = null
   private var stateRegistryEntry: SaveableStateRegistry.Entry? = null
 
-  private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
+  /**
+   * The most recent instance of the workflow passed by the parent. Only its identity is tied to the
+   * session, so a parent can render a new instance at any time (see [updateWorkflow]).
+   */
+  private var workflow: Workflow<P, O, R> = workflow
+  private var interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
+
+  /** Only wraps this object, so [updateWorkflow] doesn't need to recreate it. */
   private val renderContext: StatefulWorkflow.RenderContext<P, Any?, O>
   private val applyActionLock = Lock()
 
@@ -139,15 +146,8 @@ private constructor(
   // endregion
 
   init {
-    @Suppress("UNCHECKED_CAST")
-    val statefulWorkflow = workflow.asStatefulWorkflow() as StatefulWorkflow<P, Any?, O, R>
-    val interceptor = config.workflowInterceptor
-
-    interceptor?.onSessionStarted(workflowScope = workflowScope, session = this)
-
-    interceptedWorkflow =
-      interceptor?.intercept(workflow = statefulWorkflow, workflowSession = this)
-        ?: statefulWorkflow
+    config.workflowInterceptor?.onSessionStarted(workflowScope = workflowScope, session = this)
+    interceptedWorkflow = interceptWorkflow(workflow)
     renderContext = RenderContext(this, interceptedWorkflow)
 
     val initialState =
@@ -159,6 +159,27 @@ private constructor(
         )
       }
     state = WorkflowSnapshotState(props = initialProps, onOutput = null, state = initialState)
+  }
+
+  /**
+   * Switches to [newWorkflow] if the parent rendered a different instance than last time, without
+   * resetting the session. Analogous to `StatefulWorkflowNode.maybeUpdateCachedWorkflowInstance` in
+   * the traditional runtime.
+   */
+  fun updateWorkflow(newWorkflow: Workflow<P, O, R>) {
+    if (newWorkflow !== workflow) {
+      workflow = newWorkflow
+      interceptedWorkflow = interceptWorkflow(newWorkflow)
+    }
+  }
+
+  private fun interceptWorkflow(workflow: Workflow<P, O, R>): StatefulWorkflow<P, Any?, O, R> {
+    @Suppress("UNCHECKED_CAST")
+    val statefulWorkflow = workflow.asStatefulWorkflow() as StatefulWorkflow<P, Any?, O, R>
+    return config.workflowInterceptor?.intercept(
+      workflow = statefulWorkflow,
+      workflowSession = this,
+    ) ?: statefulWorkflow
   }
 
   override fun onRemembered() {
