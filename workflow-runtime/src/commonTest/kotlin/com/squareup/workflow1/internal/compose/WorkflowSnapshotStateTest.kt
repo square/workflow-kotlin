@@ -365,4 +365,81 @@ internal class WorkflowSnapshotStateTest {
     // Sanity check: applyAction observed the latest props rather than the initial one.
     assertTrue(seenProps != "p1")
   }
+
+  // Concurrent writes ------------------------------------------------------------------------
+
+  /**
+   * Reproduces the interleaving of a render pass, which calls [updateAndGetState] inside the
+   * Recomposer's mutable snapshot, with an action applied outside that snapshot (e.g. from another
+   * thread). The Recomposer treats a failed apply as an unsupported concurrent change, so both
+   * writes must survive and the snapshot must still apply.
+   */
+  @Test
+  fun applyAction_outside_snapshot_does_not_conflict_with_props_update_inside_snapshot() {
+    val state = WorkflowSnapshotState(props = "p1", onOutput = null, state = "s1")
+    val snapshot = Snapshot.takeMutableSnapshot()
+    try {
+      snapshot.enter {
+        state.updateAndGetState(
+          newProps = "p2",
+          newOnOutput = null,
+          didPropsChange = true,
+          didOnOutputChange = false,
+        ) { _, oldState ->
+          oldState
+        }
+      }
+
+      val setState: WorkflowAction<Any?, Any?, Any?> = action("set") { this.state = "s2" }
+      var newStateCalls = 0
+      state.applyAction(setState) { newStateCalls++ }
+      assertEquals(1, newStateCalls)
+
+      assertTrue(snapshot.apply().succeeded, "Snapshot apply failed.")
+    } finally {
+      snapshot.dispose()
+    }
+
+    assertEquals("s2", state.peekState())
+    var seenProps: Any? = null
+    val capture: WorkflowAction<Any?, Any?, Any?> = action("capture") { seenProps = props }
+    state.applyAction(capture) { fail("state did not change; onNewState should not be invoked") }
+    assertEquals("p2", seenProps)
+  }
+
+  /**
+   * Like [applyAction_outside_snapshot_does_not_conflict_with_props_update_inside_snapshot], but
+   * the render pass only stores a new output handler.
+   */
+  @Test
+  fun applyAction_outside_snapshot_does_not_conflict_with_onOutput_update_inside_snapshot() {
+    val outputs = mutableListOf<Any?>()
+    val newOnOutput: (Any?) -> Unit = { outputs += it }
+    val state = WorkflowSnapshotState(props = "p", onOutput = null, state = "s1")
+    val snapshot = Snapshot.takeMutableSnapshot()
+    try {
+      snapshot.enter {
+        state.updateAndGetState(
+          newProps = "p",
+          newOnOutput = newOnOutput,
+          didPropsChange = false,
+          didOnOutputChange = true,
+        ) { _, _ ->
+          fail("props did not change; onPropsChanged should not be invoked")
+        }
+      }
+
+      val setState: WorkflowAction<Any?, Any?, Any?> = action("set") { this.state = "s2" }
+      state.applyAction(setState) {}
+
+      assertTrue(snapshot.apply().succeeded, "Snapshot apply failed.")
+    } finally {
+      snapshot.dispose()
+    }
+
+    assertEquals("s2", state.peekState())
+    val emit: WorkflowAction<Any?, Any?, Any?> = action("emit") { setOutput("out") }
+    state.applyAction(emit) { fail("state did not change; onNewState should not be invoked") }
+    assertEquals(listOf<Any?>("out"), outputs)
+  }
 }
