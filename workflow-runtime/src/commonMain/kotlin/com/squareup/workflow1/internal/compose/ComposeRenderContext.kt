@@ -69,6 +69,7 @@ private constructor(
   override val renderKey: String,
   private val saveableStateRegistry: SaveableStateRegistry?,
   private val saveableStateKey: String,
+  private val onSessionAvailable: ((WorkflowSession) -> Unit)?,
 ) :
   BaseRenderContext<P, Any?, O>,
   Sink<WorkflowAction<P, Any?, O>>,
@@ -86,11 +87,13 @@ private constructor(
     config: WorkflowComposableRuntimeConfig,
     parent: WorkflowSession?,
     renderKey: String,
+    onSessionAvailable: ((WorkflowSession) -> Unit)?,
   ) : this(
     snapshot =
       saveableStateRegistry?.let { restoreFromRegistry(saveableStateRegistry, saveableStateKey) },
     saveableStateRegistry = saveableStateRegistry,
     saveableStateKey = saveableStateKey,
+    onSessionAvailable = onSessionAvailable,
     workflow = workflow,
     initialProps = initialProps,
     workflowScope = workflowScope,
@@ -160,6 +163,8 @@ private constructor(
   }
 
   override fun onRemembered() {
+    onSessionAvailable?.invoke(this)
+
     if (saveableStateRegistry != null) {
       // Saving and restoring from the registry manually, instead of using rememberSaveable, saves
       // a lot on allocations and is faster too (see
@@ -246,6 +251,12 @@ private constructor(
       // particular remember call, so they don't need to be part of the data key. We use a separate
       // key call since it's simpler than correctly folding multiple objects into a single data key
       // (which requires calling Composer.joinKey).
+      //
+      // Don't collapse this into a single `remember(resultType, *inputs)`: mixing a regular
+      // argument with a spread compiles to a SpreadBuilder, which allocates 4 objects per call.
+      // This form allocates only 1 (the copy for `*inputs`), since the Compose compiler lowers key
+      // calls without allocating. Benchmarks confirmed this form is faster and allocates less:
+      // https://github.com/square/workflow-kotlin/pull/1585
       key(resultType, *inputs) { remember(*inputs, calculation = calculation) }
     }
 
@@ -335,6 +346,7 @@ private constructor(
       parentSession: WorkflowSession?,
       renderKey: String,
       callerRecomposeScope: RecomposeScope,
+      onSessionAvailable: ((WorkflowSession) -> Unit)?,
     ): ComposeRenderContext<P, O, R> {
       val workflowScope = rememberCoroutineScope()
       val saveableStateRegistry = LocalSaveableStateRegistry.current
@@ -352,6 +364,7 @@ private constructor(
           renderKey = renderKey,
           saveableStateRegistry = saveableStateRegistry,
           saveableStateKey = stringKey,
+          onSessionAvailable = onSessionAvailable,
         )
       }
     }
