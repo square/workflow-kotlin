@@ -125,7 +125,9 @@ internal class WorkflowSnapshotState(props: Any?, onOutput: ((Any?) -> Unit)?, s
     // of the subtree, the second action won't propagate until the first one is done. If we
     // moved this out of the lock, then the propagations of two actions from two subtrees could
     // be interleaved to their common ancestors.
-    onOutput?.let { onOutput -> applied.output?.value?.let(onOutput) }
+    // WorkflowOutput is the box that tells "no output" apart from setOutput(null), so only unwrap
+    // it after checking for its presence.
+    onOutput?.let { onOutput -> applied.output?.let { onOutput(it.value) } }
   }
 
   internal class Record(var props: Any?, var onOutput: ((Any?) -> Unit)?, var state: Any?) :

@@ -154,9 +154,14 @@ internal class ComposeWorkflowNode<P, O, R>(
     val stateChanged = !recomposeRequests.isEmpty
     if (skipDirtyNodes && stateChanged) return ActionsExhausted
 
-    val nextOutput = outputs.tryReceive().getOrNull() ?: return ActionsExhausted
+    // Null is a valid output, so check whether anything was received before unwrapping.
+    val nextOutput = outputs.tryReceive()
+    if (nextOutput.isFailure) return ActionsExhausted
     val actionApplied =
-      ActionApplied<O>(output = WorkflowOutput(nextOutput), stateChanged = stateChanged)
+      ActionApplied<O>(
+        output = WorkflowOutput(nextOutput.getOrThrow()),
+        stateChanged = stateChanged,
+      )
     return emitAppliedActionToParent(actionApplied)
   }
 
