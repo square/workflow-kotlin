@@ -180,13 +180,17 @@ private fun renderWorkflowRestartableImpl(
     renderContext.updateRecomposeScope(recomposeScope)
     composer.recordUsed(recomposeScope)
 
+    // Reuse the change information we already calculated so we don't have to call equals again.
+    // On first composition the dirty bits don't describe the render context's state: it was just
+    // created with these props (so onPropsChanged must not be called), and without an output
+    // handler (so this one must be stored).
+    val inserting = composer.inserting
     newValue =
       renderContext.renderSelf(
         props = props,
         onOutput = onOutput,
-        // Reuse the change information we already calculated so we don't have to call equals again.
-        didPropsChange = (dirty and 0b010) != 0b010,
-        didOnOutputChange = (dirty and 0b010_000) != 0b010_000,
+        didPropsChange = !inserting && (dirty and 0b010) != 0b010,
+        didOnOutputChange = inserting || (dirty and 0b010_000) != 0b010_000,
         composer = composer,
       )
   }

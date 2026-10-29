@@ -155,6 +155,35 @@ class RenderWorkflowInTest(
     }
 
   @Test
+  fun onPropsChanged_is_not_called_on_child_initial_render() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val props = MutableStateFlow(0)
+      val child =
+        Workflow.stateful<Int, String, Nothing, String>(
+          initialState = { props -> "initial $props" },
+          render = { _, state -> state },
+          onPropsChanged = { old, new, _ -> "changed $old->$new" },
+        )
+      val workflow = Workflow.stateless<Int, Nothing, String> { renderChild(child, it) }
+
+      val renderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      assertEquals("initial 0", renderings.value.rendering)
+
+      props.value = 1
+      advanceIfStandard()
+      assertEquals("changed 0->1", renderings.value.rendering)
+    }
+
+  @Test
   fun initial_rendering_is_calculated_when_scope_cancelled_before_start() {
     if (COMPOSE_RUNTIME in runtimeConfig) {
       // Compose can't run in a cancelled scope. It's not clear why this test is here – is this
