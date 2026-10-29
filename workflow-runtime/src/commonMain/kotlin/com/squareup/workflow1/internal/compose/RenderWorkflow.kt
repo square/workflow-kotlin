@@ -2,7 +2,6 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.currentComposer
@@ -39,8 +38,9 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
  * @param renderKey The key passed to the [com.squareup.workflow1.BaseRenderContext.renderChild]
  *   function by the parent workflow. This is only used to construct the child's [WorkflowSession],
  *   and is not used for actual keying. [ComposeRenderContext] does the actual keying.
- * @param onSessionAvailable Invoked once (per callback instance) with the [WorkflowSession] of this
- *   workflow once it's been created.
+ * @param onSessionAvailable Invoked once with the [WorkflowSession] of this workflow when the
+ *   session is first remembered by the composition. Only the callback passed on the first
+ *   composition is used.
  */
 @Suppress("UNCHECKED_CAST")
 @OptIn(WorkflowExperimentalRuntime::class)
@@ -79,14 +79,8 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       parentSession = parentSession,
       renderKey = renderKey,
       callerRecomposeScope = recomposeScope,
+      onSessionAvailable = onSessionAvailable,
     )
-
-  if (onSessionAvailable != null) {
-    DisposableEffect(onSessionAvailable, renderContext) {
-      onSessionAvailable(renderContext)
-      onDispose {}
-    }
-  }
 
   // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
