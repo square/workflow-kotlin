@@ -46,8 +46,8 @@ gradlePlugin {
       id = "dokka"
       implementationClass = "com.squareup.workflow1.buildsrc.DokkaConfigPlugin"
     }
-    create("kotlin-android") {
-      id = "kotlin-android"
+    create("kotlin-android-conventions") {
+      id = "kotlin-android-conventions"
       implementationClass = "com.squareup.workflow1.buildsrc.KotlinAndroidConventionPlugin"
     }
     create("kotlin-jvm") {

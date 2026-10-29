@@ -5,10 +5,11 @@ import com.squareup.workflow1.buildsrc.internal.javaTargetVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  // Must be applied before kotlin-android so the convention can detect that this is a benchmark.
+  // Must be applied before kotlin-android-conventions so the convention can detect that this is a
+  // benchmark.
   alias(libs.plugins.androidx.benchmark)
   id("com.android.library")
-  id("kotlin-android")
+  id("kotlin-android-conventions")
   id("app.cash.burst")
 }
 

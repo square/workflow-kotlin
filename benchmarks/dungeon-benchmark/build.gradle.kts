@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   id("com.android.test")
-  id("org.jetbrains.kotlin.android")
 }
 
 // Note: We are not including our defaults from .buildscript as we do not need the base Workflow
