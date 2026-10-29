@@ -81,6 +81,9 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       callerRecomposeScope = recomposeScope,
       onSessionAvailable = onSessionAvailable,
     )
+  // Do this before deciding whether to skip, so that even if this pass skips rendering, later
+  // renders and snapshots use the new instance.
+  renderContext.updateWorkflow(workflow)
 
   // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh

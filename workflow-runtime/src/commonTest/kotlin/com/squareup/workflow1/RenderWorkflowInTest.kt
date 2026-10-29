@@ -2261,6 +2261,159 @@ class RenderWorkflowInTest(
     }
   }
 
+  @Test
+  fun new_child_workflow_instance_is_used_to_render_without_resetting_state() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val parent =
+        Workflow.stateful<Int, Nothing, Pair<LabeledChild.Rendering, () -> Unit>>(
+          initialState = 0,
+          render = { state ->
+            // A new instance of the same workflow type on every render pass. The child's props also
+            // change so that runtimes that skip rendering children with unchanged props still have
+            // to render it.
+            val childRendering = renderChild(LabeledChild("v$state"), props = state)
+            Pair(childRendering, { actionSink.send(action("bump") { this.state += 1 }) })
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+      assertEquals("v0 props=0 state=0", renderings.value.rendering.first.text)
+
+      renderings.value.rendering.first.increment()
+      advanceIfStandard()
+      assertEquals("v0 props=0 state=1", renderings.value.rendering.first.text)
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+      assertEquals("v1 props=1 state=1", renderings.value.rendering.first.text)
+    }
+
+  @Test
+  fun new_child_workflow_instance_is_used_for_onPropsChanged() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val parent =
+        Workflow.stateful<Int, Nothing, Pair<String, () -> Unit>>(
+          initialState = 0,
+          render = { state ->
+            val childRendering = renderChild(PropsChangeLabelingChild("v$state"), props = state)
+            Pair(childRendering, { actionSink.send(action("bump") { this.state += 1 }) })
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+      assertEquals("v1 saw 0->1", renderings.value.rendering.first)
+    }
+
+  @Test
+  fun new_child_workflow_instance_is_used_for_snapshotState() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val parent =
+        Workflow.stateful<Int, Nothing, Pair<String, () -> Unit>>(
+          initialState = 0,
+          render = { state ->
+            val childRendering = renderChild(SnapshotLabelingChild("v$state"), props = state)
+            Pair(childRendering, { actionSink.send(action("bump") { this.state += 1 }) })
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+      assertEquals("no snapshot", renderings.value.rendering.first)
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+      val snapshot = renderings.value.snapshot
+
+      // The restored parent starts at state 0, so the restored child is a v0 instance that only
+      // reports which instance wrote the snapshot it was restored from.
+      val restoredScope = TestScope(dispatcherUsed)
+      val restoredRenderings =
+        renderWorkflowIn(
+          parent,
+          restoredScope,
+          MutableStateFlow(Unit),
+          initialSnapshot = snapshot,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+      assertEquals("restored from v1", restoredRenderings.value.rendering.first)
+      restoredScope.cancel()
+    }
+
+  @Test
+  fun interceptor_renders_new_child_workflow_instance() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val interceptedRenderings = mutableListOf<String>()
+      val interceptor =
+        object : WorkflowInterceptor {
+          override fun <P, S, O, R> onRender(
+            renderProps: P,
+            renderState: S,
+            context: BaseRenderContext<P, S, O>,
+            proceed: (P, S, WorkflowInterceptor.RenderContextInterceptor<P, S, O>?) -> R,
+            session: WorkflowInterceptor.WorkflowSession,
+          ): R =
+            proceed(renderProps, renderState, null).also { rendering ->
+              if (rendering is LabeledChild.Rendering) interceptedRenderings += rendering.text
+            }
+        }
+      val parent =
+        Workflow.stateful<Int, Nothing, Pair<LabeledChild.Rendering, () -> Unit>>(
+          initialState = 0,
+          render = { state ->
+            val childRendering = renderChild(LabeledChild("v$state"), props = state)
+            Pair(childRendering, { actionSink.send(action("bump") { this.state += 1 }) })
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          interceptors = listOf(interceptor),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+      assertEquals("v1 props=1 state=0", renderings.value.rendering.first.text)
+      assertEquals("v1 props=1 state=0", interceptedRenderings.last())
+    }
+
   // Compose runtime does not support unconfined dispatcher.
   // Tests check this inside runTest instead of wrapping it in a helper, since Burst only returns
   // the TestResult when the @Test function calls runTest directly. Without that, JS tests aren't
@@ -2269,6 +2422,60 @@ class RenderWorkflowInTest(
     get() = COMPOSE_RUNTIME in runtimeConfig && useUnconfined
 
   private class ExpectedException : RuntimeException()
+
+  /**
+   * Renders [label] and its current props and state, so tests can tell which instance rendered and
+   * whether its state survived.
+   */
+  private class LabeledChild(private val label: String) :
+    StatefulWorkflow<Int, Int, Nothing, LabeledChild.Rendering>() {
+    class Rendering(val text: String, val increment: () -> Unit)
+
+    override fun initialState(props: Int, snapshot: Snapshot?): Int = 0
+
+    override fun render(
+      renderProps: Int,
+      renderState: Int,
+      context: RenderContext<Int, Int, Nothing>,
+    ): Rendering =
+      Rendering(
+        text = "$label props=$renderProps state=$renderState",
+        increment = { context.actionSink.send(action("increment") { state += 1 }) },
+      )
+
+    override fun snapshotState(state: Int): Snapshot? = null
+  }
+
+  /** Renders which instance last saw its props change, and what they changed from and to. */
+  private class PropsChangeLabelingChild(private val label: String) :
+    StatefulWorkflow<Int, String, Nothing, String>() {
+    override fun initialState(props: Int, snapshot: Snapshot?): String = "initial"
+
+    override fun onPropsChanged(old: Int, new: Int, state: String): String = "$label saw $old->$new"
+
+    override fun render(
+      renderProps: Int,
+      renderState: String,
+      context: RenderContext<Int, String, Nothing>,
+    ): String = renderState
+
+    override fun snapshotState(state: String): Snapshot? = null
+  }
+
+  /** Snapshots its [label], and renders the label of the instance it was restored from. */
+  private class SnapshotLabelingChild(private val label: String) :
+    StatefulWorkflow<Int, String, Nothing, String>() {
+    override fun initialState(props: Int, snapshot: Snapshot?): String =
+      snapshot?.bytes?.utf8()?.let { "restored from $it" } ?: "no snapshot"
+
+    override fun render(
+      renderProps: Int,
+      renderState: String,
+      context: RenderContext<Int, String, Nothing>,
+    ): String = renderState
+
+    override fun snapshotState(state: String): Snapshot = Snapshot.of(label)
+  }
 
   companion object {
     internal val EXPECTED_TRACE: String =
