@@ -10,5 +10,8 @@ import androidx.compose.runtime.Composer
 internal object ComposeGroupKeys {
   const val RENDER_WORKFLOW_RESTART_GROUP = 1
   const val RENDER_WORKFLOW_SKIP_GROUP = 2
+
+  // All _types_ of children (child workflows, side effects, etc) must use the same group key so
+  // that they can be moved among each other correctly.
   const val RENDER_CONTEXT_CHILD_GROUP = 3
 }
