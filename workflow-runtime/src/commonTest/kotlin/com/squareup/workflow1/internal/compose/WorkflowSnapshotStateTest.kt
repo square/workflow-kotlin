@@ -322,6 +322,16 @@ internal class WorkflowSnapshotStateTest {
   }
 
   @Test
+  fun applyAction_with_explicit_null_output_invokes_stored_onOutput_with_null() {
+    val outputs = mutableListOf<Any?>()
+    val onOutput: (Any?) -> Unit = { outputs += it }
+    val state = WorkflowSnapshotState(props = "p", onOutput = onOutput, state = "s")
+    val emitNull: WorkflowAction<Any?, Any?, Any?> = action("emitNull") { setOutput(null) }
+    state.applyAction(emitNull) { fail("state did not change; onNewState should not be invoked") }
+    assertEquals(listOf<Any?>(null), outputs)
+  }
+
+  @Test
   fun applyAction_with_output_and_null_onOutput_does_not_crash() {
     val state = WorkflowSnapshotState(props = "p", onOutput = null, state = "s")
     val emit: WorkflowAction<Any?, Any?, Any?> = action("emit") { setOutput("dropped") }

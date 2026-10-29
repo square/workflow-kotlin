@@ -2414,6 +2414,132 @@ class RenderWorkflowInTest(
       assertEquals("v1 props=1 state=0", interceptedRenderings.last())
     }
 
+  @Test
+  fun explicit_null_output_from_root_is_emitted() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val workflow =
+        Workflow.stateful<Unit, String?, () -> Unit>(
+          initialState = Unit,
+          render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+        )
+      val outputs = mutableListOf<String?>()
+      val renderings =
+        renderWorkflowIn(
+          workflow,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {
+          outputs += it
+        }
+      advanceIfStandard()
+
+      renderings.value.rendering()
+      advanceIfStandard()
+
+      assertEquals(listOf<String?>(null), outputs)
+    }
+
+  @Test
+  fun explicit_null_output_from_child_is_passed_to_parent_handler() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val child =
+        Workflow.stateful<Unit, String?, () -> Unit>(
+          initialState = Unit,
+          render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+        )
+      val parent =
+        Workflow.stateful<List<String?>, Nothing, Pair<List<String?>, () -> Unit>>(
+          initialState = emptyList(),
+          render = { receivedOutputs ->
+            val emitFromChild =
+              renderChild(child) { output -> action("onChildOutput") { state += output } }
+            Pair(receivedOutputs, emitFromChild)
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          parent,
+          backgroundScope,
+          MutableStateFlow(Unit),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+
+      renderings.value.rendering.second()
+      advanceIfStandard()
+
+      assertEquals(listOf<String?>(null), renderings.value.rendering.first)
+    }
+
+  /**
+   * Under [DRAIN_EXCLUSIVE_ACTIONS] and [CONFLATE_STALE_RENDERINGS], the runtime loop synchronously
+   * looks for more queued actions after the first one, and must deliver an explicit null output
+   * that it finds that way.
+   *
+   * With the traditional runtime, this checks the traditional behavior. The compose runtime only
+   * reaches this code path when a compose subtree is rendered under a traditional root with those
+   * options enabled, so compose configs render the child that way.
+   */
+  @Test
+  fun queued_null_output_is_delivered_when_draining_or_conflating_actions() =
+    runTest(dispatcherUsed) {
+      if (isUnsupportedConfig) return@runTest
+
+      val composeChild = COMPOSE_RUNTIME in runtimeConfig
+      val rootConfig =
+        if (composeChild) {
+          runtimeConfig - COMPOSE_RUNTIME + DRAIN_EXCLUSIVE_ACTIONS + CONFLATE_STALE_RENDERINGS
+        } else {
+          runtimeConfig
+        }
+      val sibling =
+        Workflow.stateful<Int, Nothing, () -> Unit>(
+          initialState = 0,
+          render = { { actionSink.send(action("incrementSibling") { state += 1 }) } },
+        )
+      val child =
+        Workflow.stateful<Unit, String?, () -> Unit>(
+          initialState = Unit,
+          render = { { actionSink.send(action("emitNull") { setOutput(null) }) } },
+        )
+      val renderedChild = if (composeChild) ComposeRuntimeSwizzlerWorkflow(child) else child
+      val parent =
+        Workflow.stateful<List<String?>, Nothing, Triple<List<String?>, () -> Unit, () -> Unit>>(
+          initialState = emptyList(),
+          render = { receivedOutputs ->
+            // Rendered first so the runtime loop picks its action before the child's output, and
+            // only finds the child's output by looking for more queued actions.
+            val incrementSibling = renderChild(sibling)
+            val emitFromChild =
+              renderChild(renderedChild) { output -> action("onChildOutput") { state += output } }
+            Triple(receivedOutputs, incrementSibling, emitFromChild)
+          },
+        )
+      val renderings =
+        renderWorkflowIn(
+          workflow = parent,
+          scope = backgroundScope,
+          props = MutableStateFlow(Unit),
+          runtimeConfig = rootConfig,
+          workflowTracer = testTracer,
+        ) {}
+      advanceIfStandard()
+
+      // Queue both before the runtime loop gets a chance to process either one.
+      renderings.value.rendering.second()
+      renderings.value.rendering.third()
+      advanceIfStandard()
+
+      assertEquals(listOf<String?>(null), renderings.value.rendering.first)
+    }
+
   // Compose runtime does not support unconfined dispatcher.
   // Tests check this inside runTest instead of wrapping it in a helper, since Burst only returns
   // the TestResult when the @Test function calls runTest directly. Without that, JS tests aren't
