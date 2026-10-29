@@ -80,6 +80,9 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       renderKey = renderKey,
       callerRecomposeScope = recomposeScope,
     )
+  // Do this before deciding whether to skip, so that even if this pass skips rendering, later
+  // renders and snapshots use the new instance.
+  renderContext.updateWorkflow(workflow)
 
   if (onSessionAvailable != null) {
     DisposableEffect(onSessionAvailable, renderContext) {
