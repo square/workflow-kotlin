@@ -163,9 +163,6 @@ private constructor(
   }
 
   override fun onRemembered() {
-    // Reported from here rather than from a DisposableEffect in renderWorkflow so that the root
-    // node doesn't pay for an extra effect node and slot table group on every workflow (see
-    // CLF-648).
     onSessionAvailable?.invoke(this)
 
     if (saveableStateRegistry != null) {
