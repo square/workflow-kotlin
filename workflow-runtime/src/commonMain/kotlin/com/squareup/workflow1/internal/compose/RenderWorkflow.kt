@@ -13,6 +13,8 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.internal.WorkflowNode
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_WORKFLOW_RESTART_GROUP
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_WORKFLOW_SKIP_GROUP
 import com.squareup.workflow1.internal.compose.ComposeRenderContext.Companion.rememberComposeRenderContext
 import com.squareup.workflow1.renderWorkflowIn
 
@@ -132,10 +134,8 @@ private fun renderWorkflowRestartableImpl(
   changed: Int,
 ): Any? {
   // Outer group is restartable: This should wrap the entire body of this function (except the
-  // actual
-  // return statement) and is what defines the recompose scope for producer.
-  // Key chosen "randomly" by mashing on my keyboard.
-  composer.startRestartGroup(23975234)
+  // actual return statement) and is what defines the recompose scope for producer.
+  composer.startRestartGroup(RENDER_WORKFLOW_RESTART_GROUP)
 
   // Only gets set if we end up composing producer this invocation.
   var newValue: Any? = Composer.Empty
@@ -144,8 +144,7 @@ private fun renderWorkflowRestartableImpl(
   // Inner group is necessary to be able to skip calling producer. We need a nested group because we
   // only want to skip calling producer, we still need to do other slot table stuff later to
   // read the cache even if producer is skipped.
-  // Key chosen "randomly" by mashing on my keyboard.
-  composer.startReplaceGroup(-895982)
+  composer.startReplaceGroup(RENDER_WORKFLOW_SKIP_GROUP)
 
   // The changed parameter is a bit set. Each parameter gets 3 bits, starting with the LSB for the
   // first parameter. In each set of three:
