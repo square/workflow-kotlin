@@ -98,12 +98,18 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
     Dispatchers.resetMain()
   }
 
+  // Compose runtime does not support unconfined dispatcher. See RenderWorkflowInTest.
+  private val isUnsupportedConfig: Boolean
+    get() = COMPOSE_RUNTIME in runtimeConfig && useUnconfined
+
   @Test
   fun saves_to_and_restores_from_snapshot(runtime2: RuntimeOptions = NONE) = runTest {
     if ((COMPOSE_RUNTIME in runtimeConfig) != (COMPOSE_RUNTIME in runtime2.runtimeConfig)) {
       // Snapshots created by the traditional runtime and the compose runtime are not compatible.
       return@runTest
     }
+    // Both configs are now known to be compose or both not, so checking one is enough.
+    if (isUnsupportedConfig) return@runTest
 
     val workflow =
       Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(

@@ -206,8 +206,8 @@ private fun renderWorkflowRestartableImpl(
       // Producer ran, update the cache and return its new value. When we're recomposed directly
       // (via the restart lambda below) we can't return the new value to the original caller, but
       // we don't need to invalidate the caller here either: ComposeRenderContext.invalidate
-      // invalidates every ancestor after invalidating this scope, so the caller is guaranteed to
-      // recompose after this and will read the new value from the cache.
+      // already invalidates every ancestor, so the caller will recompose and read the new value
+      // from the cache.
       composer.updateRememberedValue(newValue)
       newValue
     }
@@ -215,10 +215,8 @@ private fun renderWorkflowRestartableImpl(
 
   // This lambda allocation happens every time this workflow is re-rendered. I suspect this is
   // part of the reason why rerendering large swaths of the tree is inefficient, including first
-  // render. But it's required for restartability: even though ComposeRenderContext.invalidate also
-  // invalidates every ancestor, a frame may run between invalidating this scope and invalidating
-  // the parent (see that method), and in that frame this scope is the only thing that can produce
-  // the new rendering.
+  // render. But it's required for restartability. We could try making it a no-op everywhere except
+  // the root node, since we're already invalidating all the way up the tree every time anyway.
   composer.endRestartGroup()?.updateScope { composer, changed ->
     // This lambda is called when producer is invalidated. The lambda must create a restartable
     // group with the same key to preserve positional identity.
