@@ -1,7 +1,7 @@
 androidx.annotation:annotation-js:1.9.1
 androidx.annotation:annotation:1.9.1
-androidx.collection:collection-js:1.6.0
-androidx.collection:collection:1.6.0
+androidx.collection:collection-js:1.5.0
+androidx.collection:collection:1.5.0
 androidx.compose.runtime:runtime-annotation-js:1.12.1
 androidx.compose.runtime:runtime-annotation:1.12.1
 androidx.compose.runtime:runtime-js:1.12.1

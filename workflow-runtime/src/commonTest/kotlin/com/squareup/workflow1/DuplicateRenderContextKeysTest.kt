@@ -141,6 +141,43 @@ class DuplicateRenderContextKeysTest(private val runtime: RuntimeOptions = NONE)
   }
 
   @Test
+  fun remember_throws_when_earlier_call_with_same_key_is_repeated() = runTest {
+    val workflow =
+      Workflow.stateless<Unit, Nothing, String> {
+        remember("same", typeOf<String>(), "input1") { "a" }
+        remember("same", typeOf<String>(), "input2") { "b" }
+        remember("same", typeOf<String>(), "input1") { "c" }
+      }
+
+    val error = assertFailsWith<IllegalArgumentException> { start(workflow) }
+    assertEquals(
+      "Expected unique combination of key, input types and result type: \"same\"",
+      error.message,
+    )
+  }
+
+  @Test
+  fun renderChild_allows_different_types_with_default_key() = runTest {
+    val workflow =
+      Workflow.stateless<Unit, Nothing, String> { renderChild(childA) + renderChild(childB) }
+
+    assertEquals("ab", start(workflow))
+  }
+
+  @Test
+  fun renderChild_throws_when_key_is_repeated_after_other_keys() = runTest {
+    val workflow =
+      Workflow.stateless<Unit, Nothing, String> {
+        renderChild(childA, key = "1")
+        renderChild(childA, key = "2")
+        renderChild(childA, key = "1")
+      }
+
+    val error = assertFailsWith<IllegalArgumentException> { start(workflow) }
+    assertEquals("Expected keys to be unique for ${childA.identifier}: key=\"1\"", error.message)
+  }
+
+  @Test
   fun keys_are_forgotten_between_render_passes() = runTest {
     val props = MutableStateFlow(0)
     val workflow =

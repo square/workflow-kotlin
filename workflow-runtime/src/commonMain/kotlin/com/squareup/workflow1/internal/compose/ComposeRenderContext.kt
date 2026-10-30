@@ -129,13 +129,22 @@ private constructor(
    */
   private val state: WorkflowSnapshotState
 
-  /**
-   * Keys passed to [renderChild], [runningSideEffect], and [remember] in the current render pass.
-   * The traditional runtime throws if any of these are duplicated, so we do too.
+  /*
+   * Keys passed to renderChild, runningSideEffect, and remember in the current render pass. The
+   * traditional runtime throws if any of these are duplicated, so we do too. Compose doesn't catch
+   * duplicates itself since it allows movable groups with the same key. These are allocated lazily
+   * since many workflows never make some or all of these calls, and cleared at the start of each
+   * render pass.
    */
-  private val childKeys = RenderPassKeys()
-  private val sideEffectKeys = RenderPassKeys()
-  private val rememberKeys = RenderPassKeys()
+
+  /**
+   * Values are either the only key [String] rendered for that child identifier in this pass, or a
+   * `MutableSet<String>` once there is more than one, so the common case of one child per type
+   * doesn't allocate a set.
+   */
+  private var childKeys: MutableMap<WorkflowIdentifier, Any>? = null
+  private var sideEffectKeys: MutableSet<String>? = null
+  private var rememberCalls: MutableMap<String, RememberCall>? = null
 
   override val actionSink: Sink<WorkflowAction<P, Any?, O>>
     get() = this
@@ -235,9 +244,9 @@ private constructor(
     composer: Composer,
   ): R {
     trapdoor = Trapdoor(composer)
-    childKeys.reset()
-    sideEffectKeys.reset()
-    rememberKeys.reset()
+    childKeys?.clear()
+    sideEffectKeys?.clear()
+    rememberCalls?.clear()
     val currentState =
       state.updateAndGetState(
         props,
@@ -265,7 +274,8 @@ private constructor(
   override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
     val currentTrapdoor = requireTrapdoor("runningSideEffect")
     // Same check and message as the traditional runtime's StatefulWorkflowNode.
-    requireWithKey(sideEffectKeys.add(key.hashCode(), key, null), key) {
+    val sideEffectKeys = sideEffectKeys ?: hashSetOf<String>().also { sideEffectKeys = it }
+    requireWithKey(sideEffectKeys.add(key), key) {
       "Expected side effect keys to be unique: \"$key\""
     }
 
@@ -285,12 +295,15 @@ private constructor(
     calculation: () -> ResultT,
   ): ResultT {
     val currentTrapdoor = requireTrapdoor("remember")
-    // Same check and message as the traditional runtime's StatefulWorkflowNode. Only the key is
-    // hashed since hashing the type and inputs is more expensive, and reusing a key with different
-    // types or inputs is rare.
-    requireWithKey(rememberKeys.add(key.hashCode(), key, resultType, inputs), stackTraceKey = key) {
+    // Same check and message as the traditional runtime's StatefulWorkflowNode, which allows
+    // reusing a key with different inputs or result type.
+    val rememberCalls =
+      rememberCalls ?: hashMapOf<String, RememberCall>().also { rememberCalls = it }
+    val previousCall = rememberCalls[key]
+    requireWithKey(previousCall?.matches(resultType, inputs) != true, stackTraceKey = key) {
       "Expected unique combination of key, input types and result type: \"$key\""
     }
+    rememberCalls[key] = RememberCall(resultType, inputs, previous = previousCall)
 
     return currentTrapdoor.inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // RememberStore (the traditional runtime's implementation of this call) keys the lifetime of
@@ -320,10 +333,7 @@ private constructor(
     // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
     val identifier = child.identifier
     // Same check and message as the traditional runtime's SubtreeManager.
-    requireWithKey(
-      childKeys.add(31 * identifier.hashCode() + key.hashCode(), identifier, key),
-      stackTraceKey = identifier,
-    ) {
+    requireWithKey(addChildKey(identifier, key), stackTraceKey = identifier) {
       "Expected keys to be unique for $identifier: key=\"$key\""
     }
 
@@ -363,6 +373,37 @@ private constructor(
     // trampolining compose scopes requires an extra frame per scope.
     parentRecomposeScope.invalidate()
     recomposeScope!!.invalidate()
+  }
+
+  /** Returns false if [key] was already rendered for [identifier] in this render pass. */
+  private fun addChildKey(identifier: WorkflowIdentifier, key: String): Boolean {
+    val childKeys = childKeys ?: hashMapOf<WorkflowIdentifier, Any>().also { childKeys = it }
+    when (val keys = childKeys[identifier]) {
+      null -> childKeys[identifier] = key
+      is String -> {
+        if (keys == key) return false
+        childKeys[identifier] = hashSetOf(keys, key)
+      }
+      else -> {
+        @Suppress("UNCHECKED_CAST")
+        return (keys as MutableSet<String>).add(key)
+      }
+    }
+    return true
+  }
+
+  /**
+   * A [remember] call made in the current render pass. [previous] links to an earlier call with the
+   * same key but different inputs or result type, which is rare.
+   */
+  private class RememberCall(
+    private val resultType: KType,
+    private val inputs: Array<out Any?>,
+    private val previous: RememberCall?,
+  ) {
+    fun matches(resultType: KType, inputs: Array<out Any?>): Boolean =
+      (resultType == this.resultType && inputs.contentEquals(this.inputs)) ||
+        previous?.matches(resultType, inputs) == true
   }
 
   private fun requireTrapdoor(operationName: String): Trapdoor =
