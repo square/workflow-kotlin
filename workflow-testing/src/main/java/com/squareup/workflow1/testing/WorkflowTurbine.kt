@@ -53,12 +53,14 @@ import kotlinx.coroutines.withTimeout
  *
  * This will start the Workflow runtime (with params as passed) rooted at whatever Workflow it is
  * called on and then create a [WorkflowTurbine] for its renderings and run [testCase] on that.
- * [testCase] can thus drive the test scenario and assert against renderings.
+ * [testCase] can thus drive the test scenario and assert against renderings. Whatever [testCase]
+ * returns is returned from this function, so a test can pull a value such as a snapshot out of the
+ * runtime to assert on after it has been torn down.
  *
  * The default [RuntimeConfig] will be the one specified via [JvmTestRuntimeConfigTools].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
+public fun <PropsT, StateT, OutputT, RenderingT, T> StatefulWorkflow<
   PropsT,
   StateT,
   OutputT,
@@ -71,8 +73,8 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-) {
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T {
   val workflow: Workflow<PropsT, OutputT, RenderingT> = this
 
   // Determine the initial snapshot based on startFrom mode
@@ -88,6 +90,8 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
 
   val runtimeConfig = testParams.runtimeConfig ?: JvmTestRuntimeConfigTools.getTestRuntimeConfig()
 
+  // Null is a valid T, so use a sentinel for "not run yet".
+  var result: Any? = NoResult
   runTest(context = coroutineContext, timeout = testTimeout.milliseconds) {
     // We use a sub-scope so that we can cancel the Workflow runtime when we are done with it so
     // that
@@ -159,7 +163,7 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
               testScheduler = testScheduler,
               autoAdvanceBeforeAwait = testParams.autoAdvanceBeforeAwait,
             )
-          workflowTurbine.testCase()
+          result = workflowTurbine.testCase()
         } finally {
           renderingTurbine.cancelAndIgnoreRemainingEvents()
           snapshotTurbine.cancelAndIgnoreRemainingEvents()
@@ -182,7 +186,12 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
       }
     }
   }
+  check(result !== NoResult) { "Expected the test case to have run." }
+  @Suppress("UNCHECKED_CAST")
+  return result as T
 }
+
+private object NoResult
 
 private suspend fun Job.cancelForTest(
   teardown: WorkflowRuntimeTeardown,
@@ -212,15 +221,15 @@ private suspend fun Job.cancelForTest(
  * props type.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <StateT, OutputT, RenderingT> StatefulWorkflow<Unit, StateT, OutputT, RenderingT>
+public fun <StateT, OutputT, RenderingT, T> StatefulWorkflow<Unit, StateT, OutputT, RenderingT>
   .renderForTest(
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-): Unit =
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T =
   renderForTest(
     props = MutableStateFlow(Unit).asStateFlow(),
     testParams = testParams,
@@ -244,7 +253,7 @@ public fun <StateT, OutputT, RenderingT> StatefulWorkflow<Unit, StateT, OutputT,
  * @param testCase The test code to run with access to the [WorkflowTurbine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>
+public fun <PropsT, OutputT, RenderingT, T> Workflow<PropsT, OutputT, RenderingT>
   .renderForTestForStartWith(
   props: StateFlow<PropsT>,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
@@ -253,8 +262,8 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-): Unit =
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T =
   asStatefulWorkflow()
     .renderForTest(
       props = props,
@@ -271,15 +280,15 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>
  * require props. For Workflows that have [Unit] props type.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTestForStartWith(
+public fun <OutputT, RenderingT, T> Workflow<Unit, OutputT, RenderingT>.renderForTestForStartWith(
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   interceptors: List<WorkflowInterceptor> = emptyList(),
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-): Unit =
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T =
   renderForTestForStartWith(
     props = MutableStateFlow(Unit).asStateFlow(),
     testParams = testParams,
@@ -306,7 +315,7 @@ public fun <OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderForTe
  * @param testCase The test code to run with access to the [WorkflowTurbine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
+public fun <PropsT, StateT, OutputT, RenderingT, T> StatefulWorkflow<
   PropsT,
   StateT,
   OutputT,
@@ -319,8 +328,8 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-): Unit =
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T =
   renderForTest(
     props = props,
     testParams = WorkflowTestParams(startFrom = StartFromState(initialState)),
@@ -343,15 +352,15 @@ public fun <PropsT, StateT, OutputT, RenderingT> StatefulWorkflow<
  * @param testCase The test code to run with access to the [WorkflowTurbine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun <StateT, OutputT, RenderingT> StatefulWorkflow<Unit, StateT, OutputT, RenderingT>
+public fun <StateT, OutputT, RenderingT, T> StatefulWorkflow<Unit, StateT, OutputT, RenderingT>
   .renderForTestFromStateWith(
   initialState: StateT,
   coroutineContext: CoroutineContext = StandardTestDispatcher(),
   teardown: WorkflowRuntimeTeardown = WorkflowRuntimeTeardown.Cancel,
   onOutput: suspend (OutputT) -> Unit = {},
   testTimeout: Long = WORKFLOW_TEST_DEFAULT_TIMEOUT_MS,
-  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> Unit,
-): Unit =
+  testCase: suspend WorkflowTurbine<RenderingT, OutputT>.() -> T,
+): T =
   renderForTestFromStateWith(
     props = MutableStateFlow(Unit).asStateFlow(),
     initialState = initialState,
