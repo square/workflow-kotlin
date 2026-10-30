@@ -39,6 +39,7 @@ import com.squareup.workflow1.internal.compose.TraceLabels.OnPropsChanged
 import com.squareup.workflow1.internal.compose.TraceLabels.SendAction
 import com.squareup.workflow1.internal.createId
 import com.squareup.workflow1.internal.getValue
+import com.squareup.workflow1.internal.requireWithKey
 import com.squareup.workflow1.internal.setValue
 import com.squareup.workflow1.internal.threadLocalOf
 import com.squareup.workflow1.internal.withLock
@@ -127,6 +128,14 @@ private constructor(
    * about why we're using a custom state object.
    */
   private val state: WorkflowSnapshotState
+
+  /**
+   * Keys passed to [renderChild], [runningSideEffect], and [remember] in the current render pass.
+   * The traditional runtime throws if any of these are duplicated, so we do too.
+   */
+  private val childKeys = RenderPassKeys()
+  private val sideEffectKeys = RenderPassKeys()
+  private val rememberKeys = RenderPassKeys()
 
   override val actionSink: Sink<WorkflowAction<P, Any?, O>>
     get() = this
@@ -226,6 +235,9 @@ private constructor(
     composer: Composer,
   ): R {
     trapdoor = Trapdoor(composer)
+    childKeys.reset()
+    sideEffectKeys.reset()
+    rememberKeys.reset()
     val currentState =
       state.updateAndGetState(
         props,
@@ -251,9 +263,15 @@ private constructor(
   }
 
   override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
+    val currentTrapdoor = requireTrapdoor("runningSideEffect")
+    // Same check and message as the traditional runtime's StatefulWorkflowNode.
+    requireWithKey(sideEffectKeys.add(key.hashCode(), key, null), key) {
+      "Expected side effect keys to be unique: \"$key\""
+    }
+
     // We pass the key as the movable data key instead of just passing it to LaunchedEffect since
     // we want this group to be movable, not just restartable.
-    requireTrapdoor("runningSideEffect").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
+    currentTrapdoor.inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // Can't use sideEffect as key since it is allocated anew every render pass, so it will always
       // be different.
       LaunchedEffect(Unit, block = sideEffect)
@@ -265,8 +283,16 @@ private constructor(
     resultType: KType,
     vararg inputs: Any?,
     calculation: () -> ResultT,
-  ): ResultT =
-    requireTrapdoor("remember").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
+  ): ResultT {
+    val currentTrapdoor = requireTrapdoor("remember")
+    // Same check and message as the traditional runtime's StatefulWorkflowNode. Only the key is
+    // hashed since hashing the type and inputs is more expensive, and reusing a key with different
+    // types or inputs is rare.
+    requireWithKey(rememberKeys.add(key.hashCode(), key, resultType, inputs), stackTraceKey = key) {
+      "Expected unique combination of key, input types and result type: \"$key\""
+    }
+
+    return currentTrapdoor.inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // RememberStore (the traditional runtime's implementation of this call) keys the lifetime of
       // the memoization off the result type and inputs in addition to the explicit key. The data
       // key is only used to keep the memoized state consistent as the order and number of calls to
@@ -282,35 +308,46 @@ private constructor(
       // https://github.com/square/workflow-kotlin/pull/1585
       key(resultType, *inputs) { remember(*inputs, calculation = calculation) }
     }
+  }
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<P, Any?, O>,
-  ): ChildRenderingT =
-    requireTrapdoor("renderChild")
-      // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
-      .inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, child.identifier, key) {
-        // Memoize the onOutput function so that renderChild can skip whenever possible.
-        val updatedHandler by rememberUpdatedState(handler)
-        val childOnOutput: (ChildOutputT) -> Unit = remember {
-          { output ->
-            val action = updatedHandler(output)
-            applyAction(action)
-          }
-        }
+  ): ChildRenderingT {
+    val currentTrapdoor = requireTrapdoor("renderChild")
+    // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
+    val identifier = child.identifier
+    // Same check and message as the traditional runtime's SubtreeManager.
+    requireWithKey(
+      childKeys.add(31 * identifier.hashCode() + key.hashCode(), identifier, key),
+      stackTraceKey = identifier,
+    ) {
+      "Expected keys to be unique for $identifier: key=\"$key\""
+    }
 
-        renderWorkflow(
-          workflow = child,
-          props = props,
-          onOutput = childOnOutput,
-          config = config,
-          parentSession = this,
-          renderKey = key,
-          recomposeScope = this,
-        )
+    return currentTrapdoor.inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, identifier, key) {
+      // Memoize the onOutput function so that renderChild can skip whenever possible.
+      val updatedHandler by rememberUpdatedState(handler)
+      val childOnOutput: (ChildOutputT) -> Unit = remember {
+        { output ->
+          val action = updatedHandler(output)
+          applyAction(action)
+        }
       }
+
+      renderWorkflow(
+        workflow = child,
+        props = props,
+        onOutput = childOnOutput,
+        config = config,
+        parentSession = this,
+        renderKey = key,
+        recomposeScope = this,
+      )
+    }
+  }
 
   /**
    * Updates the innermost recompose scope for this context. This must be called with the recompose
