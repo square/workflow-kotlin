@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.Snapshot.Companion.withoutReadObservation
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
@@ -182,7 +183,7 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
   private val onOutput: suspend (OutputT) -> Unit,
 ) : RememberObserver {
 
-  private val renderingState = mutableStateOf<RenderingT?>(null)
+  private lateinit var renderingState: MutableState<RenderingT>
   private val propsFlow = MutableStateFlow(initialProps)
 
   /**
@@ -191,10 +192,9 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
    */
   private val workflowScope = workflowScope + Job(parent = workflowScope.coroutineContext[Job])
 
-  // The value is guaranteed to be set before returning, so this cast is fine.
-  @Suppress("UNCHECKED_CAST")
+  /** Only valid after [start] returns. */
   val rendering: State<RenderingT>
-    get() = renderingState as State<RenderingT>
+    get() = renderingState
 
   fun start(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -205,11 +205,23 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
         workflow = workflow,
         scope = workflowScope,
         props = propsFlow,
-        initialSnapshot = snapshotState.value,
+        // This is only the starting value, so don't make the caller observe it. Otherwise the
+        // runtime's first snapshot write in the collector below can invalidate the caller.
+        initialSnapshot = withoutReadObservation { snapshotState.value },
         interceptors = interceptors,
         runtimeConfig = runtimeConfig,
         onOutput = onOutput,
       )
+
+    // Create the state only after starting the runtime, seeded with the initial rendering. Starting
+    // the runtime may take nested snapshots of the current snapshot (the compose runtime runs its
+    // own composition), which advances the current snapshot's ID. When this is called from
+    // composition, writing to a state object created before that advance would be recorded as a
+    // modification and invalidate the caller as soon as the composition is applied. If the caller
+    // also restarts the runtime when it recomposes (e.g. it passes a new workflow instance each
+    // time), that would recompose forever. Creating the state here means the collector's first,
+    // equal write below is a no-op.
+    renderingState = mutableStateOf(renderings.value.rendering)
 
     workflowScope.launch(start = UNDISPATCHED, context = Dispatchers.Unconfined) {
       // We collect the renderings in the workflowScope to participate in structured concurrency,
