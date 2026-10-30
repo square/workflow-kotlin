@@ -53,11 +53,9 @@ class WorkflowTurbineTest {
         snapshot = { state: Int -> Snapshot.of(state) },
       )
 
-    lateinit var firstSnapshot: TreeSnapshot
-    workflow.renderForTest {
+    val firstSnapshot = workflow.renderForTest {
       // First snapshot should exist
-      firstSnapshot = awaitNextSnapshot()
-      assertNotNull(firstSnapshot)
+      awaitNextSnapshot()
     }
 
     assertEquals(42, workflow.renderingRestoredFrom(firstSnapshot))
@@ -92,13 +90,12 @@ class WorkflowTurbineTest {
         snapshot = { state: String -> Snapshot.of(state) },
       )
 
-    lateinit var snapshot: TreeSnapshot
-    workflow.renderForTest {
+    val snapshot = workflow.renderForTest {
       // First snapshot property should be accessible
       assertNotNull(firstSnapshot)
       // awaitNextSnapshot should return the same value
       assertEquals(firstSnapshot, awaitNextSnapshot())
-      snapshot = firstSnapshot
+      firstSnapshot
     }
 
     assertEquals("hello", workflow.renderingRestoredFrom(snapshot))
@@ -228,8 +225,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `awaitNextRendering and awaitNextSnapshot are independent`() {
-    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
-    IncrementWorkflow.renderForTest {
+    val expectedSnapshots = IncrementWorkflow.renderForTest {
       // Get first rendering
       val (value0, increment0) = awaitNextRendering()
       assertEquals(0, value0)
@@ -240,7 +236,6 @@ class WorkflowTurbineTest {
       // Now get first snapshot - should still be for state 0
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      expectedSnapshots += 0 to snapshot0
 
       // Now get second rendering - should be state 1
       val (value1, increment1) = awaitNextRendering()
@@ -250,7 +245,6 @@ class WorkflowTurbineTest {
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
-      expectedSnapshots += 1 to snapshot1
 
       // Trigger another change
       increment1()
@@ -263,7 +257,8 @@ class WorkflowTurbineTest {
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
       assertNotEquals(snapshot1, snapshot2)
-      expectedSnapshots += 2 to snapshot2
+
+      listOf(0 to snapshot0, 1 to snapshot1, 2 to snapshot2)
     }
 
     expectedSnapshots.forEach { (state, snapshot) ->
@@ -273,8 +268,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `awaitNextSnapshot and awaitNextRendering are synchronized`() {
-    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
-    IncrementWorkflow.renderForTest {
+    val expectedSnapshots = IncrementWorkflow.renderForTest {
       // Consume first rendering
       val (value0, increment) = awaitNextRendering()
       assertEquals(0, value0)
@@ -288,12 +282,12 @@ class WorkflowTurbineTest {
 
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      expectedSnapshots += 0 to snapshot0
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
-      expectedSnapshots += 1 to snapshot1
+
+      listOf(0 to snapshot0, 1 to snapshot1)
     }
 
     expectedSnapshots.forEach { (state, snapshot) ->
@@ -303,8 +297,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `shareIn works - both turbines receive same emissions`() {
-    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
-    IncrementWorkflow.renderForTest {
+    val expectedSnapshots = IncrementWorkflow.renderForTest {
       // Consume renderings first
       val (value0, increment0) = awaitNextRendering()
       assertEquals(0, value0)
@@ -320,20 +313,19 @@ class WorkflowTurbineTest {
       // Now consume snapshots - should have all 3 available because shareIn broadcasted to both
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      expectedSnapshots += 0 to snapshot0
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
-      expectedSnapshots += 1 to snapshot1
 
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
-      expectedSnapshots += 2 to snapshot2
 
       // All snapshots should be different
       assertNotEquals(snapshot0, snapshot1)
       assertNotEquals(snapshot1, snapshot2)
       assertNotEquals(snapshot0, snapshot2)
+
+      listOf(0 to snapshot0, 1 to snapshot1, 2 to snapshot2)
     }
 
     expectedSnapshots.forEach { (state, snapshot) ->
@@ -446,8 +438,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `multiple state changes produce multiple emissions for all flows`() {
-    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
-    IncrementWorkflow.renderForTest {
+    val expectedSnapshots = IncrementWorkflow.renderForTest {
       val (value0, increment0) = awaitNextRendering()
       assertEquals(0, value0)
 
@@ -473,15 +464,12 @@ class WorkflowTurbineTest {
       assertNotNull(snapshot2)
       assertNotNull(snapshot3)
 
-      expectedSnapshots += 0 to snapshot0
-      expectedSnapshots += 1 to snapshot1
-      expectedSnapshots += 2 to snapshot2
-      expectedSnapshots += 3 to snapshot3
-
       // All should be different
       assertNotEquals(snapshot0, snapshot1)
       assertNotEquals(snapshot1, snapshot2)
       assertNotEquals(snapshot2, snapshot3)
+
+      listOf(0 to snapshot0, 1 to snapshot1, 2 to snapshot2, 3 to snapshot3)
     }
 
     expectedSnapshots.forEach { (state, snapshot) ->
