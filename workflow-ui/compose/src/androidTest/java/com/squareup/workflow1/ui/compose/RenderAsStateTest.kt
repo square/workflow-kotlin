@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
@@ -350,8 +351,11 @@ internal class RenderAsStateTest {
   private companion object {
     const val SNAPSHOT_KEY = "workflow-snapshot"
 
-    /** Golden value from [savesSnapshot]. */
-    val EXPECTED_SNAPSHOT = "AAAABwAAAANmb28AAAAA".decodeBase64()!!
+    /**
+     * Golden value from [savesSnapshot]. The first byte is the [TreeSnapshot] format magic number
+     * for the legacy runtime.
+     */
+    val EXPECTED_SNAPSHOT = "/wAAAAcAAAADZm9vAAAAAA==".decodeBase64()!!
   }
 
   // Seems to be a problem accessing Workflow.stateful.
