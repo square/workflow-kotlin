@@ -3,12 +3,13 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
-import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -94,14 +95,17 @@ internal class WorkflowTestRuntimeTest {
           }
         },
         render = {},
-        snapshot = { null },
+        snapshot = { Snapshot.of("dummy snapshot") },
       )
-    val snapshot = Snapshot.of("dummy snapshot")
+    // Each runtime only restores snapshots it wrote itself, so take one from a fresh run instead
+    // of building one by hand.
+    lateinit var snapshot: TreeSnapshot
+    workflow.launchForTestingFromStartWith { snapshot = awaitNextSnapshot() }
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
         workflow.launchForTestingFromStartWith(
-          WorkflowTestParams(startFrom = StartFromWorkflowSnapshot(snapshot))
+          WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
         ) {
           // Nothing to do.
         }
