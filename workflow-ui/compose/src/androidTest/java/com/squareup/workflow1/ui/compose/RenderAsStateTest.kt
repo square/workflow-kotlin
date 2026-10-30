@@ -14,10 +14,12 @@ import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
@@ -252,6 +254,34 @@ internal class RenderAsStateTest {
     composeRule.runOnIdle {
       assertWasRecomposed()
       assertThat(rendering.string).isEqualTo("one")
+    }
+  }
+
+  /**
+   * Starting the compose runtime takes nested snapshots of the composition's snapshot, which used
+   * to make the initial rendering write look like a modification of state the caller had read, so
+   * the caller recomposed after every apply. A caller that passes a new workflow instance on every
+   * composition then restarted the runtime forever.
+   */
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test
+  fun composeRuntimeSettlesWhenGivenNewWorkflowInstanceOnEveryComposition() {
+    var compositionCount = 0
+    lateinit var rendering: String
+
+    composeRule.setContent {
+      compositionCount++
+      // A new instance on every composition restarts the runtime whenever this recomposes.
+      val workflow = Workflow.stateless<Unit, Nothing, String> { "hello" }
+      rendering =
+        workflow
+          .renderAsState(props = Unit, runtimeConfig = setOf(COMPOSE_RUNTIME), onOutput = {})
+          .value
+    }
+
+    composeRule.runOnIdle {
+      assertThat(rendering).isEqualTo("hello")
+      assertThat(compositionCount).isEqualTo(1)
     }
   }
 
