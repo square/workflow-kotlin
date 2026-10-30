@@ -89,14 +89,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
   // call to the producer lambda within the same restart group.
   return if (COMPOSE_RUNTIME_SKIPPING in config.runtimeConfig) {
-    renderWorkflowRestartable(
-      props,
-      onOutput as ((Any?) -> Unit)?,
-      renderContext,
-      false,
-      recomposeScope,
-    )
-      as RenderingT
+    renderWorkflowRestartable(props, onOutput as ((Any?) -> Unit)?, renderContext) as RenderingT
   } else {
     renderContext.updateRecomposeScope(currentRecomposeScope)
     renderContext.renderSelf(
@@ -116,9 +109,7 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
 @Suppress("UNCHECKED_CAST")
 private val renderWorkflowRestartable =
   ::renderWorkflowRestartableImpl
-    as
-    @Composable
-    (Any?, ((Any?) -> Unit)?, ComposeRenderContext<*, *, *>, Boolean, RecomposeScope) -> Any?
+    as @Composable (Any?, ((Any?) -> Unit)?, ComposeRenderContext<*, *, *>) -> Any?
 
 @OptIn(InternalComposeApi::class)
 @Suppress("NAME_SHADOWING")
@@ -126,8 +117,6 @@ private fun renderWorkflowRestartableImpl(
   props: Any?,
   onOutput: ((Any?) -> Unit)?,
   renderContext: ComposeRenderContext<*, *, *>,
-  invalidateCallerOnNewValue: Boolean,
-  callerRecomposeScope: RecomposeScope,
   composer: Composer,
   changed: Int,
 ): Any? {
@@ -214,25 +203,22 @@ private fun renderWorkflowRestartableImpl(
       // Producer was skipped, or ran but returned the same instance, return from the cache.
       oldValue
     } else {
-      // Producer ran, update the cache and return its new value.
+      // Producer ran, update the cache and return its new value. When we're recomposed directly
+      // (via the restart lambda below) we can't return the new value to the original caller, but
+      // we don't need to invalidate the caller here either: ComposeRenderContext.invalidate
+      // invalidates every ancestor after invalidating this scope, so the caller is guaranteed to
+      // recompose after this and will read the new value from the cache.
       composer.updateRememberedValue(newValue)
-
-      // When we're recomposed directly, we obviously can't return returnValue to the original
-      // caller,
-      // so just invalidate it instead. It will eventually recompose after we're done in the same
-      // frame,
-      // and when it does so it should hit the cache (unless the caller passes a new producer).
-      if (invalidateCallerOnNewValue) {
-        callerRecomposeScope.invalidate()
-      }
       newValue
     }
   // endregion
 
   // This lambda allocation happens every time this workflow is re-rendered. I suspect this is
   // part of the reason why rerendering large swaths of the tree is inefficient, including first
-  // render. But it's required for restartability. We could try making it a no-op everywhere except
-  // the root node, since we're already invalidating all the way up the tree every time anyway.
+  // render. But it's required for restartability: even though ComposeRenderContext.invalidate also
+  // invalidates every ancestor, a frame may run between invalidating this scope and invalidating
+  // the parent (see that method), and in that frame this scope is the only thing that can produce
+  // the new rendering.
   composer.endRestartGroup()?.updateScope { composer, changed ->
     // This lambda is called when producer is invalidated. The lambda must create a restartable
     // group with the same key to preserve positional identity.
@@ -240,8 +226,6 @@ private fun renderWorkflowRestartableImpl(
       props = props,
       onOutput = onOutput,
       renderContext = renderContext,
-      invalidateCallerOnNewValue = true,
-      callerRecomposeScope = callerRecomposeScope,
       composer = composer,
       // Set bits indicating that all parameters are known not to have changed. Note that we only
       // look at the first 2 sets, so we don't need to specify anything else.

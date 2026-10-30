@@ -323,8 +323,18 @@ private constructor(
   override fun invalidate() {
     // When state changes, invalidate recompose scopes all the way up the tree in one shot because
     // trampolining compose scopes requires an extra frame per scope.
-    parentRecomposeScope.invalidate()
+    //
+    // Order matters: this workflow's own scope must be invalidated before its parent's.
+    // Invalidating a scope can synchronously run an entire recomposition frame before returning:
+    // when the runtime dispatcher runs continuations inline (Dispatchers.Main.immediate on the main
+    // thread, or an unconfined test dispatcher), the recomposer's frame request wakes the runtime
+    // loop, which renders and sends the frame immediately. If the parent were invalidated first,
+    // that frame would recompose the parent, skip this workflow's not-yet-invalidated restart
+    // group, and emit a stale cached rendering. Invalidating this scope first means any such frame
+    // re-renders this workflow into the cache, and the parent's later recomposition reads the new
+    // value from it.
     recomposeScope!!.invalidate()
+    parentRecomposeScope.invalidate()
   }
 
   private fun requireTrapdoor(operationName: String): Trapdoor =
