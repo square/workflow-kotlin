@@ -205,9 +205,11 @@ private fun renderWorkflowRestartableImpl(
     } else {
       // Producer ran, update the cache and return its new value. When we're recomposed directly
       // (via the restart lambda below) we can't return the new value to the original caller, but
-      // we don't need to invalidate the caller here either: ComposeRenderContext.invalidate
-      // already invalidates every ancestor, so the caller will recompose and read the new value
-      // from the cache.
+      // we don't need to invalidate the caller here either. Despite appearances, we never rely on
+      // Compose's automatic invalidation from snapshot state writes: WorkflowSnapshotState doesn't
+      // record reads, and every WorkflowAction explicitly invalidates the recompose scopes via
+      // ComposeRenderContext.invalidate, which already invalidates every ancestor. So the caller
+      // will recompose and read the new value from the cache.
       composer.updateRememberedValue(newValue)
       newValue
     }
