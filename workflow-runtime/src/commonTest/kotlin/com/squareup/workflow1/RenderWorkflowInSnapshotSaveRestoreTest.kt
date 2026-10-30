@@ -317,11 +317,6 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
       override fun corrupt(validBytes: ByteString): ByteString = ByteString.EMPTY
     },
 
-    /** Too short to even hold a magic number. */
-    SHORTER_THAN_MAGIC {
-      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(0, 2)
-    },
-
     /** Bytes that were never a snapshot at all. */
     RANDOM {
       override fun corrupt(validBytes: ByteString): ByteString =
@@ -330,7 +325,7 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
 
     /** A real snapshot with its magic number stripped, like one written before formats existed. */
     MISSING_MAGIC {
-      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(4)
+      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(1)
     };
 
     abstract fun corrupt(validBytes: ByteString): ByteString
@@ -347,13 +342,13 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
     /** The root snapshot's length prefix claims a negative size. */
     NEGATIVE_ROOT_LENGTH {
       override fun corrupt(validBytes: ByteString): ByteString =
-        Buffer().write(validBytes.substring(0, 4)).writeInt(-1).readByteString()
+        Buffer().write(validBytes.substring(0, 1)).writeInt(-1).readByteString()
     },
 
     /** The root snapshot's length prefix claims far more bytes than are present. */
     OVERSIZED_ROOT_LENGTH {
       override fun corrupt(validBytes: ByteString): ByteString =
-        Buffer().write(validBytes.substring(0, 4)).writeInt(Int.MAX_VALUE).readByteString()
+        Buffer().write(validBytes.substring(0, 1)).writeInt(Int.MAX_VALUE).readByteString()
     };
 
     abstract fun corrupt(validBytes: ByteString): ByteString

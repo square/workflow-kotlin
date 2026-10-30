@@ -38,24 +38,24 @@ internal constructor(
    * [childTreeSnapshots] should be interpreted. Serialized as a magic number at the start of
    * [toByteString].
    *
-   * All magic numbers are negative so they can never be mistaken for the non-negative length prefix
-   * that a snapshot written before formats were introduced starts with.
+   * All magic numbers are negative so they can never be mistaken for the first byte of the
+   * non-negative length prefix that a snapshot written before formats were introduced starts with.
    */
-  internal enum class Format(internal val magic: Int) {
+  internal enum class Format(internal val magic: Byte) {
     /**
      * Written by the traditional runtime: [workflowSnapshot] is the root workflow's own
      * `snapshotState`, and [childTreeSnapshots] contains the subtrees of its children.
      */
-    LEGACY(magic = 0xC0DE_0001.toInt()),
+    LEGACY(magic = (-1).toByte()),
 
     /**
      * Written by the compose runtime: [workflowSnapshot] is the serialized saveable state registry
      * for the entire tree, and [childTreeSnapshots] is always empty.
      */
-    COMPOSE(magic = 0xC0DE_0002.toInt());
+    COMPOSE(magic = (-2).toByte());
 
     internal companion object {
-      fun forMagic(magic: Int): Format? = entries.firstOrNull { it.magic == magic }
+      fun forMagic(magic: Byte): Format? = entries.firstOrNull { it.magic == magic }
     }
   }
 
@@ -88,7 +88,7 @@ internal constructor(
    */
   public fun toByteString(): ByteString =
     Buffer().let { sink ->
-      sink.writeInt(format.magic)
+      sink.writeByte(format.magic.toInt())
       sink.writeByteStringWithLength(workflowSnapshot?.bytes ?: ByteString.EMPTY)
       val childBytes: List<Pair<ByteString, ByteString>> =
         childTreeSnapshots.mapNotNull { (childId, childSnapshot) ->
@@ -162,9 +162,9 @@ internal constructor(
      */
     @OptIn(ExperimentalStdlibApi::class)
     public fun parse(bytes: ByteString): TreeSnapshot {
-      if (bytes.size < 4) return EMPTY
+      if (bytes.size == 0) return EMPTY
       return bytes.parse { source ->
-        val format = Format.forMagic(source.readInt()) ?: return@parse EMPTY
+        val format = Format.forMagic(source.readByte()) ?: return@parse EMPTY
         val rootSnapshot = source.readByteStringWithLength()
         return TreeSnapshot(
           workflowSnapshot = Snapshot.of(rootSnapshot),

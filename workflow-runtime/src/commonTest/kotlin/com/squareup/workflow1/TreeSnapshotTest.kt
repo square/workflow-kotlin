@@ -157,11 +157,6 @@ internal class TreeSnapshotTest {
   }
 
   @Test
-  fun parse_bytes_shorter_than_magic_returns_empty_snapshot() {
-    assertEmpty(TreeSnapshot.parse(Buffer().writeShort(42).readByteString()))
-  }
-
-  @Test
   fun parse_unknown_magic_returns_empty_snapshot() {
     // A snapshot written before formats were introduced starts with a non-negative root length.
     val preFormatBytes =
@@ -182,10 +177,10 @@ internal class TreeSnapshotTest {
    */
   @Test
   fun parse_corrupt_bytes_after_valid_magic_throws() {
-    val negativeRootLength = Buffer().writeInt(LEGACY.magic).writeInt(-1).readByteString()
+    val negativeRootLength = Buffer().writeByte(LEGACY.magic.toInt()).writeInt(-1).readByteString()
     assertFails { TreeSnapshot.parse(negativeRootLength) }
 
-    val truncatedRoot = Buffer().writeInt(LEGACY.magic).writeInt(42).readByteString()
+    val truncatedRoot = Buffer().writeByte(LEGACY.magic.toInt()).writeInt(42).readByteString()
     assertFails { TreeSnapshot.parse(truncatedRoot) }
   }
 
@@ -197,7 +192,7 @@ internal class TreeSnapshotTest {
     val bytes = TreeSnapshot(rootSnapshot, { childSnapshots }).toByteString()
     // Cut off in the middle of the child entry: after the magic, root, child count, and part of
     // the child id.
-    val truncated = bytes.substring(0, 4 + 4 + rootSnapshot.bytes.size + 4 + 2)
+    val truncated = bytes.substring(0, 1 + 4 + rootSnapshot.bytes.size + 4 + 2)
 
     // The root is still parsed, since parsing is lazy below the root.
     val treeSnapshot = TreeSnapshot.parse(truncated)
