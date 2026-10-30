@@ -65,6 +65,10 @@ class AndroidDispatchersRenderWorkflowInTest(
       assume().that(runtime.runtimeConfig).containsExactlyElementsIn(runtimeConfigFromProperty)
     }
 
+    // Compose runtime does not support immediate/unconfined dispatchers. See
+    // RenderWorkflowInTest.isUnsupportedConfig.
+    assume().that(COMPOSE_RUNTIME in runtime.runtimeConfig && dispatcher == IMMEDIATE).isFalse()
+
     runtimeContext =
       when (dispatcher) {
         IMMEDIATE -> Dispatchers.Main.immediate
