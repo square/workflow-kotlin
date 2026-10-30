@@ -18,11 +18,10 @@ import okio.ByteString
  *
  * Each runtime writes its own [Format], and a runtime ignores any `TreeSnapshot` that isn't in the
  * format it reads, initializing the workflow tree as if no snapshot had been provided. Bytes that
- * can't be parsed are treated the same way. Workflows' own snapshot bytes are passed through to
- * them unchanged, so a workflow is still responsible for validating what it wrote in
- * `snapshotState`.
+ * don't start with a known format are treated the same way; see [parse] for what is and isn't
+ * validated.
  *
- * @param childTreeSnapshots A function that will lazily compute the child snapshots for this tree
+ * @param childTreeSnapshots A function that will lazily parse the child snapshots for this tree
  *   when invoked. It will be cached in the [childTreeSnapshots] property.
  * @param format The [Format] this snapshot was written in. Defaults to [LEGACY], which is the
  *   format [forRootOnly] uses.
@@ -67,7 +66,10 @@ internal constructor(
   internal val workflowSnapshot: Snapshot? by
     lazy(NONE) { workflowSnapshot?.takeUnless { it.bytes.size == 0 } }
 
-  /** The map of child snapshots by child [WorkflowNodeId]. */
+  /**
+   * The map of child snapshots by child [WorkflowNodeId]. Computed lazily so the entire snapshot
+   * tree isn't parsed upfront.
+   */
   internal val childTreeSnapshots: Map<WorkflowNodeId, TreeSnapshot> by
     lazy(NONE, childTreeSnapshots)
 
@@ -142,58 +144,44 @@ internal constructor(
      * Parses a "root" snapshot and the list of child snapshots with associated [WorkflowNodeId]s
      * from a [ByteString] returned by [toByteString].
      *
-     * Never returns an empty root snapshot: if the root snapshot is empty it will be null.
+     * Never returns an empty root snapshot: if the root snapshot is empty it will be null. Child
+     * snapshots, however, are always returned as-is. They must be recursively passed to this
+     * function to continue parsing the tree.
      *
-     * This method never throws for invalid input. Persisted bytes can be corrupted, truncated, or
-     * written by an incompatible version of this library, and in all those cases the runtime should
-     * start from scratch rather than crash or restore part of the tree. The structure of the entire
-     * tree is validated eagerly, and if any part of it can't be read (an unknown [Format], a bad
-     * length prefix, an unparseable child id, a child in a different format from its parent, etc.)
-     * this returns a snapshot with no root and no children. Individual workflows' snapshot bytes
-     * are opaque to this method and are not validated.
-     */
-    public fun parse(bytes: ByteString): TreeSnapshot =
-      try {
-        parseOrThrow(bytes, expectedFormat = null)
-      } catch (e: Exception) {
-        EMPTY
-      }
-
-    /**
-     * Parses [bytes] like [parse], but throws if any part of the tree is invalid. When
-     * [expectedFormat] is non-null, the snapshot must be in that format: children are always
-     * written in the same format as their parent.
+     * Note that this method is mostly lazy. It will parse the list of child [TreeSnapshot]s, but
+     * will not recursively parse each of those.
+     *
+     * If [bytes] doesn't start with the magic number of a known [Format], e.g. because it was
+     * written by an incompatible version of this library or is not a snapshot at all, this returns
+     * a snapshot with no root and no children, so the runtime starts from scratch instead of
+     * crashing. Only the magic number is checked: validating the rest of the tree would mean
+     * reading all the bytes twice on startup, and workflows' own snapshot bytes can't be validated
+     * up front anyway. If the magic number matches but the rest of the bytes are corrupt, parsing
+     * fails the same way it always has, either here or when a child's snapshot is read during
+     * restore.
      */
     @OptIn(ExperimentalStdlibApi::class)
-    private fun parseOrThrow(bytes: ByteString, expectedFormat: Format?): TreeSnapshot =
-      bytes.parse { source ->
-        val magic = source.readInt()
-        val format =
-          requireNotNull(Format.forMagic(magic)) { "Unknown TreeSnapshot format: $magic" }
-        require(expectedFormat == null || format == expectedFormat) {
-          "Expected child TreeSnapshot in format $expectedFormat but was $format"
-        }
+    public fun parse(bytes: ByteString): TreeSnapshot {
+      if (bytes.size < 4) return EMPTY
+      return bytes.parse { source ->
+        val format = Format.forMagic(source.readInt()) ?: return@parse EMPTY
         val rootSnapshot = source.readByteStringWithLength()
-        val childSnapshotCount = source.readInt()
-        // Every child entry takes at least 8 bytes (two length prefixes), so a count larger than
-        // that is corrupt. Checking before allocating the map avoids a huge allocation.
-        require(childSnapshotCount in 0..(source.buffer.size / 8)) {
-          "Invalid child snapshot count: $childSnapshotCount"
-        }
-        val childTreeSnapshots =
-          buildMap(childSnapshotCount) {
-            for (i in 0 until childSnapshotCount) {
-              val idBytes = source.readByteStringWithLength()
-              val id = WorkflowNodeId.parse(idBytes)
-              val childSnapshot = source.readByteStringWithLength()
-              this[id] = parseOrThrow(childSnapshot, expectedFormat = format)
-            }
-          }
-        TreeSnapshot(
+        return TreeSnapshot(
           workflowSnapshot = Snapshot.of(rootSnapshot),
-          childTreeSnapshots = { childTreeSnapshots },
           format = format,
+          childTreeSnapshots = {
+            val childSnapshotCount = source.readInt()
+            buildMap(childSnapshotCount) {
+              for (i in 0 until childSnapshotCount) {
+                val idBytes = source.readByteStringWithLength()
+                val id = WorkflowNodeId.parse(idBytes)
+                val childSnapshot = source.readByteStringWithLength()
+                this[id] = parse(childSnapshot)
+              }
+            }
+          },
         )
       }
+    }
   }
 }

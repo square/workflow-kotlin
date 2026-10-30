@@ -9,6 +9,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -207,36 +208,73 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
   }
 
   /**
-   * Persisted snapshot bytes can be corrupted, truncated, or written by an incompatible version.
-   * Whatever the bytes, the runtime must not crash, and must start every workflow in the tree from
-   * its initial state exactly as if there were no snapshot.
+   * Persisted snapshot bytes may not be a snapshot at all, or may have been written by an
+   * incompatible version of this library. Only the leading magic number is checked, so any bytes
+   * that don't start with a known format must not crash, and must start every workflow in the tree
+   * from its initial state exactly as if there were no snapshot.
    */
   @Test
-  fun ignores_garbage_snapshot(garbage: GarbageSnapshot = GarbageSnapshot.EMPTY) = runTest {
+  fun ignores_snapshot_bytes_without_valid_magic(garbage: GarbageSnapshot = GarbageSnapshot.EMPTY) =
+    runTest {
+      val initialStateSnapshots = mutableListOf<Snapshot?>()
+      val workflow =
+        StringStateWorkflow(
+          initialStateSnapshots,
+          child = StringStateWorkflow(initialStateSnapshots),
+        )
+      // Some garbage variants are derived from real snapshot bytes written by this runtime.
+      val validBytes = renderAndSaveUpdatedState(workflow)
+      val garbageBytes = garbage.corrupt(validBytes)
+
+      initialStateSnapshots.clear()
+      val restoreScope = TestScope(dispatcherUsed)
+      val restoredRenderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = restoreScope,
+          props = MutableStateFlow(Unit),
+          initialSnapshot = TreeSnapshot.parse(garbageBytes),
+          workflowTracer = null,
+          runtimeConfig = runtimeConfig,
+        ) {}
+      advanceIfStandard()
+
+      // Both the parent and the child should have been initialized with no snapshot.
+      assertEquals(listOf<Snapshot?>(null, null), initialStateSnapshots)
+      assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.state)
+      assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.child!!.state)
+
+      restoreScope.cancel()
+    }
+
+  /**
+   * Bytes that start with a valid magic number are assumed to be a valid snapshot: validating the
+   * whole tree up front would mean reading every byte twice on startup, and a workflow's own
+   * snapshot bytes can't be validated until it restores from them anyway. So a corrupt body fails
+   * the same way it did before formats were introduced, with an exception while restoring.
+   */
+  @Test
+  fun corrupt_snapshot_with_valid_magic_fails_restore(
+    corruption: CorruptBody = CorruptBody.TRUNCATED
+  ) = runTest {
     val initialStateSnapshots = mutableListOf<Snapshot?>()
     val workflow =
       StringStateWorkflow(initialStateSnapshots, child = StringStateWorkflow(initialStateSnapshots))
-    // Some garbage variants are derived from real snapshot bytes written by this runtime.
     val validBytes = renderAndSaveUpdatedState(workflow)
-    val garbageBytes = garbage.corrupt(validBytes)
+    val corruptBytes = corruption.corrupt(validBytes)
 
-    initialStateSnapshots.clear()
     val restoreScope = TestScope(dispatcherUsed)
-    val restoredRenderings =
+    assertFails {
       renderWorkflowIn(
         workflow = workflow,
         scope = restoreScope,
         props = MutableStateFlow(Unit),
-        initialSnapshot = TreeSnapshot.parse(garbageBytes),
+        initialSnapshot = TreeSnapshot.parse(corruptBytes),
         workflowTracer = null,
         runtimeConfig = runtimeConfig,
       ) {}
-    advanceIfStandard()
-
-    // Both the parent and the child should have been initialized with no snapshot.
-    assertEquals(listOf<Snapshot?>(null, null), initialStateSnapshots)
-    assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.state)
-    assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.child!!.state)
+      advanceIfStandard()
+    }
 
     restoreScope.cancel()
   }
@@ -272,45 +310,53 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
     return bytes
   }
 
-  /** Ways in which persisted [TreeSnapshot] bytes can be invalid. */
+  /** Persisted bytes that don't start with a known [TreeSnapshot] format's magic number. */
   enum class GarbageSnapshot {
     /** Zero bytes. */
     EMPTY {
       override fun corrupt(validBytes: ByteString): ByteString = ByteString.EMPTY
     },
 
-    /** Bytes that were never a snapshot at all. */
-    RANDOM {
-      override fun corrupt(validBytes: ByteString): ByteString = randomBytes(64)
+    /** Too short to even hold a magic number. */
+    SHORTER_THAN_MAGIC {
+      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(0, 2)
     },
 
+    /** Bytes that were never a snapshot at all. */
+    RANDOM {
+      override fun corrupt(validBytes: ByteString): ByteString =
+        Random(0).nextBytes(64).toByteString()
+    },
+
+    /** A real snapshot with its magic number stripped, like one written before formats existed. */
+    MISSING_MAGIC {
+      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(4)
+    };
+
+    abstract fun corrupt(validBytes: ByteString): ByteString
+  }
+
+  /** Persisted bytes that start with a valid magic number but have a corrupt body. */
+  enum class CorruptBody {
     /** A real snapshot that lost its second half. */
     TRUNCATED {
       override fun corrupt(validBytes: ByteString): ByteString =
         validBytes.substring(0, validBytes.size / 2)
     },
 
-    /** A length prefix that claims a negative size. */
-    NEGATIVE_LENGTH_PREFIX {
+    /** The root snapshot's length prefix claims a negative size. */
+    NEGATIVE_ROOT_LENGTH {
       override fun corrupt(validBytes: ByteString): ByteString =
-        Buffer().writeInt(-1).write(randomBytes(16)).readByteString()
+        Buffer().write(validBytes.substring(0, 4)).writeInt(-1).readByteString()
     },
 
-    /** A length prefix that claims far more bytes than are present. */
-    OVERSIZED_LENGTH_PREFIX {
+    /** The root snapshot's length prefix claims far more bytes than are present. */
+    OVERSIZED_ROOT_LENGTH {
       override fun corrupt(validBytes: ByteString): ByteString =
-        Buffer().writeInt(Int.MAX_VALUE).write(randomBytes(16)).readByteString()
-    },
-
-    /** A real snapshot with its bytes shuffled, so the framing is plausible but wrong. */
-    SCRAMBLED {
-      override fun corrupt(validBytes: ByteString): ByteString =
-        validBytes.toByteArray().apply { shuffle(Random(0)) }.toByteString()
+        Buffer().write(validBytes.substring(0, 4)).writeInt(Int.MAX_VALUE).readByteString()
     };
 
     abstract fun corrupt(validBytes: ByteString): ByteString
-
-    protected fun randomBytes(count: Int): ByteString = Random(0).nextBytes(count).toByteString()
   }
 
   private companion object {

@@ -8,6 +8,7 @@ import kotlin.random.Random
 import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -156,6 +157,11 @@ internal class TreeSnapshotTest {
   }
 
   @Test
+  fun parse_bytes_shorter_than_magic_returns_empty_snapshot() {
+    assertEmpty(TreeSnapshot.parse(Buffer().writeShort(42).readByteString()))
+  }
+
+  @Test
   fun parse_unknown_magic_returns_empty_snapshot() {
     // A snapshot written before formats were introduced starts with a non-negative root length.
     val preFormatBytes =
@@ -170,103 +176,34 @@ internal class TreeSnapshotTest {
     assertEmpty(TreeSnapshot.parse(Random(0).nextBytes(64).toByteString()))
   }
 
+  /**
+   * Only the magic number is validated. Corrupt bytes after a valid magic number fail the same way
+   * they did before formats were introduced.
+   */
   @Test
-  fun parse_bad_root_length_returns_empty_snapshot() {
-    val negativeLength = Buffer().writeInt(LEGACY.magic).writeInt(-1).readByteString()
-    assertEmpty(TreeSnapshot.parse(negativeLength))
+  fun parse_corrupt_bytes_after_valid_magic_throws() {
+    val negativeRootLength = Buffer().writeInt(LEGACY.magic).writeInt(-1).readByteString()
+    assertFails { TreeSnapshot.parse(negativeRootLength) }
 
-    val oversizedLength =
-      Buffer().writeInt(LEGACY.magic).writeInt(Int.MAX_VALUE).writeInt(42).readByteString()
-    assertEmpty(TreeSnapshot.parse(oversizedLength))
+    val truncatedRoot = Buffer().writeInt(LEGACY.magic).writeInt(42).readByteString()
+    assertFails { TreeSnapshot.parse(truncatedRoot) }
   }
 
   @Test
-  fun parse_bad_child_count_returns_empty_snapshot() {
-    fun bytesWithChildCount(count: Int) =
-      Buffer()
-        .apply {
-          writeInt(LEGACY.magic)
-          writeByteStringWithLength(Snapshot.of("roo").bytes)
-          writeInt(count)
-        }
-        .readByteString()
-
-    assertEmpty(TreeSnapshot.parse(bytesWithChildCount(-1)))
-    assertEmpty(TreeSnapshot.parse(bytesWithChildCount(Int.MAX_VALUE)))
-  }
-
-  @Test
-  fun parse_truncated_child_list_returns_empty_snapshot() {
+  fun parse_corrupt_child_list_after_valid_magic_throws_lazily() {
     val rootSnapshot = Snapshot.of("roo")
     val childSnapshots =
       mapOf(WorkflowNodeId(Workflow1) to TreeSnapshot.forRootOnly(Snapshot.of("one")))
     val bytes = TreeSnapshot(rootSnapshot, { childSnapshots }).toByteString()
     // Cut off in the middle of the child entry: after the magic, root, child count, and part of
-    // the child id. The root is intact, but a partial restore would be surprising, so the whole
-    // snapshot is dropped.
+    // the child id.
     val truncated = bytes.substring(0, 4 + 4 + rootSnapshot.bytes.size + 4 + 2)
 
-    assertEmpty(TreeSnapshot.parse(truncated))
-  }
+    // The root is still parsed, since parsing is lazy below the root.
+    val treeSnapshot = TreeSnapshot.parse(truncated)
+    assertEquals(rootSnapshot.bytes, treeSnapshot.workflowSnapshot?.bytes)
 
-  @Test
-  fun parse_invalid_child_id_returns_empty_snapshot() {
-    val bytes =
-      Buffer()
-        .apply {
-          writeInt(LEGACY.magic)
-          writeByteStringWithLength(Snapshot.of("roo").bytes)
-          writeInt(1)
-          writeByteStringWithLength(Snapshot.of("not an id").bytes)
-          writeByteStringWithLength(TreeSnapshot.forRootOnly(Snapshot.of("one")).toByteString())
-        }
-        .readByteString()
-
-    assertEmpty(TreeSnapshot.parse(bytes))
-  }
-
-  @Test
-  fun parse_child_in_different_format_returns_empty_snapshot() {
-    val child = TreeSnapshot(Snapshot.of("one"), ::emptyMap, format = COMPOSE)
-    val bytes =
-      Buffer()
-        .apply {
-          writeInt(LEGACY.magic)
-          writeByteStringWithLength(Snapshot.of("roo").bytes)
-          writeInt(1)
-          writeByteStringWithLength(WorkflowNodeId(Workflow1).toByteStringOrNull()!!)
-          writeByteStringWithLength(child.toByteString())
-        }
-        .readByteString()
-
-    assertEmpty(TreeSnapshot.parse(bytes))
-  }
-
-  @Test
-  fun parse_corrupt_grandchild_returns_empty_snapshot() {
-    val grandchildBytes = Buffer().writeInt(LEGACY.magic).writeInt(-1).readByteString()
-    val childBytes =
-      Buffer()
-        .apply {
-          writeInt(LEGACY.magic)
-          writeByteStringWithLength(Snapshot.of("one").bytes)
-          writeInt(1)
-          writeByteStringWithLength(WorkflowNodeId(Workflow2).toByteStringOrNull()!!)
-          writeByteStringWithLength(grandchildBytes)
-        }
-        .readByteString()
-    val bytes =
-      Buffer()
-        .apply {
-          writeInt(LEGACY.magic)
-          writeByteStringWithLength(Snapshot.of("roo").bytes)
-          writeInt(1)
-          writeByteStringWithLength(WorkflowNodeId(Workflow1).toByteStringOrNull()!!)
-          writeByteStringWithLength(childBytes)
-        }
-        .readByteString()
-
-    assertEmpty(TreeSnapshot.parse(bytes))
+    assertFails { treeSnapshot.childTreeSnapshots }
   }
 
   private fun assertEmpty(treeSnapshot: TreeSnapshot) {
