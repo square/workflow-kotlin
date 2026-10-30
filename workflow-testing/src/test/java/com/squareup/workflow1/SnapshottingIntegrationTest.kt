@@ -2,8 +2,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.testing.WorkflowTestParams
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
@@ -122,29 +120,28 @@ class SnapshottingIntegrationTest {
   }
 
   // See https://github.com/square/workflow/issues/404
-  @OptIn(WorkflowExperimentalRuntime::class)
   @Test
   fun `descendant snapshots are independent over state transitions`() {
-    if (
-      JvmTestRuntimeConfigTools.getTestRuntimeConfig()
-        .contains(RuntimeConfigOptions.PARTIAL_TREE_RENDERING) ||
-        JvmTestRuntimeConfigTools.getTestRuntimeConfig()
-          .contains(RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES)
-    ) {
-      // Partial Tree Rendering and Render Only When State changes means this test hangs because
-      // there is no render/snapshot as state does not change!
-      return
-    }
     val workflow =
-      Workflow.stateful<String, String, Nothing, () -> Unit>(
+      Workflow.stateful<String, String, Nothing, Unit>(
         initialState = { props, _ -> props },
         onPropsChanged = { _, new, _ -> new },
-        // Return an event handler that can be used to trigger new renderings.
-        render = { _, _ -> { actionSink.send(noAction()) } },
+        render = { _, _ -> },
         snapshot = { state -> Snapshot.write { it.writeUtf8WithLength(state) } },
       )
-    // This test specifically needs to test snapshots from a non-flat workflow tree.
-    val root = Workflow.stateless<String, Nothing, () -> Unit> { renderChild(workflow, it) }
+    // This test specifically needs to test snapshots from a non-flat workflow tree. The root's
+    // state is a counter that it doesn't snapshot, so the tree snapshot only changes when the
+    // child's state does. Its rendering is an event handler that increments the counter, which
+    // forces a new render pass without changing the child's state.
+    val root =
+      Workflow.stateful<String, Int, Nothing, () -> Unit>(
+        initialState = { _, _ -> 0 },
+        render = { props, _ ->
+          renderChild(workflow, props)
+          eventHandler("bumpRootState") { state += 1 }
+        },
+        snapshot = { null },
+      )
 
     root.launchForTestingFromStartWith("props1") {
       val snapshot1 = awaitNextSnapshot()
@@ -153,7 +150,7 @@ class SnapshottingIntegrationTest {
       sendProps("props2")
       val snapshot2 = awaitNextSnapshot()
 
-      // Trigger a new render pass, but with the same snapshot.
+      // Trigger a new render pass that leaves the child's state, and so the snapshot, unchanged.
       awaitNextRendering().invoke()
       val snapshot3 = awaitNextSnapshot()
 
