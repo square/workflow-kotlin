@@ -18,21 +18,25 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.toString
+import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.intercept
-import com.squareup.workflow1.internal.Lock
 import com.squareup.workflow1.internal.compose.TraceLabels.InitialState
 import com.squareup.workflow1.internal.compose.TraceLabels.OnPropsChanged
 import com.squareup.workflow1.internal.compose.TraceLabels.SendAction
@@ -40,13 +44,15 @@ import com.squareup.workflow1.internal.createId
 import com.squareup.workflow1.internal.getValue
 import com.squareup.workflow1.internal.setValue
 import com.squareup.workflow1.internal.threadLocalOf
-import com.squareup.workflow1.internal.withLock
 import com.squareup.workflow1.trace
 import com.squareup.workflow1.traceNoFinally
 import com.squareup.workflow1.workflowSessionToString
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KType
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.selects.SelectBuilder
 
 /**
  * The implementation of the [BaseRenderContext] that the workflow's `render` method sees when
@@ -55,7 +61,7 @@ import kotlinx.coroutines.CoroutineScope
  * This class also holds most of the state and does most of the lifecycle management for the
  * workflow session.
  */
-@OptIn(ExperimentalComposeRuntimeApi::class)
+@OptIn(ExperimentalComposeRuntimeApi::class, WorkflowExperimentalRuntime::class)
 @Stable
 internal class ComposeRenderContext<P, O, R>
 private constructor(
@@ -104,17 +110,38 @@ private constructor(
   private var stateRegistryEntry: SaveableStateRegistry.Entry? = null
 
   private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
-  private val applyActionLock = Lock()
 
   /** Helper for calling into Compose code from non-compose code. */
   private var trapdoor: Trapdoor? by threadLocalOf { null }
 
   /**
    * Effectively a `MutableState` that holds not only the actual workflow state, but also the last-
-   * seen `props` and `onOutput` callbacks. See the docs on [WorkflowSnapshotState] for more info
-   * about why we're using a custom state object.
+   * seen `props`. See the docs on [WorkflowSnapshotState] for more info about why we're using a
+   * custom state object.
    */
   private val state: WorkflowSnapshotState
+
+  /**
+   * Actions sent to this workflow's [actionSink] are queued here and applied one at a time by the
+   * runtime's action loop, via [registerTreeActionSelectors] and [applyNextAvailableTreeAction].
+   * This mirrors the traditional runtime's `StatefulWorkflowNode`, so actions are processed with
+   * the same ordering, and are never applied while a render pass is in progress.
+   */
+  private val eventActionsChannel = Channel<WorkflowAction<P, Any?, O>>(capacity = UNLIMITED)
+
+  /**
+   * Receives the result of every action applied to this workflow that produced an output, so the
+   * parent can map the output to its own action. Written by [renderSelf] and read by [applyAction],
+   * both on the runtime thread.
+   */
+  private var emitAppliedActionToParent: ((ActionApplied<Any?>) -> ActionProcessingResult)? = null
+
+  /**
+   * The child sessions this workflow rendered during its last render pass, in render order. Rebuilt
+   * on every render pass by [renderSelf] and [addChild], and only ever touched on the runtime
+   * thread.
+   */
+  private val children = ArrayList<ComposeRenderContext<*, *, *>>()
 
   override val actionSink: Sink<WorkflowAction<P, Any?, O>>
     get() = this
@@ -156,7 +183,7 @@ private constructor(
           workflowScope = workflowScope,
         )
       }
-    state = WorkflowSnapshotState(props = initialProps, onOutput = null, state = initialState)
+    state = WorkflowSnapshotState(props = initialProps, state = initialState)
   }
 
   override fun onRemembered() {
@@ -188,19 +215,16 @@ private constructor(
   @Suppress("UNCHECKED_CAST")
   fun renderSelf(
     props: Any?,
-    onOutput: ((Any?) -> Unit)?,
+    emitAppliedActionToParent: ((ActionApplied<Any?>) -> ActionProcessingResult)?,
     didPropsChange: Boolean?,
-    didOnOutputChange: Boolean?,
     composer: Composer,
   ): R {
     trapdoor = Trapdoor(composer)
+    this.emitAppliedActionToParent = emitAppliedActionToParent
+    // Children re-register themselves as they're rendered, so the list ends up in render order.
+    children.clear()
     val currentState =
-      state.updateAndGetState(
-        props,
-        onOutput,
-        didPropsChange = didPropsChange,
-        didOnOutputChange = didOnOutputChange,
-      ) { oldProps, oldState ->
+      state.updateAndGetState(props, didPropsChange = didPropsChange) { oldProps, oldState ->
         workflowTracer.traceNoFinally(OnPropsChanged) {
           interceptedWorkflow.onPropsChanged(
             old = oldProps as P,
@@ -219,7 +243,43 @@ private constructor(
   }
 
   override fun send(value: WorkflowAction<P, Any?, O>) {
-    workflowTracer.trace(SendAction) { applyAction(value) }
+    // Can't send actions from render thread during render pass.
+    check(trapdoor == null) {
+      "Expected sink to not be sent to until after the render pass. " +
+        "Received action: ${value.debuggingName}"
+    }
+    workflowTracer.trace(SendAction) { eventActionsChannel.trySend(value) }
+  }
+
+  /**
+   * Registers select clauses for the next action from this workflow or any of its children.
+   * Children are registered first, in render order, to match the traditional runtime's
+   * `SubtreeManager`.
+   *
+   * Must only be called between render passes, on the runtime thread.
+   */
+  fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
+    for (i in children.indices) {
+      children[i].registerTreeActionSelectors(selector)
+    }
+    with(selector) { eventActionsChannel.onReceive { action -> applyAction(action) } }
+  }
+
+  /**
+   * Applies the first action that is immediately available from this workflow or any of its
+   * children, without suspending. Returns [ActionsExhausted] if there are none.
+   *
+   * Must only be called between render passes, on the runtime thread.
+   */
+  fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult {
+    // TODO(CLF-718): Track per-session dirtiness so skipDirtyNodes can skip this subtree like the
+    //  traditional runtime does.
+    for (i in children.indices) {
+      val result = children[i].applyNextAvailableTreeAction(skipDirtyNodes)
+      if (result != ActionsExhausted) return result
+    }
+    return eventActionsChannel.tryReceive().getOrNull()?.let { action -> applyAction(action) }
+      ?: ActionsExhausted
   }
 
   override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
@@ -258,25 +318,33 @@ private constructor(
     requireTrapdoor("renderChild")
       // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
       .inMovableGroup(GROUP_KEY, child.identifier, key) {
-        // Memoize the onOutput function so that renderChild can skip whenever possible.
+        // Memoize the handler function so that renderChild can skip whenever possible.
         val updatedHandler by rememberUpdatedState(handler)
-        val childOnOutput: (ChildOutputT) -> Unit = remember {
-          { output ->
-            val action = updatedHandler(output)
-            applyAction(action)
+        val acceptChildActionResult: (ActionApplied<ChildOutputT>) -> ActionProcessingResult =
+          remember {
+            { childResult ->
+              val action =
+                childResult.output?.let { output -> updatedHandler(output.value) }
+                  ?: WorkflowAction.noAction()
+              applyAction(action, childResult)
+            }
           }
-        }
 
         renderWorkflow(
           workflow = child,
           props = props,
-          onOutput = childOnOutput,
+          emitAppliedActionToParent = acceptChildActionResult,
           config = config,
           parentSession = this,
           renderKey = key,
           recomposeScope = this,
+          onRenderContext = ::addChild,
         )
       }
+
+  private fun addChild(child: ComposeRenderContext<*, *, *>) {
+    children += child
+  }
 
   /**
    * Updates the innermost recompose scope for this context. This must be called with the recompose
@@ -300,19 +368,43 @@ private constructor(
   private fun onDisposed() {
     config.workflowInterceptor?.onSessionCancelled<P, Any?, O>(
       cause = null,
-      // Compose workflow node actions are applied immediately so there can never be actions pending
-      // when a workflow is disposed.
+      // TODO(CLF-653): Close eventActionsChannel and report any queued actions here.
       droppedActions = emptyList(),
       session = this,
     )
   }
 
-  private fun applyAction(action: WorkflowAction<P, Any?, O>) {
-    check(trapdoor == null) { "Cannot send to action sink from render pass." }
-    // Send can be called from any thread so wrap non-atomic reads/writes in a critical section.
-    applyActionLock.withLock {
-      @Suppress("UNCHECKED_CAST")
+  /**
+   * Applies [action] to this workflow's state and, if it produced an output, passes the result to
+   * the parent via [emitAppliedActionToParent]. Mirrors the traditional runtime's
+   * `StatefulWorkflowNode.applyAction`.
+   *
+   * @param childResult The result of the child action that produced the output [action] was created
+   *   from, if any. Its `stateChanged` is aggregated into the returned result.
+   */
+  @Suppress("UNCHECKED_CAST")
+  private fun applyAction(
+    action: WorkflowAction<P, Any?, O>,
+    childResult: ActionApplied<*>? = null,
+  ): ActionProcessingResult {
+    val actionApplied =
       state.applyAction(action as WorkflowAction<Any?, Any?, Any?>, onNewState = this::invalidate)
+    // Changing state is sticky, we pass it up if it ever changed.
+    val aggregateActionApplied =
+      if (childResult?.stateChanged == true && !actionApplied.stateChanged) {
+        actionApplied.copy(stateChanged = true)
+      } else {
+        actionApplied
+      }
+    // See StatefulWorkflowNode.applyAction for why the result is only emitted to the parent in
+    // these cases.
+    val emit = emitAppliedActionToParent
+    return if (
+      emit != null && (actionApplied.output != null || PARTIAL_TREE_RENDERING in runtimeConfig)
+    ) {
+      emit(aggregateActionApplied)
+    } else {
+      aggregateActionApplied
     }
   }
 
