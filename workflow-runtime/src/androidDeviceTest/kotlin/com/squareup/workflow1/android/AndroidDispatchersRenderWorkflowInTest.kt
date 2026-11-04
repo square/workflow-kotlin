@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.burst.Burst
 import com.google.common.truth.TruthJUnit.assume
 import com.squareup.workflow1.RenderingAndSnapshot
-import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.ALL
@@ -122,19 +121,12 @@ class AndroidDispatchersRenderWorkflowInTest(
     runtimeOptimizationsTestHarness(
       workflow = workflow,
       targetRendering = "state change+u1+u2+u3+u4",
-      // There are 5 render passes as the actions all update the same state. The Compose runtime
-      // applies actions directly to snapshot state, so with a non-immediate dispatcher all the
-      // actions are applied before the runtime loop wakes up, and are rendered in a single pass
-      // (initial + 1 update).
-      expectedRenderPasses =
-        if (COMPOSE_RUNTIME in runtime.runtimeConfig && dispatcher == COMPOSE_UI) 2 else 5,
+      // There are 5 render passes as the actions all update the same state.
+      expectedRenderPasses = 5,
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
       expectedRenderingsProduced =
-        if (
-          (CONFLATE_STALE_RENDERINGS in runtime.runtimeConfig ||
-            COMPOSE_RUNTIME in runtime.runtimeConfig) && dispatcher == COMPOSE_UI
-        ) {
+        if (CONFLATE_STALE_RENDERINGS in runtime.runtimeConfig && dispatcher == COMPOSE_UI) {
           2
         } else {
           5
@@ -182,19 +174,12 @@ class AndroidDispatchersRenderWorkflowInTest(
     runtimeOptimizationsTestHarness(
       workflow = workflow,
       targetRendering = "state change+u1+u2",
-      // There are 3 render passes as the actions all update the same state. The Compose runtime
-      // applies actions directly to snapshot state, so with a non-immediate dispatcher all the
-      // actions are applied before the runtime loop wakes up, and are rendered in a single pass
-      // (initial + 1 update).
-      expectedRenderPasses =
-        if (COMPOSE_RUNTIME in runtime.runtimeConfig && dispatcher == COMPOSE_UI) 2 else 3,
+      // There are 3 render passes as the actions all update the same state.
+      expectedRenderPasses = 3,
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-        if (
-          (CONFLATE_STALE_RENDERINGS in runtime.runtimeConfig ||
-            COMPOSE_RUNTIME in runtime.runtimeConfig) && dispatcher == COMPOSE_UI
-        ) {
+        if (CONFLATE_STALE_RENDERINGS in runtime.runtimeConfig && dispatcher == COMPOSE_UI) {
           2
         } else {
           3
@@ -236,10 +221,7 @@ class AndroidDispatchersRenderWorkflowInTest(
       targetRendering = "state change+u1",
       // 2 for DEA (initial synchronous + 1 for the update); 3 otherwise given the 2 child actions.
       expectedRenderPasses =
-        if (
-          (DRAIN_EXCLUSIVE_ACTIONS in runtime.runtimeConfig ||
-            COMPOSE_RUNTIME in runtime.runtimeConfig) && dispatcher == COMPOSE_UI
-        ) {
+        if (DRAIN_EXCLUSIVE_ACTIONS in runtime.runtimeConfig && dispatcher == COMPOSE_UI) {
           2
         } else {
           3
@@ -249,8 +231,7 @@ class AndroidDispatchersRenderWorkflowInTest(
       expectedRenderingsProduced =
         if (
           (CONFLATE_STALE_RENDERINGS in runtime.runtimeConfig ||
-            DRAIN_EXCLUSIVE_ACTIONS in runtime.runtimeConfig ||
-            COMPOSE_RUNTIME in runtime.runtimeConfig) && dispatcher == COMPOSE_UI
+            DRAIN_EXCLUSIVE_ACTIONS in runtime.runtimeConfig) && dispatcher == COMPOSE_UI
         ) {
           2
         } else {

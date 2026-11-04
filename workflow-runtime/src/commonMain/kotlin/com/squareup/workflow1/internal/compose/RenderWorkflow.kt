@@ -2,12 +2,13 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composer
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ComposeRuntimeSwizzlerWorkflow
 import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING
 import com.squareup.workflow1.Workflow
@@ -39,8 +40,12 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
  * @param renderKey The key passed to the [com.squareup.workflow1.BaseRenderContext.renderChild]
  *   function by the parent workflow. This is only used to construct the child's [WorkflowSession],
  *   and is not used for actual keying. [ComposeRenderContext] does the actual keying.
- * @param onSessionAvailable Invoked once (per callback instance) with the [WorkflowSession] of this
- *   workflow once it's been created.
+ * @param emitAppliedActionToParent Invoked, on the runtime thread between render passes, with the
+ *   result of every action applied to this workflow that produced an output. Analogous to
+ *   `WorkflowNode.emitAppliedActionToParent` in the traditional runtime.
+ * @param onRenderContext Invoked synchronously, every time this function is composed, with the
+ *   [ComposeRenderContext] for this workflow session. The caller uses it to find this session's
+ *   action queue for the runtime's action loop.
  */
 @Suppress("UNCHECKED_CAST")
 @OptIn(WorkflowExperimentalRuntime::class)
@@ -48,12 +53,12 @@ internal val LocalRootRecomposeScope = staticCompositionLocalOf<RecomposeScope> 
 internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   props: PropsT,
-  onOutput: ((OutputT) -> Unit)?,
+  emitAppliedActionToParent: ((ActionApplied<OutputT>) -> ActionProcessingResult)?,
   config: WorkflowComposableRuntimeConfig,
   parentSession: WorkflowSession?,
   renderKey: String,
   recomposeScope: RecomposeScope = currentRecomposeScope,
-  onSessionAvailable: ((WorkflowSession) -> Unit)? = null,
+  onRenderContext: ((ComposeRenderContext<PropsT, OutputT, RenderingT>) -> Unit)? = null,
 ): RenderingT {
   if (workflow is ComposeRuntimeSwizzlerWorkflow<PropsT, OutputT, RenderingT>) {
     // This workflow is just a wrapper telling us to switch to the compose runtime. Since we're
@@ -61,11 +66,11 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
     return renderWorkflow(
       workflow = workflow.child,
       props = props,
-      onOutput = onOutput,
+      emitAppliedActionToParent = emitAppliedActionToParent,
       config = config,
       parentSession = parentSession,
       renderKey = renderKey,
-      onSessionAvailable = onSessionAvailable,
+      onRenderContext = onRenderContext,
     )
   }
 
@@ -81,20 +86,16 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       callerRecomposeScope = recomposeScope,
     )
 
-  if (onSessionAvailable != null) {
-    DisposableEffect(onSessionAvailable, renderContext) {
-      onSessionAvailable(renderContext)
-      onDispose {}
-    }
-  }
+  onRenderContext?.invoke(renderContext)
 
-  // Skip re-rendering when possible, but force recompose when new props or onOutput arrive.
+  // Skip re-rendering when possible, but force recompose when new props or a new output handler
+  // arrive.
   // We use the skippable+restartable variant so internal state-change invalidations trigger a fresh
   // call to the producer lambda within the same restart group.
   return if (COMPOSE_RUNTIME_SKIPPING in config.runtimeConfig) {
     renderWorkflowRestartable(
       props,
-      onOutput as ((Any?) -> Unit)?,
+      emitAppliedActionToParent as ((ActionApplied<Any?>) -> ActionProcessingResult)?,
       renderContext,
       false,
       recomposeScope,
@@ -104,9 +105,9 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
     renderContext.updateRecomposeScope(currentRecomposeScope)
     renderContext.renderSelf(
       props = props,
-      onOutput = onOutput as ((Any?) -> Unit)?,
+      emitAppliedActionToParent =
+        emitAppliedActionToParent as ((ActionApplied<Any?>) -> ActionProcessingResult)?,
       didPropsChange = null,
-      didOnOutputChange = null,
       composer = currentComposer,
     )
   }
@@ -121,13 +122,19 @@ private val renderWorkflowRestartable =
   ::renderWorkflowRestartableImpl
     as
     @Composable
-    (Any?, ((Any?) -> Unit)?, ComposeRenderContext<*, *, *>, Boolean, RecomposeScope) -> Any?
+    (
+      Any?,
+      ((ActionApplied<Any?>) -> ActionProcessingResult)?,
+      ComposeRenderContext<*, *, *>,
+      Boolean,
+      RecomposeScope,
+    ) -> Any?
 
 @OptIn(InternalComposeApi::class)
 @Suppress("NAME_SHADOWING")
 private fun renderWorkflowRestartableImpl(
   props: Any?,
-  onOutput: ((Any?) -> Unit)?,
+  emitAppliedActionToParent: ((ActionApplied<Any?>) -> ActionProcessingResult)?,
   renderContext: ComposeRenderContext<*, *, *>,
   invalidateCallerOnNewValue: Boolean,
   callerRecomposeScope: RecomposeScope,
@@ -173,9 +180,10 @@ private fun renderWorkflowRestartableImpl(
     dirty = dirty or (if (composer.changed(props)) 0b100 else 0b010)
   }
   if ((changed and 0b110_000) == 0) {
-    dirty = dirty or (if (composer.changed(onOutput)) 0b100_000 else 0b010_000)
+    dirty = dirty or (if (composer.changed(emitAppliedActionToParent)) 0b100_000 else 0b010_000)
   }
-  // We only check props and onOutput since the other parameters cannot change in a composition.
+  // We only check props and emitAppliedActionToParent since the other parameters cannot change in a
+  // composition.
 
   if ((dirty and 0b010_011) == 0b010_010 && composer.skipping) {
     composer.skipToGroupEnd()
@@ -189,10 +197,9 @@ private fun renderWorkflowRestartableImpl(
     newValue =
       renderContext.renderSelf(
         props = props,
-        onOutput = onOutput,
+        emitAppliedActionToParent = emitAppliedActionToParent,
         // Reuse the change information we already calculated so we don't have to call equals again.
         didPropsChange = (dirty and 0b010) != 0b010,
-        didOnOutputChange = (dirty and 0b010_000) != 0b010_000,
         composer = composer,
       )
   }
@@ -237,7 +244,7 @@ private fun renderWorkflowRestartableImpl(
     // group with the same key to preserve positional identity.
     renderWorkflowRestartableImpl(
       props = props,
-      onOutput = onOutput,
+      emitAppliedActionToParent = emitAppliedActionToParent,
       renderContext = renderContext,
       invalidateCallerOnNewValue = true,
       callerRecomposeScope = callerRecomposeScope,

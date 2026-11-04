@@ -11,26 +11,22 @@ import app.cash.molecule.SnapshotNotifier
 import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowNode
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.getValue
-import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.internal.setValue
 import com.squareup.workflow1.internal.threadLocalOf
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 
@@ -63,13 +59,19 @@ internal class ComposeWorkflowNode<P, O, R>(
   // Can't use null as the "no rendering yet" sentinel since null is a valid value for R.
   private var rendering: Any? = NoRendering
   private val recomposeRequests = Channel<Unit>(capacity = 1)
-  private val outputs = Channel<O>(capacity = 1000)
   private val clock = BroadcastFrameClock(onNewAwaiters = ::onRecompositionRequested)
   private var props by mutableStateOf(initialProps)
   private val saveableStateRegistry = createSaveableStateRegistryForTreeSnapshot(snapshot)
   private var inRenderPass by threadLocalOf { false }
 
-  override lateinit var session: WorkflowSession
+  /**
+   * The root workflow's session. Set during the first render pass, which the runtime always
+   * performs before asking for action selectors.
+   */
+  private lateinit var rootContext: ComposeRenderContext<P, O, R>
+
+  override val session: WorkflowSession
+    get() = rootContext
 
   init {
     val composableRuntimeConfig =
@@ -90,11 +92,11 @@ internal class ComposeWorkflowNode<P, O, R>(
         renderWorkflow(
           workflow = this.workflow,
           props = props,
-          onOutput = outputs::requireSend,
+          emitAppliedActionToParent = emitAppliedActionToParent,
           renderKey = "",
           parentSession = parent,
           config = composableRuntimeConfig,
-          onSessionAvailable = { session = it },
+          onRenderContext = { rootContext = it },
         )
       }
     }
@@ -136,12 +138,13 @@ internal class ComposeWorkflowNode<P, O, R>(
   }
 
   override fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
-    with(selector) {
-      outputs.onReceive { output ->
-        val actionApplied = ActionApplied(output = WorkflowOutput(output), stateChanged = false)
-        emitAppliedActionToParent(actionApplied)
-      }
+    // Every workflow session in the composition queues its own actions, and applies them on this
+    // thread when selected, exactly like the traditional runtime.
+    rootContext.registerTreeActionSelectors(selector)
 
+    with(selector) {
+      // Actions invalidate their recompose scopes directly, so this only fires for recompositions
+      // requested some other way (e.g. snapshot state written by a side effect).
       recomposeRequests.onReceive {
         val actionApplied = ActionApplied<O>(output = null, stateChanged = true)
         emitAppliedActionToParent(actionApplied)
@@ -149,16 +152,8 @@ internal class ComposeWorkflowNode<P, O, R>(
     }
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult {
-    val stateChanged = !recomposeRequests.isEmpty
-    if (skipDirtyNodes && stateChanged) return ActionsExhausted
-
-    val nextOutput = outputs.tryReceive().getOrNull() ?: return ActionsExhausted
-    val actionApplied =
-      ActionApplied<O>(output = WorkflowOutput(nextOutput), stateChanged = stateChanged)
-    return emitAppliedActionToParent(actionApplied)
-  }
+  override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult =
+    rootContext.applyNextAvailableTreeAction(skipDirtyNodes)
 
   private fun onRecompositionRequested() {
     // If the dispatcher pump in render() resumes the recomposer's loop, then it will request a
