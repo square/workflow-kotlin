@@ -338,6 +338,25 @@ public interface WorkflowInterceptor {
 public object NoopWorkflowInterceptor : WorkflowInterceptor
 
 /**
+ * Reports a [WorkflowAction] produced from a child output (including worker handlers) through the
+ * [RenderContextInterceptor] captured on the most recent render.
+ *
+ * Actions sent through [BaseRenderContext.actionSink] already pass through
+ * [RenderContextInterceptor.onActionSent]. Child-output handlers are applied later, on the runtime
+ * thread, and previously skipped that hook, so their [WorkflowAction.debuggingName] never reached
+ * interceptors.
+ */
+internal interface ChildOutputActionHook {
+  fun hookChildOutputAction(action: WorkflowAction<*, *, *>): WorkflowAction<*, *, *>
+}
+
+internal fun hookChildOutputAction(
+  workflow: StatefulWorkflow<*, *, *, *>,
+  action: WorkflowAction<*, *, *>,
+): WorkflowAction<*, *, *> =
+  (workflow as? ChildOutputActionHook)?.hookChildOutputAction(action) ?: action
+
+/**
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
  *
@@ -352,7 +371,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   if (this === NoopWorkflowInterceptor) {
     workflow
   } else {
-    object : SessionWorkflow<P, S, O, R>() {
+    object : SessionWorkflow<P, S, O, R>(), ChildOutputActionHook {
 
       /** Render context that we are passed. */
       private var canonicalRenderContext: StatefulWorkflow.RenderContext<P, S, O>? = null
@@ -399,6 +418,21 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
 
       override fun snapshotState(state: S) =
         onSnapshotState(state, workflow::snapshotState, workflowSession)
+
+      override fun hookChildOutputAction(
+        action: WorkflowAction<*, *, *>
+      ): WorkflowAction<*, *, *> {
+        val contextInterceptor = canonicalRenderContextInterceptor ?: return action
+        @Suppress("UNCHECKED_CAST")
+        val typed = action as WorkflowAction<P, S, O>
+        var proceeded = false
+        var next = typed
+        contextInterceptor.onActionSent(typed) { intercepted ->
+          proceeded = true
+          next = intercepted
+        }
+        return if (proceeded) next else WorkflowAction.noAction()
+      }
 
       override fun toString(): String = "InterceptedWorkflow($workflow, ${this@intercept})"
     }
