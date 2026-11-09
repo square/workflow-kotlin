@@ -1,15 +1,18 @@
 package com.squareup.workflow1.android
 
+import android.os.SystemClock
 import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.StatelessWorkflow
-import java.lang.ref.WeakReference
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import leakcanary.GcTrigger
-import leakcanary.inProcess
+import leakcanary.AndroidDetectLeaksAssert
+import leakcanary.AndroidDetectLeaksInterceptor
+import leakcanary.ReferenceQueueRetainedObjectTracker
+import leakcanary.TriggeredDeletableObjectReporter.RetainTrigger
 import org.junit.Test
 
 /**
@@ -28,7 +31,7 @@ internal class AndroidRenderWorkflowInRenderingsTest {
     val props = MutableStateFlow(0)
     val tracker = FirstRenderingTracker()
     // The first rendering is only ever created inside the workflow's render method, and only
-    // referenced through tracker's WeakReference, so nothing in this test can keep it alive.
+    // referenced weakly by tracker, so nothing in this test can keep it alive.
     val renderings =
       renderWorkflowIn(
         workflow = tracker.workflow,
@@ -43,7 +46,17 @@ internal class AndroidRenderWorkflowInRenderingsTest {
     runCurrent()
     assertThat(renderings.value.props).isEqualTo(1)
 
-    assertThat(awaitCleared(tracker.firstRendering!!)).isTrue()
+    // The first rendering has been replaced, so nothing should hold it any more. If anything
+    // still does, this fails with the reference path to it.
+    tracker.firstRenderingTrigger!!.markRetainedIfStronglyReachable()
+    AndroidDetectLeaksAssert(
+        detectLeaksInterceptor =
+          AndroidDetectLeaksInterceptor(
+            retainedObjectTracker = tracker.retainedObjectTracker,
+            retainedDelayMillis = 0,
+          )
+      )
+      .assertNoLeaks("first rendering")
   }
 
   @Test
@@ -65,27 +78,24 @@ internal class AndroidRenderWorkflowInRenderingsTest {
     val firstSnapshot = handle.get<Any>(KEY)
     assertThat(firstSnapshot).isNotNull()
 
-    // Each snapshot is saved before its rendering is published.
+    // A new snapshot is saved for each later rendering.
     props.value = 1
     runCurrent()
     assertThat(renderings.value.props).isEqualTo(1)
     assertThat(handle.get<Any>(KEY)).isNotSameInstanceAs(firstSnapshot)
   }
 
-  private fun awaitCleared(reference: WeakReference<*>): Boolean {
-    repeat(GC_ATTEMPTS) {
-      if (reference.get() == null) return true
-      GcTrigger.inProcess().runGc()
-    }
-    return reference.get() == null
-  }
-
   /** Not a data class, so every rendering is distinct. */
   private class CountingRendering(val props: Int)
 
-  /** Remembers the first rendering it creates, but only weakly. */
+  /** Tracks the first rendering it creates, which LeakCanary only references weakly. */
   private class FirstRenderingTracker {
-    @Volatile var firstRendering: WeakReference<CountingRendering>? = null
+    val retainedObjectTracker =
+      ReferenceQueueRetainedObjectTracker(
+        clock = { SystemClock.uptimeMillis().milliseconds },
+        onObjectRetainedListener = {},
+      )
+    var firstRenderingTrigger: RetainTrigger? = null
 
     val workflow =
       object : StatelessWorkflow<Int, Nothing, CountingRendering>() {
@@ -94,13 +104,12 @@ internal class AndroidRenderWorkflowInRenderingsTest {
           context: RenderContext<Int, Nothing>,
         ): CountingRendering {
           val rendering = CountingRendering(renderProps)
-          if (firstRendering == null) firstRendering = WeakReference(rendering)
+          if (firstRenderingTrigger == null) {
+            firstRenderingTrigger =
+              retainedObjectTracker.expectDeletionOnTriggerFor(rendering, "first rendering")
+          }
           return rendering
         }
       }
-  }
-
-  private companion object {
-    const val GC_ATTEMPTS = 5
   }
 }
