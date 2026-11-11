@@ -31,6 +31,10 @@ val TextInputComposableFactory =
       var textFieldValue by rendering.textController.asMutableTextFieldValueState()
 
       Text(text = textFieldValue.text)
+      // This sample demonstrates asMutableTextFieldValueState, which bridges TextController to the
+      // TextFieldValue-based text field API. Compose 1.13 deprecates that overload in favor of the
+      // TextFieldState-based one, which has no TextController bridge yet.
+      @Suppress("DEPRECATION")
       OutlinedTextField(
         label = {},
         placeholder = { Text("Enter some text") },
