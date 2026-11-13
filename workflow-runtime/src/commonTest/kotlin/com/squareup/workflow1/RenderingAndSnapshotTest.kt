@@ -8,7 +8,7 @@ import kotlin.test.assertSame
 class RenderingAndSnapshotTest {
   @Test
   fun destructuring() {
-    val snapshot = TreeSnapshot(Snapshot.of(0)) { emptyMap() }
+    val snapshot = TreeSnapshot(Snapshot.of(0), { emptyMap() })
     val (r, t) = RenderingAndSnapshot("Rendering", snapshot)
     assertEquals(r, "Rendering")
     assertSame(t, snapshot)
@@ -16,7 +16,7 @@ class RenderingAndSnapshotTest {
 
   @Test
   fun identity_equality() {
-    val snapshot = TreeSnapshot(Snapshot.of(0)) { emptyMap() }
+    val snapshot = TreeSnapshot(Snapshot.of(0), { emptyMap() })
     val me = RenderingAndSnapshot("Rendering", snapshot)
     val you = RenderingAndSnapshot("Rendering", snapshot)
 

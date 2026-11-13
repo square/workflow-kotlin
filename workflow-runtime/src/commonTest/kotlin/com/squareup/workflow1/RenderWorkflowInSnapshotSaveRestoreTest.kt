@@ -4,10 +4,12 @@ import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
+import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -18,6 +20,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import okio.Buffer
+import okio.ByteString
+import okio.ByteString.Companion.toByteString
 
 /**
  * This only contains the single test ([saves_to_and_restores_from_snapshot]) from
@@ -160,5 +165,238 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
 
     renderScope.cancel()
     restoreScope.cancel()
+  }
+
+  /**
+   * A saved [TreeSnapshot] can outlive a change to the runtime flag, e.g. across an app update or
+   * process death. The runtimes' snapshot formats aren't compatible, so restoring with the other
+   * runtime must fail cleanly: every workflow in the tree starts from its initial state exactly as
+   * if there were no snapshot, without crashing and without being handed bytes it didn't write.
+   */
+  @Test
+  fun does_not_restore_snapshot_saved_by_other_runtime(runtime2: RuntimeOptions = NONE) = runTest {
+    if ((COMPOSE_RUNTIME in runtimeConfig) == (COMPOSE_RUNTIME in runtime2.runtimeConfig)) {
+      // Covered by saves_to_and_restores_from_snapshot.
+      return@runTest
+    }
+
+    val initialStateSnapshots = mutableListOf<Snapshot?>()
+    val workflow =
+      StringStateWorkflow(initialStateSnapshots, child = StringStateWorkflow(initialStateSnapshots))
+    // Round-trip through bytes like a real app persisting the snapshot would.
+    val savedBytes = renderAndSaveUpdatedState(workflow)
+
+    initialStateSnapshots.clear()
+    val restoreScope = TestScope(dispatcherUsed)
+    val restoredRenderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = restoreScope,
+        props = MutableStateFlow(Unit),
+        initialSnapshot = TreeSnapshot.parse(savedBytes),
+        workflowTracer = null,
+        runtimeConfig = runtime2.runtimeConfig,
+      ) {}
+    advanceIfStandard()
+
+    // Both the parent and the child should have been initialized with no snapshot.
+    assertEquals(listOf<Snapshot?>(null, null), initialStateSnapshots)
+    assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.state)
+    assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.child!!.state)
+
+    restoreScope.cancel()
+  }
+
+  /**
+   * Persisted snapshot bytes may not be a snapshot at all, or may have been written by an
+   * incompatible version of this library. Only the leading magic number is checked, so any bytes
+   * that don't start with a known format must not crash, and must start every workflow in the tree
+   * from its initial state exactly as if there were no snapshot.
+   */
+  @Test
+  fun ignores_snapshot_bytes_without_valid_magic(garbage: GarbageSnapshot = GarbageSnapshot.EMPTY) =
+    runTest {
+      val initialStateSnapshots = mutableListOf<Snapshot?>()
+      val workflow =
+        StringStateWorkflow(
+          initialStateSnapshots,
+          child = StringStateWorkflow(initialStateSnapshots),
+        )
+      // Some garbage variants are derived from real snapshot bytes written by this runtime.
+      val validBytes = renderAndSaveUpdatedState(workflow)
+      val garbageBytes = garbage.corrupt(validBytes)
+
+      initialStateSnapshots.clear()
+      val restoreScope = TestScope(dispatcherUsed)
+      val restoredRenderings =
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = restoreScope,
+          props = MutableStateFlow(Unit),
+          initialSnapshot = TreeSnapshot.parse(garbageBytes),
+          workflowTracer = null,
+          runtimeConfig = runtimeConfig,
+        ) {}
+      advanceIfStandard()
+
+      // Both the parent and the child should have been initialized with no snapshot.
+      assertEquals(listOf<Snapshot?>(null, null), initialStateSnapshots)
+      assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.state)
+      assertEquals(INITIAL_STATE, restoredRenderings.value.rendering.child!!.state)
+
+      restoreScope.cancel()
+    }
+
+  /**
+   * Bytes that start with a valid magic number are assumed to be a valid snapshot: validating the
+   * whole tree up front would mean reading every byte twice on startup, and a workflow's own
+   * snapshot bytes can't be validated until it restores from them anyway. So a corrupt body fails
+   * the same way it did before formats were introduced, with an exception while restoring.
+   */
+  @Test
+  fun corrupt_snapshot_with_valid_magic_fails_restore(
+    corruption: CorruptBody = CorruptBody.TRUNCATED
+  ) = runTest {
+    val initialStateSnapshots = mutableListOf<Snapshot?>()
+    val workflow =
+      StringStateWorkflow(initialStateSnapshots, child = StringStateWorkflow(initialStateSnapshots))
+    val validBytes = renderAndSaveUpdatedState(workflow)
+    val corruptBytes = corruption.corrupt(validBytes)
+
+    val restoreScope = TestScope(dispatcherUsed)
+    assertFails {
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = restoreScope,
+        props = MutableStateFlow(Unit),
+        initialSnapshot = TreeSnapshot.parse(corruptBytes),
+        workflowTracer = null,
+        runtimeConfig = runtimeConfig,
+      ) {}
+      advanceIfStandard()
+    }
+
+    restoreScope.cancel()
+  }
+
+  /**
+   * Runs [workflow] with this test's runtime config, updates the state of the root workflow and its
+   * child to [UPDATED_STATE], and returns the serialized [TreeSnapshot] of that state.
+   */
+  private fun renderAndSaveUpdatedState(workflow: StringStateWorkflow): ByteString {
+    // See the class KDoc for why this doesn't just use this test's own scope.
+    val renderScope = TestScope(dispatcherUsed)
+    val renderings =
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = renderScope,
+        props = MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
+      ) {}
+    advanceIfStandard()
+    assertEquals(INITIAL_STATE, renderings.value.rendering.state)
+    assertEquals(INITIAL_STATE, renderings.value.rendering.child!!.state)
+
+    renderings.value.rendering.update(UPDATED_STATE)
+    advanceIfStandard()
+    renderings.value.rendering.child!!.update(UPDATED_STATE)
+    advanceIfStandard()
+    assertEquals(UPDATED_STATE, renderings.value.rendering.state)
+    assertEquals(UPDATED_STATE, renderings.value.rendering.child!!.state)
+
+    val bytes = renderings.value.snapshot.toByteString()
+    renderScope.cancel()
+    return bytes
+  }
+
+  /** Persisted bytes that don't start with a known [TreeSnapshot] format's magic number. */
+  enum class GarbageSnapshot {
+    /** Zero bytes. */
+    EMPTY {
+      override fun corrupt(validBytes: ByteString): ByteString = ByteString.EMPTY
+    },
+
+    /** Bytes that were never a snapshot at all. */
+    RANDOM {
+      override fun corrupt(validBytes: ByteString): ByteString =
+        Random(0).nextBytes(64).toByteString()
+    },
+
+    /** A real snapshot with its magic number stripped, like one written before formats existed. */
+    MISSING_MAGIC {
+      override fun corrupt(validBytes: ByteString): ByteString = validBytes.substring(1)
+    };
+
+    abstract fun corrupt(validBytes: ByteString): ByteString
+  }
+
+  /** Persisted bytes that start with a valid magic number but have a corrupt body. */
+  enum class CorruptBody {
+    /** A real snapshot that lost its second half. */
+    TRUNCATED {
+      override fun corrupt(validBytes: ByteString): ByteString =
+        validBytes.substring(0, validBytes.size / 2)
+    },
+
+    /** The root snapshot's length prefix claims a negative size. */
+    NEGATIVE_ROOT_LENGTH {
+      override fun corrupt(validBytes: ByteString): ByteString =
+        Buffer().write(validBytes.substring(0, 1)).writeInt(-1).readByteString()
+    },
+
+    /** The root snapshot's length prefix claims far more bytes than are present. */
+    OVERSIZED_ROOT_LENGTH {
+      override fun corrupt(validBytes: ByteString): ByteString =
+        Buffer().write(validBytes.substring(0, 1)).writeInt(Int.MAX_VALUE).readByteString()
+    };
+
+    abstract fun corrupt(validBytes: ByteString): ByteString
+  }
+
+  private companion object {
+    const val INITIAL_STATE = "initial state"
+    const val UPDATED_STATE = "updated state"
+  }
+}
+
+private class StringStateRendering(
+  val state: String,
+  val child: StringStateRendering?,
+  val update: (String) -> Unit,
+)
+
+/**
+ * Keeps a [String] state that it snapshots, and records every [Snapshot] it's asked to restore from
+ * in [initialStateSnapshots]. Optionally renders a [child] of the same type.
+ *
+ * Decodes snapshots leniently so that a runtime handing it bytes it didn't write shows up as a
+ * clear assertion failure on [initialStateSnapshots] rather than an exception from [initialState].
+ */
+private class StringStateWorkflow(
+  private val initialStateSnapshots: MutableList<Snapshot?>,
+  private val child: StringStateWorkflow? = null,
+) : StatefulWorkflow<Unit, String, Nothing, StringStateRendering>() {
+
+  override fun initialState(props: Unit, snapshot: Snapshot?): String {
+    initialStateSnapshots += snapshot
+    if (snapshot == null) return "initial state"
+    return runCatching { snapshot.bytes.parse { it.readUtf8WithLength() } }
+      .getOrElse { "undecodable snapshot: ${snapshot.bytes.hex()}" }
+  }
+
+  override fun render(
+    renderProps: Unit,
+    renderState: String,
+    context: RenderContext<Unit, String, Nothing>,
+  ): StringStateRendering =
+    StringStateRendering(
+      state = renderState,
+      child = child?.let { context.renderChild(it) },
+      update = context.eventHandler("update") { newState: String -> state = newState },
+    )
+
+  override fun snapshotState(state: String): Snapshot = Snapshot.write {
+    it.writeUtf8WithLength(state)
   }
 }

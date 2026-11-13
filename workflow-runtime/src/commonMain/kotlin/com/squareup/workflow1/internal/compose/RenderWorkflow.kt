@@ -15,6 +15,8 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.internal.WorkflowNode
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_WORKFLOW_RESTART_GROUP
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_WORKFLOW_SKIP_GROUP
 import com.squareup.workflow1.internal.compose.ComposeRenderContext.Companion.rememberComposeRenderContext
 import com.squareup.workflow1.renderWorkflowIn
 
@@ -85,6 +87,9 @@ internal fun <PropsT, OutputT, RenderingT> renderWorkflow(
       renderKey = renderKey,
       callerRecomposeScope = recomposeScope,
     )
+  // Do this before deciding whether to skip, so that even if this pass skips rendering, later
+  // renders and snapshots use the new instance.
+  renderContext.updateWorkflow(workflow)
 
   onRenderContext?.invoke(renderContext)
 
@@ -142,10 +147,8 @@ private fun renderWorkflowRestartableImpl(
   changed: Int,
 ): Any? {
   // Outer group is restartable: This should wrap the entire body of this function (except the
-  // actual
-  // return statement) and is what defines the recompose scope for producer.
-  // Key chosen "randomly" by mashing on my keyboard.
-  composer.startRestartGroup(23975234)
+  // actual return statement) and is what defines the recompose scope for producer.
+  composer.startRestartGroup(RENDER_WORKFLOW_RESTART_GROUP)
 
   // Only gets set if we end up composing producer this invocation.
   var newValue: Any? = Composer.Empty
@@ -154,8 +157,7 @@ private fun renderWorkflowRestartableImpl(
   // Inner group is necessary to be able to skip calling producer. We need a nested group because we
   // only want to skip calling producer, we still need to do other slot table stuff later to
   // read the cache even if producer is skipped.
-  // Key chosen "randomly" by mashing on my keyboard.
-  composer.startReplaceGroup(-895982)
+  composer.startReplaceGroup(RENDER_WORKFLOW_SKIP_GROUP)
 
   // The changed parameter is a bit set. Each parameter gets 3 bits, starting with the LSB for the
   // first parameter. In each set of three:
@@ -194,12 +196,16 @@ private fun renderWorkflowRestartableImpl(
     renderContext.updateRecomposeScope(recomposeScope)
     composer.recordUsed(recomposeScope)
 
+    // Reuse the change information we already calculated so we don't have to call equals again.
+    // On first composition the dirty bits don't describe the render context's state: it was just
+    // created with these props (so onPropsChanged must not be called), and without an output
+    // handler (so this one must be stored).
+    val inserting = composer.inserting
     newValue =
       renderContext.renderSelf(
         props = props,
         emitAppliedActionToParent = emitAppliedActionToParent,
-        // Reuse the change information we already calculated so we don't have to call equals again.
-        didPropsChange = (dirty and 0b010) != 0b010,
+        didPropsChange = !inserting && (dirty and 0b010) != 0b010,
         composer = composer,
       )
   }

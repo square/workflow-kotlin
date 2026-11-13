@@ -50,8 +50,9 @@ fun shardConnectedCheckTasks(target: Project) {
       target.subprojects
         .filter {
           // Only Android projects can have these tasks.
-          // Use the KGP Android plugin instead of AGP since KGP has only one ID to look for.
-          it.plugins.hasPlugin("org.jetbrains.kotlin.android") ||
+          it.plugins.hasPlugin("com.android.application") ||
+            it.plugins.hasPlugin("com.android.library") ||
+            it.plugins.hasPlugin("com.android.test") ||
             it.plugins.hasPlugin("com.android.kotlin.multiplatform.library")
         }
         .map { it to it.androidTestCost() }

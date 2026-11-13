@@ -109,7 +109,9 @@ import kotlinx.coroutines.plus
  *   value, the runtime will _not_ fail or stop, it will continue running with the last-emitted
  *   input. To only pass a single props value, simply create a [MutableStateFlow] with the value.
  * @param initialSnapshot If not null or empty, used to restore the workflow. Should be obtained
- *   from a previous runtime's [RenderingAndSnapshot].
+ *   from a previous runtime's [RenderingAndSnapshot]. A snapshot that was written by a runtime with
+ *   a different `COMPOSE_RUNTIME` setting, or that was parsed from invalid bytes, is ignored and
+ *   the workflow tree is initialized as though this were null.
  * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
  *   rendered by the runtime. Interceptors will be invoked in 0-to-`length` order: the interceptor
  *   at index 0 will process the workflow first, then the interceptor at index 1, etc.

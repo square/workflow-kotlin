@@ -1,6 +1,6 @@
 plugins {
   id("com.android.application")
-  id("kotlin-android")
+  id("kotlin-android-conventions")
   id("android-sample-app")
   id("android-ui-tests")
   alias(libs.plugins.compose.compiler)

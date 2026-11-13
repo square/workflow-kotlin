@@ -14,9 +14,12 @@ import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
@@ -254,6 +257,34 @@ internal class RenderAsStateTest {
     }
   }
 
+  /**
+   * Starting the compose runtime takes nested snapshots of the composition's snapshot, which used
+   * to make the initial rendering write look like a modification of state the caller had read, so
+   * the caller recomposed after every apply. A caller that passes a new workflow instance on every
+   * composition then restarted the runtime forever.
+   */
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test
+  fun composeRuntimeSettlesWhenGivenNewWorkflowInstanceOnEveryComposition() {
+    var compositionCount = 0
+    lateinit var rendering: String
+
+    composeRule.setContent {
+      compositionCount++
+      // A new instance on every composition restarts the runtime whenever this recomposes.
+      val workflow = Workflow.stateless<Unit, Nothing, String> { "hello" }
+      rendering =
+        workflow
+          .renderAsState(props = Unit, runtimeConfig = setOf(COMPOSE_RUNTIME), onOutput = {})
+          .value
+    }
+
+    composeRule.runOnIdle {
+      assertThat(rendering).isEqualTo("hello")
+      assertThat(compositionCount).isEqualTo(1)
+    }
+  }
+
   @Test
   fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
     val workflow = Workflow.rendering<Nothing, String>("hello")
@@ -350,8 +381,11 @@ internal class RenderAsStateTest {
   private companion object {
     const val SNAPSHOT_KEY = "workflow-snapshot"
 
-    /** Golden value from [savesSnapshot]. */
-    val EXPECTED_SNAPSHOT = "AAAABwAAAANmb28AAAAA".decodeBase64()!!
+    /**
+     * Golden value from [savesSnapshot]. The first byte is the [TreeSnapshot] format magic number
+     * for the legacy runtime.
+     */
+    val EXPECTED_SNAPSHOT = "/wAAAAcAAAADZm9vAAAAAA==".decodeBase64()!!
   }
 
   // Seems to be a problem accessing Workflow.stateful.

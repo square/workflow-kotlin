@@ -9,6 +9,7 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
+import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -42,20 +43,25 @@ class WorkflowTurbineTest {
 
   @Test
   fun `awaitNextSnapshot returns first snapshot`() {
+    var restoredState: Int? = null
     val workflow =
       Workflow.stateful<Int, Nothing, Int>(
-        initialState = { snapshot: Snapshot? -> 42 },
+        initialState = { snapshot: Snapshot? ->
+          snapshot?.bytes?.parse { it.readInt() }?.also { restoredState = it } ?: 42
+        },
         render = { state: Int -> state },
         snapshot = { state: Int -> Snapshot.of(state) },
       )
 
+    lateinit var firstSnapshot: TreeSnapshot
     workflow.renderForTest {
       // First snapshot should exist
-      val firstSnapshot = awaitNextSnapshot()
+      firstSnapshot = awaitNextSnapshot()
       assertNotNull(firstSnapshot)
-      val actualSnapshotValue = firstSnapshot.readIntValue()
-      assertEquals(42, actualSnapshotValue)
     }
+
+    assertEquals(42, workflow.renderingRestoredFrom(firstSnapshot))
+    assertEquals(42, restoredState)
   }
 
   @Test
@@ -76,20 +82,27 @@ class WorkflowTurbineTest {
 
   @Test
   fun `firstSnapshot property is accessible`() {
+    var restoredState: String? = null
     val workflow =
       Workflow.stateful<String, Nothing, String>(
-        initialState = { snapshot: Snapshot? -> "hello" },
+        initialState = { snapshot: Snapshot? ->
+          snapshot?.bytes?.utf8()?.also { restoredState = it } ?: "hello"
+        },
         render = { state: String -> state },
         snapshot = { state: String -> Snapshot.of(state) },
       )
 
+    lateinit var snapshot: TreeSnapshot
     workflow.renderForTest {
       // First snapshot property should be accessible
       assertNotNull(firstSnapshot)
       // awaitNextSnapshot should return the same value
       assertEquals(firstSnapshot, awaitNextSnapshot())
-      assertEquals("hello", firstSnapshot.readStringValue())
+      snapshot = firstSnapshot
     }
+
+    assertEquals("hello", workflow.renderingRestoredFrom(snapshot))
+    assertEquals("hello", restoredState)
   }
 
   private object StartupAdvanceWorkflow : StatefulWorkflow<Unit, String, Nothing, String>() {
@@ -198,7 +211,8 @@ class WorkflowTurbineTest {
 
   // Workflow that can increment state
   private object IncrementWorkflow : StatefulWorkflow<Unit, Int, Nothing, Pair<Int, () -> Unit>>() {
-    override fun initialState(props: Unit, snapshot: Snapshot?) = 0
+    override fun initialState(props: Unit, snapshot: Snapshot?) =
+      snapshot?.bytes?.parse { it.readInt() } ?: 0
 
     override fun snapshotState(state: Int): Snapshot = Snapshot.of(state)
 
@@ -214,6 +228,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `awaitNextRendering and awaitNextSnapshot are independent`() {
+    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
     IncrementWorkflow.renderForTest {
       // Get first rendering
       val (value0, increment0) = awaitNextRendering()
@@ -225,7 +240,7 @@ class WorkflowTurbineTest {
       // Now get first snapshot - should still be for state 0
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      assertEquals(0, snapshot0.readIntValue())
+      expectedSnapshots += 0 to snapshot0
 
       // Now get second rendering - should be state 1
       val (value1, increment1) = awaitNextRendering()
@@ -235,7 +250,7 @@ class WorkflowTurbineTest {
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
-      assertEquals(1, snapshot1.readIntValue())
+      expectedSnapshots += 1 to snapshot1
 
       // Trigger another change
       increment1()
@@ -248,12 +263,17 @@ class WorkflowTurbineTest {
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
       assertNotEquals(snapshot1, snapshot2)
-      assertEquals(2, snapshot2.readIntValue())
+      expectedSnapshots += 2 to snapshot2
+    }
+
+    expectedSnapshots.forEach { (state, snapshot) ->
+      assertEquals(state, IncrementWorkflow.renderingRestoredFrom(snapshot).first)
     }
   }
 
   @Test
   fun `awaitNextSnapshot and awaitNextRendering are synchronized`() {
+    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
     IncrementWorkflow.renderForTest {
       // Consume first rendering
       val (value0, increment) = awaitNextRendering()
@@ -268,17 +288,22 @@ class WorkflowTurbineTest {
 
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      assertEquals(0, snapshot0.readIntValue())
+      expectedSnapshots += 0 to snapshot0
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
       assertNotEquals(snapshot0, snapshot1)
-      assertEquals(1, snapshot1.readIntValue())
+      expectedSnapshots += 1 to snapshot1
+    }
+
+    expectedSnapshots.forEach { (state, snapshot) ->
+      assertEquals(state, IncrementWorkflow.renderingRestoredFrom(snapshot).first)
     }
   }
 
   @Test
   fun `shareIn works - both turbines receive same emissions`() {
+    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
     IncrementWorkflow.renderForTest {
       // Consume renderings first
       val (value0, increment0) = awaitNextRendering()
@@ -295,20 +320,24 @@ class WorkflowTurbineTest {
       // Now consume snapshots - should have all 3 available because shareIn broadcasted to both
       val snapshot0 = awaitNextSnapshot()
       assertNotNull(snapshot0)
-      assertEquals(0, snapshot0.readIntValue())
+      expectedSnapshots += 0 to snapshot0
 
       val snapshot1 = awaitNextSnapshot()
       assertNotNull(snapshot1)
-      assertEquals(1, snapshot1.readIntValue())
+      expectedSnapshots += 1 to snapshot1
 
       val snapshot2 = awaitNextSnapshot()
       assertNotNull(snapshot2)
-      assertEquals(2, snapshot2.readIntValue())
+      expectedSnapshots += 2 to snapshot2
 
       // All snapshots should be different
       assertNotEquals(snapshot0, snapshot1)
       assertNotEquals(snapshot1, snapshot2)
       assertNotEquals(snapshot0, snapshot2)
+    }
+
+    expectedSnapshots.forEach { (state, snapshot) ->
+      assertEquals(state, IncrementWorkflow.renderingRestoredFrom(snapshot).first)
     }
   }
 
@@ -417,6 +446,7 @@ class WorkflowTurbineTest {
 
   @Test
   fun `multiple state changes produce multiple emissions for all flows`() {
+    val expectedSnapshots = mutableListOf<Pair<Int, TreeSnapshot>>()
     IncrementWorkflow.renderForTest {
       val (value0, increment0) = awaitNextRendering()
       assertEquals(0, value0)
@@ -443,22 +473,33 @@ class WorkflowTurbineTest {
       assertNotNull(snapshot2)
       assertNotNull(snapshot3)
 
-      assertEquals(0, snapshot0.readIntValue())
-      assertEquals(1, snapshot1.readIntValue())
-      assertEquals(2, snapshot2.readIntValue())
-      assertEquals(3, snapshot3.readIntValue())
+      expectedSnapshots += 0 to snapshot0
+      expectedSnapshots += 1 to snapshot1
+      expectedSnapshots += 2 to snapshot2
+      expectedSnapshots += 3 to snapshot3
 
       // All should be different
       assertNotEquals(snapshot0, snapshot1)
       assertNotEquals(snapshot1, snapshot2)
       assertNotEquals(snapshot2, snapshot3)
     }
+
+    expectedSnapshots.forEach { (state, snapshot) ->
+      assertEquals(state, IncrementWorkflow.renderingRestoredFrom(snapshot).first)
+    }
   }
 }
 
-/** Extension function to read an Int value from a TreeSnapshot. */
-private fun TreeSnapshot.readIntValue(): Int? = workflowSnapshotByteString()?.parse { it.readInt() }
-
-/** Extension function to read a String value from a TreeSnapshot. */
-private fun TreeSnapshot.readStringValue(): String? =
-  workflowSnapshotByteString()?.parse { it.readUtf8() }
+/**
+ * Starts this workflow from [snapshot] in a new runtime and returns its first rendering. A
+ * [TreeSnapshot]'s bytes are in a runtime-specific format, so restoring it is the only way to check
+ * what it contains.
+ */
+private fun <StateT, RenderingT> StatefulWorkflow<Unit, StateT, *, RenderingT>
+  .renderingRestoredFrom(snapshot: TreeSnapshot): RenderingT {
+  val renderings = mutableListOf<RenderingT>()
+  renderForTest(testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))) {
+    renderings += awaitNextRendering()
+  }
+  return renderings.single()
+}

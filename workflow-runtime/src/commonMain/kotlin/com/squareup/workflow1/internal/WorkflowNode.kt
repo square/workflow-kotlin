@@ -8,6 +8,8 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.TreeSnapshot.Format.COMPOSE
+import com.squareup.workflow1.TreeSnapshot.Format.LEGACY
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -35,12 +37,15 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
 ): WorkflowNode<PropsT, OutputT, RenderingT> =
+  // Each node type can only restore from snapshots written by its own runtime. A snapshot in the
+  // other format (e.g. one that was persisted before the runtime flag changed) is ignored, and the
+  // tree initializes as if there were no snapshot.
   if (workflow is ComposeRuntimeSwizzlerWorkflow) {
     ComposeWorkflowNode(
       id = id,
       workflow = workflow,
       initialProps = initialProps,
-      snapshot = snapshot,
+      snapshot = snapshot?.takeIfFormat(COMPOSE),
       baseContext = baseContext,
       emitAppliedActionToParent = emitAppliedActionToParent,
       interceptor = interceptor,
@@ -54,7 +59,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
       id = id,
       workflow = workflow.asStatefulWorkflow(),
       initialProps = initialProps,
-      snapshot = snapshot,
+      snapshot = snapshot?.takeIfFormat(LEGACY),
       baseContext = baseContext,
       runtimeConfig = runtimeConfig,
       workflowTracer = workflowTracer,

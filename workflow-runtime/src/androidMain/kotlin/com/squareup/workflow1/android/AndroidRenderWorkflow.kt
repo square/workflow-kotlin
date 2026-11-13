@@ -12,11 +12,9 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn], for use
@@ -268,10 +266,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       onOutput,
     )
 
-  return renderingsAndSnapshots
-    .onEach { savedStateHandle?.set(KEY, PickledTreesnapshot(it.snapshot)) }
-    .map { it.rendering }
-    .stateIn(scope, Eagerly, renderingsAndSnapshots.value.rendering)
+  // Don't use `stateIn` here: its sharing coroutine holds on to the `initialValue` argument for as
+  // long as it runs, which would keep the first rendering (and everything it references)
+  // reachable for the lifetime of the runtime, even after later renderings replace it.
+  val renderings = MutableStateFlow(renderingsAndSnapshots.value.rendering)
+  // Same as `stateIn(scope, Eagerly, ...)`: default start, so the collector is dispatched by scope.
+  scope.launch {
+    renderingsAndSnapshots.collect {
+      savedStateHandle?.set(KEY, PickledTreesnapshot(it.snapshot))
+      renderings.value = it.rendering
+    }
+  }
+  return renderings.asStateFlow()
 }
 
 /**

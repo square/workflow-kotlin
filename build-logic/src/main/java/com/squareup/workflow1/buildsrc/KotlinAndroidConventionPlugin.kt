@@ -7,8 +7,8 @@ import org.gradle.api.Project
 class KotlinAndroidConventionPlugin : Plugin<Project> {
 
   override fun apply(target: Project) {
-    target.plugins.apply("org.jetbrains.kotlin.android")
-
+    // AGP 9 compiles Kotlin sources itself (built-in Kotlin), so there's no Kotlin plugin to apply.
+    // This plugin's ID must not be "kotlin-android": AGP looks up that ID to find KGP's version.
     target.kotlinCommonSettings(bomConfigurationName = "implementation")
 
     target.extensions.configure<AndroidComponentsExtension<*, *, *>>("androidComponents") {

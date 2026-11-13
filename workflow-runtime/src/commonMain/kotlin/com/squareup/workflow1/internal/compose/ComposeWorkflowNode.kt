@@ -13,6 +13,7 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.TreeSnapshot.Format.COMPOSE
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -134,7 +135,7 @@ internal class ComposeWorkflowNode<P, O, R>(
   override fun snapshot(): TreeSnapshot {
     val savedValues = saveableStateRegistry.performSave()
     val snapshot = savedValuesToSnapshot(savedValues)
-    return TreeSnapshot(snapshot, ::emptyMap)
+    return TreeSnapshot(snapshot, ::emptyMap, format = COMPOSE)
   }
 
   override fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {

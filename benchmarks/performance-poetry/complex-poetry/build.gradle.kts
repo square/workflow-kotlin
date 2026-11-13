@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   id("com.android.application")
-  id("kotlin-android")
+  id("kotlin-android-conventions")
   id("kotlin-parcelize")
 }
 

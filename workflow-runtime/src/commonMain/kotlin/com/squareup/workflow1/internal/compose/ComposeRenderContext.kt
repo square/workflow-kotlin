@@ -37,6 +37,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.intercept
+import com.squareup.workflow1.internal.compose.ComposeGroupKeys.RENDER_CONTEXT_CHILD_GROUP
 import com.squareup.workflow1.internal.compose.TraceLabels.InitialState
 import com.squareup.workflow1.internal.compose.TraceLabels.OnPropsChanged
 import com.squareup.workflow1.internal.compose.TraceLabels.SendAction
@@ -65,7 +66,7 @@ import kotlinx.coroutines.selects.SelectBuilder
 @Stable
 internal class ComposeRenderContext<P, O, R>
 private constructor(
-  private val workflow: Workflow<P, O, R>,
+  workflow: Workflow<P, O, R>,
   snapshot: Snapshot?,
   initialProps: P,
   private val workflowScope: CoroutineScope,
@@ -109,7 +110,15 @@ private constructor(
   private var recomposeScope: RecomposeScope? = null
   private var stateRegistryEntry: SaveableStateRegistry.Entry? = null
 
-  private val interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
+  /**
+   * The most recent instance of the workflow passed by the parent. Only its identity is tied to the
+   * session, so a parent can render a new instance at any time (see [updateWorkflow]).
+   */
+  private var workflow: Workflow<P, O, R> = workflow
+  private var interceptedWorkflow: StatefulWorkflow<P, Any?, O, R>
+
+  /** Caches the public `RenderContext` that wraps this `BaseRenderContext`. */
+  private val renderContext: StatefulWorkflow.RenderContext<P, Any?, O>
 
   /** Helper for calling into Compose code from non-compose code. */
   private var trapdoor: Trapdoor? by threadLocalOf { null }
@@ -165,15 +174,12 @@ private constructor(
   // endregion
 
   init {
-    @Suppress("UNCHECKED_CAST")
-    val statefulWorkflow = workflow.asStatefulWorkflow() as StatefulWorkflow<P, Any?, O, R>
-    val interceptor = config.workflowInterceptor
-
-    interceptor?.onSessionStarted(workflowScope = workflowScope, session = this)
-
-    interceptedWorkflow =
-      interceptor?.intercept(workflow = statefulWorkflow, workflowSession = this)
-        ?: statefulWorkflow
+    config.workflowInterceptor?.onSessionStarted(workflowScope = workflowScope, session = this)
+    interceptedWorkflow = interceptWorkflow(workflow)
+    // interceptedWorkflow is only passed for type inference, the context does not actually use or
+    // retain the instance for anything, so this wrapper does not need to be recreated by
+    // updateWorkflow().
+    renderContext = RenderContext(this, interceptedWorkflow)
 
     val initialState =
       config.workflowTracer.trace(InitialState) {
@@ -184,6 +190,27 @@ private constructor(
         )
       }
     state = WorkflowSnapshotState(props = initialProps, state = initialState)
+  }
+
+  /**
+   * Switches to [newWorkflow] if the parent rendered a different instance than last time, without
+   * resetting the session. Analogous to `StatefulWorkflowNode.maybeUpdateCachedWorkflowInstance` in
+   * the traditional runtime.
+   */
+  fun updateWorkflow(newWorkflow: Workflow<P, O, R>) {
+    if (newWorkflow !== workflow) {
+      workflow = newWorkflow
+      interceptedWorkflow = interceptWorkflow(newWorkflow)
+    }
+  }
+
+  private fun interceptWorkflow(workflow: Workflow<P, O, R>): StatefulWorkflow<P, Any?, O, R> {
+    @Suppress("UNCHECKED_CAST")
+    val statefulWorkflow = workflow.asStatefulWorkflow() as StatefulWorkflow<P, Any?, O, R>
+    return config.workflowInterceptor?.intercept(
+      workflow = statefulWorkflow,
+      workflowSession = this,
+    ) ?: statefulWorkflow
   }
 
   override fun onRemembered() {
@@ -234,11 +261,7 @@ private constructor(
         }
       }
     return interceptedWorkflow
-      .render(
-        renderProps = props as P,
-        renderState = currentState,
-        context = RenderContext(this, interceptedWorkflow),
-      )
+      .render(renderProps = props as P, renderState = currentState, context = renderContext)
       .also { trapdoor = null }
   }
 
@@ -285,7 +308,7 @@ private constructor(
   override fun runningSideEffect(key: String, sideEffect: suspend CoroutineScope.() -> Unit) {
     // We pass the key as the movable data key instead of just passing it to LaunchedEffect since
     // we want this group to be movable, not just restartable.
-    requireTrapdoor("runningSideEffect").inMovableGroup(GROUP_KEY, key) {
+    requireTrapdoor("runningSideEffect").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // Can't use sideEffect as key since it is allocated anew every render pass, so it will always
       // be different.
       LaunchedEffect(Unit, block = sideEffect)
@@ -298,7 +321,7 @@ private constructor(
     vararg inputs: Any?,
     calculation: () -> ResultT,
   ): ResultT =
-    requireTrapdoor("remember").inMovableGroup(GROUP_KEY, key) {
+    requireTrapdoor("remember").inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, key) {
       // RememberStore (the traditional runtime's implementation of this call) keys the lifetime of
       // the memoization off the result type and inputs in addition to the explicit key. The data
       // key is only used to keep the memoized state consistent as the order and number of calls to
@@ -306,6 +329,12 @@ private constructor(
       // particular remember call, so they don't need to be part of the data key. We use a separate
       // key call since it's simpler than correctly folding multiple objects into a single data key
       // (which requires calling Composer.joinKey).
+      //
+      // Don't collapse this into a single `remember(resultType, *inputs)`: mixing a regular
+      // argument with a spread compiles to a SpreadBuilder, which allocates 4 objects per call.
+      // This form allocates only 1 (the copy for `*inputs`), since the Compose compiler lowers key
+      // calls without allocating. Benchmarks confirmed this form is faster and allocates less:
+      // https://github.com/square/workflow-kotlin/pull/1585
       key(resultType, *inputs) { remember(*inputs, calculation = calculation) }
     }
 
@@ -317,7 +346,7 @@ private constructor(
   ): ChildRenderingT =
     requireTrapdoor("renderChild")
       // child.identifier is usually cached by Workflow so calling it on recomposition is cheap.
-      .inMovableGroup(GROUP_KEY, child.identifier, key) {
+      .inMovableGroup(RENDER_CONTEXT_CHILD_GROUP, child.identifier, key) {
         // Memoize the handler function so that renderChild can skip whenever possible.
         val updatedHandler by rememberUpdatedState(handler)
         val acceptChildActionResult: (ActionApplied<ChildOutputT>) -> ActionProcessingResult =
@@ -409,16 +438,6 @@ private constructor(
   }
 
   companion object {
-    /**
-     * Hard-coded group key used for all groups that are created by [ComposeRenderContext]s. All
-     * _types_ of children (child workflows, side effects, etc) must use the same group key so that
-     * they can be moved among each other correctly.
-     *
-     * In most Compose code, this key would be generated by the compiler as a hash of the source
-     * location of the function.
-     */
-    private const val GROUP_KEY = -9287345
-
     @Composable
     fun <P, O, R> rememberComposeRenderContext(
       workflow: Workflow<P, O, R>,
