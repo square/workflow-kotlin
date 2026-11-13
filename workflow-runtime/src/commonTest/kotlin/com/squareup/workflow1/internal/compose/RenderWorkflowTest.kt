@@ -6,6 +6,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.cash.burst.Burst
+import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.Sink
@@ -39,6 +42,18 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
       idCounter = IdCounter(),
     )
 
+  /** The root [ComposeRenderContext] of the last composed [renderWorkflow] call. */
+  private var root: ComposeRenderContext<*, *, *>? = null
+
+  /**
+   * Applies every queued action in the tree, the way the runtime's action loop would between render
+   * passes. Actions are queued by [Sink.send] and don't take effect until this is called.
+   */
+  private fun applyActions() {
+    val root = checkNotNull(root) { "expected renderWorkflow to have been composed" }
+    while (root.applyNextAvailableTreeAction(skipDirtyNodes = false) != ActionsExhausted) {}
+  }
+
   @Test
   fun skips_render_when_props_and_onOutput_unchanged() = runTest {
     var renderCount = 0
@@ -47,7 +62,7 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderCount++
         props * 2
       }
-    val onOutput: (Nothing) -> Unit = {}
+    val onOutput: (ActionApplied<Nothing>) -> ActionProcessingResult = { it }
     // Force the surrounding composable to recompose between calls without changing any of
     // renderWorkflow's parameters. This is what exercises the skipping path: the restart group
     // around renderWorkflow is reachable on recomposition, but its dirty bits show all params
@@ -59,10 +74,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderWorkflow(
           workflow = workflow,
           props = 5,
-          onOutput = onOutput,
+          emitAppliedActionToParent = onOutput,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
     try {
@@ -96,17 +112,18 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderCount++
         props * 2
       }
-    val onOutput: (Nothing) -> Unit = {}
+    val onOutput: (ActionApplied<Nothing>) -> ActionProcessingResult = { it }
     val propsState = mutableStateOf(5)
     val test =
       TestComposition(backgroundScope) {
         renderWorkflow(
           workflow = workflow,
           props = propsState.value,
-          onOutput = onOutput,
+          emitAppliedActionToParent = onOutput,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
     try {
@@ -133,27 +150,28 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderCount++
         props * 2
       }
-    val onOutputState = mutableStateOf<((Nothing) -> Unit)?>(null)
+    val onOutputState = mutableStateOf<((ActionApplied<Nothing>) -> ActionProcessingResult)?>(null)
     val test =
       TestComposition(backgroundScope) {
         renderWorkflow(
           workflow = workflow,
           props = 5,
-          onOutput = onOutputState.value,
+          emitAppliedActionToParent = onOutputState.value,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
     try {
       assertEquals(10, test.recompose())
       assertEquals(1, renderCount)
 
-      onOutputState.value = {}
+      onOutputState.value = { it }
       assertEquals(10, test.recompose())
       assertEquals(2, renderCount)
 
-      onOutputState.value = {}
+      onOutputState.value = { it }
       assertEquals(10, test.recompose())
       assertEquals(3, renderCount)
     } finally {
@@ -181,16 +199,17 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
 
         override fun snapshotState(state: Int): Snapshot? = null
       }
-    val onOutput: (Nothing) -> Unit = {}
+    val onOutput: (ActionApplied<Nothing>) -> ActionProcessingResult = { it }
     val test =
       TestComposition(backgroundScope) {
         renderWorkflow(
           workflow = workflow,
           props = 5,
-          onOutput = onOutput,
+          emitAppliedActionToParent = onOutput,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
     try {
@@ -202,11 +221,14 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
       // forcing a new render even though props/onOutput are unchanged.
       println("OMG test: setting state")
       sink.send(action("setStateTo3") { state = 3 })
+      applyActions()
       println("OMG test: triggering recompose")
       assertEquals(8, test.recompose())
       assertEquals(2, renderCount)
 
       sink.send(action("setStateTo10") { state = 10 })
+
+      applyActions()
       assertEquals(15, test.recompose())
       assertEquals(3, renderCount)
     } finally {
@@ -251,7 +273,7 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
 
         override fun snapshotState(state: Unit): Snapshot? = null
       }
-    val onOutput: (Nothing) -> Unit = {}
+    val onOutput: (ActionApplied<Nothing>) -> ActionProcessingResult = { it }
     val test =
       TestComposition(backgroundScope) {
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
@@ -259,10 +281,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
           renderWorkflow(
               workflow = parentWorkflow,
               props = 5,
-              onOutput = onOutput,
+              emitAppliedActionToParent = onOutput,
               config = skippingConfig,
               parentSession = null,
               renderKey = "",
+              onRenderContext = { root = it },
             )
             .also { println("OMG test: new root rendering: $it") }
         }
@@ -276,12 +299,14 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
       // forcing a new render even though props/onOutput are unchanged.
       println("OMG test: setting state…")
       sink.send(action("setStateTo3") { state = 3 })
+      applyActions()
       println("OMG test: triggering recompose")
       assertEquals(8, test.recompose())
       assertEquals(2, renderCount)
 
       println("OMG test: setting state again…")
       sink.send(action("setStateTo10") { state = 10 })
+      applyActions()
       assertEquals(15, test.recompose())
       assertEquals(3, renderCount)
     } finally {
@@ -359,7 +384,7 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
 
         override fun snapshotState(state: Unit): Snapshot? = null
       }
-    val onOutput: (Nothing) -> Unit = {}
+    val onOutput: (ActionApplied<Nothing>) -> ActionProcessingResult = { it }
     val test =
       TestComposition(backgroundScope) {
         withCompositionLocals(LocalRootRecomposeScope provides currentRecomposeScope) {
@@ -367,10 +392,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
           renderWorkflow(
               workflow = parentWorkflow,
               props = 5,
-              onOutput = onOutput,
+              emitAppliedActionToParent = onOutput,
               config = skippingConfig,
               parentSession = null,
               renderKey = "",
+              onRenderContext = { root = it },
             )
             .also { println("OMG test: new root rendering: $it") }
         }
@@ -385,6 +411,7 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
       // forcing a new render even though props/onOutput are unchanged.
       println("OMG test: setting state…")
       sink.send(action("setStateTo3") { state = 3 })
+      applyActions()
       println("OMG test: triggering recompose")
       assertEquals(33, test.recompose())
       expectedRenderCount += if (isSkipping) 3 else 9
@@ -392,6 +419,7 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
 
       println("OMG test: setting state again…")
       sink.send(action("setStateTo10") { state = 10 })
+      applyActions()
       assertEquals(40, test.recompose())
       expectedRenderCount += if (isSkipping) 3 else 9
       assertEquals(expectedRenderCount, renderCount)
@@ -437,10 +465,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderWorkflow(
           workflow = workflow,
           props = Props(),
-          onOutput = null,
+          emitAppliedActionToParent = null,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
 
@@ -449,6 +478,8 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
       assertEquals(0, propsEqualsCount)
 
       capturedSink!!.send(action("setStateTo3") { state = 3 })
+
+      applyActions()
 
       assertEquals(3, test.recompose())
       assertEquals(1, propsEqualsCount)
@@ -496,10 +527,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderWorkflow(
           workflow = workflow,
           props = props,
-          onOutput = null,
+          emitAppliedActionToParent = null,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
 
@@ -556,10 +588,11 @@ internal class RenderWorkflowTest(val config: TestConfig = TestConfig.COMPOSE_SK
         renderWorkflow(
           workflow = workflow,
           props = props,
-          onOutput = null,
+          emitAppliedActionToParent = null,
           config = skippingConfig,
           parentSession = null,
           renderKey = "",
+          onRenderContext = { root = it },
         )
       }
 

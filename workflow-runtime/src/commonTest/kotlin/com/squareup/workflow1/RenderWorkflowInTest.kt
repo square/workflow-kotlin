@@ -2024,7 +2024,7 @@ class RenderWorkflowInTest(
 
       // 2 child actions processed.
       assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
-      if (DRAIN_EXCLUSIVE_ACTIONS in runtimeConfig || COMPOSE_RUNTIME in runtimeConfig) {
+      if (DRAIN_EXCLUSIVE_ACTIONS in runtimeConfig) {
         //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
         assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
       } else {
