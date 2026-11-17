@@ -14,10 +14,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
@@ -236,6 +239,57 @@ internal class WorkflowInterceptorTest {
     assertEquals(1, capturedDroppedActions!!.size)
     assertEquals("TestAction", capturedDroppedActions[0].debuggingName)
   }
+
+  @Test
+  fun worker_handler_debugging_name_reaches_onActionSent() =
+    runTest(UnconfinedTestDispatcher()) {
+      val trigger = CompletableDeferred<Unit>()
+      val seen = mutableListOf<String>()
+      val workflow =
+        Workflow.stateless<Unit, Unit, Unit> {
+          runningWorker(Worker.from { trigger.await() }) {
+            action("wait-completed") { setOutput(Unit) }
+          }
+        }
+      val interceptor =
+        object : WorkflowInterceptor {
+          override fun <P, S, O, R> onRender(
+            renderProps: P,
+            renderState: S,
+            context: BaseRenderContext<P, S, O>,
+            proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+            session: WorkflowSession,
+          ): R =
+            proceed(
+              renderProps,
+              renderState,
+              object : RenderContextInterceptor<P, S, O> {
+                override fun onActionSent(
+                  action: WorkflowAction<P, S, O>,
+                  proceed: (WorkflowAction<P, S, O>) -> Unit,
+                ) {
+                  seen += action.debuggingName
+                  proceed(action)
+                }
+              },
+            )
+        }
+
+      renderWorkflowIn(
+        workflow = workflow,
+        scope = backgroundScope,
+        props = MutableStateFlow(Unit),
+        interceptors = listOf(interceptor),
+        onOutput = {},
+      )
+      trigger.complete(Unit)
+      advanceUntilIdle()
+
+      assertTrue(
+        seen.any { it == "wait-completed" },
+        "expected handler debugging name in $seen",
+      )
+    }
 
   private val Workflow<*, *, *>.session: WorkflowSession
     get() =
