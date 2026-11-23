@@ -26,7 +26,7 @@ internal class WorkflowSnapshotState(props: Any?, onOutput: ((Any?) -> Unit)?, s
   }
 
   /** Returns the workflow's current state without notifying read observers. */
-  fun peekState(): Any? = record.withCurrent { it.state }
+  fun peekState(): Any? = record.withCurrent(this) { it.state }
 
   /**
    * Performs all the state update duties for a render pass:
@@ -63,7 +63,7 @@ internal class WorkflowSnapshotState(props: Any?, onOutput: ((Any?) -> Unit)?, s
 
     // Avoid recording a read since that would make the write below a backwards write, and
     // potentially trigger and infinite recomposition loop.
-    record.withCurrent {
+    record.withCurrent(this) {
       oldProps = it.props
       oldOnOutput = it.onOutput
       oldState = it.state
@@ -108,7 +108,7 @@ internal class WorkflowSnapshotState(props: Any?, onOutput: ((Any?) -> Unit)?, s
     var oldState: Any? = null
     var lastProps: Any? = null
     var onOutput: ((Any?) -> Unit)? = null
-    record.withCurrent {
+    record.withCurrent(this) {
       lastProps = it.props
       onOutput = it.onOutput
       oldState = it.state
